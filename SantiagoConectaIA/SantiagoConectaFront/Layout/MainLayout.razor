@@ -1,0 +1,52 @@
+﻿@inherits LayoutComponentBase
+
+<header class="header-area header-sticky">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav class="main-nav">
+                    <a href="/" class="logo">
+                        <img src="assets/images/logo.png" alt="Softy Pinko" />
+                    </a>
+                    <ul class="nav">
+                        <li><NavLink href="/" Match="NavLinkMatch.All">Home</NavLink></li>
+                        <li><NavLink href="features">About</NavLink></li>
+                        <li><NavLink href="work-process">Work Process</NavLink></li>
+                        <li><NavLink href="testimonials">Testimonials</NavLink></li>
+                        <li><NavLink href="pricing">Pricing Tables</NavLink></li>
+                        <li><NavLink href="blog">Blog Entries</NavLink></li>
+                        <li><NavLink href="contact">Contact Us</NavLink></li>
+                    </ul>
+                    <a class='menu-trigger'>
+                        <span>Menu</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+<main>
+    @Body
+</main>
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <ul class="social">
+                    <li><a href="#"><i class="fa fa-facebook"></i></a></li>
+                    <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                    <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
+                    <li><a href="#"><i class="fa fa-rss"></i></a></li>
+                    <li><a href="#"><i class="fa fa-dribbble"></i></a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <p class="copyright">Copyright &copy; 2020 Softy Pinko Company - Design: TemplateMo</p>
+            </div>
+        </div>
+    </div>
+</footer>

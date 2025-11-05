@@ -1,0 +1,41 @@
+{
+	"folders": {},
+	"connections": {
+		"microsoft-19a322d4c77-5ca4a132da49b5f6": {
+			"provider": "sqlserver",
+			"driver": "microsoft",
+			"name": "Engrama",
+			"save-password": true,
+			"configuration": {
+				"host": "Engrama.mssql.somee.com",
+				"port": "1433",
+				"database": "Engrama",
+				"url": "jdbc:sqlserver://;serverName\u003dEngrama.mssql.somee.com;databaseName\u003dEngrama",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"provider-properties": {
+					"@dbeaver-show-all-schemas@": "false",
+					"sslTrustServerCertificate": "false"
+				},
+				"auth-model": "sqlserver_database"
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"smart-commit": false,
+			"smart-commit-recover": true,
+			"auto-close-transactions": true,
+			"close-transactions-period": 1800,
+			"auto-close-connections": true,
+			"close-connections-period": 14400
+		}
+	}
+}

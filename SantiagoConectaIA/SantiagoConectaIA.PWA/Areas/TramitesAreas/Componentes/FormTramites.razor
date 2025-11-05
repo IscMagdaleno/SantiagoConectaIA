@@ -1,0 +1,38 @@
+﻿@inherits EngramaComponent
+
+<EditForm Model="@Data.TramiteSelected"
+		  OnValidSubmit="OnSubmit">
+	<DataAnnotationsValidator />
+	<MudCard>
+		<MudCardContent>
+			<MudGrid>
+				<MudItem sm="6">
+					<MudTextField @bind-Value="Data.TramiteSelected.vchNombre"
+								  Label="Nombre"
+								  For="@(() => Data.TramiteSelected.vchNombre)"
+								  MaxLength="50"
+								  Variant="Variant.Outlined" />
+					<MudTextField @bind-Value="Data.TramiteSelected.nvchDescripcion"
+								  Label="Descripción"
+								  For="@(() => Data.TramiteSelected.nvchDescripcion)"
+								  Lines="10"
+								  MaxLength="500"
+								  Variant="Variant.Outlined" />
+				</MudItem>
+				<MudItem sm="6">
+					<MudGrid>
+
+					</MudGrid>
+				</MudItem>
+
+			</MudGrid>
+		</MudCardContent>
+
+
+		<MudCardActions>
+			<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Guardar</MudButton>
+		</MudCardActions>
+
+
+	</MudCard>
+</EditForm>

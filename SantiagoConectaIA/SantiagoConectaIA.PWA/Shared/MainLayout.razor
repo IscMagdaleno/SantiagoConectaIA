@@ -1,0 +1,233 @@
+﻿@using SantiagoConectaIA.PWA.Shared.Common
+@inherits LayoutComponentBase
+
+<MudThemeProvider IsDarkMode="true" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+
+<MudLayout>
+    <!-- Header fijo con navegación -->
+    <MudAppBar Elevation="1" Fixed="true" Style="background-color: #A50A3A; color: white;">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+            <div class="d-flex align-center justify-space-between">
+                <!-- Logo y nombre del municipio -->
+                <div class="d-flex align-center">
+                    <MudIcon Icon="Icons.Material.Filled.LocationCity"
+                             Size="Size.Large"
+                             Class="mr-3" />
+                    <MudText Typo="Typo.h5"
+                             Style="font-weight: bold; color: white;">
+                        Santiago Conecta
+                    </MudText>
+                </div>
+
+                <!-- Navegación desktop -->
+                <div class="d-none d-md-flex">
+                    <MudButton Href="/"
+                               Color="Color.Inherit"
+                               Class="nav-link mx-2">
+                        Inicio
+                    </MudButton>
+                    <MudButton Href="/tramites"
+                               Color="Color.Inherit"
+                               Class="nav-link mx-2">
+                        Trámites
+                    </MudButton>
+                    <MudButton Href="/contacto"
+                               Color="Color.Inherit"
+                               Class="nav-link mx-2">
+                        Contacto
+                    </MudButton>
+                    <MudButton Href="/chatbot"
+                               Color="Color.Inherit"
+                               Class="nav-link mx-2">
+                        ChatBot
+                    </MudButton>
+                </div>
+
+                <!-- Menú hamburguesa para móviles -->
+                <div class="d-md-none">
+                    <MudIconButton Icon="Icons.Material.Filled.Menu"
+                                   Color="Color.Inherit"
+                                   OnClick="@ToggleMobileMenu" />
+                </div>
+            </div>
+        </MudContainer>
+    </MudAppBar>
+
+    <!-- Menú móvil desplegable -->
+    <MudCollapse Expanded="@_mobileMenuOpen" Class="mobile-menu">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge"
+                      Style="background-color: #A50A3A; padding: 1rem;">
+            <MudStack Spacing="2">
+                <MudButton Href="/"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;"
+                           OnClick="@CloseMobileMenu">
+                    <MudIcon Icon="Icons.Material.Filled.Home" Class="mr-3" />
+                    Inicio
+                </MudButton>
+                <MudButton Href="/tramites"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;"
+                           OnClick="@CloseMobileMenu">
+                    <MudIcon Icon="Icons.Material.Filled.Description" Class="mr-3" />
+                    Trámites
+                </MudButton>
+                <MudButton Href="/contacto"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;"
+                           OnClick="@CloseMobileMenu">
+                    <MudIcon Icon="Icons.Material.Filled.ContactMail" Class="mr-3" />
+                    Contacto
+                </MudButton>
+                <MudButton Href="/chatbot"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;"
+                           OnClick="@CloseMobileMenu">
+                    <MudIcon Icon="Icons.Material.Filled.Chat" Class="mr-3" />
+                    ChatBot
+                </MudButton>
+            </MudStack>
+        </MudContainer>
+    </MudCollapse>
+
+    <!-- Contenido principal -->
+    <MudMainContent Style="padding-top: 64px; min-height: calc(100vh - 64px); background-color: #F9F9F9;">
+        @Body
+    </MudMainContent>
+
+    <!-- Footer -->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge"
+                  Style="background-color: #333333; color: white; padding: 2rem 1rem;">
+        <MudGrid>
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.h6" Style="margin-bottom: 1rem; font-weight: bold;">
+                    Contacto
+                </MudText>
+                <MudStack Spacing="1">
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="Icons.Material.Filled.LocationOn"
+                                 Size="Size.Small"
+                                 Class="mr-2" />
+                        <MudText Typo="Typo.body2">
+                            Av. Principal #123, Centro
+                        </MudText>
+                    </div>
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="Icons.Material.Filled.Phone"
+                                 Size="Size.Small"
+                                 Class="mr-2" />
+                        <MudText Typo="Typo.body2">
+                            (555) 123-4567
+                        </MudText>
+                    </div>
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="Icons.Material.Filled.Email"
+                                 Size="Size.Small"
+                                 Class="mr-2" />
+                        <MudText Typo="Typo.body2">
+                            contacto@municipio.gob.mx
+                        </MudText>
+                    </div>
+                </MudStack>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.h6" Style="margin-bottom: 1rem; font-weight: bold;">
+                    Horarios de Atención
+                </MudText>
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.body2">
+                        Lunes a Viernes: 8:00 - 16:00
+                    </MudText>
+                    <MudText Typo="Typo.body2">
+                        Sábados: 8:00 - 12:00
+                    </MudText>
+                    <MudText Typo="Typo.body2">
+                        Domingos: Cerrado
+                    </MudText>
+                </MudStack>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.h6" Style="margin-bottom: 1rem; font-weight: bold;">
+                    Síguenos
+                </MudText>
+                <div class="d-flex">
+                    <MudIconButton Icon="Icons.Custom.Brands.Facebook"
+                                   Color="Color.Inherit"
+                                   Class="social-link mr-2"
+                                   Style="color: #4267B2;" />
+                    <MudIconButton Icon="Icons.Custom.Brands.Twitter"
+                                   Color="Color.Inherit"
+                                   Class="social-link mr-2"
+                                   Style="color: #1DA1F2;" />
+                    <MudIconButton Icon="Icons.Custom.Brands.Instagram"
+                                   Color="Color.Inherit"
+                                   Class="social-link"
+                                   Style="color: #E4405F;" />
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Copyright -->
+        <MudDivider Style="margin: 2rem 0 1rem 0; background-color: #555;" />
+        <MudText Typo="Typo.caption"
+                 Style="text-align: center; color: #aaa;">
+            © 2025 H. Ayuntamiento Municipal. Todos los derechos reservados.
+        </MudText>
+    </MudContainer>
+</MudLayout>
+
+<style>
+    /* Estilos para efectos hover en navegación */
+    .nav-link {
+        transition: all 0.3s ease;
+        border-bottom: 2px solid transparent;
+    }
+
+        .nav-link:hover {
+            border-bottom: 2px solid white;
+            transform: translateY(-2px);
+        }
+
+    /* Estilos para links sociales */
+    .social-link {
+        transition: transform 0.3s ease;
+    }
+
+        .social-link:hover {
+            transform: scale(1.2);
+        }
+
+    /* Menú móvil */
+    .mobile-menu {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+</style>
+
+@code {
+    private bool _mobileMenuOpen = false;
+
+    private void ToggleMobileMenu()
+    {
+        _mobileMenuOpen = !_mobileMenuOpen;
+    }
+
+    private void CloseMobileMenu()
+    {
+        _mobileMenuOpen = false;
+    }
+}

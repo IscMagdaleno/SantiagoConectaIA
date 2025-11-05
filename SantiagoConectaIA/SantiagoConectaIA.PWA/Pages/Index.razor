@@ -1,0 +1,188 @@
+﻿@page "/"
+
+<PageTitle>Santiago Conecta 2025</PageTitle>
+
+<!-- Sección principal de bienvenida -->
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding: 2rem 1rem;">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <MudText Typo="Typo.h3"
+                 Style="color: #A50A3A; font-weight: bold; text-align: center; margin-bottom: 1rem;">
+            Bienvenidos al Portal Municipal
+        </MudText>
+        <MudText Typo="Typo.h6"
+                 Style="color: #333333; text-align: center; margin-bottom: 3rem; font-weight: 300;">
+            Servicios digitales al alcance de todos los ciudadanos
+        </MudText>
+    </div>
+
+    <!-- Grid de tarjetas principales -->
+    <MudGrid Spacing="4" Justify="Justify.Center">
+        <!-- Tarjeta Trámites -->
+        <MudItem xs="12" sm="6" md="6" lg="3">
+            <MudCard Class="service-card"
+                     Style="height: 100%; cursor: pointer;"
+                     @onclick="@(() => NavigateToPage("/PageTramites"))">
+                <MudCardContent Style="text-align: center; padding: 2rem;">
+                    <div class="card-icon-container">
+                        <MudIcon Icon="Icons.Material.Filled.Description"
+                                 Size="Size.Large"
+                                 Class="card-icon"
+                                 Style="color: #A50A3A;" />
+                    </div>
+                    <MudText Typo="Typo.h5"
+                             Style="color: #333333; font-weight: bold; margin: 1rem 0;">
+                        Trámites
+                    </MudText>
+                    <MudText Typo="Typo.body1"
+                             Style="color: #666666; line-height: 1.6;">
+                        Realiza tus trámites y servicios municipales de forma rápida y sencilla
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <!-- Tarjeta Noticias -->
+        <MudItem xs="12" sm="6" md="6" lg="3">
+            <MudCard Class="service-card"
+                     Style="height: 100%; cursor: pointer;">
+                <MudCardContent Style="text-align: center; padding: 2rem;">
+                    <div class="card-icon-container">
+                        <MudIcon Icon="Icons.Material.Filled.Newspaper"
+                                 Size="Size.Large"
+                                 Class="card-icon"
+                                 Style="color: #A50A3A;" />
+                    </div>
+                    <MudText Typo="Typo.h5"
+                             Style="color: #333333; font-weight: bold; margin: 1rem 0;">
+                        Noticias
+                    </MudText>
+                    <MudText Typo="Typo.body1"
+                             Style="color: #666666; line-height: 1.6;">
+                        Mantente informado sobre las últimas actividades y eventos municipales
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <!-- Tarjeta ChatBot -->
+        <MudItem xs="12" sm="6" md="6" lg="3">
+            <MudCard Class="service-card"
+                     Style="height: 100%; cursor: pointer;"
+                     @onclick="@(() => NavigateToPage("/chatbot"))">
+                <MudCardContent Style="text-align: center; padding: 2rem;">
+                    <div class="card-icon-container">
+                        <MudIcon Icon="Icons.Material.Filled.Chat"
+                                 Size="Size.Large"
+                                 Class="card-icon"
+                                 Style="color: #A50A3A;" />
+                    </div>
+                    <MudText Typo="Typo.h5"
+                             Style="color: #333333; font-weight: bold; margin: 1rem 0;">
+                        ChatBot
+                    </MudText>
+                    <MudText Typo="Typo.body1"
+                             Style="color: #666666; line-height: 1.6;">
+                        Obtén respuestas inmediatas a tus preguntas más frecuentes
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <!-- Tarjeta Directorio -->
+        <MudItem xs="12" sm="6" md="6" lg="3">
+            <MudCard Class="service-card"
+                     Style="height: 100%; cursor: pointer;"
+                     @onclick="@(() => NavigateToPage("/contacto"))">
+                <MudCardContent Style="text-align: center; padding: 2rem;">
+                    <div class="card-icon-container">
+                        <MudIcon Icon="Icons.Material.Filled.ContactMail"
+                                 Size="Size.Large"
+                                 Class="card-icon"
+                                 Style="color: #A50A3A;" />
+                    </div>
+                    <MudText Typo="Typo.h5"
+                             Style="color: #333333; font-weight: bold; margin: 1rem 0;">
+                        Directorio
+                    </MudText>
+                    <MudText Typo="Typo.body1"
+                             Style="color: #666666; line-height: 1.6;">
+                        Encuentra la información de contacto de todas las dependencias
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Sección de información adicional -->
+    <MudPaper Style="margin-top: 3rem; padding: 2rem; background-color: white; border-radius: 8px;" Elevation="2">
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.h4"
+                         Style="color: #A50A3A; font-weight: bold; margin-bottom: 1rem;">
+                    Transparencia y Gobierno Abierto
+                </MudText>
+                <MudText Typo="Typo.body1"
+                         Style="color: #333333; line-height: 1.6; margin-bottom: 1rem;">
+                    Nuestro compromiso es mantener un gobierno transparente, cercano a la ciudadanía y que rinda cuentas de sus acciones. Aquí encontrarás toda la información pública disponible.
+                </MudText>
+                <MudButton Variant="Variant.Outlined"
+                           Style="border-color: #A50A3A; color: #A50A3A;"
+                           StartIcon="Icons.Material.Filled.Visibility">
+                    Ver Transparencia
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.h4"
+                         Style="color: #A50A3A; font-weight: bold; margin-bottom: 1rem;">
+                    Participación Ciudadana
+                </MudText>
+                <MudText Typo="Typo.body1"
+                         Style="color: #333333; line-height: 1.6; margin-bottom: 1rem;">
+                    Tu voz es importante. Participa en las decisiones que afectan a nuestra comunidad a través de los mecanismos de consulta y participación ciudadana.
+                </MudText>
+                <MudButton Variant="Variant.Outlined"
+                           Style="border-color: #A50A3A; color: #A50A3A;"
+                           StartIcon="Icons.Material.Filled.HowToVote">
+                    Participar
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+
+<style>
+    /* Hero Section */
+    .hero-section {
+        padding: 2rem 0;
+    }
+
+    /* Tarjetas de servicios con efectos hover */
+    .service-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background-color: white;
+    }
+
+    .service-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(165, 10, 58, 0.15);
+    }
+
+    /* Contenedor de iconos en las tarjetas */
+    .card-icon-container {
+        margin-bottom: 1rem;
+    }
+
+    .card-icon {
+        transition: all 0.3s ease;
+    }
+
+    .service-card:hover .card-icon {
+        transform: scale(1.1);
+        color: #A50A3A !important;
+    }
+
+    
+</style>

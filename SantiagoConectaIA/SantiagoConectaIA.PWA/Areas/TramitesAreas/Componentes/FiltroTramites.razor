@@ -1,0 +1,19 @@
+﻿<MudTextField @bind-Value="FiltroTexto"
+			  Label="Buscar Trámite"
+			  Variant="Variant.Outlined"
+			  Immediate="true"
+			  TextChanged="OnFiltroChanged"
+			  Adornment="Adornment.End"
+			  AdornmentIcon="@Icons.Material.Filled.Search"
+			  Class="mb-4 filtro-tramite-style" />
+
+@code {
+	[Parameter] public EventCallback<string> FiltroTextoChanged { get; set; }
+
+	[Parameter] public string FiltroTexto { get; set; }
+
+	private async Task OnFiltroChanged(string texto)
+	{
+		await FiltroTextoChanged.InvokeAsync(texto);
+	}
+}
