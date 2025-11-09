@@ -7,7 +7,6 @@ using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository;
 using SantiagoConectaIA.API.SemanticKernel;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
-using SantiagoConectaIA.API.SemanticKernel.Configuraciones;
 
 using System.Reflection;
 
@@ -52,10 +51,6 @@ builder.Services.AddSwaggerGen(options =>
 	options.IncludeXmlComments(path);
 
 });
-
-
-// Register AiCredentialsProvider and other services (ver Paso 0.4)
-builder.Services.AddSingleton<IAiCredentialsProvider, AiCredentialsProvider>();
 
 
 

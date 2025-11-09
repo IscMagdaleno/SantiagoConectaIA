@@ -11,6 +11,8 @@ using System.Text.Json;
 
 namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 {
+
+
 	public class ConsultaPlugin
 	{
 		private readonly IConversationalDominio _conversationalDominio;
