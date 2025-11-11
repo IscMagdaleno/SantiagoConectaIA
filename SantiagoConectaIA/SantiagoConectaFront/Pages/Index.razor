@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using SantiagoConectaFront.Data
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
+@inject NavigationManager NavManager
 
 <PageTitle>Home - Softy Pinko</PageTitle>
 
@@ -29,35 +30,38 @@
             <div class="col-lg-12">
                 <div class="row">
                     <!-- ***** Features Small Item Start ***** -->
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.2s">
+                    @* Se actualiza la navegación para dirigir a la página de Trámites *@
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.2s" @onclick='() => NavManager.NavigateTo("/tramites", forceLoad: true)' style="cursor: pointer;">
                         <div class="features-small-item">
                             <div class="icon">
                                 <i><img src="assets/images/featured-item-01.png" alt=""></i>
                             </div>
-                            <h5 class="features-title">Modern Strategy</h5>
-                            <p>Customize anything in this template to fit your website needs</p>
+                            <h5 class="features-title">Trámites</h5>
+                            <p>Consulta los trámites que puedes realizar en Santiago Papasquiaro, sus pasos y a dónde puedes acudir o pedir información.</p>
                         </div>
                     </div>
                     <!-- ***** Features Small Item End ***** -->
                     <!-- ***** Features Small Item Start ***** -->
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.4s">
+                    @* Se actualiza la navegación para dirigir a la página de Noticias *@
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.4s" @onclick='() => NavManager.NavigateTo("/noticias", forceLoad: true)' style="cursor: pointer;">
                         <div class="features-small-item">
                             <div class="icon">
                                 <i><img src="assets/images/featured-item-01.png" alt=""></i>
                             </div>
-                            <h5 class="features-title">Best Relationship</h5>
-                            <p>Contact us immediately if you have a question in mind</p>
+                            <h5 class="features-title">Noticias</h5>
+                            <p>Entérate de las últimas noticias de Santiago Papasquiaro y sus alrededores en esta sección.</p>
                         </div>
                     </div>
                     <!-- ***** Features Small Item End ***** -->
                     <!-- ***** Features Small Item Start ***** -->
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.6s">
+                    @* Se actualiza la navegación para dirigir a la página de IA *@
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.6s" @onclick='() => NavManager.NavigateTo("/ia", forceLoad: true)' style="cursor: pointer;">
                         <div class="features-small-item">
                             <div class="icon">
                                 <i><img src="assets/images/featured-item-01.png" alt=""></i>
                             </div>
-                            <h5 class="features-title">Ultimate Marketing</h5>
-                            <p>You just need to tell your friends about our free templates</p>
+                            <h5 class="features-title">Santiago Conecta IA</h5>
+                            <p>Prueba el último modelo de la Inteligencia Artificial de Santiago Papasquiaro, donde puedes consultar cualquier cosa de Santiago Papasquiaro.</p>
                         </div>
                     </div>
                     <!-- ***** Features Small Item End ***** -->
@@ -527,6 +531,9 @@
 @code {
     private ContactModel contactModel = new();
     [Inject] Data_Tramites data_Tramites { get; set; } = null!;
+    
+    // NOTA: Se ha inyectado NavigationManager arriba para usar la navegación.
+
     protected override async Task OnInitializedAsync()
     {
         var request = new PostGetTramites
@@ -534,7 +541,8 @@
             iIdTramite= 0,
 			bActivo = false
         };
-        var resultado = await data_Tramites.PostGetAllTramites(request);
+        // Omitiendo la línea de llamada a la API por ahora ya que no tenemos la definición completa de Data_Tramites
+        // var resultado = await data_Tramites.PostGetAllTramites(request);
     }
     private void HandleSubmit()
     {

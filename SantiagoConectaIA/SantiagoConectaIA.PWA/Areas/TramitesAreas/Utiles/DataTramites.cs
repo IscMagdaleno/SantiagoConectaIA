@@ -45,8 +45,8 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			var APIUrl = url + "/PostGetTramiteDetail";
 
 			var model = new PostGetTramites();
-			var response = await _httpService.Post<PostGetTramites, Response<List<Tramite>>>(APIUrl, model);
-			var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => LstTramites = data.ToList());
+			var response = await _httpService.Post<PostGetTramites, Response<Tramite>>(APIUrl, model);
+			var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => TramiteSelected = data);
 			return validation;
 		}
 

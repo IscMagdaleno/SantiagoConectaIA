@@ -16,17 +16,20 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 		private readonly ITramitesRepository tramitesRepository;
 		private readonly MapperHelper mapperHelper;
 		private readonly IResponseHelper responseHelper;
+		private readonly IOficinasDomain oficinasDomain;
 
 		/// <summary>
 		/// Initialize the fields receiving the interfaces on the builder
 		/// </summary>
 		public TramiteDominio(ITramitesRepository tramitesRepository,
 			MapperHelper mapperHelper,
-			IResponseHelper responseHelper)
+			IResponseHelper responseHelper,
+			IOficinasDomain oficinasDomain)
 		{
 			this.tramitesRepository = tramitesRepository;
 			this.mapperHelper = mapperHelper;
 			this.responseHelper = responseHelper;
+			this.oficinasDomain = oficinasDomain;
 		}
 
 

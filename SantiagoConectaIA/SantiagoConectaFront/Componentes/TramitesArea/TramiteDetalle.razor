@@ -1,0 +1,457 @@
+﻿@page "/tramites/{Id:int}"
+@inject NavigationManager NavManager
+@using SantiagoConectaFront.Shared 
+
+<PageTitle>Detalle del Trámite</PageTitle>
+
+<div class="min-h-screen bg-gray-50">
+    @* ELIMINADO: <HeaderComponent /> *@
+
+    @if (Loading)
+    {
+        <div class="flex justify-center items-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+    }
+    else if (Tramite == null)
+    {
+        <div class="container mx-auto px-4 py-20 text-center">
+            <h1 class="text-2xl font-bold text-gray-800 mb-4">Trámite no encontrado</h1>
+            <a href="/tramites" class="text-blue-600 hover:underline">Volver a trámites</a>
+        </div>
+    }
+    else
+    {
+        <!-- Breadcrumb -->
+        <div class="bg-white border-b">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <a href="/" class="hover:text-blue-600">Inicio</a>
+                    <span>/</span>
+                    <a href="/tramites" class="hover:text-blue-600">Trámites</a>
+                    <span>/</span>
+                    <span class="text-gray-800 font-medium">@Tramite.vchNombre</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Section -->
+        <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-12">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center mb-6">
+                    <a
+                        href="/tramites"
+                        class="inline-flex items-center text-blue-200 hover:text-white transition-colors mr-6"
+                    >
+                        @Icon.ArrowLeft("w-5 h-5 mr-2")
+                        Volver a trámites
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2">
+                        <h1 class="text-3xl md:text-4xl font-bold mb-4">
+                            @Tramite.vchNombre
+                        </h1>
+                        <p class="text-xl text-blue-100 mb-6 leading-relaxed">
+                            @Tramite.nvchDescripcion
+                        </p>
+
+                        <div class="flex flex-wrap gap-4 mb-6">
+                            @if (Tramite.bModalidadEnLinea)
+                            {
+                                <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
+                                    @Icon.CheckCircle("w-4 h-4 mr-2")
+                                    Disponible en línea
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-orange-800 bg-orange-100 rounded-full">
+                                    @Icon.AlertCircle("w-4 h-4 mr-2")
+                                    Solo presencial
+                                </span>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Tramite.TiempoEstimado))
+                            {
+                                <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
+                                    @Icon.Clock("w-4 h-4 mr-2")
+                                    @Tramite.TiempoEstimado
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-1">
+                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                            <h3 class="text-xl font-semibold mb-4">Información General</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    @Icon.DollarSign("w-5 h-5 mr-3 text-green-400")
+                                    <div>
+                                        <p class="text-sm text-blue-200">Costo</p>
+                                        <p class="font-semibold">
+                                            @(Tramite.mCosto > 0 ? $"${Tramite.mCosto:N2} MXN" : "Gratuito")
+                                        </p>
+                                    </div>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(Tramite.Vigencia))
+                                {
+                                    <div class="flex items-center">
+                                        @Icon.Clock("w-5 h-5 mr-3 text-yellow-400")
+                                        <div>
+                                            <p class="text-sm text-blue-200">Vigencia</p>
+                                            <p class="font-semibold">@Tramite.Vigencia</p>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="flex items-center">
+                                    @Icon.MapPin("w-5 h-5 mr-3 text-red-400")
+                                    <div>
+                                        <p class="text-sm text-blue-200">Oficina</p>
+                                        <p class="font-semibold">@(Tramite.Oficina?.vchNombre ?? "N/A")</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="container mx-auto px-4 py-8">
+            <!-- Tabs -->
+            <div class="bg-white rounded-lg shadow-sm mb-8">
+                <div class="border-b">
+                    <nav class="flex space-x-8 px-6">
+                        @foreach (var tab in Tabs)
+                        {
+                            <button
+                                @key="tab.id"
+                                @onclick='() => ActiveTab = tab.id'
+                                class="@($"flex items-center py-4 border-b-2 font-medium text-sm transition-colors {(ActiveTab == tab.id ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300")}")"
+                            >
+                                @tab.name
+                            </button>
+                        }
+                    </nav>
+                </div>
+
+                <div class="p-6">
+                    <!-- Requisitos Tab -->
+                    @if (ActiveTab == "requisitos")
+                    {
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                    Documentos y requisitos necesarios
+                                </h3>
+                                @if (Tramite.Requisitos?.Any() == true)
+                                {
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        @foreach (var requisito in Tramite.Requisitos)
+                                        {
+                                            <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
+                                                @Icon.CheckCircle("w-5 h-5 text-green-600 mt-0.5 flex-shrink-0")
+                                                <span class="text-gray-700">@requisito</span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-gray-500">No hay requisitos listados actualmente.</p>
+                                }
+                            </div>
+
+                            @if (Tramite.DocumentosNecesarios?.Any() == true)
+                            {
+                                <div class="border-t pt-6">
+                                    <h4 class="text-md font-semibold text-gray-800 mb-3">
+                                        Documentos para descargar
+                                    </h4>
+                                    <div class="space-y-2">
+                                        @foreach (var documento in Tramite.DocumentosNecesarios)
+                                        {
+                                            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                                                <div class="flex items-center space-x-3">
+                                                    @Icon.FileText("w-5 h-5 text-blue-600")
+                                                    <span class="text-gray-700">@documento</span>
+                                                </div>
+                                                <button class="flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                                                    @Icon.Download("w-4 h-4 mr-1")
+                                                    Descargar
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Proceso Tab -->
+                    @if (ActiveTab == "proceso")
+                    {
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                Pasos para completar el trámite
+                            </h3>
+                            @if (Tramite.Pasos?.Any() == true)
+                            {
+                                <div class="space-y-4">
+                                    @for (int i = 0; i < Tramite.Pasos.Count; i++)
+                                    {
+                                        <div class="flex items-start space-x-4">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                                                @(i + 1)
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="text-gray-700 leading-relaxed">@Tramite.Pasos[i]</p>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-gray-500">No hay un proceso detallado disponible actualmente.</p>
+                            }
+
+
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
+                                <div class="flex items-start space-x-3">
+                                    @Icon.AlertCircle("w-5 h-5 text-yellow-600 mt-0.5")
+                                    <div>
+                                        <h4 class="font-medium text-yellow-800 mb-1">Importante</h4>
+                                        <p class="text-yellow-700 text-sm">
+                                            Se recomienda verificar que todos los documentos estén vigentes y en buen estado
+                                            antes de acudir a la oficina para evitar contratiempos.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Ubicación Tab -->
+                    @if (ActiveTab == "ubicacion")
+                    {
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                        Información de la oficina
+                                    </h3>
+                                    <div class="space-y-4">
+                                        <div class="flex items-start space-x-3">
+                                            @Icon.MapPin("w-5 h-5 text-red-600 mt-1")
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Dirección</h4>
+                                                <p class="text-gray-600">@Tramite.Oficina?.vchDireccion</p>
+                                                @if (!string.IsNullOrEmpty(Tramite.Oficina?.vchDireccion))
+                                                {
+                                                    <a
+                                                        href="@($"https://maps.google.com/?q={Uri.EscapeDataString(Tramite.Oficina.vchDireccion)}")"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm mt-1"
+                                                    >
+                                                        @Icon.ExternalLink("w-4 h-4 mr-1")
+                                                        Ver en Google Maps
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        @if (!string.IsNullOrEmpty(Tramite.Oficina?.vchTelefono))
+                                        {
+                                            <div class="flex items-center space-x-3">
+                                                @Icon.Phone("w-5 h-5 text-green-600")
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">Teléfono</h4>
+                                                    <a href="@($"tel:{Tramite.Oficina.vchTelefono}")" class="text-blue-600 hover:text-blue-800">
+                                                        @Tramite.Oficina.vchTelefono
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        @if (!string.IsNullOrEmpty(Tramite.Oficina?.vchEmail))
+                                        {
+                                            <div class="flex items-center space-x-3">
+                                                @Icon.Mail("w-5 h-5 text-blue-600")
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">Correo electrónico</h4>
+                                                    <a href="@($"mailto:{Tramite.Oficina.vchEmail}")" class="text-blue-600 hover:text-blue-800">
+                                                        @Tramite.Oficina.vchEmail
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <div class="bg-gray-50 rounded-lg p-4">
+                                            <h4 class="font-medium text-gray-800 mb-2">Horarios de atención</h4>
+                                            <div class="text-sm text-gray-600 space-y-1">
+                                                <div class="flex justify-between">
+                                                    <span>Lunes a Viernes:</span>
+                                                    <span>8:00 AM - 4:00 PM</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span>Sábados:</span>
+                                                    <span>9:00 AM - 1:00 PM</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span>Domingos:</span>
+                                                    <span class="text-red-600">Cerrado</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                        Ubicación en el mapa
+                                    </h3>
+                                    <div class="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
+                                        <p class="text-gray-600">Mapa interactivo aquí</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @* ELIMINADO: <FooterComponent /> *@
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private TramiteDetailModel? Tramite { get; set; }
+    private bool Loading { get; set; } = true;
+    private string ActiveTab { get; set; } = "requisitos";
+
+    private readonly List<(string id, string name, RenderFragment icon)> Tabs = new()
+    {
+        ("requisitos", "Requisitos", @<span class="lucide-icon">@Icon.FileText("w-5 h-5")</span>),
+        ("proceso", "Proceso", @<span class="lucide-icon">@Icon.CheckCircle("w-5 h-5")</span>),
+        ("ubicacion", "Ubicación", @<span class="lucide-icon">@Icon.MapPin("w-5 h-5")</span>)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000); // Simula la carga de datos
+
+        // Simulación de datos (adaptada para el ID)
+        if (Id == 1)
+        {
+            Tramite = new TramiteDetailModel
+            {
+                iIdTramite = 1,
+                vchNombre = "Licencia de Conducir",
+                nvchDescripcion = "Obtención de licencia de conducir para vehículos particulares. Este trámite te permite obtener el documento oficial que te autoriza a conducir vehículos en el territorio nacional.",
+                iIdCategoria = 1,
+                bModalidadEnLinea = false,
+                mCosto = 450.00m,
+                dtFechaActualizacion = new DateTime(2024, 01, 15),
+                Oficina = new Oficina
+                {
+                    iIdOficina = 1,
+                    vchNombre = "Oficina de Tránsito Municipal",
+                    vchDireccion = "Av. Juárez #123, Centro, Santiago Papasquiaro, Durango",
+                    vchTelefono = "674-123-4567",
+                    vchEmail = "transito@santiagopapasquiaro.gob.mx"
+                },
+                Requisitos = new List<string>
+                {
+                    "Identificación oficial vigente (INE/IFE)",
+                    "CURP actualizada",
+                    "Comprobante de domicilio no mayor a 3 meses",
+                    "Certificado médico vigente",
+                    "Fotografías tamaño infantil (2)",
+                    "Comprobante de tipo de sangre",
+                    "Examen de manejo (en caso de primera vez)"
+                },
+                Pasos = new List<string>
+                {
+                    "Reunir todos los documentos requeridos",
+                    "Acudir a la oficina de tránsito en horario de atención",
+                    "Entregar documentación y realizar el pago correspondiente",
+                    "Presentar examen teórico (primera vez)",
+                    "Realizar examen práctico de manejo",
+                    "Toma de fotografía y datos biométricos",
+                    "Entrega de licencia temporal",
+                    "Recepción de licencia definitiva (5-10 días hábiles)"
+                },
+                TiempoEstimado = "2-3 horas (mismo día) + 5-10 días para entrega",
+                Vigencia = "3 años",
+                DocumentosNecesarios = new List<string>
+                {
+                    "Formato de solicitud",
+                    "Comprobante de pago",
+                    "Examen médico oficial"
+                }
+            };
+        }
+        // ... aquí irían más casos según el Id
+
+        Loading = false;
+    }
+
+    // Modelos C# para el detalle
+    public class Oficina
+    {
+        public int iIdOficina { get; set; }
+        public string vchNombre { get; set; } = string.Empty;
+        public string vchDireccion { get; set; } = string.Empty;
+        public string vchTelefono { get; set; } = string.Empty;
+        public string vchEmail { get; set; } = string.Empty;
+    }
+
+    public class TramiteDetailModel
+    {
+        public int iIdTramite { get; set; }
+        public string vchNombre { get; set; } = string.Empty;
+        public string nvchDescripcion { get; set; } = string.Empty;
+        public int iIdCategoria { get; set; }
+        public bool bModalidadEnLinea { get; set; }
+        public decimal mCosto { get; set; }
+        public int iIdOficina { get; set; }
+        public DateTime dtFechaCreacion { get; set; }
+        public DateTime dtFechaActualizacion { get; set; }
+        public bool bActivo { get; set; }
+        public Oficina Oficina { get; set; } = new();
+
+        public List<string>? Requisitos { get; set; }
+        public List<string>? Pasos { get; set; }
+        public string? TiempoEstimado { get; set; }
+        public string? Vigencia { get; set; }
+        public List<string>? DocumentosNecesarios { get; set; }
+    }
+
+    // Clase auxiliar para iconos de Lucide-React
+    public static class Icon
+    {
+        public static RenderFragment ArrowLeft(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
+        public static RenderFragment DollarSign(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+        public static RenderFragment Clock(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        public static RenderFragment MapPin(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+        public static RenderFragment Phone(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2 2h-3.41a2 2 0 0 1-1.4-0.58l-2.48-2.48a1 1 0 0 0-0.7-0.29c-0.12 0-0.24 0.02-0.35 0.06-0.61 0.22-1.3 0.35-2.01 0.35-4.42 0-8-3.58-8-8 0-0.71 0.13-1.4 0.35-2.01 0.04-0.11 0.06-0.23 0.06-0.35 0-0.26-0.1-0.5-0.29-0.7l-2.48-2.48A2 2 0 0 1 2 4.41V2a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a1 1 0 0 1-0.29 0.7l-1.48 1.48c0.85 1.15 1.95 2.25 3.1 3.1l1.48-1.48A1 1 0 0 1 14 9h3a2 2 0 0 1 2 2v3.41a2 2 0 0 1-0.58 1.4L18 16.92Z"/></svg>;
+        public static RenderFragment Mail(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>;
+        public static RenderFragment FileText(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><line x1="8" x2="16" y1="13" y2="13"/><line x1="8" x2="16" y1="17" y2="17"/><line x1="8" x2="12" y1="9" y2="9"/></svg>;
+        public static RenderFragment CheckCircle(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>;
+        public static RenderFragment AlertCircle(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
+        public static RenderFragment Download(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
+        public static RenderFragment ExternalLink(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>;
+    }
+}

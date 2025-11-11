@@ -1,0 +1,75 @@
+﻿@using System.Globalization
+@using SantiagoConectaIA.Share.Objects.TramitesModule
+@using SantiagoConectaFront.Pages
+
+<div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+    <div class="p-6">
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                    @Tramite.vchNombre
+                </h3>
+                <p class="text-sm text-gray-600 mt-2 line-clamp-3">
+                    @Tramite.nvchDescripcion
+                </p>
+            </div>
+            <div class="ml-4">
+                @if (Tramite.bModalidadEnLinea)
+                {
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                        En línea
+                    </span>
+                }
+                else
+                {
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-800 bg-orange-100 rounded-full">
+                        Presencial
+                    </span>
+                }
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <div class="flex items-center text-gray-600">
+                @Icon.DollarSign("w-4 h-4 mr-2 text-green-600")
+                <span class="text-sm">
+                    @(Tramite.mCosto > 0 ? $"${Tramite.mCosto.ToString("N2", CultureInfo.GetCultureInfo("es-MX"))} MXN" : "Gratuito")
+                </span>
+            </div>
+
+            <div class="flex items-center text-gray-600">
+                @Icon.MapPin("w-4 h-4 mr-2 text-red-600")
+                <span class="text-sm">@(Tramite.Oficina?.vchNombre ?? "N/A")</span>
+            </div>
+
+            <div class="flex items-center text-gray-600">
+                @Icon.Clock("w-4 h-4 mr-2 text-blue-600")
+                <span class="text-sm">
+                    Actualizado: @(Tramite.dtFechaActualizacion)
+                </span>
+            </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t">
+            <a href="@($"/tramites/{Tramite.iIdTramite}")"
+               class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105">
+                Ver detalles
+                @Icon.FileText("w-4 h-4 ml-2")
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Tramite Tramite { get; set; } = new();
+
+    // Clase auxiliar para iconos (debe ser la misma que la de Tramites.razor)
+    public static class Icon
+    {
+        public static RenderFragment DollarSign(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>;
+        public static RenderFragment Clock(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>;
+        public static RenderFragment MapPin(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>;
+        public static RenderFragment FileText(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><line x1="8" x2="16" y1="13" y2="13" /><line x1="8" x2="16" y1="17" y2="17" /><line x1="8" x2="12" y1="9" y2="9" /></svg>;
+    }
+}
