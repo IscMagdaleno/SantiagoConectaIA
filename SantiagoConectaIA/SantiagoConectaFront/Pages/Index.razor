@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using SantiagoConectaFront.Data
+@using SantiagoConectaIA.Share.PostModels.TramitesModule
 
 <PageTitle>Home - Softy Pinko</PageTitle>
 
@@ -524,7 +526,16 @@
 
 @code {
     private ContactModel contactModel = new();
-
+    [Inject] Data_Tramites data_Tramites { get; set; } = null!;
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new PostGetTramites
+        {
+            iIdTramite= 0,
+			bActivo = false
+        };
+        var resultado = await data_Tramites.PostGetAllTramites(request);
+    }
     private void HandleSubmit()
     {
         // Aquí puedes manejar el envío del formulario
