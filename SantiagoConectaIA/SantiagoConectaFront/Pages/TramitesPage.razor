@@ -2,23 +2,28 @@
 @inject NavigationManager NavManager
 @using System.Text.Json
 @using SantiagoConectaFront.Componentes.TramitesArea
-@using SantiagoConectaFront.Shared 
+@using SantiagoConectaFront.Shared
 @using SantiagoConectaIA.Share.Objects.OficinasModule
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 
 <PageTitle>Trámites y Servicios</PageTitle>
 
 <div class="min-h-screen bg-gray-50">
-    @* ELIMINADO: <HeaderComponent /> *@
 
-    <!-- Hero Section -->
-    <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-16">
-        <div class="container mx-auto px-4">
+    <!-- Hero Section: Implementa la imagen de fondo y corrige la posición del texto. -->
+    <div class="relative text-gray-800 overflow-hidden bg-cover bg-center pt-32 pb-12"
+         style="background-image: src('assets/images/banner-bl.png') ">
+        
+        <!-- Capa de color (Vino claro y elegante) para asegurar la legibilidad del texto -->
+        <div class="absolute inset-0 bg-rose-900/10 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-rose-50 to-transparent opacity-70"></div>
+
+        <div class="container mx-auto px-4 relative z-10">
             <div class="text-center">
-                <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-rose-900">
                     Trámites y Servicios
                 </h1>
-                <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+                <p class="text-xl text-rose-800 mb-8 max-w-3xl mx-auto">
                     Consulta todos los trámites disponibles en Santiago Papasquiaro.
                     Encuentra información detallada, requisitos y ubicaciones.
                 </p>
@@ -36,7 +41,7 @@
                     <input
                         type="text"
                         placeholder="Buscar trámites..."
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                         @bind="SearchTerm"
                         @bind:event="oninput"
                         @onkeyup="ApplyFilters"
@@ -48,8 +53,9 @@
                     <div class="relative">
                         @Icon.Filter("absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5")
                         <select
-                            class="pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white min-w-[200px]"
-                            @bind="SelectedCategory">
+                            class="pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent appearance-none bg-white min-w-[200px]"
+                            @bind="SelectedCategory"
+                        >
                             <option value="0">Todas las categorías</option>
                             @foreach (var category in Categories)
                             {
@@ -62,13 +68,13 @@
                     <div class="flex border border-gray-300 rounded-lg overflow-hidden">
                         <button
                             @onclick='() => ViewMode = "grid"'
-                            class="@(ViewMode == "grid" ? "p-3 bg-blue-600 text-white" : "p-3 bg-white text-gray-600")"
+                            class="@(ViewMode == "grid" ? "p-3 bg-rose-600 text-white" : "p-3 bg-white text-gray-600")"
                         >
                             @Icon.Grid2x2("w-5 h-5")
                         </button>
                         <button
                             @onclick='() => ViewMode = "list"'
-                            class="@(ViewMode == "list" ? "p-3 bg-blue-600 text-white" : "p-3 bg-white text-gray-600")"
+                            class="@(ViewMode == "list" ? "p-3 bg-rose-600 text-white" : "p-3 bg-white text-gray-600")"
                         >
                             @Icon.List("w-5 h-5")
                         </button>
@@ -83,7 +89,7 @@
         @if (Loading)
         {
             <div class="flex justify-center items-center py-12">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"></div>
             </div>
         }
         else
