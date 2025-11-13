@@ -1,10 +1,13 @@
 ﻿@page "/tramites"
 @inject NavigationManager NavManager
+@inject Data_Tramites data_Tramites;
 @using System.Text.Json
 @using SantiagoConectaFront.Componentes.TramitesArea
+@using SantiagoConectaFront.Data
 @using SantiagoConectaFront.Shared
 @using SantiagoConectaIA.Share.Objects.OficinasModule
 @using SantiagoConectaIA.Share.Objects.TramitesModule
+@using SantiagoConectaIA.Share.PostModels.TramitesModule
 
 <PageTitle>Trámites y Servicios</PageTitle>
 
@@ -140,6 +143,7 @@
 </div>
 
 @code {
+
     private List<Tramite> Tramites { get; set; } = new();
     private List<Tramite> FilteredTramites { get; set; } = new();
     private string SearchTerm { get; set; } = string.Empty;
@@ -173,43 +177,13 @@
     {
         // Simulamos la carga de datos
         await Task.Delay(1000); // Simula el delay de la API
-
-        var mockTramites = new List<Tramite>
+        var request = new PostGetTramites
         {
-            new Tramite
-            {
-                iIdTramite = 1,
-                vchNombre = "Licencia de Conducir",
-                nvchDescripcion = "Obtención de licencia de conducir para vehículos particulares",
-                iIdCategoria = 1,
-                bModalidadEnLinea = false,
-                mCosto = 450.00m,
-                dtFechaActualizacion = new DateTime(2024, 01, 15),
-                Oficina = new Oficina { vchNombre = "Oficina de Tránsito" }
-            },
-            new Tramite
-            {
-                iIdTramite = 2,
-                vchNombre = "Pago de Impuesto Predial",
-                nvchDescripcion = "Pago anual del impuesto predial para propiedades en el municipio",
-                iIdCategoria = 2,
-                bModalidadEnLinea = true,
-                mCosto = 0.00m,
-                dtFechaActualizacion = new DateTime(2024, 01, 10),
-                Oficina = new Oficina { vchNombre = "Tesorería Municipal" }
-            },
-            new Tramite
-            {
-                iIdTramite = 3,
-                vchNombre = "Permiso de Construcción Menor",
-                nvchDescripcion = "Permiso para construcciones menores y remodelaciones",
-                iIdCategoria = 3,
-                bModalidadEnLinea = false,
-                mCosto = 850.00m,
-                dtFechaActualizacion = new DateTime(2024, 01, 20),
-                Oficina = new Oficina { vchNombre = "Desarrollo Urbano" }
-            }
+            iIdTramite= 0,
+            bActivo = false
         };
+        var list = await data_Tramites.PostGetAllTramites(request);
+        var mockTramites = list.Data;
 
         Tramites = mockTramites;
         FilteredTramites = Tramites;
