@@ -55,6 +55,18 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 			if (res.Ok && res.Data != null) return res.Data;
 			return new spSaveDocumento.Result { bResult = false, vchMessage = res.Msg };
 		}
+		public async Task<IEnumerable<spGetTramitesCard.Result>> spGetTramitesCard(spGetTramitesCard.Request daoModel)
+		{
+			var respuesta = await _managerHelper.GetAllAsync<spGetTramitesCard.Result, spGetTramitesCard.Request>(daoModel, "");
+			if (respuesta.Ok)
+			{
+				return respuesta.Data;
+			}
+			return new List<spGetTramitesCard.Result>
+			{
+				new() { bResult = false, vchMessage = respuesta.Msg }
+			};
+		}
 	}
 
 }

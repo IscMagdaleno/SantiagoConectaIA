@@ -1,6 +1,7 @@
 ﻿using EngramaCoreStandar.Results;
 using Microsoft.AspNetCore.Components;
 using Newtonsoft.Json;
+using SantiagoConectaIA.Share.DTO_s.TramitesArea;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
 using System.Net;
@@ -35,6 +36,24 @@ namespace SantiagoConectaFront.Data
 
 			var json = await respuesta.Content.ReadAsStringAsync();
 			var resultado = JsonConvert.DeserializeObject<Response<List<Tramite>>>(json);
+			return resultado;
+		}
+		public async Task<Response<List<TramitesCardDto>>> PostGetAllTramitesCard(PostGetTramites data)
+		{
+			var url = "/api/Tramites/PostGetTramitesCard";
+			var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_HttpClient.BaseAddress!, url));
+			request.Content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+
+			var respuesta = await _HttpClient.SendAsync(request);
+
+
+			if (respuesta.StatusCode == HttpStatusCode.BadRequest)
+			{
+				return null;
+			}
+
+			var json = await respuesta.Content.ReadAsStringAsync();
+			var resultado = JsonConvert.DeserializeObject<Response<List<TramitesCardDto>>>(json);
 			return resultado;
 		}
 

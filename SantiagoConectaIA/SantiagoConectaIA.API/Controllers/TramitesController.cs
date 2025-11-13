@@ -86,5 +86,17 @@ namespace SantiagoConectaIA.API.Controllers
 			return BadRequest(result);
 		}
 
+
+		[HttpPost("PostGetTramitesCard")]
+		public async Task<IActionResult> PostGetTramitesCard([FromBody] PostGetTramites postModel)
+		{
+			var result = await tramiteDominio.GetTramitesCard(postModel);
+			if (result.IsSuccess)
+			{
+				return Ok(result);
+			}
+			return BadRequest(result);
+		}
+
 	}
 }

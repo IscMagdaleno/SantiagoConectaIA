@@ -5,6 +5,7 @@
 @using SantiagoConectaFront.Componentes.TramitesArea
 @using SantiagoConectaFront.Data
 @using SantiagoConectaFront.Shared
+@using SantiagoConectaIA.Share.DTO_s.TramitesArea
 @using SantiagoConectaIA.Share.Objects.OficinasModule
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
@@ -144,8 +145,8 @@
 
 @code {
 
-    private List<Tramite> Tramites { get; set; } = new();
-    private List<Tramite> FilteredTramites { get; set; } = new();
+    private List<TramitesCardDto> Tramites { get; set; } = new();
+    private List<TramitesCardDto> FilteredTramites { get; set; } = new();
     private string SearchTerm { get; set; } = string.Empty;
     private int _selectedCategory = 0;
     private string ViewMode { get; set; } = "grid";
@@ -180,9 +181,9 @@
         var request = new PostGetTramites
         {
             iIdTramite= 0,
-            bActivo = false
+            bActivo = true
         };
-        var list = await data_Tramites.PostGetAllTramites(request);
+        var list = await data_Tramites.PostGetAllTramitesCard(request);
         var mockTramites = list.Data;
 
         Tramites = mockTramites;
@@ -192,13 +193,13 @@
 
     private void ApplyFilters()
     {
-        IEnumerable<Tramite> filtered = Tramites;
+        IEnumerable<TramitesCardDto> filtered = Tramites;
 
         if (!string.IsNullOrWhiteSpace(SearchTerm))
         {
             filtered = filtered.Where(t =>
-                t.vchNombre.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                t.nvchDescripcion.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+                t.vchNombreTramite.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                t.vchDescripcionTramite.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
             );
         }
 

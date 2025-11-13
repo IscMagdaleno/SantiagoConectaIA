@@ -1,4 +1,5 @@
 ﻿@using System.Globalization
+@using SantiagoConectaIA.Share.DTO_s.TramitesArea
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @using SantiagoConectaFront.Pages
 
@@ -7,10 +8,10 @@
         <div class="flex items-start justify-between mb-4">
             <div class="flex-1">
                 <h3 class="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                    @Tramite.vchNombre
+                    @Tramite.vchNombreTramite
                 </h3>
                 <p class="text-sm text-gray-600 mt-2 line-clamp-3">
-                    @Tramite.nvchDescripcion
+                    @Tramite.vchDescripcionTramite
                 </p>
             </div>
             <div class="ml-4">
@@ -33,21 +34,15 @@
             <div class="flex items-center text-gray-600">
                 @Icon.DollarSign("w-4 h-4 mr-2 text-green-600")
                 <span class="text-sm">
-                    @(Tramite.mCosto > 0 ? $"${Tramite.mCosto.ToString("N2", CultureInfo.GetCultureInfo("es-MX"))} MXN" : "Gratuito")
+                    @(Tramite.dCosto > 0 ? $"${Tramite.dCosto.ToString("N2", CultureInfo.GetCultureInfo("es-MX"))} MXN" : "Gratuito")
                 </span>
             </div>
 
             <div class="flex items-center text-gray-600">
                 @Icon.MapPin("w-4 h-4 mr-2 text-red-600")
-                <span class="text-sm">@(Tramite.Oficina?.vchNombre ?? "N/A")</span>
+                <span class="text-sm">@(Tramite.vchNombreOficina ?? "N/A")</span>
             </div>
 
-            <div class="flex items-center text-gray-600">
-                @Icon.Clock("w-4 h-4 mr-2 text-blue-600")
-                <span class="text-sm">
-                    Actualizado: @(Tramite.dtFechaActualizacion)
-                </span>
-            </div>
         </div>
 
         <div class="mt-6 pt-4 border-t">
@@ -62,7 +57,7 @@
 
 @code {
     [Parameter]
-    public Tramite Tramite { get; set; } = new();
+    public TramitesCardDto Tramite { get; set; } = new();
 
     // Clase auxiliar para iconos (debe ser la misma que la de Tramites.razor)
     public static class Icon

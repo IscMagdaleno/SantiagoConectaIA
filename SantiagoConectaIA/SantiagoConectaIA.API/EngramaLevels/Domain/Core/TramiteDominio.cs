@@ -4,6 +4,8 @@ using EngramaCoreStandar.Results;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository;
+using SantiagoConectaIA.Share.DTO_s.TramitesArea;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
 
@@ -132,6 +134,19 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			catch (Exception ex)
 			{
 				return Response<RequisitosPorTramite>.BadResult(ex.Message, new());
+			}
+		}
+		public async Task<Response<IEnumerable<TramitesCardDto>>> GetTramitesCard(PostGetTramites daoModel)
+		{
+			try
+			{
+				var request = mapperHelper.Get<PostGetTramites, spGetTramitesCard.Request>(daoModel);
+				var result = await tramitesRepository.spGetTramitesCard(request);
+				return responseHelper.Validacion<spGetTramitesCard.Result, TramitesCardDto>(result);
+			}
+			catch (Exception ex)
+			{
+				return Response<IEnumerable<TramitesCardDto>>.BadResult(ex.Message, new List<TramitesCardDto>());
 			}
 		}
 
