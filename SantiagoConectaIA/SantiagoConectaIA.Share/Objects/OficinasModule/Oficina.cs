@@ -13,6 +13,14 @@
 		public double? flLongitud { get; set; }
 		public string vchNotas { get; set; }
 		public bool bActivo { get; set; }
+		public Oficina (){
+  			vchNombre = string.Empty;
+			vchDireccion = string.Empty;
+			vchTelefono = string.Empty;
+			vchEmail = string.Empty;
+			vchHorario = string.Empty;
+			vchNotas = string.Empty;
+		}
 	}
 
 }

@@ -144,7 +144,7 @@
                                         {
                                             <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
                                                 @Icon.CheckCircle("w-5 h-5 text-green-600 mt-0.5 flex-shrink-0")
-                                                <span class="text-gray-700">@requisito</span>
+                                                <span class="text-gray-700">@(requisito.vchNombre ?? requisito.nvchDetalle)</span>
                                             </div>
                                         }
                                     </div>
@@ -167,7 +167,7 @@
                                             <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                                                 <div class="flex items-center space-x-3">
                                                     @Icon.FileText("w-5 h-5 text-blue-600")
-                                                    <span class="text-gray-700">@documento</span>
+                                                    <span class="text-gray-700">@documento.vchNombre</span>
                                                 </div>
                                                 <button class="flex items-center text-blue-600 hover:text-blue-800 font-medium">
                                                     @Icon.Download("w-4 h-4 mr-1")
@@ -198,7 +198,7 @@
                                                 @(i + 1)
                                             </div>
                                             <div class="flex-1">
-                                                <p class="text-gray-700 leading-relaxed">@Tramite.Pasos[i]</p>
+                                                <p class="text-gray-700 leading-relaxed">@Tramite.Pasos[i].nvchDescripcion</p>
                                             </div>
                                         </div>
                                     }
@@ -351,38 +351,6 @@
             }
             Loading = false;
     }
-
-    // Modelos C# para el detalle
-    public class Oficina
-    {
-        public int iIdOficina { get; set; }
-        public string vchNombre { get; set; } = string.Empty;
-        public string vchDireccion { get; set; } = string.Empty;
-        public string vchTelefono { get; set; } = string.Empty;
-        public string vchEmail { get; set; } = string.Empty;
-    }
-
-    public class TramiteDetailModel
-    {
-        public int iIdTramite { get; set; }
-        public string vchNombre { get; set; } = string.Empty;
-        public string nvchDescripcion { get; set; } = string.Empty;
-        public int iIdCategoria { get; set; }
-        public bool bModalidadEnLinea { get; set; }
-        public decimal mCosto { get; set; }
-        public int iIdOficina { get; set; }
-        public DateTime dtFechaCreacion { get; set; }
-        public DateTime dtFechaActualizacion { get; set; }
-        public bool bActivo { get; set; }
-        public Oficina Oficina { get; set; } = new();
-
-        public List<string>? Requisitos { get; set; }
-        public List<string>? Pasos { get; set; }
-        public string? TiempoEstimado { get; set; }
-        public string? Vigencia { get; set; }
-        public List<string>? DocumentosNecesarios { get; set; }
-    }
-
     // Clase auxiliar para iconos de Lucide-React
     public static class Icon
     {
