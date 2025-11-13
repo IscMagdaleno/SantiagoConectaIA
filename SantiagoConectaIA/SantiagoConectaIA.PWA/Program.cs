@@ -1,6 +1,7 @@
 using EngramaCoreStandar.Extensions;
 using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Servicios;
+
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -22,11 +23,13 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(url) });
 
 builder.Services.AddMudServices();
 
-/*Engrama -> Services to call the API using the engrama Tools*/
+
 builder.Services.AddScoped<LoadingState>();
 builder.Services.AddScoped<IHttpService, HttpService>();
 builder.Services.AddScoped<MapperHelper>();
 builder.Services.AddScoped<IValidaServicioService, ValidaServicioService>();
+
+
 builder.Services.AddScoped<DataTramites>();
 
 builder.Services.AddEngramaDependenciesBlazor();

@@ -1,10 +1,8 @@
-﻿using EngramaCoreStandar.Mapper;
-using EngramaCoreStandar.Servicios;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
+
 using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
 using SantiagoConectaIA.PWA.Shared.Common;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
-using System.Threading.Tasks;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas
 {
@@ -38,6 +36,12 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas
 		#endregion
 
 
+		private void OnTramiteSelected(Tramite tramite)
+		{
+			Data.TramiteSelected = tramite;
+			bShowFormTramite = true;
+		}
+
 		private void OnClickShowForm()
 		{
 			Data.TramiteSelected = new();
@@ -45,8 +49,23 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas
 		}
 		private void OnClickShowData()
 		{
+			Data.TramiteSelected = new();
 			bShowFormTramite = false;
 		}
+
+		private void OnTramiteSaved()
+		{
+			bShowFormTramite = false;
+
+		}
+
+		private async Task OnDeleteTramite()
+		{
+			ActualizarListaFiltrada();
+			await Task.Delay(1);
+			StateHasChanged();
+		}
+
 		#region FILTROS
 		private async Task CuandoCambiaTexto(string nuevoTexto)
 		{
@@ -54,6 +73,8 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas
 			ActualizarListaFiltrada();
 			StateHasChanged();
 		}
+
+
 
 		private void ActualizarListaFiltrada()
 		{

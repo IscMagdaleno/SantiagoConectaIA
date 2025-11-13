@@ -1,12 +1,20 @@
 ﻿using SantiagoConectaIA.Share.Objects.OficinasModule;
 
+using System.ComponentModel.DataAnnotations;
+
 namespace SantiagoConectaIA.Share.Objects.TramitesModule
 {
 	public class Tramite
 	{
 		public int iIdTramite { get; set; }
+
+
+		[Required]
 		public string vchNombre { get; set; }
+
+		[Required]
 		public string nvchDescripcion { get; set; }
+
 		public int iIdCategoria { get; set; }
 		public bool bModalidadEnLinea { get; set; }
 		public decimal mCosto { get; set; }
@@ -23,6 +31,8 @@ namespace SantiagoConectaIA.Share.Objects.TramitesModule
 			dtFechaActualizacion = DateTime.Now;
 			dtFechaCreacion = DateTime.Now;
 			Oficina = new Oficina();
+
+			bActivo = true;
 		}
 	}
 

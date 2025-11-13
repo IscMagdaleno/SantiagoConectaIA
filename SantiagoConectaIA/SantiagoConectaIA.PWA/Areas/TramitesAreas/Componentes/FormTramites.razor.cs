@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+
 using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
 using SantiagoConectaIA.PWA.Shared.Common;
 
@@ -19,6 +20,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 
 		protected override async Task OnInitializedAsync()
 		{
+			await Data.PostGetOficinas();
 
 		}
 		#endregion
@@ -27,7 +29,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		{
 
 			Loading.Show();
-			var result = await Data.PostSaveTramites();
+			var result = await Data.PostSaveTramite();
 
 			ShowSnake(result);
 			if (result.bResult)
