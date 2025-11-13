@@ -2,15 +2,19 @@
 using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 using EngramaCoreStandar.Servicios;
-using MudBlazor;
+
+using SantiagoConectaIA.Share.Objects.OficinasModule;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
+using SantiagoConectaIA.Share.PostModels.OficinasModule;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 {
-	public class DataTramites 
+	public class DataTramites
 	{
 		private string url = @"api/Tramites";
+		private readonly string urlOficinas = "api/Oficinas";
+
 		#region INJECTS
 		private readonly IHttpService _httpService;
 		private readonly MapperHelper _mapper;
@@ -19,6 +23,8 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		#region PROPIEDADES
 		public List<Tramite> LstTramites { get; set; }
 		public Tramite TramiteSelected { get; set; }
+
+		public IList<Oficina> LstOficinas { get; set; } = new List<Oficina>();
 		#endregion
 
 		public DataTramites(IHttpService httpService, MapperHelper mapper, IValidaServicioService validaServicioService)
@@ -35,7 +41,10 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		{
 			var APIUrl = url + "/PostGetTramites";
 
-			var model = new PostGetTramites();
+			var model = new PostGetTramites()
+			{
+				bActivo = true
+			};
 			var response = await _httpService.Post<PostGetTramites, Response<List<Tramite>>>(APIUrl, model);
 			var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => LstTramites = data.ToList());
 			return validation;
@@ -50,13 +59,36 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			return validation;
 		}
 
-		public async Task<SeverityMessage> PostSaveTramites()
+		public async Task<SeverityMessage> PostSaveTramite()
 		{
-			var APIUrl = url + "/PostSaveTramites";
-
-			var model = new PostSaveTramite();
+			var APIUrl = url + "/PostSaveTramite";
+			var model = _mapper.Get<Tramite, PostSaveTramite>(TramiteSelected);
 			var response = await _httpService.Post<PostSaveTramite, Response<Tramite>>(APIUrl, model);
-			var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => TramiteSelected = data);
+			var validacion = _validaServicioService.ValidadionServicio(response,
+			onSuccess: data => LstTramites.Add(data));
+			return validacion;
+
+		}
+
+		/// <summary>
+		/// Consulta el API para obtener la lista de oficinas disponibles.
+		/// </summary>
+		public async Task<SeverityMessage> PostGetOficinas()
+		{
+			// 1. Definir la URL completa del endpoint
+			var APIUrl = urlOficinas + "/PostGetOficinas";
+
+			// 2. Crear el PostModel de solicitud. 
+			// Se asume que PostGetOficinas no requiere parámetros complejos por defecto.
+			var model = new PostGetOficinas();
+
+			// 3. Invocar el servicio HTTP (IHttpService)
+			var response = await _httpService.Post<PostGetOficinas, Response<List<Oficina>>>(APIUrl, model);
+
+			// 4. Validar la respuesta y actualizar la propiedad LstOficinas
+			// Usa ValidadionServicio (con 'd' extra, según tu ejemplo)
+			var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => LstOficinas = data.ToList());
+
 			return validation;
 		}
 

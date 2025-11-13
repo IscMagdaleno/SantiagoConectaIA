@@ -5,7 +5,7 @@
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding-top: 2rem; padding-bottom: 2rem;">
 
-    <MudGrid Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudGrid Justify="Justify.SpaceBetween" Class="mb-4">
         <MudItem>
             <MudText Typo="Typo.h4" Style="color: #A50A3A; font-weight: bold;">
                 Trámites Disponibles
@@ -33,7 +33,7 @@
     @if (bShowFormTramite)
     {
         <MudPaper Class="pa-4">
-            <MudText>Formulario de Trámite...</MudText>
+            <FormTramites Data="Data" OnTramiteSaved="OnTramiteSaved"></FormTramites>
         </MudPaper>
     }
     else
@@ -52,7 +52,11 @@
                     @foreach (var tramite in listaFiltrada)
                     {
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <CardTramites Tramite="@tramite" Data="@Data"></CardTramites>
+                            <CardTramites Tramite="@tramite" 
+                                Data="@Data" 
+                                OnTramiteSelected="OnTramiteSelected"
+                                          OnDeleteTramite="OnDeleteTramite"> 
+                            </CardTramites>
                         </MudItem>
                     }
                 </MudGrid>
@@ -76,62 +80,3 @@
     }
 
 </MudContainer>
-<style>
-    /* Tarjetas de servicios con efectos hover */
-    .service-card {
-        transition: all 0.3s ease;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        background-color: white;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-        .service-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(165, 10, 58, 0.15);
-        }
-
-    .card-icon-container {
-        margin-bottom: 1rem;
-    }
-
-    .card-icon {
-        transition: all 0.3s ease;
-    }
-
-    .service-card:hover .card-icon {
-        transform: scale(1.1);
-        color: #A50A3A !important;
-    }
-
-    /* ESTILO DEL FILTRO*/
-    .filtro-tramite-style .mud-input-outlined fieldset {
-        border-color: #A50A3A !important;
-    }
-
-    /* Label "Buscar Trámite" (no enfocado) */
-    .filtro-tramite-style .mud-input-label {
-        color: #A50A3A !important;
-    }
-
-    /* Color del texto que escribe */
-    .filtro-tramite-style input {
-        color: #333333 !important;
-    }
-
-    /* Color del ícono (lupa) */
-    .filtro-tramite-style .mud-input-adornment {
-        color: #A50A3A !important;
-    }
-    /* Borde cuando haces clic */
-    .filtro-tramite-style.mud-focused .mud-input-outlined fieldset {
-        border-color: #A50A3A !important;
-    }
-
-    /* Label cuando haces clic (se sube) */
-    .filtro-tramite-style.mud-focused .mud-input-label {
-        color: #A50A3A !important;
-    }
-</style>

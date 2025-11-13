@@ -20,4 +20,8 @@
 		<ProjectReference Include="..\SantiagoConectaIA.Share\SantiagoConectaIA.Share.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="SemanticKernel\Configuraciones\" />
+	</ItemGroup>
+
 </Project>

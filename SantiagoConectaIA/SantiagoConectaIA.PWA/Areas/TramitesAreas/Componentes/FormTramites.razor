@@ -1,38 +1,109 @@
 ﻿@inherits EngramaComponent
+@using SantiagoConectaIA.Share.Objects.TramitesModule
+@inject ISnackbar Snackbar
+@using System.ComponentModel.DataAnnotations
+
+@using MudBlazor
 
 <EditForm Model="@Data.TramiteSelected"
 		  OnValidSubmit="OnSubmit">
 	<DataAnnotationsValidator />
-	<MudCard>
-		<MudCardContent>
-			<MudGrid>
-				<MudItem sm="6">
-					<MudTextField @bind-Value="Data.TramiteSelected.vchNombre"
-								  Label="Nombre"
-								  For="@(() => Data.TramiteSelected.vchNombre)"
-								  MaxLength="50"
-								  Variant="Variant.Outlined" />
-					<MudTextField @bind-Value="Data.TramiteSelected.nvchDescripcion"
-								  Label="Descripción"
-								  For="@(() => Data.TramiteSelected.nvchDescripcion)"
-								  Lines="10"
-								  MaxLength="500"
-								  Variant="Variant.Outlined" />
-				</MudItem>
-				<MudItem sm="6">
-					<MudGrid>
+	<MudFocusTrap>
 
-					</MudGrid>
-				</MudItem>
+		<MudCard>
+			<MudCardContent>
+				<MudGrid>
+					<MudItem xs="12" sm="6">
+						@* Nombre del Trámite (vchNombre) - Ya estaba presente *@
+						<MudTextField @bind-Value="Data.TramiteSelected.vchNombre"
+									  Label="Nombre del Trámite"
+									  MaxLength="50"
+									  Variant="Variant.Outlined"
+									  Class="mb-4" />
 
-			</MudGrid>
-		</MudCardContent>
+						@* Descripción (nvchDescripcion) - Ya estaba presente *@
+						<MudTextField @bind-Value="Data.TramiteSelected.nvchDescripcion"
+									  Label="Descripción del Trámite"
+									  Lines="5"
+									  MaxLength="500"
+									  Variant="Variant.Outlined" />
 
+					</MudItem>
 
-		<MudCardActions>
-			<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Guardar</MudButton>
-		</MudCardActions>
+					<MudItem xs="12" sm="6">
+						<MudGrid>
 
 
-	</MudCard>
+							@* Costo (mCosto) *@
+							<MudItem xs="12" sm="6">
+								<MudNumericField @bind-Value="Data.TramiteSelected.mCosto"
+												 Label="Costo"
+												 Variant="Variant.Outlined"
+												 Format="C2"
+												 Min="0"
+												 Class="mb-4" />
+							</MudItem>
+
+							@* ID de la Oficina (iIdOficina) - Se usa MudSelect para representar una FK *@
+							<MudItem xs="12">
+								@*
+								NOTA: En un entorno real, aquí se usaría un MudSelect con elementos cargados
+								en Data.LstOficinas (asumiendo que existe) y el Value sería iIdOficina.
+							*@
+								<MudSelect @bind-Value="Data.TramiteSelected.iIdOficina"
+										   Label="Oficina Responsable"
+										   Variant="Variant.Outlined"
+										   AdornmentIcon="@Icons.Material.Filled.Business"
+										   Class="mb-4">
+
+									@foreach (var oficina in Data.LstOficinas)
+									{
+										<MudSelectItem Value="oficina.iIdOficina">@oficina.vchNombre</MudSelectItem>
+									}
+
+									<MudSelectItem Value="1">Oficina de Trámites (Placeholder)</MudSelectItem>
+								</MudSelect>
+							</MudItem>
+
+							@* Modalidad En Línea (bModalidadEnLinea) *@
+							<MudItem xs="12" sm="6">
+								<MudSwitch @bind-Value="Data.TramiteSelected.bModalidadEnLinea"
+										   Color="Color.Info"
+										   Label="Modalidad En Línea"
+										   Class="mt-4" />
+							</MudItem>
+
+							@* Activo (bActivo) *@
+							<MudItem xs="12" sm="6">
+								<MudSwitch @bind-Value="Data.TramiteSelected.bActivo"
+										   Color="Color.Success"
+										   Label="Trámite Activo"
+										   Class="mt-4" />
+							</MudItem>
+ 
+						</MudGrid>
+					</MudItem>
+				</MudGrid>
+			</MudCardContent>
+
+
+			<MudCardActions>
+				@* Botón de guardar *@
+				<MudButton ButtonType="ButtonType.Submit"
+						   Variant="Variant.Filled"
+						   Color="Color.Primary"
+						   StartIcon="@Icons.Material.Filled.Save">
+					Guardar
+				</MudButton>
+				@* Botón de cancelar - Asumiendo que existe un método OnCancel en el code-behind *@
+				<MudButton ButtonType="ButtonType.Button"
+						   Variant="Variant.Text"
+						   Color="Color.Default"
+						   StartIcon="@Icons.Material.Filled.Cancel">
+					Cancelar
+				</MudButton>
+			</MudCardActions>
+		</MudCard>
+	</MudFocusTrap>
+
 </EditForm>

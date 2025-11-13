@@ -1,5 +1,6 @@
 ﻿using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Google;
 
 namespace SantiagoConectaIA.API.SemanticKernel.Agentes
 {
@@ -37,8 +38,12 @@ namespace SantiagoConectaIA.API.SemanticKernel.Agentes
 
 			// CAMBIO CLAVE 2: Usar la clase base sin configuración específica de OpenAI.
 			// Esto permite que el conector de Gemini maneje la llamada a funciones correctamente.
-			_executionSettings = new PromptExecutionSettings();
-
+			_executionSettings = new GeminiPromptExecutionSettings
+			{
+				// ToolCallBehavior está disponible en esta clase, pero usa los tipos de GeminiToolCallBehavior
+				// Nota: Es posible que necesite el using Microsoft.SemanticKernel.Connectors.Google; para GeminiToolCallBehavior también.
+				ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
+			};
 			_logger.LogInformation("TramitesAgentes inicializado con el Kernel y el servicio de chat.");
 		}
 

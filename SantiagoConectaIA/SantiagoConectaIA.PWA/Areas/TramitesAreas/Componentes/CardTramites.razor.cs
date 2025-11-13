@@ -1,6 +1,9 @@
 ﻿using EngramaCoreStandar.Extensions;
+
 using Microsoft.AspNetCore.Components;
+
 using MudBlazor;
+
 using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
 using SantiagoConectaIA.PWA.Shared.Common;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
@@ -30,7 +33,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		private async void OnCLickEliminarTramite(Tramite tramite)
 		{
 			var parameters = new DialogParameters { { "ContentText", "¿Estás seguro de eliminar este trámite?" } };
-			var dialog = DialogService.Show<ConfirmationDialog>("Confirmar eliminación", parameters);
+			var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmar eliminación", parameters);
 			var result = await dialog.Result;
 
 			if (result.Canceled.False())
@@ -38,10 +41,12 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 				Loading.Show();
 				Tramite.bActivo = false;
 				Data.TramiteSelected = Tramite;
-				var saveResult = await Data.PostSaveTramites();
+				var saveResult = await Data.PostSaveTramite();
 				ShowSnake(saveResult);
 				if (saveResult.bResult)
 				{
+					Data.LstTramites = Data.LstTramites.Where(e => e.iIdTramite != tramite.iIdTramite).ToList();
+
 					await OnDeleteTramite.InvokeAsync(Tramite);
 				}
 				Loading.Hide();
