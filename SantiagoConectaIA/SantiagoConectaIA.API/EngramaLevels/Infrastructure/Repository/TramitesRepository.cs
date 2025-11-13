@@ -67,6 +67,19 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 				new() { bResult = false, vchMessage = respuesta.Msg }
 			};
 		}
+		public async Task<IEnumerable<spGetPasosPorTramite.Result>> spGetPasosPorTramite(spGetPasosPorTramite.Request daoModel)
+		{
+			var respuesta = await _managerHelper.GetAllAsync<spGetPasosPorTramite.Result, spGetPasosPorTramite.Request>(daoModel, "");
+			if (respuesta.Ok) return respuesta.Data;
+			return new List<spGetPasosPorTramite.Result> { new() { bResult = false, vchMessage = respuesta.Msg } };
+		}
+
+		public async Task<IEnumerable<spGetDocumentosPorTramite.Result>> spGetDocumentosPorTramite(spGetDocumentosPorTramite.Request daoModel)
+		{
+			var respuesta = await _managerHelper.GetAllAsync<spGetDocumentosPorTramite.Result, spGetDocumentosPorTramite.Request>(daoModel, "");
+			if (respuesta.Ok) return respuesta.Data;
+			return new List<spGetDocumentosPorTramite.Result> { new() { bResult = false, vchMessage = respuesta.Msg } };
+		}
 	}
 
 }

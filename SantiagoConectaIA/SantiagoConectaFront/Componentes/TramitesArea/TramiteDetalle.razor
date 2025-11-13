@@ -1,6 +1,10 @@
 ﻿@page "/tramites/{Id:int}"
 @inject NavigationManager NavManager
+@inject Data_Tramites data_Tramites;
+@using SantiagoConectaFront.Data
 @using SantiagoConectaFront.Shared 
+@using SantiagoConectaIA.Share.DTO_s.TramitesArea
+@using SantiagoConectaIA.Share.PostModels.TramitesModule
 
 <PageTitle>Detalle del Trámite</PageTitle>
 
@@ -73,13 +77,6 @@
                                 </span>
                             }
 
-                            @if (!string.IsNullOrEmpty(Tramite.TiempoEstimado))
-                            {
-                                <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
-                                    @Icon.Clock("w-4 h-4 mr-2")
-                                    @Tramite.TiempoEstimado
-                                </span>
-                            }
                         </div>
                     </div>
 
@@ -97,16 +94,6 @@
                                     </div>
                                 </div>
 
-                                @if (!string.IsNullOrEmpty(Tramite.Vigencia))
-                                {
-                                    <div class="flex items-center">
-                                        @Icon.Clock("w-5 h-5 mr-3 text-yellow-400")
-                                        <div>
-                                            <p class="text-sm text-blue-200">Vigencia</p>
-                                            <p class="font-semibold">@Tramite.Vigencia</p>
-                                        </div>
-                                    </div>
-                                }
 
                                 <div class="flex items-center">
                                     @Icon.MapPin("w-5 h-5 mr-3 text-red-400")
@@ -168,14 +155,14 @@
                                 }
                             </div>
 
-                            @if (Tramite.DocumentosNecesarios?.Any() == true)
+                            @if (Tramite.Documentos?.Any() == true)
                             {
                                 <div class="border-t pt-6">
                                     <h4 class="text-md font-semibold text-gray-800 mb-3">
                                         Documentos para descargar
                                     </h4>
                                     <div class="space-y-2">
-                                        @foreach (var documento in Tramite.DocumentosNecesarios)
+                                        @foreach (var documento in Tramite.Documentos)
                                         {
                                             <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                                                 <div class="flex items-center space-x-3">
@@ -337,7 +324,7 @@
     [Parameter]
     public int Id { get; set; }
 
-    private TramiteDetailModel? Tramite { get; set; }
+    private TramiteDetalleDto? Tramite { get; set; }
     private bool Loading { get; set; } = true;
     private string ActiveTab { get; set; } = "requisitos";
 
@@ -350,62 +337,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(1000); // Simula la carga de datos
-
-        // Simulación de datos (adaptada para el ID)
-        if (Id == 1)
-        {
-            Tramite = new TramiteDetailModel
+            var request = new PostGetTramiteDetalle { iIdTramite = this.Id };
+            var response = await data_Tramites.PostGetTramiteDetalleAsync(request); // 
+    
+            if (response != null && response.IsSuccess)
             {
-                iIdTramite = 1,
-                vchNombre = "Licencia de Conducir",
-                nvchDescripcion = "Obtención de licencia de conducir para vehículos particulares. Este trámite te permite obtener el documento oficial que te autoriza a conducir vehículos en el territorio nacional.",
-                iIdCategoria = 1,
-                bModalidadEnLinea = false,
-                mCosto = 450.00m,
-                dtFechaActualizacion = new DateTime(2024, 01, 15),
-                Oficina = new Oficina
-                {
-                    iIdOficina = 1,
-                    vchNombre = "Oficina de Tránsito Municipal",
-                    vchDireccion = "Av. Juárez #123, Centro, Santiago Papasquiaro, Durango",
-                    vchTelefono = "674-123-4567",
-                    vchEmail = "transito@santiagopapasquiaro.gob.mx"
-                },
-                Requisitos = new List<string>
-                {
-                    "Identificación oficial vigente (INE/IFE)",
-                    "CURP actualizada",
-                    "Comprobante de domicilio no mayor a 3 meses",
-                    "Certificado médico vigente",
-                    "Fotografías tamaño infantil (2)",
-                    "Comprobante de tipo de sangre",
-                    "Examen de manejo (en caso de primera vez)"
-                },
-                Pasos = new List<string>
-                {
-                    "Reunir todos los documentos requeridos",
-                    "Acudir a la oficina de tránsito en horario de atención",
-                    "Entregar documentación y realizar el pago correspondiente",
-                    "Presentar examen teórico (primera vez)",
-                    "Realizar examen práctico de manejo",
-                    "Toma de fotografía y datos biométricos",
-                    "Entrega de licencia temporal",
-                    "Recepción de licencia definitiva (5-10 días hábiles)"
-                },
-                TiempoEstimado = "2-3 horas (mismo día) + 5-10 días para entrega",
-                Vigencia = "3 años",
-                DocumentosNecesarios = new List<string>
-                {
-                    "Formato de solicitud",
-                    "Comprobante de pago",
-                    "Examen médico oficial"
-                }
-            };
-        }
-        // ... aquí irían más casos según el Id
-
-        Loading = false;
+                Tramite = response.Data;
+            }
+            else
+            {
+                // Opcional: Mostrar error con Snackbar
+                Tramite = null; // Para que muestre "Trámite no encontrado"
+            }
+            Loading = false;
     }
 
     // Modelos C# para el detalle

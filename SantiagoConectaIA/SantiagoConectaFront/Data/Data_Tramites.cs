@@ -57,5 +57,23 @@ namespace SantiagoConectaFront.Data
 			return resultado;
 		}
 
+		public async Task<Response<TramiteDetalleDto>> PostGetTramiteDetalleAsync(PostGetTramiteDetalle data)
+		{
+			var url = "/api/Tramites/PostGetTramiteDetalle"; 
+			var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_HttpClient.BaseAddress!, url));
+			request.Content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+
+			var respuesta = await _HttpClient.SendAsync(request);
+
+			var json = await respuesta.Content.ReadAsStringAsync();
+			if (!respuesta.IsSuccessStatusCode)
+			{
+				// Devuelve el 'BadResult' de la API
+				return JsonConvert.DeserializeObject<Response<TramiteDetalleDto>>(json);
+			}
+
+			var resultado = JsonConvert.DeserializeObject<Response<TramiteDetalleDto>>(json);
+			return resultado;
+		}
 	}
 }
