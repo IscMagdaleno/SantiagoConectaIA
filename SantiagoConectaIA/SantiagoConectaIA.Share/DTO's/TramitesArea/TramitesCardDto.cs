@@ -18,5 +18,6 @@ namespace SantiagoConectaIA.Share.DTO_s.TramitesArea
 		public string vchTelefonoOficina { get; set; }
 		public bool bModalidadEnLinea { get; set; }
 		public decimal dCosto { get; set; }
+		public string vchHorarioOficina { get; set; }
 	}
 }
