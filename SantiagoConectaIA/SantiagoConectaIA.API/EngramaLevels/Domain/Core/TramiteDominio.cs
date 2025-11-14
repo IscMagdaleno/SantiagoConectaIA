@@ -166,7 +166,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 				// Mapear Trámite base a nuestro DTO
 				var dto = mapperHelper.Get<spGetTramites.Result, TramiteDetalleDto>(tramiteResult);
 
-				// Obtener la Oficina 
+				// Obtener la Oficina por trámite
 				var oficinaRequest = new PostGetOficinasPorTramite { iIdTramite = postModel.iIdTramite, vchTexto="", bIncluirContacto= false }; // Asumo que tienes este SP
 				var oficinaResult = await oficinasDomain.GetOficinasPorTramite(oficinaRequest); // Asumo que tienes este método
 
@@ -175,6 +175,13 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 					dto.OficinaPorTramite = oficinaResult.Data;
 				}
 
+				//Obtener la información de la oficina
+				var oficinaReq = new PostGetOficinas { iIdOficina = dto.iIdTramite };
+				var oficinaRes = await oficinasDomain.GetOficinas(oficinaReq);
+				if(oficinaRes.IsSuccess)
+				{
+					dto.Oficina = oficinaRes.Data.FirstOrDefault();
+				}
 				// Obtener las Listas (Requisitos, Pasos, Documentos)
 				var requisitosRequest = new spGetRequisitosPorTramite.Request { iIdTramite = postModel.iIdTramite };
 				var pasosRequest = new spGetPasosPorTramite.Request { iIdTramite = postModel.iIdTramite };

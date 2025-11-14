@@ -14,6 +14,7 @@
 		public string vchEmail { get; set; }
 		public string vchObservacion { get; set; }
 		public bool bActivo { get; set; }
+		public string vchUrlDireccion { get; set; }
 	}
 
 }

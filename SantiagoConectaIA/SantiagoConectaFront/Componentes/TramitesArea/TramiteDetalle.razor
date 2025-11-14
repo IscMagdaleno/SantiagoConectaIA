@@ -4,6 +4,7 @@
 @using SantiagoConectaFront.Data
 @using SantiagoConectaFront.Shared 
 @using SantiagoConectaIA.Share.DTO_s.TramitesArea
+@using SantiagoConectaIA.Share.Objects.OficinasModule
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
 
 <PageTitle>Detalle del Trámite</PageTitle>
@@ -246,80 +247,90 @@
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4">
                                         Información de la oficina
                                     </h3>
-                                    <div class="space-y-4">
-                                        <div class="flex items-start space-x-3">
-                                            @Icon.MapPin("w-5 h-5 text-red-600 mt-1")
-                                            <div>
-                                                <h4 class="font-medium text-gray-800">Dirección</h4>
-                                                <p class="text-gray-600">@Tramite.Oficina?.vchDireccion</p>
-                                                @if (!string.IsNullOrEmpty(Tramite.Oficina?.vchDireccion))
-                                                {
-                                                    <a
-                                                        href="@($"https://maps.google.com/?q={Uri.EscapeDataString(Tramite.Oficina.vchDireccion)}")"
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm mt-1"
-                                                    >
-                                                        @Icon.ExternalLink("w-4 h-4 mr-1")
-                                                        Ver en Google Maps
-                                                    </a>
-                                                }
-                                            </div>
-                                        </div>
-
-                                        @if (!string.IsNullOrEmpty(Tramite.Oficina?.vchTelefono))
-                                        {
-                                            <div class="flex items-center space-x-3">
-                                                @Icon.Phone("w-5 h-5 text-green-600")
+                                    
+                                    @if (OficinaInfo != null)
+                                    {
+                                        <div class="space-y-4">
+                                            <div class="flex items-start space-x-3">
+                                                @Icon.MapPin("w-5 h-5 text-red-600 mt-1")
                                                 <div>
-                                                    <h4 class="font-medium text-gray-800">Teléfono</h4>
-                                                    <a href="@($"tel:{Tramite.Oficina.vchTelefono}")" class="text-blue-600 hover:text-blue-800">
-                                                        @Tramite.Oficina.vchTelefono
-                                                    </a>
+                                                    <h4 class="font-medium text-gray-800">Dirección</h4>
+                                                    <p class="text-gray-600">@OficinaInfo.vchDireccion</p>
+                                                    @if (!string.IsNullOrEmpty(OficinaInfo.vchDireccion))
+                                                    {
+                                                        <a href="@Tramite.Oficina.vchUrlDireccion"
+                                                           target="_blank" rel="noopener noreferrer"
+                                                           class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm mt-1">
+                                                            @Icon.ExternalLink("w-4 h-4 mr-1")
+                                                            Ver en Google Maps
+                                                        </a>
+                                                    }
                                                 </div>
                                             </div>
-                                        }
-
-                                        @if (!string.IsNullOrEmpty(Tramite.Oficina?.vchEmail))
-                                        {
-                                            <div class="flex items-center space-x-3">
-                                                @Icon.Mail("w-5 h-5 text-blue-600")
-                                                <div>
-                                                    <h4 class="font-medium text-gray-800">Correo electrónico</h4>
-                                                    <a href="@($"mailto:{Tramite.Oficina.vchEmail}")" class="text-blue-600 hover:text-blue-800">
-                                                        @Tramite.Oficina.vchEmail
-                                                    </a>
+                    
+                                            @if (!string.IsNullOrEmpty(OficinaInfo.vchTelefono))
+                                            {
+                                                <div class="flex items-center space-x-3">
+                                                    @Icon.Phone("w-5 h-5 text-green-600")
+                                                    <div>
+                                                        <h4 class="font-medium text-gray-800">Teléfono</h4>
+                                                        <a href="@($"tel:{OficinaInfo.vchTelefono}")" class="text-blue-600 hover:text-blue-800">
+                                                            @OficinaInfo.vchTelefono
+                                                        </a>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        }
-
-                                        <div class="bg-gray-50 rounded-lg p-4">
-                                            <h4 class="font-medium text-gray-800 mb-2">Horarios de atención</h4>
-                                            <div class="text-sm text-gray-600 space-y-1">
-                                                <div class="flex justify-between">
-                                                    <span>Lunes a Viernes:</span>
-                                                    <span>8:00 AM - 4:00 PM</span>
+                                            }
+                    
+                                            @if (!string.IsNullOrEmpty(OficinaInfo.vchEmail))
+                                            {
+                                                <div class="flex items-center space-x-3">
+                                                    @Icon.Mail("w-5 h-5 text-blue-600")
+                                                    <div>
+                                                        <h4 class="font-medium text-gray-800">Correo electrónico</h4>
+                                                        <a href="@($"mailto:{OficinaInfo.vchEmail}")" class="text-blue-600 hover:text-blue-800">
+                                                            @OficinaInfo.vchEmail
+                                                        </a>
+                                                    </div>
                                                 </div>
-                                                <div class="flex justify-between">
-                                                    <span>Sábados:</span>
-                                                    <span>9:00 AM - 1:00 PM</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span>Domingos:</span>
-                                                    <span class="text-red-600">Cerrado</span>
+                                            }
+                    
+                                            <div class="bg-gray-50 rounded-lg p-4">
+                                                <h4 class="font-medium text-gray-800 mb-2">Horarios de atención</h4>
+                                                <div class="text-sm text-gray-600 space-y-1 whitespace-pre-line">
+                                                    @(string.IsNullOrEmpty(OficinaInfo.vchHorario) ? "No disponible" : OficinaInfo.vchHorario)
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-gray-500">No hay información de oficina disponible.</p>
+                                    }
                                 </div>
-
+                    
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4">
                                         Ubicación en el mapa
                                     </h3>
-                                    <div class="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
-                                        <p class="text-gray-600">Mapa interactivo aquí</p>
-                                    </div>
+                                    
+                                    @if (!string.IsNullOrEmpty(GetMapUrl()))
+                                    {
+                                        <div class="rounded-lg overflow-hidden shadow-md">
+                                            <iframe style="border:0;"
+                                                    width="100%"
+                                                    height="400"
+                                                    loading="lazy"
+                                                    allowfullscreen
+                                                    src="@GetMapUrl()">
+                                            </iframe>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
+                                            <p class="text-gray-600">Ubicación no disponible en el mapa</p>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -339,6 +350,29 @@
     private TramiteDetalleDto? Tramite { get; set; }
     private bool Loading { get; set; } = true;
     private string ActiveTab { get; set; } = "requisitos";
+
+    private OficinaPorTramite? OficinaInfo => Tramite?.OficinaPorTramite?.FirstOrDefault();
+
+    private string GetMapUrl()
+    {
+        // Asegúrate de que tenemos latitud y longitud válidas
+        if (OficinaInfo?.flLatitud.HasValue == true && OficinaInfo?.flLongitud.HasValue == true && OficinaInfo.flLatitud != 0)
+        {
+            // Usamos InvariantCulture para asegurar que los decimales usen '.' y no ','
+            var lat = OficinaInfo.flLatitud.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var lon = OficinaInfo.flLongitud.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            
+            // Creamos una "caja" (bounding box) pequeña alrededor del punto para centrar el mapa
+            var lonMin = (OficinaInfo.flLongitud.Value - 0.005).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var latMin = (OficinaInfo.flLatitud.Value - 0.005).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var lonMax = (OficinaInfo.flLongitud.Value + 0.005).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var latMax = (OficinaInfo.flLatitud.Value + 0.005).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+            // Esta es la URL de OpenStreetMap para incrustar un mapa con un marcador
+            return $"https://www.openstreetmap.org/export/embed.html?bbox={lonMin},{latMin},{lonMax},{latMax}&layer=mapnik&marker={lat},{lon}";
+        }
+        return string.Empty; // Devuelve vacío si no hay coordenadas
+    }
 
     private readonly List<(string id, string name, RenderFragment icon)> Tabs = new()
     {

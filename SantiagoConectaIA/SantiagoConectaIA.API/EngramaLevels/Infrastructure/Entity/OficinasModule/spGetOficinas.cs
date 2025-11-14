@@ -30,6 +30,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.OficinasModu
 			public string vchNotas { get; set; }
 			public bool bActivo { get; set; }
 			public DateTime? dtFechaCreacion { get; set; }
+			public string vchUrlDireccion { get; set; }
+
 		}
 	}
 
