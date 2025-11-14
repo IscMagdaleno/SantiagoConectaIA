@@ -135,7 +135,7 @@
                         <div class="space-y-6">
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                                    Documentos y requisitos necesarios
+                                    Requisitos:
                                 </h3>
                                 @if (Tramite.Requisitos?.Any() == true)
                                 {
@@ -144,7 +144,15 @@
                                         {
                                             <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
                                                 @Icon.CheckCircle("w-5 h-5 text-green-600 mt-0.5 flex-shrink-0")
-                                                <span class="text-gray-700">@(requisito.vchNombre ?? requisito.nvchDetalle)</span>
+                                                
+                                                <div class="flex-1">
+                                                    <span class="text-gray-900 font-semibold block">@requisito.vchNombre</span>
+                                                    
+                                                    @if (!string.IsNullOrEmpty(requisito.nvchDetalle))
+                                                    {
+                                                        <span class="text-gray-700">@requisito.nvchDetalle</span>
+                                                    }
+                                                </div>
                                             </div>
                                         }
                                     </div>
@@ -159,7 +167,7 @@
                             {
                                 <div class="border-t pt-6">
                                     <h4 class="text-md font-semibold text-gray-800 mb-3">
-                                        Documentos para descargar
+                                        Documentos que se requieren para el trámite:
                                     </h4>
                                     <div class="space-y-2">
                                         @foreach (var documento in Tramite.Documentos)
@@ -169,10 +177,14 @@
                                                     @Icon.FileText("w-5 h-5 text-blue-600")
                                                     <span class="text-gray-700">@documento.vchNombre</span>
                                                 </div>
-                                                <button class="flex items-center text-blue-600 hover:text-blue-800 font-medium">
-                                                    @Icon.Download("w-4 h-4 mr-1")
-                                                    Descargar
-                                                </button>
+                                                <a href="@documento.vchUrl" 
+                                                           target="_blank" 
+                                                           rel="noopener noreferrer"
+                                                           class="flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                                                            
+                                                            @Icon.Eye("w-4 h-4 mr-1")
+                                                            Ver formato
+                                                 </a>
                                             </div>
                                         }
                                     </div>
@@ -365,5 +377,6 @@
         public static RenderFragment AlertCircle(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
         public static RenderFragment Download(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
         public static RenderFragment ExternalLink(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>;
+        public static RenderFragment Eye(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
     }
 }
