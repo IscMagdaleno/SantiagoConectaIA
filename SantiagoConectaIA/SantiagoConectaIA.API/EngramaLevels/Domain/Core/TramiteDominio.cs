@@ -2,9 +2,14 @@
 using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.OficinasModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository;
+using SantiagoConectaIA.Share.DTO_s.TramitesArea;
+using SantiagoConectaIA.Share.Objects.OficinasModule;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
+using SantiagoConectaIA.Share.PostModels.OficinasModule;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
@@ -16,17 +21,20 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 		private readonly ITramitesRepository tramitesRepository;
 		private readonly MapperHelper mapperHelper;
 		private readonly IResponseHelper responseHelper;
+		private readonly IOficinasDomain oficinasDomain;
 
 		/// <summary>
 		/// Initialize the fields receiving the interfaces on the builder
 		/// </summary>
 		public TramiteDominio(ITramitesRepository tramitesRepository,
 			MapperHelper mapperHelper,
-			IResponseHelper responseHelper)
+			IResponseHelper responseHelper,
+			IOficinasDomain oficinasDomain)
 		{
 			this.tramitesRepository = tramitesRepository;
 			this.mapperHelper = mapperHelper;
 			this.responseHelper = responseHelper;
+			this.oficinasDomain = oficinasDomain;
 		}
 
 
@@ -129,6 +137,78 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			catch (Exception ex)
 			{
 				return Response<RequisitosPorTramite>.BadResult(ex.Message, new());
+			}
+		}
+		public async Task<Response<IEnumerable<TramitesCardDto>>> GetTramitesCard(PostGetTramites daoModel)
+		{
+			try
+			{
+				var request = mapperHelper.Get<PostGetTramites, spGetTramitesCard.Request>(daoModel);
+				var result = await tramitesRepository.spGetTramitesCard(request);
+				return responseHelper.Validacion<spGetTramitesCard.Result, TramitesCardDto>(result);
+			}
+			catch (Exception ex)
+			{
+				return Response<IEnumerable<TramitesCardDto>>.BadResult(ex.Message, new List<TramitesCardDto>());
+			}
+		}
+		public async Task<Response<TramiteDetalleDto>> GetTramiteDetalle(PostGetTramiteDetalle postModel)
+		{
+			try
+			{
+				// Obtener el Trámite Base
+				var tramiteRequest = new spGetTramites.Request { iIdTramite = postModel.iIdTramite, bActivo = true };
+				var tramiteResult = (await tramitesRepository.spGetTramites(tramiteRequest)).FirstOrDefault();
+
+				if (tramiteResult == null || !tramiteResult.bResult)
+					return Response<TramiteDetalleDto>.BadResult("Trámite no encontrado.", null);
+
+				// Mapear Trámite base a nuestro DTO
+				var dto = mapperHelper.Get<spGetTramites.Result, TramiteDetalleDto>(tramiteResult);
+
+				// Obtener la Oficina por trámite
+				var oficinaRequest = new PostGetOficinasPorTramite { iIdTramite = postModel.iIdTramite, vchTexto="", bIncluirContacto= false }; // Asumo que tienes este SP
+				var oficinaResult = await oficinasDomain.GetOficinasPorTramite(oficinaRequest); // Asumo que tienes este método
+
+				if (oficinaResult.IsSuccess)
+				{
+					dto.OficinaPorTramite = oficinaResult.Data;
+				}
+
+				//Obtener la información de la oficina
+				var oficinaReq = new PostGetOficinas { iIdOficina = dto.iIdTramite };
+				var oficinaRes = await oficinasDomain.GetOficinas(oficinaReq);
+				if(oficinaRes.IsSuccess)
+				{
+					dto.Oficina = oficinaRes.Data.FirstOrDefault();
+				}
+				// Obtener las Listas (Requisitos, Pasos, Documentos)
+				var requisitosRequest = new spGetRequisitosPorTramite.Request { iIdTramite = postModel.iIdTramite };
+				var pasosRequest = new spGetPasosPorTramite.Request { iIdTramite = postModel.iIdTramite };
+				var documentosRequest = new spGetDocumentosPorTramite.Request { iIdTramite = postModel.iIdTramite };
+
+				// Ejecutar en paralelo
+				var requisitosTask = tramitesRepository.spGetRequisitosPorTramite(requisitosRequest);
+				var pasosTask = tramitesRepository.spGetPasosPorTramite(pasosRequest);
+				var documentosTask = tramitesRepository.spGetDocumentosPorTramite(documentosRequest);
+
+				await Task.WhenAll(requisitosTask, pasosTask, documentosTask);
+
+				// Usamos ValidacionList para mapear y filtrar solo los exitosos
+				dto.Requisitos = responseHelper.Validacion<spGetRequisitosPorTramite.Result, RequisitosPorTramite>(requisitosTask.Result).Data.ToList();
+				dto.Pasos = responseHelper.Validacion<spGetPasosPorTramite.Result, PasosPorTramite>(pasosTask.Result).Data.ToList();
+				dto.Documentos = responseHelper.Validacion<spGetDocumentosPorTramite.Result, DocumentosPorTramite>(documentosTask.Result).Data.ToList();
+
+				return new Response<TramiteDetalleDto>
+				{
+					IsSuccess = true,
+					Data = dto,
+					Message = "Consulta exitosa" // O string.Empty
+				};
+			}
+			catch (Exception ex)
+			{
+				return Response<TramiteDetalleDto>.BadResult(ex.Message, new TramiteDetalleDto());
 			}
 		}
 

@@ -1,0 +1,83 @@
+﻿@inject NavigationManager NavManager
+
+<header class="header-area header-sticky">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav class="main-nav">
+                    <!-- ***** Logo Start ***** -->
+                    <a href="/" class="logo">
+                        Softy Pinko
+                    </a>
+                    <!-- ***** Logo End ***** -->
+                    <!-- ***** Menu Start ***** -->
+                    <ul class="nav">
+                        <li class="scroll-to-section">
+                            <a href="/" class="@GetLinkClass("/")">Inicio</a>
+                        </li>
+                        <li class="scroll-to-section">
+                            <a href="/tramites" class="@GetLinkClass("/tramites")">Trámites</a>
+                        </li>
+                        <li class="scroll-to-section">
+                            <a href="/noticias" class="@GetLinkClass("/noticias")">Noticias</a>
+                        </li>
+                        <li class="scroll-to-section">
+                            <a href="/ia" class="@GetLinkClass("/ia")">Santiago Conecta IA</a>
+                        </li>
+                        <li class="scroll-to-section">
+                            <a href="/#contact-us">Contacto</a>
+                        </li>
+                    </ul>
+                    <a class='menu-trigger'>
+                        <span>Menu</span>
+                    </a>
+                    <!-- ***** Menu End ***** -->
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+@code {
+    private string CurrentUri = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        CurrentUri = NavManager.ToBaseRelativePath(NavManager.Uri);
+        NavManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // Se actualiza la URI actual y se fuerza el re-renderizado
+        CurrentUri = NavManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private string GetLinkClass(string href)
+    {
+        // Verifica si la URI actual coincide con el enlace (incluyendo la raíz '/')
+        // Utiliza una lógica simple para marcar el enlace activo.
+        var relativePath = CurrentUri.StartsWith("/") ? CurrentUri.Substring(1) : CurrentUri;
+        var linkPath = href.StartsWith("/") ? href.Substring(1) : href;
+
+        // Manejo especial para la raíz (Index.razor)
+        if (linkPath == "")
+        {
+            return relativePath == "" ? "active" : "";
+        }
+
+        // Manejo para rutas base (/tramites, /noticias, /ia)
+        if (relativePath.StartsWith(linkPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return "active";
+        }
+
+        return "";
+    }
+}

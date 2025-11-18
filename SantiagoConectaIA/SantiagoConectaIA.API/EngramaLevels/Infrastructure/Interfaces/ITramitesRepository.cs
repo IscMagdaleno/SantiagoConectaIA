@@ -11,6 +11,9 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces
 		Task<IEnumerable<spGetRequisitosPorTramite.Result>> spGetRequisitosPorTramite(spGetRequisitosPorTramite.Request request);
 		Task<spSaveRequisito.Result> spSaveRequisito(spSaveRequisito.Request request);
 		Task<spSaveDocumento.Result> spSaveDocumento(spSaveDocumento.Request request);
+		Task<IEnumerable<spGetTramitesCard.Result>> spGetTramitesCard(spGetTramitesCard.Request daoModel);
+		Task<IEnumerable<spGetPasosPorTramite.Result>> spGetPasosPorTramite(spGetPasosPorTramite.Request daoModel);
+		Task<IEnumerable<spGetDocumentosPorTramite.Result>> spGetDocumentosPorTramite(spGetDocumentosPorTramite.Request daoModel);
 	}
 
 }

@@ -23,6 +23,7 @@ namespace SantiagoConectaIA.Share.Objects.TramitesModule
 		public DateTime? dtFechaActualizacion { get; set; }
 		public bool bActivo { get; set; }
 		public Oficina Oficina { get; set; }
+		public IEnumerable<OficinaPorTramite>? OficinaPorTramite { get; set; }
 
 		public Tramite()
 		{

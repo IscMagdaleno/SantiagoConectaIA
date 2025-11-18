@@ -12,6 +12,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SantiagoConectaIA.Test", "SantiagoConectaIA.Test\SantiagoConectaIA.Test.csproj", "{DB50F9CE-7C93-4F01-A5F0-C17333845AB0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SantiagoConectaFront", "SantiagoConectaFront\SantiagoConectaFront.csproj", "{58DC5F8F-C892-4AE2-A8EB-6F735D1ADD68}"
+	ProjectSection(ProjectDependencies) = postProject
+		{26BE2A75-691C-4F9E-9D12-53D1AF3C3AA1} = {26BE2A75-691C-4F9E-9D12-53D1AF3C3AA1}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

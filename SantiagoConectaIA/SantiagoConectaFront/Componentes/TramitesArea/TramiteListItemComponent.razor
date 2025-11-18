@@ -1,0 +1,67 @@
+﻿@using System.Globalization
+@using SantiagoConectaIA.Share.DTO_s.TramitesArea
+
+<div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between">
+        <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="text-xl font-semibold text-gray-800 hover:text-blue-600 transition-colors">
+                    @Tramite.vchNombreTramite
+                </h3>
+                @if (Tramite.bModalidadEnLinea)
+                {
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                        En línea
+                    </span>
+                }
+                else
+                {
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-800 bg-orange-100 rounded-full">
+                        Presencial
+                    </span>
+                }
+            </div>
+
+            <p class="text-gray-600 mb-4 max-w-3xl">
+                @Tramite.vchDescripcionTramite
+            </p>
+
+            <div class="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div class="flex items-center">
+                    @Icon.DollarSign("w-4 h-4 mr-1 text-green-600")
+                    @(Tramite.dCosto > 0 ? $"${Tramite.dCosto.ToString("N2", CultureInfo.GetCultureInfo("es-MX"))} MXN" : "Gratuito")
+                </div>
+                <div class="flex items-center">
+                    @Icon.MapPin("w-4 h-4 mr-1 text-red-600")
+                    @(Tramite.vchNombreOficina?? "N/A")
+                </div>
+                <div class="flex items-center">
+                    @Icon.Clock("w-4 h-4 mr-1 text-blue-600")
+                    @(Tramite.vchHorarioOficina)
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 lg:mt-0 lg:ml-6">
+            <a href="@($"/tramites/{Tramite.iIdTramite}")"
+               class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105">
+                Ver detalles
+                @Icon.FileText("w-4 h-4 ml-2")
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TramitesCardDto Tramite { get; set; } = new();
+
+    // Clase auxiliar para iconos (debe ser la misma que la de Tramites.razor)
+    public static class Icon
+    {
+        public static RenderFragment DollarSign(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>;
+        public static RenderFragment Clock(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>;
+        public static RenderFragment MapPin(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>;
+        public static RenderFragment FileText(string className) =>@<svg xmlns="http://www.w3.org/2000/svg" class="@className" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><line x1="8" x2="16" y1="13" y2="13" /><line x1="8" x2="16" y1="17" y2="17" /><line x1="8" x2="12" y1="9" y2="9" /></svg>;
+    }
+}
