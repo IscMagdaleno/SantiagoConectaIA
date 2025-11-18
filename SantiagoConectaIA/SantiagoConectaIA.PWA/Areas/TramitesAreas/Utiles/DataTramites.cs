@@ -24,7 +24,11 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		public List<Tramite> LstTramites { get; set; }
 		public Tramite TramiteSelected { get; set; }
 
-		public IList<Oficina> LstOficinas { get; set; } = new List<Oficina>();
+		public List<Oficina> LstOficinas { get; set; }
+
+		public Oficina OficinaSelected { get; set; }
+
+
 		#endregion
 
 		public DataTramites(IHttpService httpService, MapperHelper mapper, IValidaServicioService validaServicioService)
@@ -35,6 +39,9 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 
 			LstTramites = new List<Tramite>();
 			TramiteSelected = new Tramite();
+
+			LstOficinas = new List<Oficina>();
+			OficinaSelected = new Oficina();
 		}
 
 		public async Task<SeverityMessage> PostGetTramites()

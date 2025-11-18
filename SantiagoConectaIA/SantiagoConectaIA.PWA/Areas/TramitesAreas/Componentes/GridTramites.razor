@@ -1,0 +1,78 @@
+﻿@using SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
+@inherits EngramaComponent
+
+
+
+    <MudGrid Justify="Justify.SpaceBetween" Class="mb-4">
+        <MudItem>
+            <MudText Typo="Typo.h4" Style="color: #A50A3A; font-weight: bold;">
+                Trámites Disponibles
+            </MudText>
+        </MudItem>
+        <MudItem>
+            @if (bShowFormTramite.False())
+            {
+                <MudFab StartIcon="@Icons.Material.Filled.Add"
+                        Label="Agregar Nuevo"
+                        Color="Color.Success"
+                        OnClick="OnClickShowForm" />
+            }
+            else
+            {
+                <MudFab StartIcon="@Icons.Material.Filled.ArrowBack"
+                        Label="Volver"
+                        Color="Color.Secondary"
+                        OnClick="OnClickShowData" />
+            }
+        </MudItem>
+    </MudGrid>
+
+    @if (bShowFormTramite)
+    {
+        <MudPaper Class="pa-4">
+            <FormTramites Data="Data" OnTramiteSaved="OnTramiteSaved"></FormTramites>
+        </MudPaper>
+    }
+    else
+    {
+        @if (Data.LstTramites.NotEmpty())
+        {
+            <MudItem sm="12">
+                <FiltroTramites FiltroTexto="@filtroTexto"
+                                FiltroTextoChanged="CuandoCambiaTexto">
+                </FiltroTramites>
+            </MudItem>
+
+            @if (listaFiltrada.NotEmpty())
+            {
+                <MudGrid Spacing="4">
+                    @foreach (var tramite in listaFiltrada)
+                    {
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <CardTramites Tramite="@tramite"
+                                          Data="@Data"
+                                          OnTramiteSelected="OnTramiteSelected"
+                                          OnDeleteTramite="OnDeleteTramite">
+                            </CardTramites>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    No se encontraron trámites que coincidan con "@filtroTexto".
+                </MudAlert>
+            }
+        }
+        else
+        {
+            <MudItem sm="12">
+                <MudAlert Severity="Severity.Normal"
+                          Variant="Variant.Outlined">
+                    No existen Trámites registrados.
+                </MudAlert>
+            </MudItem>
+        }
+    }
+
