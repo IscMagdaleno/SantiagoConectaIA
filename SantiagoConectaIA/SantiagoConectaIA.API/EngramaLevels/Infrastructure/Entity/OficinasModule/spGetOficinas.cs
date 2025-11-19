@@ -19,7 +19,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.OficinasModu
 			public bool bResult { get; set; }
 			public string vchMessage { get; set; }
 			public int iIdOficina { get; set; }
-			public int? iIdDependencia { get; set; }
 			public string vchNombre { get; set; }
 			public string vchDireccion { get; set; }
 			public string vchTelefono { get; set; } // puede ser null si bIncluirContacto = false

@@ -13,21 +13,21 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 	public partial class CardOficina
 	{
 
-		[Parameter] public DataTramites Data { get; set; }
+		[Parameter] public MainTramites Data { get; set; }
 		[Parameter] public Oficina Oficina { get; set; }
 		[Parameter] public EventCallback<Oficina> OnOficinaSelected { get; set; }
 		[Parameter] public EventCallback<Oficina> OnDeleteOficina { get; set; }
 
 
-		private async void OnClickTramiteSelected()
+		private async void OnClickOficinaSelected()
 		{
 			await OnOficinaSelected.InvokeAsync(Oficina);
 		}
 
 
-		private async void OnCLickEliminarTramite(Oficina oficina)
+		private async void OnCLickEliminarOficina(Oficina oficina)
 		{
-			var parameters = new DialogParameters { { "ContentText", "¿Estás seguro de eliminar este trámite?" } };
+			var parameters = new DialogParameters { { "ContentText", "¿Estás seguro de eliminar esta Oficina?" } };
 			var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmar eliminación", parameters);
 			var result = await dialog.Result;
 
@@ -36,7 +36,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 				Loading.Show();
 				Oficina.bActivo = false;
 				Data.OficinaSelected = Oficina;
-				var saveResult = await Data.PostSaveTramite();
+				var saveResult = await Data.PostSaveOficina();
 				ShowSnake(saveResult);
 				if (saveResult.bResult)
 				{

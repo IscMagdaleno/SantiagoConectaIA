@@ -8,7 +8,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas
 	public partial class PageTramites : EngramaPage
 	{
 
-		[Inject] public DataTramites Data { get; set; }
+		[Inject] public MainTramites Data { get; set; }
 
 
 	}

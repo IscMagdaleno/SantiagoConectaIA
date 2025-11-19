@@ -5,7 +5,6 @@ GO
 CREATE PROCEDURE spSaveOficina
 (
     @iIdOficina INT = 0,
-    @iIdDependencia INT = NULL,
     @vchNombre VARCHAR(250),
     @vchDireccion VARCHAR(500) = NULL,
     @vchTelefono VARCHAR(50) = NULL,
@@ -14,6 +13,7 @@ CREATE PROCEDURE spSaveOficina
     @flLatitud FLOAT = NULL,
     @flLongitud FLOAT = NULL,
     @vchNotas NVARCHAR(MAX) = NULL,
+    @vchUrlDireccion NVARCHAR(255) = NULL,
     @bActivo BIT = 1
 )
 AS
@@ -69,22 +69,12 @@ BEGIN
             THROW 51004, @vchError, 1;
         END
 
-        -- Validar dependencia
-        IF @iIdDependencia IS NOT NULL AND @iIdDependencia > 0
-        BEGIN
-            IF NOT EXISTS (SELECT 1 FROM dbo.Dependencia WHERE iIdDependencia = @iIdDependencia)
-            BEGIN
-                SET @vchError = 'Dependencia no encontrada.';
-                THROW 51005, @vchError, 1;
-            END
-        END
 
         -- Validar duplicado: mismo nombre + dependencia
         IF EXISTS (
             SELECT 1
             FROM dbo.Oficina
             WHERE vchNombre = @vchNombre
-              AND ISNULL(iIdDependencia, 0) = ISNULL(@iIdDependencia, 0)
               AND (@iIdOficina <= 0 OR iIdOficina <> @iIdOficina)
         )
         BEGIN
@@ -99,12 +89,12 @@ BEGIN
         IF @iIdOficina IS NULL OR @iIdOficina <= 0
         BEGIN
             INSERT INTO dbo.Oficina (
-                iIdDependencia, vchNombre, vchDireccion, vchTelefono, vchEmail,
-                vchHorario, flLatitud, flLongitud, vchNotas, bActivo, dtFechaCreacion
+                 vchNombre, vchDireccion, vchTelefono, vchEmail,
+                vchHorario, flLatitud, flLongitud, vchNotas, bActivo, dtFechaCreacion, vchUrlDireccion
             )
             VALUES (
-                @iIdDependencia, @vchNombre, @vchDireccion, @vchTelefono, @vchEmail,
-                @vchHorario, @flLatitud, @flLongitud, @vchNotas, @bActivo, GETDATE()
+                 @vchNombre, @vchDireccion, @vchTelefono, @vchEmail,
+                @vchHorario, @flLatitud, @flLongitud, @vchNotas, @bActivo, GETDATE() , @vchUrlDireccion
             );
 
             SET @iIdOficina = SCOPE_IDENTITY();
@@ -113,7 +103,7 @@ BEGIN
         BEGIN
             UPDATE dbo.Oficina
             SET
-                iIdDependencia = @iIdDependencia,
+                
                 vchNombre = @vchNombre,
                 vchDireccion = @vchDireccion,
                 vchTelefono = @vchTelefono,
@@ -122,7 +112,8 @@ BEGIN
                 flLatitud = @flLatitud,
                 flLongitud = @flLongitud,
                 vchNotas = @vchNotas,
-                bActivo = @bActivo
+                bActivo = @bActivo,
+                vchUrlDireccion = @vchUrlDireccion
             WHERE iIdOficina = @iIdOficina;
         END
 

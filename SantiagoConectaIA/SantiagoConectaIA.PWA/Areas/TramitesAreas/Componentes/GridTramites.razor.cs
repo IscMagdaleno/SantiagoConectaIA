@@ -9,7 +9,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 	public partial class GridTramites : EngramaComponent
 	{
 
-		[Parameter] public DataTramites Data { get; set; }
+		[Parameter] public MainTramites Data { get; set; }
 
 
 		public bool bShowFormTramite;

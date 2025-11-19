@@ -1,0 +1,82 @@
+﻿@inherits EngramaComponent
+
+<EditForm Model="@Data.OficinaSelected"
+		  OnValidSubmit="OnSubmint">
+	<DataAnnotationsValidator />
+
+	<MudFocusTrap>
+
+		<MudGrid>
+			<MudItem sm="6">
+
+
+				<MudTextField @bind-Value="@Data.OficinaSelected.vchNombre"
+							  Label="Nombre"
+							  MaxLength="250"
+							  Variant="Variant.Outlined" />
+
+			</MudItem>
+			<MudItem sm="6">
+				<MudTextField @bind-Value="@Data.OficinaSelected.vchDireccion"
+							  Label="Dirección"
+							  MaxLength="500"
+							  Variant="Variant.Outlined" />
+			</MudItem>
+			<MudItem sm="6">
+
+				<MudTextField @bind-Value="@Data.OficinaSelected.vchTelefono"
+							  Label="Teléfono"
+							  MaxLength="50"
+							  Variant="Variant.Outlined" />
+			</MudItem>
+			<MudItem sm="6">
+
+				<MudTextField @bind-Value="@Data.OficinaSelected.vchEmail"
+							  Label="Correo"
+							  MaxLength="150"
+							  Variant="Variant.Outlined" />
+
+
+			</MudItem>
+			<MudItem sm="6">
+				<MudTextField @bind-Value="@Data.OficinaSelected.vchHorario"
+							  Label="Horario"
+							  MaxLength="250"
+							  Variant="Variant.Outlined" />
+
+			</MudItem>
+			<MudItem sm="6">
+				<MudNumericField @bind-Value="Data.OficinaSelected.flLatitud"
+								 Label="flLatitud"
+								 Variant="Variant.Outlined" />
+
+			</MudItem>
+			<MudItem sm="6">
+				<MudNumericField @bind-Value="Data.OficinaSelected.flLongitud"
+								 Label="flLongitud"
+								 Variant="Variant.Outlined" />
+
+			</MudItem>
+			<MudItem sm="6">
+				<MudTextField @bind-Value="@Data.OficinaSelected.vchNotas"
+							  Label="Notas"
+							  MaxLength="350"
+							  Variant="Variant.Outlined" />
+			</MudItem>
+			<MudItem sm="6">
+
+				<MudSwitch @bind-Value="Data.OficinaSelected.bActivo"
+						   Color="Color.Success"
+						   Label="Activo" />
+
+
+			</MudItem>
+			<MudItem sm="12">
+				<MudButton Variant="Variant.Filled"
+						   ButtonType="ButtonType.Submit"
+						   Color="Color.Secondary">Save Oficina</MudButton>
+			</MudItem>
+		</MudGrid>
+	</MudFocusTrap>
+</EditForm>
+

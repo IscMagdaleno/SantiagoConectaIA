@@ -11,7 +11,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 	public partial class GridOficinas : EngramaComponent
 	{
 
-		[Parameter] public DataTramites Data { get; set; }
+		[Parameter] public MainTramites Data { get; set; }
 
 		public bool bShowFormOficinas;
 
@@ -43,6 +43,11 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			StateHasChanged();
 		}
 
+		private void OnOficinaSaved()
+		{
+			Data.OficinaSelected = new();
+			bShowFormOficinas = false;
+		}
 		private void OnOficinaSelected(Oficina oficina)
 		{
 			Data.OficinaSelected = oficina;

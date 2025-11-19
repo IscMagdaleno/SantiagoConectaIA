@@ -8,7 +8,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 	public partial class FormTramites : EngramaComponent
 	{
 		#region PARAMETROS
-		[Parameter] public DataTramites Data { get; set; }
+		[Parameter] public MainTramites Data { get; set; }
 		[Parameter] public EventCallback OnTramiteSaved { get; set; }
 		#endregion
 

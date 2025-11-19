@@ -36,19 +36,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 			return new spSaveOficina.Result { bResult = false, vchMessage = res.Msg };
 		}
 
-		public async Task<IEnumerable<spGetDependencias.Result>> spGetDependencias(spGetDependencias.Request request)
-		{
-			var res = await _managerHelper.GetAllAsync<spGetDependencias.Result, spGetDependencias.Request>(request, "");
-			if (res.Ok) return res.Data;
-			return new List<spGetDependencias.Result> { new spGetDependencias.Result { bResult = false, vchMessage = res.Msg } };
-		}
 
-		public async Task<spSaveDependencia.Result> spSaveDependencia(spSaveDependencia.Request request)
-		{
-			var res = await _managerHelper.GetAsync<spSaveDependencia.Result, spSaveDependencia.Request>(request, "");
-			if (res.Ok && res.Data != null) return res.Data;
-			return new spSaveDependencia.Result { bResult = false, vchMessage = res.Msg };
-		}
 
 		public async Task<spLinkOficinaTramite.Result> spLinkOficinaTramite(spLinkOficinaTramite.Request request)
 		{

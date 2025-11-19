@@ -10,7 +10,7 @@ using SantiagoConectaIA.Share.PostModels.TramitesModule;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 {
-	public class DataTramites
+	public class MainTramites
 	{
 		private string url = @"api/Tramites";
 		private readonly string urlOficinas = "api/Oficinas";
@@ -25,13 +25,13 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		public Tramite TramiteSelected { get; set; }
 
 		public List<Oficina> LstOficinas { get; set; }
-
 		public Oficina OficinaSelected { get; set; }
+
 
 
 		#endregion
 
-		public DataTramites(IHttpService httpService, MapperHelper mapper, IValidaServicioService validaServicioService)
+		public MainTramites(IHttpService httpService, MapperHelper mapper, IValidaServicioService validaServicioService)
 		{
 			_httpService = httpService;
 			_mapper = mapper;
@@ -56,6 +56,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => LstTramites = data.ToList());
 			return validation;
 		}
+
 		public async Task<SeverityMessage> PostGetTramiteDetail()
 		{
 			var APIUrl = url + "/PostGetTramiteDetail";
@@ -82,22 +83,27 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		/// </summary>
 		public async Task<SeverityMessage> PostGetOficinas()
 		{
-			// 1. Definir la URL completa del endpoint
 			var APIUrl = urlOficinas + "/PostGetOficinas";
-
-			// 2. Crear el PostModel de solicitud. 
-			// Se asume que PostGetOficinas no requiere parámetros complejos por defecto.
 			var model = new PostGetOficinas();
-
-			// 3. Invocar el servicio HTTP (IHttpService)
 			var response = await _httpService.Post<PostGetOficinas, Response<List<Oficina>>>(APIUrl, model);
-
-			// 4. Validar la respuesta y actualizar la propiedad LstOficinas
-			// Usa ValidadionServicio (con 'd' extra, según tu ejemplo)
 			var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => LstOficinas = data.ToList());
-
 			return validation;
 		}
+
+
+
+		public async Task<SeverityMessage> PostSaveOficina()
+		{
+			var APIUrl = urlOficinas + "/PostSaveOficina";
+			var model = _mapper.Get<Oficina, PostSaveOficina>(OficinaSelected);
+			var response = await _httpService.Post<PostSaveOficina, Response<Oficina>>(APIUrl, model);
+			var validacion = _validaServicioService.ValidadionServicio(response,
+			onSuccess: data => LstOficinas.Add(data));
+			return validacion;
+
+		}
+
+
 
 	}
 }

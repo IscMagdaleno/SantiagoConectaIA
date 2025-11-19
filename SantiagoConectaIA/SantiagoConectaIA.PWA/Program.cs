@@ -30,7 +30,7 @@ builder.Services.AddScoped<MapperHelper>();
 builder.Services.AddScoped<IValidaServicioService, ValidaServicioService>();
 
 
-builder.Services.AddScoped<DataTramites>();
+builder.Services.AddScoped<MainTramites>();
 
 builder.Services.AddEngramaDependenciesBlazor();
 
