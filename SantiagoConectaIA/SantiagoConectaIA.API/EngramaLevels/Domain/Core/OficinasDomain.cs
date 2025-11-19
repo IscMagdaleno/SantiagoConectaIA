@@ -93,40 +93,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			}
 		}
 
-		public async Task<Response<IEnumerable<Dependencia>>> GetDependencias(PostGetDependencias postModel)
-		{
-			try
-			{
-				var req = _mapperHelper.Get<PostGetDependencias, spGetDependencias.Request>(postModel);
-				var repo = await _oficinasRepository.spGetDependencias(req);
-				var validation = _responseHelper.Validacion<spGetDependencias.Result, Dependencia>(repo);
-				return validation;
-			}
-			catch (Exception ex)
-			{
-				return Response<IEnumerable<Dependencia>>.BadResult(ex.Message, Enumerable.Empty<Dependencia>());
-			}
-		}
-
-		public async Task<Response<Dependencia>> SaveDependencia(PostSaveDependencia postModel)
-		{
-			try
-			{
-				var req = _mapperHelper.Get<PostSaveDependencia, spSaveDependencia.Request>(postModel);
-				var repo = await _oficinasRepository.spSaveDependencia(req);
-				var validation = _responseHelper.Validacion<spSaveDependencia.Result, Dependencia>(repo);
-				if (validation.IsSuccess)
-				{
-					postModel.iIdDependencia = validation.Data.iIdDependencia;
-					validation.Data = _mapperHelper.Get<PostSaveDependencia, Dependencia>(postModel);
-				}
-				return validation;
-			}
-			catch (Exception ex)
-			{
-				return Response<Dependencia>.BadResult(ex.Message, new Dependencia());
-			}
-		}
 
 		public async Task<Response<OficinaPorTramite>> LinkOficinaTramite(PostLinkOficinaTramite postModel)
 		{

@@ -95,49 +95,9 @@ namespace SantiagoConectaIA.API.Controllers
 			}
 		}
 
-		[HttpPost("PostGetDependencias")]
-		[ProducesResponseType(typeof(Response<IEnumerable<Dependencia>>), 200)]
-		public async Task<IActionResult> PostGetDependencias([FromBody] PostGetDependencias model)
-		{
-			try
-			{
-				if (model == null)
-					return BadRequest(Response<IEnumerable<Dependencia>>.BadResult("Payload vacío.", null));
 
-				var result = await _oficinasDomain.GetDependencias(model);
-				if (result.IsSuccess)
-				{
-					return Ok(result);
-				}
-				return BadRequest(result);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error en PostGetDependencias");
-				return BadRequest(Response<IEnumerable<Dependencia>>.BadResult("Error interno.", null));
-			}
-		}
 
-		[HttpPost("PostSaveDependencia")]
-		[ProducesResponseType(typeof(Response<Dependencia>), 200)]
-		public async Task<IActionResult> PostSaveDependencia([FromBody] PostSaveDependencia model)
-		{
-			try
-			{
 
-				var result = await _oficinasDomain.SaveDependencia(model);
-				if (result.IsSuccess)
-				{
-					return Ok(result);
-				}
-				return BadRequest(result);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error en PostSaveDependencia");
-				return BadRequest(Response<Dependencia>.BadResult("Error interno.", new Dependencia()));
-			}
-		}
 
 		[HttpPost("PostLinkOficinaTramite")]
 		[ProducesResponseType(typeof(Response<int>), 200)]

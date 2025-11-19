@@ -41,7 +41,6 @@ namespace SantiagoConectaIA.Test.Oficinas
 			{
 				iIdOficina = 0,
 				vchNombre = "Oficina Unitaria",
-				iIdDependencia = 1,
 				vchEmail = "correo@valido.com",
 				vchTelefono = "12345678",
 				flLatitud = 23.45,

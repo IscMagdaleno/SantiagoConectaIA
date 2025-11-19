@@ -1,0 +1,41 @@
+﻿@inherits EngramaComponent
+@inject IDialogService DialogService
+
+<MudCard Class="service-card" Style="height: 100%; display: flex; flex-direction: column;">
+
+    <MudCardContent Style="text-align: center; padding: 2rem; flex-grow: 1;">
+
+        <div class="card-icon-container">
+            <MudIcon Icon="@Icons.Material.Filled.Assignment"
+                     Size="Size.Large"
+                     Class="card-icon"
+                     Style="color: #A50A3A;" />
+        </div>
+
+        <MudText Typo="Typo.h5"
+                 Style="color: #333333; font-weight: bold; margin: 1rem 0;">
+            @Oficina.vchNombre
+        </MudText>
+
+        <MudText Typo="Typo.body1"
+                 Style="color: #666666; line-height: 1.6;">
+            @Oficina.vchDireccion
+        </MudText>
+
+    </MudCardContent>
+
+    <MudCardActions Style="padding: 1rem; margin-top: auto;">
+        <MudButton Variant="Variant.Outlined"
+                   Style="border-color: #A50A3A; color: #A50A3A;"
+                   OnClick="OnClickOficinaSelected">
+            Editar
+        </MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Error"
+                   OnClick="@(()=>OnCLickEliminarOficina(Oficina))">
+            Eliminar
+        </MudButton>
+    </MudCardActions>
+
+</MudCard>

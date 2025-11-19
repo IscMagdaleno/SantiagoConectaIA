@@ -14,7 +14,6 @@ GO
 CREATE PROCEDURE spSearchOficinas
 (
     @vchTexto VARCHAR(500) = NULL,
-    @iIdDependencia INT = 0,
     @iPage INT = 1,
     @iPageSize INT = 20,
     @bIncluirContacto BIT = 0
@@ -28,7 +27,6 @@ BEGIN
         bResult BIT DEFAULT (1),
         vchMessage VARCHAR(500) DEFAULT(''),
         iIdOficina INT DEFAULT(-1),
-        iIdDependencia INT DEFAULT(-1),
         vchNombre VARCHAR(250) DEFAULT(''),
         vchDireccion VARCHAR(500) DEFAULT(''),
         vchHorario NVARCHAR(250) DEFAULT(''),
@@ -43,10 +41,9 @@ BEGIN
     BEGIN TRY
         DECLARE @Offset INT = (@iPage - 1) * @iPageSize;
 
-        INSERT INTO #Result (iIdOficina, iIdDependencia, vchNombre, vchDireccion, vchHorario, flLatitud, flLongitud, vchTelefono, vchEmail, bActivo, dtFechaCreacion)
+        INSERT INTO #Result (iIdOficina,  vchNombre, vchDireccion, vchHorario, flLatitud, flLongitud, vchTelefono, vchEmail, bActivo, dtFechaCreacion)
         SELECT
             O.iIdOficina,
-            O.iIdDependencia,
             O.vchNombre,
             O.vchDireccion,
             O.vchHorario,
@@ -57,8 +54,7 @@ BEGIN
             O.bActivo,
             O.dtFechaCreacion
         FROM dbo.Oficina O WITH(NOLOCK)
-        WHERE (@iIdDependencia = 0 OR O.iIdDependencia = @iIdDependencia)
-          AND (
+        WHERE (
                 @vchTexto IS NULL
                 OR O.vchNombre LIKE '%' + @vchTexto + '%'
                 OR O.vchDireccion LIKE '%' + @vchTexto + '%'

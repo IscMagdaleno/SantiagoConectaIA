@@ -10,7 +10,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.OficinasModu
 		{
 			public string StoredProcedure => "spSaveOficina";
 			public int iIdOficina { get; set; } = 0;
-			public int? iIdDependencia { get; set; } = null;
 			public string vchNombre { get; set; }
 			public string vchDireccion { get; set; }
 			public string vchTelefono { get; set; }
@@ -20,6 +19,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.OficinasModu
 			public double? flLongitud { get; set; }
 			public string vchNotas { get; set; }
 			public bool bActivo { get; set; } = true;
+			public string vchUrlDireccion { get; set; }
 		}
 
 		public class Result : DbResult

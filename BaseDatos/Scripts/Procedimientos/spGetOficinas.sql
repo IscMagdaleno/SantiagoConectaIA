@@ -16,7 +16,6 @@ BEGIN
         bResult BIT DEFAULT (1),
         vchMessage VARCHAR(500) DEFAULT(''),
         iIdOficina INT DEFAULT(-1),
-        iIdDependencia INT DEFAULT(-1),
         vchNombre VARCHAR(250) DEFAULT(''),
         vchDireccion VARCHAR(500) DEFAULT(''),
         vchTelefono VARCHAR(50) DEFAULT(''),
@@ -26,24 +25,25 @@ BEGIN
         flLongitud FLOAT NULL,
         vchNotas NVARCHAR(MAX) DEFAULT(''),
         bActivo BIT DEFAULT(0),
-        dtFechaCreacion DATETIME NULL
+        dtFechaCreacion DATETIME NULL,
+        vchUrlDireccion NVARCHAR(255) DEFAULT(''),
     );
 
     BEGIN TRY
-        INSERT INTO #Result (iIdOficina, iIdDependencia, vchNombre, vchDireccion, vchTelefono, vchEmail, vchHorario, flLatitud, flLongitud, vchNotas, bActivo, dtFechaCreacion)
+        INSERT INTO #Result (iIdOficina,  vchNombre, vchDireccion, vchTelefono, vchEmail, vchHorario, flLatitud, flLongitud, vchNotas, bActivo, dtFechaCreacion,vchUrlDireccion)
         SELECT
             O.iIdOficina,
-            O.iIdDependencia,
             O.vchNombre,
             O.vchDireccion,
-            CASE WHEN @bIncluirContacto = 1 THEN O.vchTelefono ELSE NULL END AS vchTelefono,
-            CASE WHEN @bIncluirContacto = 1 THEN O.vchEmail ELSE NULL END AS vchEmail,
+             O.vchTelefono,
+            O.vchEmail,
             O.vchHorario,
             O.flLatitud,
             O.flLongitud,
             O.vchNotas,
             O.bActivo,
-            O.dtFechaCreacion
+            O.dtFechaCreacion,
+            O.vchUrlDireccion
         FROM dbo.Oficina O WITH(NOLOCK)
         WHERE (@iIdOficina = 0 OR O.iIdOficina = @iIdOficina)
           AND (@bActivo = 0 OR O.bActivo = @bActivo)

@@ -20,7 +20,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.Conversation
 
 			// Todos los campos de la tabla Oficina
 			public int iIdOficina { get; set; }
-			public int? iIdDependencia { get; set; } // int? por ser NULLable
 			public string vchNombre { get; set; }
 			public string vchDireccion { get; set; }
 			public string vchTelefono { get; set; }

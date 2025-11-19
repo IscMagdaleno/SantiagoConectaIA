@@ -20,7 +20,6 @@ BEGIN
         bResult BIT DEFAULT(1),
         vchMessage VARCHAR(500) DEFAULT(''),
         iIdOficina INT DEFAULT(-1),
-        iIdDependencia INT NULL,
         vchNombre VARCHAR(250) DEFAULT(''),
         vchDireccion VARCHAR(500) NULL,
         vchTelefono VARCHAR(50) NULL,
@@ -36,13 +35,12 @@ BEGIN
     BEGIN TRY
         -- Modificación: Inserta TODAS las columnas de la tabla Oficina
         INSERT INTO #Result (
-            iIdOficina, iIdDependencia, vchNombre, vchDireccion,
+            iIdOficina,  vchNombre, vchDireccion,
             vchTelefono, vchEmail, vchHorario, flLatitud, flLongitud,
             vchNotas, bActivo, dtFechaCreacion
         )
         SELECT TOP (@iLimit)
             O.iIdOficina,
-            O.iIdDependencia,
             O.vchNombre,
             O.vchDireccion,
             O.vchTelefono,

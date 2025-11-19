@@ -13,7 +13,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 	public partial class CardTramites : EngramaComponent
 	{
 		#region PARAMETROS
-		[Parameter] public DataTramites Data { get; set; }
+		[Parameter] public MainTramites Data { get; set; }
 		[Parameter] public Tramite Tramite { get; set; }
 		[Parameter] public EventCallback<Tramite> OnTramiteSelected { get; set; }
 		[Parameter] public EventCallback<Tramite> OnDeleteTramite { get; set; }

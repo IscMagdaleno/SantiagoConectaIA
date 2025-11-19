@@ -10,7 +10,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.OficinasModu
 		{
 			public string StoredProcedure => "spSearchOficinas";
 			public string vchTexto { get; set; }
-			public int iIdDependencia { get; set; } = 0;
 			public int iPage { get; set; } = 1;
 			public int iPageSize { get; set; } = 20;
 			public bool bIncluirContacto { get; set; } = false;
@@ -21,7 +20,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.OficinasModu
 			public bool bResult { get; set; }
 			public string vchMessage { get; set; }
 			public int iIdOficina { get; set; }
-			public int? iIdDependencia { get; set; }
 			public string vchNombre { get; set; }
 			public string vchDireccion { get; set; }
 			public string vchHorario { get; set; }

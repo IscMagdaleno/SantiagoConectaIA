@@ -12,8 +12,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces
 		Task<Response<PagedList<Oficina>>> SearchOficinas(PostSearchOficinas postModel);
 		Task<Response<Oficina>> SaveOficina(PostSaveOficina postModel);
 
-		Task<Response<IEnumerable<Dependencia>>> GetDependencias(PostGetDependencias postModel);
-		Task<Response<Dependencia>> SaveDependencia(PostSaveDependencia postModel);
 
 		Task<Response<OficinaPorTramite>> LinkOficinaTramite(PostLinkOficinaTramite postModel);
 		Task<Response<IEnumerable<OficinaPorTramite>>> GetOficinasPorTramite(PostGetOficinasPorTramite postModel);

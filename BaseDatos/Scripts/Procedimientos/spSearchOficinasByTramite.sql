@@ -19,7 +19,6 @@ BEGIN
         bResult BIT DEFAULT(1),
         vchMessage VARCHAR(500) DEFAULT(''),
         iIdOficina INT DEFAULT(-1),
-        iIdDependencia INT NULL,
         vchNombre VARCHAR(250) DEFAULT(''),
         vchDireccion VARCHAR(500) NULL,
         vchTelefono VARCHAR(50) NULL,
@@ -35,12 +34,12 @@ BEGIN
     BEGIN TRY
         -- Consulta la tabla de unión (OficinaTramite) y JOIN a Oficina
         INSERT INTO #Result (
-            iIdOficina, iIdDependencia, vchNombre, vchDireccion,
+            iIdOficina,  vchNombre, vchDireccion,
             vchTelefono, vchEmail, vchHorario, flLatitud, flLongitud,
             vchNotas, bActivo, dtFechaCreacion
         )
         SELECT 
-            O.iIdOficina, O.iIdDependencia, O.vchNombre, O.vchDireccion,
+            O.iIdOficina,  O.vchNombre, O.vchDireccion,
             O.vchTelefono, O.vchEmail, O.vchHorario, O.flLatitud, O.flLongitud,
             O.vchNotas, O.bActivo, O.dtFechaCreacion
         FROM dbo.Oficina O WITH(NOLOCK)
