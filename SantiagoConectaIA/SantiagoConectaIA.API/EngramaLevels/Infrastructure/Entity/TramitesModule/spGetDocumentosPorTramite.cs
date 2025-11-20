@@ -16,7 +16,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModu
 			public string vchMessage { get; set; }
 			public int iIdDocumento { get; set; }
 			public string vchNombre { get; set; }
-			public string vchUrl { get; set; }
+			public string vchUrlDocumento { get; set; }
 		}
 	}
 }

@@ -2,12 +2,9 @@
 using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
-using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.OficinasModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
-using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository;
 using SantiagoConectaIA.Share.DTO_s.TramitesArea;
-using SantiagoConectaIA.Share.Objects.OficinasModule;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
 using SantiagoConectaIA.Share.PostModels.OficinasModule;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
@@ -167,7 +164,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 				var dto = mapperHelper.Get<spGetTramites.Result, TramiteDetalleDto>(tramiteResult);
 
 				// Obtener la Oficina por trámite
-				var oficinaRequest = new PostGetOficinasPorTramite { iIdTramite = postModel.iIdTramite, vchTexto="", bIncluirContacto= false }; // Asumo que tienes este SP
+				var oficinaRequest = new PostGetOficinasPorTramite { iIdTramite = postModel.iIdTramite, vchTexto = "", bIncluirContacto = false }; // Asumo que tienes este SP
 				var oficinaResult = await oficinasDomain.GetOficinasPorTramite(oficinaRequest); // Asumo que tienes este método
 
 				if (oficinaResult.IsSuccess)
@@ -178,7 +175,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 				//Obtener la información de la oficina
 				var oficinaReq = new PostGetOficinas { iIdOficina = dto.iIdTramite };
 				var oficinaRes = await oficinasDomain.GetOficinas(oficinaReq);
-				if(oficinaRes.IsSuccess)
+				if (oficinaRes.IsSuccess)
 				{
 					dto.Oficina = oficinaRes.Data.FirstOrDefault();
 				}
@@ -211,6 +208,28 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 				return Response<TramiteDetalleDto>.BadResult(ex.Message, new TramiteDetalleDto());
 			}
 		}
+
+
+		public async Task<Response<Documento>> SaveDocumento(PostSaveDocumento PostModel)
+		{
+			try
+			{
+				var model = mapperHelper.Get<PostSaveDocumento, spSaveDocumento.Request>(PostModel);
+				var result = await tramitesRepository.spSaveDocumento(model);
+				var validation = responseHelper.Validacion<spSaveDocumento.Result, Documento>(result);
+				if (validation.IsSuccess)
+				{
+					PostModel.iIdDocumento = validation.Data.iIdDocumento;
+					validation.Data = mapperHelper.Get<PostSaveDocumento, Documento>(PostModel);
+				}
+				return validation;
+			}
+			catch (Exception ex)
+			{
+				return Response<Documento>.BadResult(ex.Message, new());
+			}
+		}
+
 
 	}
 }

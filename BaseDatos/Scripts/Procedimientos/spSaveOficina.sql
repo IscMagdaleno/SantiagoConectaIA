@@ -1,8 +1,8 @@
-IF OBJECT_ID('spSaveOficina') IS NOT NULL
-    DROP PROCEDURE spSaveOficina;
+IF OBJECT_ID('spSaveOficina') IS NULL
+    EXEC('CREATE PROCEDURE spSaveOficina AS SET NOCOUNT ON;');
 GO
 
-CREATE PROCEDURE spSaveOficina
+ALTER PROCEDURE spSaveOficina
 (
     @iIdOficina INT = 0,
     @vchNombre VARCHAR(250),

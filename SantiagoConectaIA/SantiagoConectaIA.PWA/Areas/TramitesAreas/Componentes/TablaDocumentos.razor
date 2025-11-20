@@ -1,0 +1,42 @@
+﻿@using SantiagoConectaIA.Share.Objects.TramitesModule
+
+<MudTable Items="@LstDocumentosPorTramite"
+		  T="@Documento"
+		  Dense="@true"
+		  Hover="true"
+		  Filter="new Func<Documento,bool>(FilterFunc1)">
+	<ToolBarContent>
+		<MudText Typo="Typo.h6">Tabla de Documentos Por Tramite</MudText>
+		<MudSpacer />
+		<MudTextField @bind-Value="searchStringFiltro" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+	</ToolBarContent>
+	<HeaderContent>
+
+		<MudTh>Nombre</MudTh>
+		<MudTh>UrlDocumento</MudTh>
+		<MudTh>Activo</MudTh>
+	</HeaderContent>
+	<RowTemplate>
+		<MudTd DataLabel="vchNombre">@context.vchNombre</MudTd>
+		<MudTd DataLabel="vchUrlDocumento">@context.vchUrlDocumento</MudTd>
+		<MudTd DataLabel="bActivo">@context.bActivo</MudTd>
+	</RowTemplate>
+	<PagerContent>
+		<MudTablePager />
+	</PagerContent>
+</MudTable>
+@code {
+
+	[Parameter] public List<Documento> LstDocumentosPorTramite { get; set; }
+
+	private string searchStringFiltro = "";
+	private bool FilterFunc1(Documento element) => FilterFunc(element, searchStringFiltro);
+	private bool FilterFunc(Documento element, string searchString)
+	{
+		if (string.IsNullOrWhiteSpace(searchString))
+			return true;
+		if (element.vchNombre.Contains(searchString, StringComparison.OrdinalIgnoreCase)) // Agrega el campo por el caul realizar el filtro
+			return true;
+		return false;
+	}
+}

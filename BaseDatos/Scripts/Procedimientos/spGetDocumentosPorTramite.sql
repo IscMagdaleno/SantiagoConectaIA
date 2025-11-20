@@ -1,7 +1,6 @@
 IF OBJECT_ID('spGetDocumentosPorTramite') IS NULL
     EXEC ('CREATE PROCEDURE spGetDocumentosPorTramite AS SET NOCOUNT ON;')
 GO
-
 ALTER PROCEDURE spGetDocumentosPorTramite
 (
     @iIdTramite INT
@@ -17,17 +16,16 @@ BEGIN
     (
         bResult BIT DEFAULT(1),
         vchMessage VARCHAR(500) DEFAULT(''),
-        -- Campos de Documento
         iIdDocumento INT DEFAULT(-1),
         iIdTramite INT DEFAULT(-1),
         vchNombre VARCHAR(250) DEFAULT(''),
-        vchUrl VARCHAR(500) DEFAULT(''),
+        vchUrlDocumento VARCHAR(500) DEFAULT(''),
         bActivo BIT DEFAULT(1)
     );
 
     SET NOCOUNT ON;
     BEGIN TRY
-        INSERT INTO #Result (iIdDocumento, iIdTramite, vchNombre, vchUrl, bActivo)
+        INSERT INTO #Result (iIdDocumento, iIdTramite, vchNombre, vchUrlDocumento, bActivo)
         SELECT 
             D.iIdDocumento, D.iIdTramite, D.vchNombre, D.vchUrl, D.bActivo
         FROM dbo.Documento D WITH(NOLOCK)

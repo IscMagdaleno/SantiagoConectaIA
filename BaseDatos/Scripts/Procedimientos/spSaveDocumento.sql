@@ -1,58 +1,94 @@
-IF OBJECT_ID('spSaveDocumento') IS NOT NULL
-    DROP PROCEDURE spSaveDocumento;
-GO
+IF OBJECT_ID( 'spSaveDocumento' ) IS NULL
+	EXEC ('CREATE PROCEDURE spSaveDocumento AS SET NOCOUNT ON;') 
+GO 
+ALTER PROCEDURE spSaveDocumento (
+@iIdDocumento INT, 
+@iIdTramite INT, 
+@vchNombre VARCHAR (250) , 
+@vchUrlDocumento VARCHAR (500) , 
+@bActivo BIT 
+) 
+AS 
+BEGIN 
 
-CREATE PROCEDURE spSaveDocumento
-(
-    @iIdDocumento INT = 0,
-    @iIdTramite INT,
-    @vchNombre VARCHAR(250),
-    @vchUrl VARCHAR(500) = NULL,
-    @bActivo BIT = 1
-)
-AS
-BEGIN
-    DECLARE @vchError VARCHAR(500) = '';
+DECLARE @vchError VARCHAR(200) = '';
 
-    DECLARE @Result TABLE (
-        bResult BIT DEFAULT(1),
-        vchMessage VARCHAR(500) DEFAULT(''),
-        iIdDocumento INT DEFAULT(-1)
-    );
+DECLARE @Result AS TABLE (
+	bResult BIT DEFAULT(1),
+	vchMessage VARCHAR(500) DEFAULT(''),
+	iIdDocumento INT DEFAULT( -1 ) 
+	);
 
-    SET NOCOUNT ON;
-    BEGIN TRY
-        SET XACT_ABORT ON;
-        BEGIN TRANSACTION;
+SET NOCOUNT ON
+SET XACT_ABORT ON;
 
-        IF @iIdDocumento IS NULL OR @iIdDocumento <= 0
-        BEGIN
-            INSERT INTO dbo.Documento (iIdTramite, vchNombre, vchUrl, bActivo)
-            VALUES (@iIdTramite, @vchNombre, @vchUrl, @bActivo);
+BEGIN TRY
 
-            SET @iIdDocumento = SCOPE_IDENTITY();
-        END
-        ELSE
-        BEGIN
-            UPDATE dbo.Documento
-            SET vchNombre = @vchNombre,
-                vchUrl = @vchUrl,
-                bActivo = @bActivo
-            WHERE iIdDocumento = @iIdDocumento;
-        END
+BEGIN TRANSACTION
 
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        SET @vchError = CONCAT(ERROR_PROCEDURE(), ': ', ERROR_MESSAGE(), ' - Línea ', ERROR_LINE());
-        IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
-    END CATCH
+IF  ( @iIdDocumento <= 0) 
+BEGIN 
+	INSERT INTO dbo.Documento
+	 ( 
 
-    IF LEN(@vchError) > 0
-        INSERT INTO @Result (bResult, vchMessage) VALUES (0, @vchError);
-    ELSE
-        INSERT INTO @Result (bResult, vchMessage, iIdDocumento) VALUES (1, '', @iIdDocumento);
-
-    SELECT * FROM @Result;
+		iIdTramite, 			vchNombre, 			vchUrl, 	
+		bActivo 	
+	)
+	VALUES 
+	(
+		@iIdTramite,		@vchNombre,		@vchUrlDocumento,
+		@bActivo
+	)
+		 SET @iIdDocumento = @@IDENTITY
 END
-GO
+ELSE
+BEGIN
+	UPDATE  dbo.Documento WITH(ROWLOCK) SET
+		 iIdTramite = @iIdTramite, 
+		 vchNombre = @vchNombre, 
+		 vchUrl = @vchUrlDocumento, 
+		 bActivo = @bActivo 
+
+	 WHERE  iIdDocumento  = @iIdDocumento;
+
+END
+		COMMIT TRANSACTION ;
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION ;
+
+		SELECT @vchError = CONCAT( 'spSaveDocumento: ', ERROR_MESSAGE( ), ' ', ERROR_PROCEDURE( ), ' ', ERROR_LINE( ) );
+		PRINT @vchError;
+	END CATCH
+
+	IF LEN( @vchError ) > 0
+	BEGIN
+		INSERT INTO @Result
+		(
+			bResult,vchMessage
+		)
+		VALUES
+		(
+			0,@vchError
+		);
+	END
+	ELSE
+	BEGIN
+		INSERT INTO @Result
+		(
+			bResult,vchMessage,iIdDocumento
+		)
+		VALUES
+		(
+			1,'',@iIdDocumento
+		);
+	END;
+
+	SELECT *
+	FROM
+		@Result;
+	SET NOCOUNT OFF;
+END;
+GO 
+
+

@@ -14,5 +14,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces
 		Task<Response<IEnumerable<Tramite>>> SearchTramites(PostSearchTramites PostModel);
 		Task<Response<IEnumerable<TramitesCardDto>>> GetTramitesCard(PostGetTramites daoModel);
 		Task<Response<TramiteDetalleDto>> GetTramiteDetalle(PostGetTramiteDetalle postModel);
+		Task<Response<Documento>> SaveDocumento(PostSaveDocumento PostModel);
 	}
 }

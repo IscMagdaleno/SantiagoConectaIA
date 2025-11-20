@@ -10,7 +10,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModu
 			public int iIdDocumento { get; set; } = 0;
 			public int iIdTramite { get; set; }
 			public string vchNombre { get; set; }
-			public string vchUrl { get; set; }
+			public string vchUrlDocumento { get; set; }
 			public bool bActivo { get; set; } = true;
 		}
 

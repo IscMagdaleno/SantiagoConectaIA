@@ -24,6 +24,9 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		public List<Tramite> LstTramites { get; set; }
 		public Tramite TramiteSelected { get; set; }
 
+		public List<Documento> LstDocumentos { get; set; }
+		public Documento DocumentoSelected { get; set; }
+
 		public List<Oficina> LstOficinas { get; set; }
 		public Oficina OficinaSelected { get; set; }
 
@@ -42,6 +45,9 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 
 			LstOficinas = new List<Oficina>();
 			OficinaSelected = new Oficina();
+
+			DocumentoSelected = new Documento();
+			LstDocumentos = new List<Documento>();
 		}
 
 		public async Task<SeverityMessage> PostGetTramites()
@@ -73,7 +79,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			var model = _mapper.Get<Tramite, PostSaveTramite>(TramiteSelected);
 			var response = await _httpService.Post<PostSaveTramite, Response<Tramite>>(APIUrl, model);
 			var validacion = _validaServicioService.ValidadionServicio(response,
-			onSuccess: data => LstTramites.Add(data));
+			onSuccess: data => TramiteSelected = (data));
 			return validacion;
 
 		}
@@ -103,6 +109,17 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 
 		}
 
+		public async Task<SeverityMessage> PostSaveDocumento()
+		{
+			DocumentoSelected.iIdTramite = TramiteSelected.iIdTramite;
+			var APIUrl = url + "/PostSaveDocumento";
+			var model = _mapper.Get<Documento, PostSaveDocumento>(DocumentoSelected);
+			var response = await _httpService.Post<PostSaveDocumento, Response<Documento>>(APIUrl, model);
+			var validacion = _validaServicioService.ValidadionServicio(response,
+			onSuccess: data => LstDocumentos.Add(data));
+			return validacion;
+
+		}
 
 
 	}

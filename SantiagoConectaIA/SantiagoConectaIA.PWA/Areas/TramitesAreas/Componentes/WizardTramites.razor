@@ -1,0 +1,65 @@
+﻿@using MudBlazor
+@inherits EngramaComponent
+
+
+
+@if (Data == null)
+{
+	<MudAlert Severity="Severity.Info" Class="mb-4">Cargando datos del módulo...</MudAlert>
+	return;
+}
+
+<MudCard Outlined="true" Class="mx-auto">
+	<MudCardHeader>
+		<CardHeaderContent>
+			<MudText Typo="Typo.h5" Color="Color.Primary">
+				<MudIcon Icon="@Icons.Material.Filled.Description" Class="mr-2" />
+				Wizard de Trámites y Documentos
+			</MudText>
+			<MudText Typo="Typo.subtitle2">Siga los pasos para completar el registro del trámite.</MudText>
+		</CardHeaderContent>
+	</MudCardHeader>
+
+	<MudCardContent>
+
+		<MudStepper @ref="Stepper">
+
+			@* --- Paso 1: Registro del Trámite (Inicial) --- *@
+			<MudStep Title="1. Datos del Trámite"  >
+				<MudContainer Class="px-0">
+
+					<FormTramites Data="@Data" OnTramiteSaved="OnTramiteSaved" />
+				</MudContainer>
+
+
+			</MudStep>
+
+			@* --- Paso 2: Documentos Requeridos --- *@
+			<MudStep Title="2. Documentos Requeridos" >
+				<MudContainer Class="px-0">
+					@if (Data.LstDocumentos.Any())
+					{
+
+						<TablaDocumentos LstDocumentosPorTramite="Data.LstDocumentos">
+						</TablaDocumentos>
+					}
+					<FormDocumento Data="@Data" OnDocumentoSaved="OnDocumentoSaved" />
+				</MudContainer>
+
+
+			</MudStep>
+
+			@* --- Paso 3: Confirmación/Finalización --- *@
+			<MudStep Title="3. Confirmación y Finalización"  >
+				<MudContainer Class="px-0 text-center py-8">
+					<MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" Class="mb-3" Style="font-size: 80px;" />
+					<MudText Typo="Typo.h6" Class="mb-2">¡Trámite Registrado Exitosamente!</MudText>
+					<MudText Typo="Typo.body1">El registro del trámite y la carga de documentos han sido completados.</MudText>
+				</MudContainer>
+
+			</MudStep>
+
+		</MudStepper>
+	</MudCardContent>
+</MudCard>
+
