@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 
 using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
 using SantiagoConectaIA.PWA.Shared.Common;
@@ -17,6 +18,15 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		{
 			Loading.Show();
 
+			var uploadResult = await Data.UploadFile();
+
+			if (!uploadResult.bResult)
+			{
+				Loading.Hide();
+				ShowSnake(uploadResult);
+				return;
+			}
+
 			var result = await Data.PostSaveDocumento();
 			ShowSnake(result);
 			if (result.bResult)
@@ -25,6 +35,11 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			}
 			Loading.Hide();
 
+		}
+
+		private void UploadFiles(IBrowserFile file)
+		{
+			Data.SelectedFile = (file);
 		}
 	}
 }

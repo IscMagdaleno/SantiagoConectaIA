@@ -3,6 +3,9 @@ using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 using EngramaCoreStandar.Servicios;
 
+using Microsoft.AspNetCore.Components.Forms;
+
+using SantiagoConectaIA.Share.Objects.Common;
 using SantiagoConectaIA.Share.Objects.OficinasModule;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
 using SantiagoConectaIA.Share.PostModels.OficinasModule;
@@ -21,6 +24,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		private readonly IValidaServicioService _validaServicioService;
 		#endregion
 		#region PROPIEDADES
+
 		public List<Tramite> LstTramites { get; set; }
 		public Tramite TramiteSelected { get; set; }
 
@@ -30,7 +34,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		public List<Oficina> LstOficinas { get; set; }
 		public Oficina OficinaSelected { get; set; }
 
-
+		public IBrowserFile SelectedFile { get; set; }
 
 		#endregion
 
@@ -119,6 +123,51 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			onSuccess: data => LstDocumentos.Add(data));
 			return validacion;
 
+		}
+
+		/// <summary>
+		/// Sube el archivo seleccionado a la API de AzureBlobController y retorna la URL.
+		/// </summary>
+		public async Task<SeverityMessage> UploadFile()
+		{
+			if (SelectedFile == null)
+			{
+				return new SeverityMessage(false, "Debe seleccionar un archivo PDF para subir.", SeverityTag.Error);
+			}
+
+			// Validar tamaño y tipo de archivo antes de enviarlo
+			if (SelectedFile.ContentType != "application/pdf")
+			{
+				return new SeverityMessage(false, "Solo se permiten archivos en formato PDF.", SeverityTag.Error);
+			}
+
+			var APIUrl = "api/AzureBlob/UploadDocument";
+
+			long maxFileSize = 1024L * 1024L * 1024L * 2L;
+
+			using var memoryStream = new MemoryStream();
+			await SelectedFile.OpenReadStream(maxFileSize).CopyToAsync(memoryStream);
+			memoryStream.Position = 0;
+
+
+			StreamContent? pdf = new StreamContent(memoryStream);
+
+
+			// Usar HttpService.PostFile (asumiendo que EngramaCoreStandard tiene este método)
+			// PostFile maneja el multipart/form-data
+			var response = await _httpService.PostWithFile<Response<BlobSaved>>(APIUrl, pdf);
+
+			// Validar la respuesta del servicio. Si es exitoso, la URL estará en response.Response.Data
+			var validation = _validaServicioService.ValidadionServicio(response, ContinueWarning: false, ContinueError: false,
+			onSuccess: data =>
+			{
+				// Asignar la URL del blob al documento seleccionado en Main
+				DocumentoSelected.vchUrlDocumento = data.URL;
+
+			}
+			);
+
+			return validation;
 		}
 
 

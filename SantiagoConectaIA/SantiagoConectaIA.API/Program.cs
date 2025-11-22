@@ -7,6 +7,7 @@ using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository;
 using SantiagoConectaIA.API.SemanticKernel;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
+using SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository;
 
 using System.Reflection;
 
@@ -25,10 +26,12 @@ builder.Services.AddEngramaDependenciesAPI();
 builder.Services.AddScoped<ITramiteDominio, TramiteDominio>();
 builder.Services.AddScoped<IOficinasDomain, OficinasDomain>();
 builder.Services.AddScoped<IConversationalDominio, ConversationalDominio>();
+builder.Services.AddScoped<IAzureBlobDomain, AzureBlobDomain>();
 
 builder.Services.AddScoped<ITramitesRepository, TramitesRepository>();
 builder.Services.AddScoped<IOficinasRepository, OficinasRepository>();
 builder.Services.AddScoped<IConversationalRepository, ConversationalRepository>();
+builder.Services.AddScoped<IAzureBlobRepository, AzureBlobRepository>();
 
 
 builder.Services.AddScoped<KernelProvider>();

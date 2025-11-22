@@ -11,6 +11,7 @@
 		{
 			vchNombre = string.Empty;
 			vchUrlDocumento = string.Empty;
+			bActivo = true;
 		}
 
 	}

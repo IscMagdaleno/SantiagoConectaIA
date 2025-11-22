@@ -18,10 +18,29 @@
 
 			</MudItem>
 			<MudItem sm="6">
-				<MudTextField @bind-Value="@Data.DocumentoSelected.vchUrlDocumento"
-							  Label="UrlDocumento"
-							  MaxLength="500"
-							  Variant="Variant.Outlined" />
+				<MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
+					<ActivatorContent>
+						<MudButton Variant="Variant.Filled"
+								   Color="Color.Primary"
+								   StartIcon="@Icons.Material.Filled.CloudUpload">
+							Cargar Archivo
+						</MudButton>
+					</ActivatorContent>
+				</MudFileUpload>
+
+				@if (Data.SelectedFile != null)
+				{
+					<MudText Typo="Typo.caption" Class="mt-2">
+						Archivo Seleccionado: <b>@Data.SelectedFile.Name</b> (@((Data.SelectedFile.Size / 1024).ToString("N0")) KB)
+					</MudText>
+
+					@if (!string.IsNullOrEmpty(Data.DocumentoSelected.vchUrlDocumento))
+					{
+						<MudText Typo="Typo.caption" Color="Color.Success">
+							URL Temporal: @Data.DocumentoSelected.vchUrlDocumento
+						</MudText>
+					}
+				}
 
 			</MudItem>
 			<MudItem sm="6">
