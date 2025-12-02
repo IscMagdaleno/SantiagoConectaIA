@@ -37,10 +37,10 @@
 			@* --- Paso 2: Documentos Requeridos --- *@
 			<MudStep Title="2. Documentos Requeridos" >
 				<MudContainer Class="px-0">
-					@if (Data.LstDocumentos.Any())
+					@if (Data.TramiteSelected.Documentos.Any())
 					{
 
-						<TablaDocumentos LstDocumentosPorTramite="Data.LstDocumentos">
+						<TablaDocumentos LstDocumentosPorTramite="Data.TramiteSelected.Documentos">
 						</TablaDocumentos>
 					}
 					<FormDocumento Data="@Data" OnDocumentoSaved="OnDocumentoSaved" />
@@ -52,10 +52,10 @@
 			@* --- Paso 3: Requisitos --- *@
 			<MudStep Title="3. Requisitos">
 				<MudContainer Class="px-0">
-					@if (Data.LstRequisitos.Any())
+					@if (Data.TramiteSelected.Requisitos.Any())
 					{
 
-						<TableRequisitos LstRequisitosPorTramite="Data.LstRequisitos">
+						<TableRequisitos LstRequisitosPorTramite="Data.TramiteSelected.Requisitos">
 						</TableRequisitos>
 					}
 					<FormRequisito Data="@Data" OnRequisitoSaved="OnRequisitoSaved" />

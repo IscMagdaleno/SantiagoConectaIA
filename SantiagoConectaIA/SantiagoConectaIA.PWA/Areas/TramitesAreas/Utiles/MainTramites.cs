@@ -25,20 +25,20 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		#endregion
 		#region PROPIEDADES
 
+		public List<Oficina> LstOficinas { get; set; }
 		public List<Tramite> LstTramites { get; set; }
+
+
 		public Tramite TramiteSelected { get; set; }
 
-		public List<Documento> LstDocumentos { get; set; }
 		public Documento DocumentoSelected { get; set; }
 
-		public List<Oficina> LstOficinas { get; set; }
 		public Oficina OficinaSelected { get; set; }
 
-
-		public List<Requisitos> LstRequisitos { get; set; }
 		public Requisitos RequisitoSelected { get; set; }
 
 		public IBrowserFile SelectedFile { get; set; }
+
 
 		#endregion
 
@@ -55,10 +55,10 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			OficinaSelected = new Oficina();
 
 			DocumentoSelected = new Documento();
-			LstDocumentos = new List<Documento>();
+			TramiteSelected.Documentos = new List<Documento>();
 
 			RequisitoSelected = new Requisitos();
-			LstRequisitos = new List<Requisitos>();
+			TramiteSelected.Requisitos = new List<Requisitos>();
 		}
 
 		public async Task<SeverityMessage> PostGetTramites()
@@ -93,8 +93,15 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			var model = _mapper.Get<Tramite, PostSaveTramite>(tramite);
 			var response = await _httpService.Post<PostSaveTramite, Response<Tramite>>(APIUrl, model);
 			var validacion = _validaServicioService.ValidadionServicio(response,
-			onSuccess: data => LstTramites.Add(data));
+			onSuccess: data => AfterSaveTramite(data));
 			return validacion;
+
+		}
+
+
+		private void AfterSaveTramite(Tramite tramite)
+		{
+			TramiteSelected.iIdTramite = tramite.iIdTramite;
 
 		}
 
@@ -130,7 +137,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			var model = _mapper.Get<Documento, PostSaveDocumento>(DocumentoSelected);
 			var response = await _httpService.Post<PostSaveDocumento, Response<Documento>>(APIUrl, model);
 			var validacion = _validaServicioService.ValidadionServicio(response,
-			onSuccess: data => LstDocumentos.Add(data));
+			onSuccess: data => TramiteSelected.Documentos.Add(data));
 			return validacion;
 
 		}
@@ -142,7 +149,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			var model = _mapper.Get<Requisitos, PostSaveRequisito>(RequisitoSelected);
 			var response = await _httpService.Post<PostSaveRequisito, Response<Requisitos>>(APIUrl, model);
 			var validacion = _validaServicioService.ValidadionServicio(response,
-			onSuccess: data => LstRequisitos.Add(data));
+			onSuccess: data => TramiteSelected.Requisitos.Add(data));
 			return validacion;
 
 		}
