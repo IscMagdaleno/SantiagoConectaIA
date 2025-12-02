@@ -61,7 +61,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 
 
 
-		public async Task<Response<IEnumerable<RequisitosPorTramite>>> SearchRequisitosForChat(PostGetByIdForChat postModel)
+		public async Task<Response<IEnumerable<Requisitos>>> SearchRequisitosForChat(PostGetByIdForChat postModel)
 		{
 			try
 			{
@@ -72,12 +72,12 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 				var repoResult = await _conversationalRepository.spSearchRequisitosForChat(req);
 
 				// Valida y mapea la respuesta al modelo de Share (RequisitoDetalle)
-				var validation = _responseHelper.Validacion<spSearchRequisitosForChat.Result, RequisitosPorTramite>(repoResult);
+				var validation = _responseHelper.Validacion<spSearchRequisitosForChat.Result, Requisitos>(repoResult);
 				return validation;
 			}
 			catch (Exception ex)
 			{
-				return Response<IEnumerable<RequisitosPorTramite>>.BadResult(ex.Message, Enumerable.Empty<RequisitosPorTramite>());
+				return Response<IEnumerable<Requisitos>>.BadResult(ex.Message, Enumerable.Empty<Requisitos>());
 			}
 		}
 

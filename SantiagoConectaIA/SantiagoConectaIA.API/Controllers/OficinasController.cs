@@ -126,13 +126,13 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		[HttpPost("PostGetOficinasPorTramite")]
-		[ProducesResponseType(typeof(Response<IEnumerable<OficinaPorTramite>>), 200)]
+		[ProducesResponseType(typeof(Response<IEnumerable<Oficina>>), 200)]
 		public async Task<IActionResult> PostGetOficinasPorTramite([FromBody] PostGetOficinasPorTramite model)
 		{
 			try
 			{
 				if (model == null)
-					return BadRequest(Response<IEnumerable<OficinaPorTramite>>.BadResult("Payload vacío.", null));
+					return BadRequest(Response<IEnumerable<Oficina>>.BadResult("Payload vacío.", null));
 
 				var result = await _oficinasDomain.GetOficinasPorTramite(model);
 				if (result.IsSuccess)
@@ -144,7 +144,7 @@ namespace SantiagoConectaIA.API.Controllers
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error en PostGetOficinasPorTramite");
-				return BadRequest(Response<IEnumerable<OficinaPorTramite>>.BadResult("Error interno.", null));
+				return BadRequest(Response<IEnumerable<Oficina>>.BadResult("Error interno.", null));
 			}
 		}
 	}

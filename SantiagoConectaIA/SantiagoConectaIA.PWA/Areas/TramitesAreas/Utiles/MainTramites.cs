@@ -34,6 +34,10 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		public List<Oficina> LstOficinas { get; set; }
 		public Oficina OficinaSelected { get; set; }
 
+
+		public List<Requisitos> LstRequisitos { get; set; }
+		public Requisitos RequisitoSelected { get; set; }
+
 		public IBrowserFile SelectedFile { get; set; }
 
 		#endregion
@@ -52,6 +56,9 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 
 			DocumentoSelected = new Documento();
 			LstDocumentos = new List<Documento>();
+
+			RequisitoSelected = new Requisitos();
+			LstRequisitos = new List<Requisitos>();
 		}
 
 		public async Task<SeverityMessage> PostGetTramites()
@@ -67,23 +74,26 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			return validation;
 		}
 
-		public async Task<SeverityMessage> PostGetTramiteDetail()
+		public async Task<SeverityMessage> PostGetTramiteDetalle(int iIdTramite)
 		{
-			var APIUrl = url + "/PostGetTramiteDetail";
+			var APIUrl = url + "/PostGetTramiteDetalle";
 
-			var model = new PostGetTramites();
-			var response = await _httpService.Post<PostGetTramites, Response<Tramite>>(APIUrl, model);
+			var model = new PostGetTramiteDetalle()
+			{
+				iIdTramite = iIdTramite
+			};
+			var response = await _httpService.Post<PostGetTramiteDetalle, Response<Tramite>>(APIUrl, model);
 			var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => TramiteSelected = data);
 			return validation;
 		}
 
-		public async Task<SeverityMessage> PostSaveTramite()
+		public async Task<SeverityMessage> PostSaveTramite(Tramite tramite)
 		{
 			var APIUrl = url + "/PostSaveTramite";
-			var model = _mapper.Get<Tramite, PostSaveTramite>(TramiteSelected);
+			var model = _mapper.Get<Tramite, PostSaveTramite>(tramite);
 			var response = await _httpService.Post<PostSaveTramite, Response<Tramite>>(APIUrl, model);
 			var validacion = _validaServicioService.ValidadionServicio(response,
-			onSuccess: data => TramiteSelected = (data));
+			onSuccess: data => LstTramites.Add(data));
 			return validacion;
 
 		}
@@ -124,6 +134,19 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 			return validacion;
 
 		}
+
+		public async Task<SeverityMessage> PostSaveRequisito()
+		{
+			RequisitoSelected.iIdTramite = TramiteSelected.iIdTramite;
+			var APIUrl = url + "/PostSaveRequisito";
+			var model = _mapper.Get<Requisitos, PostSaveRequisito>(RequisitoSelected);
+			var response = await _httpService.Post<PostSaveRequisito, Response<Requisitos>>(APIUrl, model);
+			var validacion = _validaServicioService.ValidadionServicio(response,
+			onSuccess: data => LstRequisitos.Add(data));
+			return validacion;
+
+		}
+
 
 		/// <summary>
 		/// Sube el archivo seleccionado a la API de AzureBlobController y retorna la URL.

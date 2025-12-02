@@ -1,0 +1,47 @@
+﻿@inherits EngramaComponent
+
+<EditForm Model="@Data.RequisitoSelected"
+		  OnValidSubmit="OnSubmint">
+	<DataAnnotationsValidator />
+
+	<MudFocusTrap>
+
+		<MudGrid>
+			<MudItem sm="6">
+
+				<MudTextField @bind-Value="@Data.RequisitoSelected.vchNombre"
+							  Label="Nombre"
+							  MaxLength="250"
+							  Variant="Variant.Outlined" />
+
+
+				<MudTextField @bind-Value="@Data.RequisitoSelected.nvchDetalle"
+							  Label="Detalle"
+							  MaxLength="1000"
+							  Variant="Variant.Outlined" />
+
+
+			</MudItem>
+			<MudItem sm="6">
+				<MudSwitch @bind-Value="Data.RequisitoSelected.bObligatorio"
+						   Label="Obligatorio"
+						   Color="Color.Success" />
+
+
+				<MudSwitch @bind-Value="Data.RequisitoSelected.bActivo"
+						   Label="Activo" />
+
+
+			</MudItem>
+			<MudItem sm="12">
+				<MudButton Variant="Variant.Filled"
+						   ButtonType="ButtonType.Submit"
+						   Color="Color.Secondary">Guardar Requisito</MudButton>
+			</MudItem>
+		</MudGrid>
+	</MudFocusTrap>
+</EditForm>
+
+@code {
+
+}

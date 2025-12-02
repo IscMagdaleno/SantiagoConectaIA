@@ -13,8 +13,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces
 		Task<Response<Oficina>> SaveOficina(PostSaveOficina postModel);
 
 
-		Task<Response<OficinaPorTramite>> LinkOficinaTramite(PostLinkOficinaTramite postModel);
-		Task<Response<IEnumerable<OficinaPorTramite>>> GetOficinasPorTramite(PostGetOficinasPorTramite postModel);
+		Task<Response<Oficina>> LinkOficinaTramite(PostLinkOficinaTramite postModel);
+		Task<Response<IEnumerable<Oficina>>> GetOficinasPorTramite(PostGetOficinasPorTramite postModel);
 	}
 
 }

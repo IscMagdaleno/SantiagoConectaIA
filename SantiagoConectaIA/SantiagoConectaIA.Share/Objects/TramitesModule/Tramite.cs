@@ -23,7 +23,10 @@ namespace SantiagoConectaIA.Share.Objects.TramitesModule
 		public DateTime? dtFechaActualizacion { get; set; }
 		public bool bActivo { get; set; }
 		public Oficina Oficina { get; set; }
-		public IEnumerable<OficinaPorTramite>? OficinaPorTramite { get; set; }
+		public List<Requisitos> Requisitos { get; set; }
+		public List<Pasos> Pasos { get; set; }
+		public List<Documento> Documentos { get; set; }
+
 
 		public Tramite()
 		{
@@ -32,6 +35,9 @@ namespace SantiagoConectaIA.Share.Objects.TramitesModule
 			dtFechaActualizacion = DateTime.Now;
 			dtFechaCreacion = DateTime.Now;
 			Oficina = new Oficina();
+			Requisitos = new List<Requisitos>();
+			Pasos = new List<Pasos>();
+			Documentos = new List<Documento>();
 
 			bActivo = true;
 		}

@@ -40,8 +40,8 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			{
 				Loading.Show();
 				Tramite.bActivo = false;
-				Data.TramiteSelected = Tramite;
-				var saveResult = await Data.PostSaveTramite();
+
+				var saveResult = await Data.PostSaveTramite(tramite);
 				ShowSnake(saveResult);
 				if (saveResult.bResult)
 				{

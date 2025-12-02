@@ -4,7 +4,6 @@ using EngramaCoreStandar.Results;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
-using SantiagoConectaIA.Share.DTO_s.TramitesArea;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
 using SantiagoConectaIA.Share.PostModels.OficinasModule;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
@@ -98,13 +97,13 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 
 
 
-		public async Task<Response<IEnumerable<RequisitosPorTramite>>> GetRequisitosPorTramite(PostGetRequisitosPorTramite PostModel)
+		public async Task<Response<IEnumerable<Requisitos>>> GetRequisitosPorTramite(PostGetRequisitosPorTramite PostModel)
 		{
 			try
 			{
 				var model = mapperHelper.Get<PostGetRequisitosPorTramite, spGetRequisitosPorTramite.Request>(PostModel);
 				var result = await tramitesRepository.spGetRequisitosPorTramite(model);
-				var validation = responseHelper.Validacion<spGetRequisitosPorTramite.Result, RequisitosPorTramite>(result);
+				var validation = responseHelper.Validacion<spGetRequisitosPorTramite.Result, Requisitos>(result);
 				if (validation.IsSuccess)
 				{
 					validation.Data = validation.Data;
@@ -113,43 +112,43 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			}
 			catch (Exception ex)
 			{
-				return Response<IEnumerable<RequisitosPorTramite>>.BadResult(ex.Message, new List<RequisitosPorTramite>());
+				return Response<IEnumerable<Requisitos>>.BadResult(ex.Message, new List<Requisitos>());
 			}
 		}
 
-		public async Task<Response<RequisitosPorTramite>> SaveRequisito(PostSaveRequisito PostModel)
+		public async Task<Response<Requisitos>> SaveRequisito(PostSaveRequisito PostModel)
 		{
 			try
 			{
 				var model = mapperHelper.Get<PostSaveRequisito, spSaveRequisito.Request>(PostModel);
 				var result = await tramitesRepository.spSaveRequisito(model);
-				var validation = responseHelper.Validacion<spSaveRequisito.Result, RequisitosPorTramite>(result);
+				var validation = responseHelper.Validacion<spSaveRequisito.Result, Requisitos>(result);
 				if (validation.IsSuccess)
 				{
 					PostModel.iIdRequisito = validation.Data.iIdRequisito;
-					validation.Data = mapperHelper.Get<PostSaveRequisito, RequisitosPorTramite>(PostModel);
+					validation.Data = mapperHelper.Get<PostSaveRequisito, Requisitos>(PostModel);
 				}
 				return validation;
 			}
 			catch (Exception ex)
 			{
-				return Response<RequisitosPorTramite>.BadResult(ex.Message, new());
+				return Response<Requisitos>.BadResult(ex.Message, new());
 			}
 		}
-		public async Task<Response<IEnumerable<TramitesCardDto>>> GetTramitesCard(PostGetTramites daoModel)
+		public async Task<Response<IEnumerable<Tramite>>> GetTramitesCard(PostGetTramites daoModel)
 		{
 			try
 			{
 				var request = mapperHelper.Get<PostGetTramites, spGetTramitesCard.Request>(daoModel);
 				var result = await tramitesRepository.spGetTramitesCard(request);
-				return responseHelper.Validacion<spGetTramitesCard.Result, TramitesCardDto>(result);
+				return responseHelper.Validacion<spGetTramitesCard.Result, Tramite>(result);
 			}
 			catch (Exception ex)
 			{
-				return Response<IEnumerable<TramitesCardDto>>.BadResult(ex.Message, new List<TramitesCardDto>());
+				return Response<IEnumerable<Tramite>>.BadResult(ex.Message, new List<Tramite>());
 			}
 		}
-		public async Task<Response<TramiteDetalleDto>> GetTramiteDetalle(PostGetTramiteDetalle postModel)
+		public async Task<Response<Tramite>> GetTramiteDetalle(PostGetTramiteDetalle postModel)
 		{
 			try
 			{
@@ -158,10 +157,10 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 				var tramiteResult = (await tramitesRepository.spGetTramites(tramiteRequest)).FirstOrDefault();
 
 				if (tramiteResult == null || !tramiteResult.bResult)
-					return Response<TramiteDetalleDto>.BadResult("Trámite no encontrado.", null);
+					return Response<Tramite>.BadResult("Trámite no encontrado.", null);
 
 				// Mapear Trámite base a nuestro DTO
-				var dto = mapperHelper.Get<spGetTramites.Result, TramiteDetalleDto>(tramiteResult);
+				var dto = mapperHelper.Get<spGetTramites.Result, Tramite>(tramiteResult);
 
 				// Obtener la Oficina por trámite
 				var oficinaRequest = new PostGetOficinasPorTramite { iIdTramite = postModel.iIdTramite, vchTexto = "", bIncluirContacto = false }; // Asumo que tienes este SP
@@ -169,7 +168,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 
 				if (oficinaResult.IsSuccess)
 				{
-					dto.OficinaPorTramite = oficinaResult.Data;
+					dto.Oficina = oficinaResult.Data.FirstOrDefault();
 				}
 
 				//Obtener la información de la oficina
@@ -192,11 +191,11 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 				await Task.WhenAll(requisitosTask, pasosTask, documentosTask);
 
 				// Usamos ValidacionList para mapear y filtrar solo los exitosos
-				dto.Requisitos = responseHelper.Validacion<spGetRequisitosPorTramite.Result, RequisitosPorTramite>(requisitosTask.Result).Data.ToList();
-				dto.Pasos = responseHelper.Validacion<spGetPasosPorTramite.Result, PasosPorTramite>(pasosTask.Result).Data.ToList();
-				dto.Documentos = responseHelper.Validacion<spGetDocumentosPorTramite.Result, DocumentosPorTramite>(documentosTask.Result).Data.ToList();
+				dto.Requisitos = responseHelper.Validacion<spGetRequisitosPorTramite.Result, Requisitos>(requisitosTask.Result).Data.ToList();
+				dto.Pasos = responseHelper.Validacion<spGetPasosPorTramite.Result, Pasos>(pasosTask.Result).Data.ToList();
+				dto.Documentos = responseHelper.Validacion<spGetDocumentosPorTramite.Result, Documento>(documentosTask.Result).Data.ToList();
 
-				return new Response<TramiteDetalleDto>
+				return new Response<Tramite>
 				{
 					IsSuccess = true,
 					Data = dto,
@@ -205,7 +204,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			}
 			catch (Exception ex)
 			{
-				return Response<TramiteDetalleDto>.BadResult(ex.Message, new TramiteDetalleDto());
+				return Response<Tramite>.BadResult(ex.Message, new Tramite());
 			}
 		}
 

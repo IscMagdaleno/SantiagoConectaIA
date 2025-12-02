@@ -5,7 +5,7 @@
 
 @using MudBlazor
 
-<EditForm Model="@Data.TramiteSelected"
+<EditForm Model="@TramiteModel"
 		  OnValidSubmit="OnSubmit">
 	<DataAnnotationsValidator />
 	<MudFocusTrap>
@@ -15,14 +15,14 @@
 				<MudGrid>
 					<MudItem xs="12" sm="6">
 						@* Nombre del Trámite (vchNombre) - Ya estaba presente *@
-						<MudTextField @bind-Value="Data.TramiteSelected.vchNombre"
+						<MudTextField @bind-Value="TramiteModel.vchNombre"
 									  Label="Nombre del Trámite"
 									  MaxLength="50"
 									  Variant="Variant.Outlined"
 									  Class="mb-4" />
 
 						@* Descripción (nvchDescripcion) - Ya estaba presente *@
-						<MudTextField @bind-Value="Data.TramiteSelected.nvchDescripcion"
+						<MudTextField @bind-Value="TramiteModel.nvchDescripcion"
 									  Label="Descripción del Trámite"
 									  Lines="5"
 									  MaxLength="500"
@@ -36,7 +36,7 @@
 
 							@* Costo (mCosto) *@
 							<MudItem xs="12" sm="6">
-								<MudNumericField @bind-Value="Data.TramiteSelected.mCosto"
+								<MudNumericField @bind-Value="TramiteModel.mCosto"
 												 Label="Costo"
 												 Variant="Variant.Outlined"
 												 Format="C2"
@@ -50,7 +50,7 @@
 								NOTA: En un entorno real, aquí se usaría un MudSelect con elementos cargados
 								en Data.LstOficinas (asumiendo que existe) y el Value sería iIdOficina.
 							*@
-								<MudSelect @bind-Value="Data.TramiteSelected.iIdOficina"
+								<MudSelect @bind-Value="TramiteModel.iIdOficina"
 										   Label="Oficina Responsable"
 										   Variant="Variant.Outlined"
 										   AdornmentIcon="@Icons.Material.Filled.Business"
@@ -67,7 +67,7 @@
 
 							@* Modalidad En Línea (bModalidadEnLinea) *@
 							<MudItem xs="12" sm="6">
-								<MudSwitch @bind-Value="Data.TramiteSelected.bModalidadEnLinea"
+								<MudSwitch @bind-Value="TramiteModel.bModalidadEnLinea"
 										   Color="Color.Info"
 										   Label="Modalidad En Línea"
 										   Class="mt-4" />
@@ -75,7 +75,7 @@
 
 							@* Activo (bActivo) *@
 							<MudItem xs="12" sm="6">
-								<MudSwitch @bind-Value="Data.TramiteSelected.bActivo"
+								<MudSwitch @bind-Value="TramiteModel.bActivo"
 										   Color="Color.Success"
 										   Label="Trámite Activo"
 										   Class="mt-4" />

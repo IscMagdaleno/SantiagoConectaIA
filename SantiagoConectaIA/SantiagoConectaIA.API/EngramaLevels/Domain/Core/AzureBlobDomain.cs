@@ -2,6 +2,7 @@
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
+using SantiagoConectaIA.Share.Objects.Common;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 {
@@ -14,11 +15,11 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			_blobRepository = blobRepository;
 		}
 
-		public async Task<Response<string>> UploadDocument(Stream fileStream, string fileName, string containerName)
+		public async Task<Response<BlobSaved>> UploadDocument(Stream fileStream, string fileName, string containerName)
 		{
 			if (fileStream == null || string.IsNullOrEmpty(fileName))
 			{
-				return Response<string>.BadResult("Datos del archivo no válidos.", string.Empty);
+				return Response<BlobSaved>.BadResult("Datos del archivo no válidos.", new BlobSaved());
 			}
 
 			// Llama al repositorio para la subida

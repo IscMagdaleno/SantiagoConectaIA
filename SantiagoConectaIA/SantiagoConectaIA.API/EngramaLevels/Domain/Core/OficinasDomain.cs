@@ -94,38 +94,38 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 		}
 
 
-		public async Task<Response<OficinaPorTramite>> LinkOficinaTramite(PostLinkOficinaTramite postModel)
+		public async Task<Response<Oficina>> LinkOficinaTramite(PostLinkOficinaTramite postModel)
 		{
 			try
 			{
 				var req = _mapperHelper.Get<PostLinkOficinaTramite, spLinkOficinaTramite.Request>(postModel);
 				var repo = await _oficinasRepository.spLinkOficinaTramite(req);
-				var validation = _responseHelper.Validacion<spLinkOficinaTramite.Result, OficinaPorTramite>(repo);
+				var validation = _responseHelper.Validacion<spLinkOficinaTramite.Result, Oficina>(repo);
 				if (validation.IsSuccess)
 				{
 					postModel.iIdOficina = validation.Data.iIdOficina;
-					validation.Data = _mapperHelper.Get<PostLinkOficinaTramite, OficinaPorTramite>(postModel);
+					validation.Data = _mapperHelper.Get<PostLinkOficinaTramite, Oficina>(postModel);
 				}
 				return validation;
 			}
 			catch (Exception ex)
 			{
-				return Response<OficinaPorTramite>.BadResult(ex.Message, new OficinaPorTramite());
+				return Response<Oficina>.BadResult(ex.Message, new Oficina());
 			}
 		}
 
-		public async Task<Response<IEnumerable<OficinaPorTramite>>> GetOficinasPorTramite(PostGetOficinasPorTramite postModel)
+		public async Task<Response<IEnumerable<Oficina>>> GetOficinasPorTramite(PostGetOficinasPorTramite postModel)
 		{
 			try
 			{
 				var req = _mapperHelper.Get<PostGetOficinasPorTramite, spGetOficinasPorTramite.Request>(postModel);
 				var repo = await _oficinasRepository.spGetOficinasPorTramite(req);
-				var validation = _responseHelper.Validacion<spGetOficinasPorTramite.Result, OficinaPorTramite>(repo);
+				var validation = _responseHelper.Validacion<spGetOficinasPorTramite.Result, Oficina>(repo);
 				return validation;
 			}
 			catch (Exception ex)
 			{
-				return Response<IEnumerable<OficinaPorTramite>>.BadResult(ex.Message, Enumerable.Empty<OficinaPorTramite>());
+				return Response<IEnumerable<Oficina>>.BadResult(ex.Message, Enumerable.Empty<Oficina>());
 			}
 		}
 	}

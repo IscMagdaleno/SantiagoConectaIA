@@ -29,6 +29,13 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			await Stepper.NextStepAsync();
 		}
 
+		public async Task OnRequisitoSaved()
+		{
+
+			await Task.Delay(1);
+			StateHasChanged();
+		}
+
 		// Se ejecuta al guardar exitosamente los documentos
 		public async Task OnDocumentoSaved()
 		{

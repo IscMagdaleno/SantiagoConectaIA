@@ -1,0 +1,47 @@
+﻿@using SantiagoConectaIA.Share.Objects.TramitesModule
+
+<MudTable Items="@LstRequisitosPorTramite"
+		  T="@Requisitos"
+		  Dense="@true"
+		  Hover="true"
+		  Filter="new Func<Requisitos,bool>(FilterFunc1)">
+	<ToolBarContent>
+		<MudText Typo="Typo.h6">Tabla de Requisito</MudText>
+		<MudSpacer />
+		<MudTextField @bind-Value="searchStringFiltro"
+					  Placeholder="Search"
+					  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+					  IconSize="Size.Medium"
+					  Class="mt-0">
+		</MudTextField>
+	</ToolBarContent>
+	<HeaderContent>
+		<MudTh>IdRequsto</MudTh>
+		<MudTh>Nombre</MudTh>
+		<MudTh>Detalle</MudTh>
+	</HeaderContent>
+	<RowTemplate>
+		<MudTd DataLabel="iIdRequisito">@context.iIdRequisito</MudTd>
+		<MudTd DataLabel="vchNombre">@context.vchNombre</MudTd>
+		<MudTd DataLabel="nvchDetalle">@context.vchNombre</MudTd>
+
+	</RowTemplate>
+	<PagerContent>
+		<MudTablePager />
+	</PagerContent>
+</MudTable>
+@code {
+	[Parameter] public List<Requisitos> LstRequisitosPorTramite { get; set; }
+
+
+	private string searchStringFiltro = "";
+	private bool FilterFunc1(Requisitos element) => FilterFunc(element, searchStringFiltro);
+	private bool FilterFunc(Requisitos element, string searchString)
+	{
+		if (string.IsNullOrWhiteSpace(searchString))
+			return true;
+		if (element.vchNombre.Contains(searchString, StringComparison.OrdinalIgnoreCase)) // Agrega el campo por el caul realizar el filtro
+			return true;
+		return false;
+	}
+}

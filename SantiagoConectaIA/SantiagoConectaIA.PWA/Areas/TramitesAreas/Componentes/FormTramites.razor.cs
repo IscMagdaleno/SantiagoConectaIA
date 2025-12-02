@@ -2,6 +2,7 @@
 
 using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
 using SantiagoConectaIA.PWA.Shared.Common;
+using SantiagoConectaIA.Share.Objects.TramitesModule;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 {
@@ -13,9 +14,19 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		#endregion
 
 		#region CICLO VIDA BLAZOR
+
+		private Tramite TramiteModel { get; set; }
+
 		protected override void OnInitialized()
 		{
-
+			if (Data.TramiteSelected.iIdTramite <= 0)
+			{
+				TramiteModel = new Tramite();
+			}
+			else
+			{
+				TramiteModel = Data.TramiteSelected;
+			}
 		}
 
 		protected override async Task OnInitializedAsync()
@@ -29,7 +40,8 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		{
 
 			Loading.Show();
-			var result = await Data.PostSaveTramite();
+
+			var result = await Data.PostSaveTramite(TramiteModel);
 
 			ShowSnake(result);
 			if (result.bResult)

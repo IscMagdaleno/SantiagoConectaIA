@@ -1,9 +1,12 @@
 ﻿using EngramaCoreStandar.Results;
+
 using Microsoft.AspNetCore.Components;
+
 using Newtonsoft.Json;
-using SantiagoConectaIA.Share.DTO_s.TramitesArea;
+
 using SantiagoConectaIA.Share.Objects.TramitesModule;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
+
 using System.Net;
 using System.Text;
 
@@ -28,7 +31,7 @@ namespace SantiagoConectaFront.Data
 
 			var respuesta = await _HttpClient.SendAsync(request);
 
-			
+
 			if (respuesta.StatusCode == HttpStatusCode.BadRequest)
 			{
 				return null;
@@ -38,7 +41,7 @@ namespace SantiagoConectaFront.Data
 			var resultado = JsonConvert.DeserializeObject<Response<List<Tramite>>>(json);
 			return resultado;
 		}
-		public async Task<Response<List<TramitesCardDto>>> PostGetAllTramitesCard(PostGetTramites data)
+		public async Task<Response<List<Tramite>>> PostGetAllTramitesCard(PostGetTramites data)
 		{
 			var url = "/api/Tramites/PostGetTramitesCard";
 			var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_HttpClient.BaseAddress!, url));
@@ -53,13 +56,13 @@ namespace SantiagoConectaFront.Data
 			}
 
 			var json = await respuesta.Content.ReadAsStringAsync();
-			var resultado = JsonConvert.DeserializeObject<Response<List<TramitesCardDto>>>(json);
+			var resultado = JsonConvert.DeserializeObject<Response<List<Tramite>>>(json);
 			return resultado;
 		}
 
-		public async Task<Response<TramiteDetalleDto>> PostGetTramiteDetalleAsync(PostGetTramiteDetalle data)
+		public async Task<Response<Tramite>> PostGetTramiteDetalleAsync(PostGetTramiteDetalle data)
 		{
-			var url = "/api/Tramites/PostGetTramiteDetalle"; 
+			var url = "/api/Tramites/PostGetTramiteDetalle";
 			var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_HttpClient.BaseAddress!, url));
 			request.Content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
@@ -69,10 +72,10 @@ namespace SantiagoConectaFront.Data
 			if (!respuesta.IsSuccessStatusCode)
 			{
 				// Devuelve el 'BadResult' de la API
-				return JsonConvert.DeserializeObject<Response<TramiteDetalleDto>>(json);
+				return JsonConvert.DeserializeObject<Response<Tramite>>(json);
 			}
 
-			var resultado = JsonConvert.DeserializeObject<Response<TramiteDetalleDto>>(json);
+			var resultado = JsonConvert.DeserializeObject<Response<Tramite>>(json);
 			return resultado;
 		}
 	}

@@ -5,6 +5,7 @@ using Azure.Storage.Sas;
 using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
+using SantiagoConectaIA.Share.Objects.Common;
 
 namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 {
@@ -32,9 +33,10 @@ namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 		/// <summary>
 		/// Sube un archivo a Azure Blob Storage y retorna su URL.
 		/// </summary>
-		public async Task<Response<string>> UploadFileAsync(Stream fileStream, string fileName, string containerName)
+		public async Task<Response<BlobSaved>> UploadFileAsync(Stream fileStream, string fileName, string containerName)
 		{
-			var response = new Response<string>();
+			var response = new Response<BlobSaved>();
+			response.Data = new BlobSaved();
 
 			try
 			{
@@ -68,14 +70,17 @@ namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 					// Generar la URI con el token SAS
 					Uri blobSasUri = blobClient.GenerateSasUri(sasBuilder);
 
-					response.Data = blobSasUri.ToString(); // Retorna la URL completa con el token
+					response.Data.URL = blobSasUri.ToString(); // Retorna la URL completa con el token
+					response.Data.Name = blobClient.Name;
 					response.IsSuccess = true;
 					response.Message = "Archivo subido y URL SAS generada con éxito.";
 				}
 				else
 				{
 					// Si no se pudo generar el token, retorna la URL base (menos segura)
-					response.Data = blobClient.Uri.ToString();
+
+					response.Data.URL = ""; // Retorna la URL completa con el token
+					response.Data.Name = blobClient.Name;
 					response.IsSuccess = true;
 					response.Message = "Archivo subido. No se pudo generar el token SAS.";
 				}
@@ -84,7 +89,6 @@ namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 			{
 				response.IsSuccess = false;
 				response.Message = $"Error al subir el archivo a Azure Blob: {ex.Message}";
-				response.Data = string.Empty;
 			}
 
 			return response;

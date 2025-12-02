@@ -49,6 +49,22 @@
 
 			</MudStep>
 
+			@* --- Paso 3: Requisitos --- *@
+			<MudStep Title="3. Requisitos">
+				<MudContainer Class="px-0">
+					@if (Data.LstRequisitos.Any())
+					{
+
+						<TableRequisitos LstRequisitosPorTramite="Data.LstRequisitos">
+						</TableRequisitos>
+					}
+					<FormRequisito Data="@Data" OnRequisitoSaved="OnRequisitoSaved" />
+				</MudContainer>
+
+
+			</MudStep>
+
+
 			@* --- Paso 3: Confirmación/Finalización --- *@
 			<MudStep Title="3. Confirmación y Finalización"  >
 				<MudContainer Class="px-0 text-center py-8">

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.Share.Objects.Common;
 
 namespace SantiagoConectaIA.API.Controllers
 {
@@ -24,7 +25,7 @@ namespace SantiagoConectaIA.API.Controllers
 		{
 			if (file == null || file.Length == 0)
 			{
-				return BadRequest(EngramaCoreStandar.Results.Response<string>.BadResult("No se proporcionó ningún archivo.", string.Empty));
+				return BadRequest(EngramaCoreStandar.Results.Response<BlobSaved>.BadResult("No se proporcionó ningún archivo.", new BlobSaved()));
 			}
 
 

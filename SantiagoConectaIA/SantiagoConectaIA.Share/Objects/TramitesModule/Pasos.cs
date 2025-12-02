@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SantiagoConectaIA.Share.DTO_s.TramitesArea
+﻿namespace SantiagoConectaIA.Share.Objects.TramitesModule
 {
-	public class PasosPorTramite
+	public class Pasos
 	{
 		public int iIdTramitePaso { get; set; }
 		public int iIdTramite { get; set; }
@@ -14,7 +8,7 @@ namespace SantiagoConectaIA.Share.DTO_s.TramitesArea
 		public string nvchDescripcion { get; set; }
 		public bool bActivo { get; set; }
 
-		public PasosPorTramite()
+		public Pasos()
 		{
 			nvchDescripcion = string.Empty;
 		}

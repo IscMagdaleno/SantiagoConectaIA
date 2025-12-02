@@ -33,10 +33,13 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		#endregion
 
 
-		private void OnTramiteSelected(Tramite tramite)
+		private async Task OnTramiteSelected(Tramite tramite)
 		{
-			Data.TramiteSelected = tramite;
+			Loading.Show();
+			ShowSnake(await Data.PostGetTramiteDetalle(tramite.iIdTramite));
 			bShowFormTramite = true;
+
+			Loading.Hide();
 		}
 
 		private void OnClickShowForm()

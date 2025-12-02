@@ -3,8 +3,8 @@
 @inject Data_Tramites data_Tramites;
 @using SantiagoConectaFront.Data
 @using SantiagoConectaFront.Shared 
-@using SantiagoConectaIA.Share.DTO_s.TramitesArea
 @using SantiagoConectaIA.Share.Objects.OficinasModule
+@using SantiagoConectaIA.Share.Objects.TramitesModule
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
 
 <PageTitle>Detalle del Trámite</PageTitle>
@@ -35,7 +35,7 @@
                     <span>/</span>
                     <a href="/tramites" class="hover:text-blue-600">Trámites</a>
                     <span>/</span>
-                    <span class="text-gray-800 font-medium">@Tramite.vchNombre</span>
+                    <span class="text-gray-800 font-medium">@Tramite</span>
                 </div>
             </div>
         </div>
@@ -178,7 +178,7 @@
                                                     @Icon.FileText("w-5 h-5 text-blue-600")
                                                     <span class="text-gray-700">@documento.vchNombre</span>
                                                 </div>
-                                                <a href="@documento.vchUrl" 
+                                                <a href="@documento.vchUrlDocumento" 
                                                            target="_blank" 
                                                            rel="noopener noreferrer"
                                                            class="flex items-center text-blue-600 hover:text-blue-800 font-medium">
@@ -347,11 +347,11 @@
     [Parameter]
     public int Id { get; set; }
 
-    private TramiteDetalleDto? Tramite { get; set; }
+    private Tramite? Tramite { get; set; }
     private bool Loading { get; set; } = true;
     private string ActiveTab { get; set; } = "requisitos";
 
-    private OficinaPorTramite? OficinaInfo => Tramite?.OficinaPorTramite?.FirstOrDefault();
+    private Oficina? OficinaInfo => Tramite.Oficina;
 
     private string GetMapUrl()
     {
