@@ -8,6 +8,7 @@ using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository;
 using SantiagoConectaIA.API.SemanticKernel;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
 using SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository;
+using SantiagoConectaIA.API.Middleware;
 
 using System.Reflection;
 
@@ -27,11 +28,13 @@ builder.Services.AddScoped<ITramiteDominio, TramiteDominio>();
 builder.Services.AddScoped<IOficinasDomain, OficinasDomain>();
 builder.Services.AddScoped<IConversationalDominio, ConversationalDominio>();
 builder.Services.AddScoped<IAzureBlobDomain, AzureBlobDomain>();
+builder.Services.AddScoped<ILogsDomain, LogsDomain>();
 
 builder.Services.AddScoped<ITramitesRepository, TramitesRepository>();
 builder.Services.AddScoped<IOficinasRepository, OficinasRepository>();
 builder.Services.AddScoped<IConversationalRepository, ConversationalRepository>();
 builder.Services.AddScoped<IAzureBlobRepository, AzureBlobRepository>();
+builder.Services.AddScoped<ILogsRepository, LogsRepository>();
 
 
 builder.Services.AddScoped<KernelProvider>();
@@ -79,6 +82,8 @@ app.UseCors(x => x
 
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ApiLoggingMiddleware>();
 
 app.UseAuthorization();
 

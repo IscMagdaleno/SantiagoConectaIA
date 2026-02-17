@@ -7,10 +7,24 @@
         <div class="flex items-start justify-between mb-4">
             <div class="flex-1">
                 <h3 class="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                    @Tramite.vchNombre
+                    @if (CultureInfo.CurrentCulture.Name.StartsWith("en") && !string.IsNullOrEmpty(Tramite.vchNombreEn))
+                    {
+                        @Tramite.vchNombreEn
+                    }
+                    else
+                    {
+                        @Tramite.vchNombre
+                    }
                 </h3>
                 <p class="text-sm text-gray-600 mt-2 line-clamp-3">
-                    @Tramite.nvchDescripcion
+                    @if (CultureInfo.CurrentCulture.Name.StartsWith("en") && !string.IsNullOrEmpty(Tramite.nvchDescripcionEn))
+                    {
+                         @Tramite.nvchDescripcionEn
+                    }
+                    else
+                    {
+                         @Tramite.nvchDescripcion
+                    }
                 </p>
             </div>
             <div class="ml-4">

@@ -4,6 +4,7 @@
 	{
 		public int iIdTramite { get; set; }
 		public bool bActivo { get; set; }
+		public string Culture { get; set; }
 	}
 
 }

@@ -1,4 +1,12 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.Extensions.Localization
+@using SantiagoConectaFront.Shared
+@inject IStringLocalizer<App> Localizer
+
+<MudThemeProvider   />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
 
 <header class="header-area header-sticky">
     <div class="container">
@@ -9,11 +17,12 @@
                         <img src="assets/images/logo.png" alt="Softy Pinko" />
                     </a>
                     <ul class="nav">
-                        <li><NavLink href="/" Match="NavLinkMatch.All">Inicio</NavLink></li>
-                        <li><NavLink href="features">Información</NavLink></li>
-                        <li><NavLink href="tramites">Trámites</NavLink></li>
-                        <li><NavLink href="testimonials">Noticias</NavLink></li>
-                        <li><NavLink href="pricing">ChatBot</NavLink></li>
+                        <li><NavLink href="/" Match="NavLinkMatch.All">@Localizer["Inicio"]</NavLink></li>
+                        <!--<li><NavLink href="features">@Localizer["AcercaDe"]</NavLink></li>-->
+                        <li><NavLink href="tramites">@Localizer["Tramites"]</NavLink></li>
+                        <li><NavLink href="testimonials">@Localizer["Contacto"]</NavLink></li>
+                        <!--<li><NavLink href="pricing">ChatBot</NavLink></li>-->
+                        <li><LanguageSwitcher /></li>
                     </ul>
                     <a class='menu-trigger'>
                         <span>Menu</span>

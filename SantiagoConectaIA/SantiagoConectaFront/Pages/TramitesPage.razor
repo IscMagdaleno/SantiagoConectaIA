@@ -8,8 +8,9 @@
 @using SantiagoConectaIA.Share.Objects.OficinasModule
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
+@inject IStringLocalizer<App> Localizer
 
-<PageTitle>Trámites y Servicios</PageTitle>
+<PageTitle>@Localizer["TramitesTitulo"]</PageTitle>
 
 <div class="min-h-screen bg-gray-50">
 
@@ -24,11 +25,10 @@
         <div class="container mx-auto px-4 relative z-10">
             <div class="text-center">
                 <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-rose-900">
-                    Trámites y Servicios
+                    @Localizer["TramitesTitulo"]
                 </h1>
                 <p class="text-xl text-rose-800 mb-8 max-w-3xl mx-auto">
-                    Consulta todos los trámites disponibles en Santiago Papasquiaro.
-                    Encuentra información detallada, requisitos y ubicaciones.
+                    @Localizer["TramitesSubtitulo"]
                 </p>
             </div>
         </div>
@@ -43,7 +43,7 @@
                     @Icon.Search("absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5")
                     <input
                         type="text"
-                        placeholder="Buscar trámites..."
+                        placeholder="@Localizer["BuscarTramites"]"
                         class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                         @bind="SearchTerm"
                         @bind:event="oninput"
@@ -59,7 +59,7 @@
                             class="pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent appearance-none bg-white min-w-[200px]"
                             @bind="SelectedCategory"
                         >
-                            <option value="0">Todas las categorías</option>
+                            <option value="0">@Localizer["TodasCategorias"]</option>
                             @foreach (var category in Categories)
                             {
                                 <option value="@category.id">@category.name</option>
@@ -99,7 +99,7 @@
         {
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">
-                    @FilteredTramites.Count() trámite@(FilteredTramites.Count() != 1 ? "s" : "") encontrado@(FilteredTramites.Count() != 1 ? "s" : "")
+                    @FilteredTramites.Count() @Localizer["TramitesEncontrados"]
                 </h2>
             </div>
 
@@ -129,10 +129,10 @@
                 <div class="text-center py-12">
                     @Icon.FileText("w-16 h-16 text-gray-400 mx-auto mb-4")
                     <h3 class="text-xl font-medium text-gray-600 mb-2">
-                        No se encontraron trámites
+                        @Localizer["NoTramitesTitulo"]
                     </h3>
                     <p class="text-gray-500">
-                        Intenta ajustar los filtros o términos de búsqueda
+                        @Localizer["NoTramitesDesc"]
                     </p>
                 </div>
             }

@@ -1,0 +1,17 @@
+@using System.Globalization
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<MudMenu Icon="@Icons.Material.Filled.Language" Color="Color.Inherit" Direction="Direction.Bottom" OffsetY="true" Dense="true">
+    <MudMenuItem OnClick="@(() => SetLanguage("es-MX"))">ES</MudMenuItem>
+    <MudMenuItem OnClick="@(() => SetLanguage("en-US"))">EN</MudMenuItem>
+</MudMenu>
+
+@code {
+    private async Task SetLanguage(string culture)
+    {
+        await JSRuntime.InvokeVoidAsync("blazorCulture.set", culture);
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+}

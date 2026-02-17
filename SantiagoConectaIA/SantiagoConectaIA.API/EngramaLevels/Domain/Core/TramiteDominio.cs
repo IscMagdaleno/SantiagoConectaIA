@@ -4,6 +4,7 @@ using EngramaCoreStandar.Results;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
+using SantiagoConectaIA.Share.Objects.OficinasModule;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
 using SantiagoConectaIA.Share.PostModels.OficinasModule;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
@@ -141,7 +142,44 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			{
 				var request = mapperHelper.Get<PostGetTramites, spGetTramitesCard.Request>(daoModel);
 				var result = await tramitesRepository.spGetTramitesCard(request);
-				return responseHelper.Validacion<spGetTramitesCard.Result, Tramite>(result);
+
+				// Validación manual de error (si el repositorio devuelve indicador de error en el primer elemento)
+				var first = result.FirstOrDefault();
+				if (first != null && !first.bResult)
+				{
+					return Response<IEnumerable<Tramite>>.BadResult(first.vchMessage, new List<Tramite>());
+				}
+
+				// Mapeo Manual
+				var listaTramites = result.Select(r => new Tramite
+				{
+					iIdTramite = r.iIdTramite,
+					vchNombre = r.vchNombreTramite, // Mapeo de vchNombreTramite -> vchNombre
+					nvchDescripcion = r.vchDescripcionTramite,
+					vchNombreEn = r.vchNombreTramiteEn,
+					nvchDescripcionEn = r.vchDescripcionTramiteEn,
+					bModalidadEnLinea = r.bModalidadEnLinea,
+					mCosto = r.dCosto,
+					iIdOficina = r.iIdOficina,
+					bActivo = true, // Asumimos true si viene del SP o agregar campo bActivo en Result
+					
+					// Mapeo del objeto anidado Oficina
+					Oficina = new Oficina
+					{
+						iIdOficina = r.iIdOficina,
+						vchNombre = r.vchNombreOficina,
+						vchDireccion = r.vchDireccionOficina,
+						vchTelefono = r.vchTelefonoOficina,
+						vchHorario = r.vchHorarioOficina
+					}
+				}).ToList();
+
+				return new Response<IEnumerable<Tramite>>
+				{
+					IsSuccess = true,
+					Data = listaTramites,
+					Message = "Consulta Exitosa"
+				};
 			}
 			catch (Exception ex)
 			{

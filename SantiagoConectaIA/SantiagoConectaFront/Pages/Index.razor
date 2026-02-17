@@ -1,7 +1,9 @@
 ﻿@page "/"
 @using SantiagoConectaFront.Data
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
+@using Microsoft.Extensions.Localization
 @inject NavigationManager NavManager
+@inject IStringLocalizer<App> Localizer
 
 <PageTitle>Home - Softy Pinko</PageTitle>
 
@@ -11,11 +13,11 @@
         <div class="container">
             <div class="row">
                 <div class="offset-xl-3 col-xl-6 offset-lg-2 col-lg-8 col-md-12 col-sm-12">
-                    <h1>Santiago Conecta <strong>IA</strong><br>ayudará a toda la <strong>población.</strong></h1>
+                    <h1>@Localizer["WelcomeTitle"]</h1>
                     <p>
-                        El proyecto que revolucionará la tecnología y la rapidez de la información de Santiago Papasquiaro.
+                        @Localizer["WelcomeSubtitle"]
                     </p>
-                    <a href="#features" class="main-button-slider">Descubre más</a>
+                    <a href="#features" class="main-button-slider">@Localizer["DiscoverMore"]</a>
                 </div>
             </div>
         </div>
@@ -35,8 +37,8 @@
                             <div class="icon">
                                 <i><img src="assets/images/Tramite-icon.png" alt=""></i>
                             </div>
-                            <h5 class="features-title">Trámites</h5>
-                            <p>Consulta los trámites que puedes realizar en Santiago Papasquiaro, sus pasos y a dónde puedes acudir o pedir información.</p>
+                            <h5 class="features-title">@Localizer["Tramites"]</h5>
+                            <p>@Localizer["TramitesDesc"]</p>
                         </div>
                     </div>
                     <!-- ***** Features Small Item End ***** -->
@@ -47,8 +49,8 @@
                             <div class="icon">
                                 <i><img src="assets/images/noticias-icon.png" alt=""></i>
                             </div>
-                            <h5 class="features-title">Noticias</h5>
-                            <p>Entérate de las últimas noticias de Santiago Papasquiaro y sus alrededores en esta sección. Da un vistazo a las distintas secciones de las noticias locales.</p>
+                            <h5 class="features-title">@Localizer["Noticias"]</h5>
+                            <p>@Localizer["NoticiasDesc"]</p>
                         </div>
                     </div>
                     <!-- ***** Features Small Item End ***** -->
@@ -59,8 +61,8 @@
                             <div class="icon">
                                 <i><img src="assets/images/ia-icon.png" alt=""></i>
                             </div>
-                            <h5 class="features-title">Santiago Conecta IA</h5>
-                            <p>Prueba el último modelo de la Inteligencia Artificial de Santiago Papasquiaro, donde puedes consultar cualquier cosa de Santiago Papasquiaro.</p>
+                            <h5 class="features-title">@Localizer["SantiagoConectaIA"]</h5>
+                            <p>@Localizer["SantiagoConectaIADesc"]</p>
                         </div>
                     </div>
                     <!-- ***** Features Small Item End ***** -->

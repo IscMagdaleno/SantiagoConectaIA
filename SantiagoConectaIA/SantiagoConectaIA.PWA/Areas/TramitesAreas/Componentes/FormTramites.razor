@@ -24,7 +24,20 @@
 						@* Descripción (nvchDescripcion) - Ya estaba presente *@
 						<MudTextField @bind-Value="TramiteModel.nvchDescripcion"
 									  Label="Descripción del Trámite"
-									  Lines="5"
+									  Lines="3"
+									  MaxLength="500"
+									  Variant="Variant.Outlined" />
+
+						@* ENGLISH FIELDS *@
+						<MudTextField @bind-Value="TramiteModel.vchNombreEn"
+									  Label="Nombre del Trámite (Inglés)"
+									  MaxLength="250"
+									  Variant="Variant.Outlined"
+									  Class="mb-4 mt-4" />
+
+						<MudTextField @bind-Value="TramiteModel.nvchDescripcionEn"
+									  Label="Descripción del Trámite (Inglés)"
+									  Lines="3"
 									  MaxLength="500"
 									  Variant="Variant.Outlined" />
 
