@@ -1,50 +1,50 @@
 ﻿@using System.Globalization
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 
-<div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-6">
+<div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 hover:border-rose-100 group">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between">
         <div class="flex-1">
-            <div class="flex items-start justify-between mb-2">
-                <h3 class="text-xl font-semibold text-gray-800 hover:text-blue-600 transition-colors">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-xl font-bold text-gray-800 group-hover:text-rose-700 transition-colors">
                     @Tramite.vchNombre
                 </h3>
                 @if (Tramite.bModalidadEnLinea)
                 {
-                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                    <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold text-emerald-800 bg-emerald-100 rounded-full border border-emerald-200">
                         En línea
                     </span>
                 }
                 else
                 {
-                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-800 bg-orange-100 rounded-full">
+                    <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold text-amber-800 bg-amber-100 rounded-full border border-amber-200">
                         Presencial
                     </span>
                 }
             </div>
 
-            <p class="text-gray-600 mb-4 max-w-3xl">
+            <p class="text-gray-600 mb-4 max-w-3xl leading-relaxed">
                 @Tramite.nvchDescripcion
             </p>
 
-            <div class="flex flex-wrap gap-4 text-sm text-gray-600">
-                <div class="flex items-center">
-                    @Icon.DollarSign("w-4 h-4 mr-1 text-green-600")
-                    @(Tramite.mCosto > 0 ? $"${Tramite.mCosto.ToString("N2", CultureInfo.GetCultureInfo("es-MX"))} MXN" : "Gratuito")
+            <div class="flex flex-wrap gap-6 text-sm text-gray-600">
+                <div class="flex items-center group-hover:text-gray-900 transition-colors">
+                    @Icon.DollarSign("w-4 h-4 mr-2 text-emerald-500")
+                    <span class="font-medium">@(Tramite.mCosto > 0 ? $"${Tramite.mCosto.ToString("N2", CultureInfo.GetCultureInfo("es-MX"))} MXN" : "Gratuito")</span>
                 </div>
-                <div class="flex items-center">
-                    @Icon.MapPin("w-4 h-4 mr-1 text-red-600")
-                    @(Tramite.Oficina.vchNombre ?? "N/A")
+                <div class="flex items-center group-hover:text-gray-900 transition-colors">
+                    @Icon.MapPin("w-4 h-4 mr-2 text-rose-500")
+                    <span>@(Tramite.Oficina.vchNombre ?? "N/A")</span>
                 </div>
-                <div class="flex items-center">
-                    @Icon.Clock("w-4 h-4 mr-1 text-blue-600")
-                    @(Tramite.Oficina.vchHorario)
+                <div class="flex items-center group-hover:text-gray-900 transition-colors">
+                    @Icon.Clock("w-4 h-4 mr-2 text-amber-500")
+                    <span>@(Tramite.Oficina.vchHorario)</span>
                 </div>
             </div>
         </div>
 
-        <div class="mt-4 lg:mt-0 lg:ml-6">
+        <div class="mt-6 lg:mt-0 lg:ml-6 flex-shrink-0">
             <a href="@($"/tramites/{Tramite.iIdTramite}")"
-               class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105">
+               class="inline-flex justify-center items-center px-6 py-3 bg-white text-rose-700 border border-rose-200 font-bold rounded-lg hover:bg-rose-600 hover:text-white hover:border-transparent transition-all duration-300 shadow-sm">
                 Ver detalles
                 @Icon.FileText("w-4 h-4 ml-2")
             </a>

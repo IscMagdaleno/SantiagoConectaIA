@@ -35,16 +35,16 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="bg-white border-b shadow-sm">
+    <div class="bg-white border-b shadow-sm sticky top-[80px] z-20">
         <div class="container mx-auto px-4 py-6">
             <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
                 <!-- Search Bar -->
-                <div class="relative flex-1 max-w-md">
-                    @Icon.Search("absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5")
+                <div class="relative flex-1 max-w-lg w-full group">
+                    @Icon.Search("absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-rose-500 transition-colors w-5 h-5")
                     <input
                         type="text"
                         placeholder="@Localizer["BuscarTramites"]"
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                        class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all outline-none"
                         @bind="SearchTerm"
                         @bind:event="oninput"
                         @onkeyup="ApplyFilters"
@@ -52,11 +52,11 @@
                 </div>
 
                 <!-- Category Filter -->
-                <div class="flex items-center gap-4">
-                    <div class="relative">
-                        @Icon.Filter("absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5")
+                <div class="flex items-center gap-4 w-full lg:w-auto">
+                    <div class="relative w-full lg:w-auto hover:text-rose-600 transition-colors">
+                        @Icon.Filter("absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 mb-0.5")
                         <select
-                            class="pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent appearance-none bg-white min-w-[200px]"
+                            class="w-full lg:w-auto pl-12 pr-10 py-3.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all appearance-none cursor-pointer min-w-[220px] text-gray-700 font-medium"
                             @bind="SelectedCategory"
                         >
                             <option value="0">@Localizer["TodasCategorias"]</option>
@@ -65,19 +65,27 @@
                                 <option value="@category.id">@category.name</option>
                             }
                         </select>
+                        <!-- Custom Chevron -->
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                             </svg>
+                        </div>
                     </div>
 
                     <!-- View Toggle -->
-                    <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+                    <div class="flex bg-gray-100 p-1 rounded-xl border border-gray-200">
                         <button
                             @onclick='() => ViewMode = "grid"'
-                            class="@(ViewMode == "grid" ? "p-3 bg-rose-600 text-white" : "p-3 bg-white text-gray-600")"
+                            class="@(ViewMode == "grid" ? "p-2.5 bg-white text-rose-600 shadow-sm rounded-lg transition-all" : "p-2.5 text-gray-500 hover:text-gray-900 transition-all")"
+                            title="Vista en Cuadrícula"
                         >
                             @Icon.Grid2x2("w-5 h-5")
                         </button>
                         <button
                             @onclick='() => ViewMode = "list"'
-                            class="@(ViewMode == "list" ? "p-3 bg-rose-600 text-white" : "p-3 bg-white text-gray-600")"
+                            class="@(ViewMode == "list" ? "p-2.5 bg-white text-rose-600 shadow-sm rounded-lg transition-all" : "p-2.5 text-gray-500 hover:text-gray-900 transition-all")"
+                            title="Vista en Lista"
                         >
                             @Icon.List("w-5 h-5")
                         </button>

@@ -27,26 +27,15 @@
     }
     else
     {
-        <!-- Breadcrumb -->
-        <div class="bg-white border-b">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex items-center space-x-2 text-sm text-gray-600">
-                    <a href="/" class="hover:text-blue-600">Inicio</a>
-                    <span>/</span>
-                    <a href="/tramites" class="hover:text-blue-600">Trámites</a>
-                    <span>/</span>
-                    <span class="text-gray-800 font-medium">@Tramite</span>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Header Section -->
-        <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-12">
+        <div class="bg-gradient-to-r from-rose-900 via-rose-800 to-rose-700 text-white pt-32 pb-12">
             <div class="container mx-auto px-4">
                 <div class="flex items-center mb-6">
                     <a
                         href="/tramites"
-                        class="inline-flex items-center text-blue-200 hover:text-white transition-colors mr-6"
+                        class="inline-flex items-center text-rose-100 hover:text-white transition-colors mr-6"
                     >
                         @Icon.ArrowLeft("w-5 h-5 mr-2")
                         Volver a trámites
@@ -58,21 +47,21 @@
                         <h1 class="text-3xl md:text-4xl font-bold mb-4">
                             @Tramite.vchNombre
                         </h1>
-                        <p class="text-xl text-blue-100 mb-6 leading-relaxed">
+                        <p class="text-xl text-rose-100 mb-6 leading-relaxed">
                             @Tramite.nvchDescripcion
                         </p>
 
                         <div class="flex flex-wrap gap-4 mb-6">
                             @if (Tramite.bModalidadEnLinea)
                             {
-                                <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
+                                <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-emerald-800 bg-emerald-100 rounded-full">
                                     @Icon.CheckCircle("w-4 h-4 mr-2")
                                     Disponible en línea
                                 </span>
                             }
                             else
                             {
-                                <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-orange-800 bg-orange-100 rounded-full">
+                                <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-amber-800 bg-amber-100 rounded-full">
                                     @Icon.AlertCircle("w-4 h-4 mr-2")
                                     Solo presencial
                                 </span>
@@ -82,13 +71,13 @@
                     </div>
 
                     <div class="lg:col-span-1">
-                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-rose-500/30">
                             <h3 class="text-xl font-semibold mb-4">Información General</h3>
                             <div class="space-y-4">
                                 <div class="flex items-center">
-                                    @Icon.DollarSign("w-5 h-5 mr-3 text-green-400")
+                                    @Icon.DollarSign("w-5 h-5 mr-3 text-emerald-400")
                                     <div>
-                                        <p class="text-sm text-blue-200">Costo</p>
+                                        <p class="text-sm text-rose-200">Costo</p>
                                         <p class="font-semibold">
                                             @(Tramite.mCosto > 0 ? $"${Tramite.mCosto:N2} MXN" : "Gratuito")
                                         </p>
@@ -97,9 +86,9 @@
 
 
                                 <div class="flex items-center">
-                                    @Icon.MapPin("w-5 h-5 mr-3 text-red-400")
+                                    @Icon.MapPin("w-5 h-5 mr-3 text-amber-400")
                                     <div>
-                                        <p class="text-sm text-blue-200">Oficina</p>
+                                        <p class="text-sm text-rose-200">Oficina</p>
                                         <p class="font-semibold">@(Tramite.Oficina?.vchNombre ?? "N/A")</p>
                                     </div>
                                 </div>
@@ -113,7 +102,7 @@
         <!-- Content Section -->
         <div class="container mx-auto px-4 py-8">
             <!-- Tabs -->
-            <div class="bg-white rounded-lg shadow-sm mb-8">
+            <div class="bg-white rounded-lg shadow-md mb-8 border border-gray-100">
                 <div class="border-b">
                     <nav class="flex space-x-8 px-6">
                         @foreach (var tab in Tabs)
@@ -121,7 +110,7 @@
                             <button
                                 @key="tab.id"
                                 @onclick='() => ActiveTab = tab.id'
-                                class="@($"flex items-center py-4 border-b-2 font-medium text-sm transition-colors {(ActiveTab == tab.id ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300")}")"
+                                class="@($"flex items-center py-4 border-b-2 font-medium text-sm transition-colors {(ActiveTab == tab.id ? "border-rose-600 text-rose-700" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300")}")"
                             >
                                 @tab.name
                             </button>
@@ -135,7 +124,7 @@
                     {
                         <div class="space-y-6">
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-l-4 border-rose-600 pl-3">
                                     Requisitos:
                                 </h3>
                                 @if (Tramite.Requisitos?.Any() == true)
@@ -143,15 +132,15 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         @foreach (var requisito in Tramite.Requisitos)
                                         {
-                                            <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                                                @Icon.CheckCircle("w-5 h-5 text-green-600 mt-0.5 flex-shrink-0")
+                                            <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg hover:shadow-sm transition-shadow border border-gray-100">
+                                                @Icon.CheckCircle("w-5 h-5 text-rose-600 mt-0.5 flex-shrink-0")
                                                 
                                                 <div class="flex-1">
                                                     <span class="text-gray-900 font-semibold block">@requisito.vchNombre</span>
                                                     
                                                     @if (!string.IsNullOrEmpty(requisito.nvchDetalle))
                                                     {
-                                                        <span class="text-gray-700">@requisito.nvchDetalle</span>
+                                                        <span class="text-gray-600 text-sm mt-1 block">@requisito.nvchDetalle</span>
                                                     }
                                                 </div>
                                             </div>
@@ -160,28 +149,29 @@
                                 }
                                 else
                                 {
-                                    <p class="text-gray-500">No hay requisitos listados actualmente.</p>
+                                    <p class="text-gray-500 italic">No hay requisitos listados actualmente.</p>
                                 }
                             </div>
+
 
                             @if (Tramite.Documentos?.Any() == true)
                             {
                                 <div class="border-t pt-6">
-                                    <h4 class="text-md font-semibold text-gray-800 mb-3">
+                                    <h4 class="text-md font-semibold text-gray-800 mb-3 border-l-4 border-rose-600 pl-3">
                                         Documentos que se requieren para el trámite:
                                     </h4>
                                     <div class="space-y-2">
                                         @foreach (var documento in Tramite.Documentos)
                                         {
-                                            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                                            <div class="flex items-center justify-between p-3 bg-rose-50/50 rounded-lg hover:bg-rose-50 transition-colors">
                                                 <div class="flex items-center space-x-3">
-                                                    @Icon.FileText("w-5 h-5 text-blue-600")
+                                                    @Icon.FileText("w-5 h-5 text-rose-600")
                                                     <span class="text-gray-700">@documento.vchNombre</span>
                                                 </div>
                                                 <a href="@documento.vchUrlDocumento" 
                                                            target="_blank" 
                                                            rel="noopener noreferrer"
-                                                           class="flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                                                           class="flex items-center text-rose-600 hover:text-rose-800 font-medium">
                                                             
                                                             @Icon.Eye("w-4 h-4 mr-1")
                                                             Ver formato
@@ -198,20 +188,23 @@
                     @if (ActiveTab == "proceso")
                     {
                         <div class="space-y-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 border-l-4 border-rose-600 pl-3">
                                 Pasos para completar el trámite
                             </h3>
                             @if (Tramite.Pasos?.Any() == true)
                             {
-                                <div class="space-y-4">
+                                <div class="space-y-4 relative">
+                                    <!-- Vertical decorative line -->
+                                    <div class="absolute left-4 top-4 bottom-4 w-0.5 bg-gray-200"></div>
+
                                     @for (int i = 0; i < Tramite.Pasos.Count; i++)
                                     {
-                                        <div class="flex items-start space-x-4">
-                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                                        <div class="flex items-start space-x-4 relative">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-rose-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-md z-10">
                                                 @(i + 1)
                                             </div>
-                                            <div class="flex-1">
-                                                <p class="text-gray-700 leading-relaxed">@Tramite.Pasos[i].nvchDescripcion</p>
+                                            <div class="flex-1 bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                                                <p class="text-gray-700 leading-relaxed font-medium">@Tramite.Pasos[i].nvchDescripcion</p>
                                             </div>
                                         </div>
                                     }
@@ -219,16 +212,16 @@
                             }
                             else
                             {
-                                <p class="text-gray-500">No hay un proceso detallado disponible actualmente.</p>
+                                <p class="text-gray-500 italic">No hay un proceso detallado disponible actualmente.</p>
                             }
 
 
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
+                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-6">
                                 <div class="flex items-start space-x-3">
-                                    @Icon.AlertCircle("w-5 h-5 text-yellow-600 mt-0.5")
+                                    @Icon.AlertCircle("w-5 h-5 text-amber-600 mt-0.5")
                                     <div>
-                                        <h4 class="font-medium text-yellow-800 mb-1">Importante</h4>
-                                        <p class="text-yellow-700 text-sm">
+                                        <h4 class="font-medium text-amber-800 mb-1">Importante</h4>
+                                        <p class="text-amber-700 text-sm">
                                             Se recomienda verificar que todos los documentos estén vigentes y en buen estado
                                             antes de acudir a la oficina para evitar contratiempos.
                                         </p>
@@ -244,15 +237,15 @@
                         <div class="space-y-6">
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 border-l-4 border-rose-600 pl-3">
                                         Información de la oficina
                                     </h3>
                                     
                                     @if (OficinaInfo != null)
                                     {
                                         <div class="space-y-4">
-                                            <div class="flex items-start space-x-3">
-                                                @Icon.MapPin("w-5 h-5 text-red-600 mt-1")
+                                            <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                                @Icon.MapPin("w-5 h-5 text-rose-600 mt-1")
                                                 <div>
                                                     <h4 class="font-medium text-gray-800">Dirección</h4>
                                                     <p class="text-gray-600">@OficinaInfo.vchDireccion</p>
@@ -260,7 +253,7 @@
                                                     {
                                                         <a href="@Tramite.Oficina.vchUrlDireccion"
                                                            target="_blank" rel="noopener noreferrer"
-                                                           class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm mt-1">
+                                                           class="inline-flex items-center text-rose-600 hover:text-rose-800 text-sm mt-1 font-medium">
                                                             @Icon.ExternalLink("w-4 h-4 mr-1")
                                                             Ver en Google Maps
                                                         </a>
@@ -270,11 +263,11 @@
                     
                                             @if (!string.IsNullOrEmpty(OficinaInfo.vchTelefono))
                                             {
-                                                <div class="flex items-center space-x-3">
-                                                    @Icon.Phone("w-5 h-5 text-green-600")
+                                                <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                                    @Icon.Phone("w-5 h-5 text-rose-600")
                                                     <div>
                                                         <h4 class="font-medium text-gray-800">Teléfono</h4>
-                                                        <a href="@($"tel:{OficinaInfo.vchTelefono}")" class="text-blue-600 hover:text-blue-800">
+                                                        <a href="@($"tel:{OficinaInfo.vchTelefono}")" class="text-gray-600 hover:text-rose-700">
                                                             @OficinaInfo.vchTelefono
                                                         </a>
                                                     </div>
@@ -283,11 +276,11 @@
                     
                                             @if (!string.IsNullOrEmpty(OficinaInfo.vchEmail))
                                             {
-                                                <div class="flex items-center space-x-3">
-                                                    @Icon.Mail("w-5 h-5 text-blue-600")
+                                                <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                                    @Icon.Mail("w-5 h-5 text-rose-600")
                                                     <div>
                                                         <h4 class="font-medium text-gray-800">Correo electrónico</h4>
-                                                        <a href="@($"mailto:{OficinaInfo.vchEmail}")" class="text-blue-600 hover:text-blue-800">
+                                                        <a href="@($"mailto:{OficinaInfo.vchEmail}")" class="text-gray-600 hover:text-rose-700">
                                                             @OficinaInfo.vchEmail
                                                         </a>
                                                     </div>
