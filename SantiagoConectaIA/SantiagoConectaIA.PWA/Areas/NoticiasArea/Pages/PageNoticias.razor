@@ -1,0 +1,81 @@
+@page "/noticias"
+@using SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
+@using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
+@inherits SantiagoConectaIA.PWA.Shared.Common.EngramaPage
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding-top: 2rem; padding-bottom: 2rem;">
+
+    @* HEADER / NAVIGATION *@
+    <MudGrid Justify="Justify.SpaceBetween" Class="mb-4">
+        <MudItem>
+            <MudText Typo="Typo.h4" Style="color: #A50A3A; font-weight: bold;">
+                @if (bShowForm) { <text>@((Data.NoticiaSelected.iIdNoticia > 0) ? "Editar Noticia" : "Nueva Noticia")</text> } else { <text>Noticias</text> }
+            </MudText>
+        </MudItem>
+        <MudItem>
+            @if (!bShowForm)
+            {
+                <MudFab StartIcon="@Icons.Material.Filled.Add"
+                        Label="Agregar Noticia"
+                        Color="Color.Success"
+                        OnClick="OnClickShowForm" />
+            }
+            else
+            {
+                <MudFab StartIcon="@Icons.Material.Filled.ArrowBack"
+                        Label="Volver"
+                        Color="Color.Secondary"
+                        OnClick="OnClickShowList" />
+            }
+        </MudItem>
+    </MudGrid>
+
+    @* CONTENT *@
+    @if (bShowForm)
+    {
+        <MudPaper Class="pa-4">
+            <FormNoticias Data="Data" OnSuccess="OnSaveSuccess" />
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid>
+            @if (Data != null && Data.LstNoticias != null)
+            {
+               <MudItem xs="12">
+                   <MudTextField @bind-Value="filtroTexto"
+                                  Label="Buscar Noticia"
+                                  Variant="Variant.Outlined"
+                                  Immediate="true"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Class="mb-4" />
+               </MudItem>
+                
+                @foreach (var noticia in NoticiasFiltradas)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <NoticiaCardComponent Noticia="@noticia" ShowActions="true" OnEdit="EditNoticia" />
+                    </MudItem>
+                }
+                 
+                @if (!NoticiasFiltradas.Any())
+                {
+                     <MudItem xs="12">
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            @if(string.IsNullOrEmpty(filtroTexto)) { <text>No hay noticias registradas.</text> }
+                            else { <text>No se encontraron noticias que coincidan con "@filtroTexto".</text> }
+                        </MudAlert>
+                    </MudItem>
+                }
+            }
+            else
+            {
+                <MudItem xs="12">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+</MudContainer>

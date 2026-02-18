@@ -1,0 +1,80 @@
+@using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
+@inherits EngramaComponent
+@inject ISnackbar Snackbar
+@using MudBlazor
+
+<EditForm Model="@Data.NoticiaSelected" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+    <MudFocusTrap>
+        <MudCard>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="Data.NoticiaSelected.vchTitulo" Label="Título (Español)" Variant="Variant.Outlined" Class="mb-4" />
+                        <MudTextField @bind-Value="Data.NoticiaSelected.nvchContenido" Label="Contenido (Español)" Variant="Variant.Outlined" Lines="5" Class="mb-4" />
+                    </MudItem>
+                     <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="Data.NoticiaSelected.vchTituloEn" Label="Title (English)" Variant="Variant.Outlined" Class="mb-4" />
+                        <MudTextField @bind-Value="Data.NoticiaSelected.nvchContenidoEn" Label="Content (English)" Variant="Variant.Outlined" Lines="5" Class="mb-4" />
+                    </MudItem>
+ 
+                     <MudItem xs="12">
+                        <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.CloudUpload">
+                                    Subir Imagen
+                                </MudButton>
+                            </ActivatorContent>
+                        </MudFileUpload>
+                        @if (Data.NoticiaSelected.Imagenes != null && Data.NoticiaSelected.Imagenes.Any())
+                        {
+                            <MudText Typo="Typo.subtitle2" Class="mt-2">Imágenes subidas:</MudText>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var img in Data.NoticiaSelected.Imagenes)
+                                {
+                                    <MudImage Src="@img.vchUrlImagen" Width="100" Height="100" ObjectFit="ObjectFit.Cover" Class="rounded-lg"/>
+                                }
+                            </div>
+                        }
+                    </MudItem>
+
+                     <MudItem xs="12">
+                        <MudCheckBox T="bool" @bind-Value="Data.NoticiaSelected.bActivo" Label="Activo" Color="Color.Primary"></MudCheckBox>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+            <MudCardActions>
+                  <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Save">
+                    Guardar Noticia
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudFocusTrap>
+</EditForm>
+
+@code {
+    [Parameter] public MainNoticias Data { get; set; }
+    [Parameter] public EventCallback OnSuccess { get; set; }
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        Data.SelectedImage = file;
+        await Data.UploadImage();
+        StateHasChanged();
+    }
+
+    private async Task Submit()
+    {
+        var result = await Data.PostSaveNoticia();
+        ShowSnake(result);
+        if (result.bResult)
+        {
+            await OnSuccess.InvokeAsync();
+        }
+    }
+}

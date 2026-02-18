@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 
 using SantiagoConectaIA.PWA;
+using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles;
 using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
 using SantiagoConectaIA.PWA.Helpers;
 
@@ -31,6 +32,7 @@ builder.Services.AddScoped<IValidaServicioService, ValidaServicioService>();
 
 
 builder.Services.AddScoped<MainTramites>();
+builder.Services.AddScoped<MainNoticias>();
 
 builder.Services.AddEngramaDependenciesBlazor();
 
