@@ -1,8 +1,9 @@
-﻿using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
 using SantiagoConectaIA.Share.Objects.ConversationalModule;
+using SantiagoConectaIA.Share.PostModels.ConversationalModule;
 
 using System.Collections.Concurrent;
 
@@ -10,57 +11,131 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 {
 	/// <summary>
 	/// Implementación del servicio de orquestación que interactúa con el Agente de Ventas de Productos.
-	/// Gestiona el historial de chat para mantener el contexto de la conversación por usuario.
+	/// Gestiona el historial de chat y lo persiste en base de datos.
 	/// </summary>
 	public class AgentOrchestrationService : IAgentOrchestrationService
 	{
 		private readonly TramitesAgentes _tramitesAgentes;
 		private readonly ILogger<AgentOrchestrationService> _logger;
-		// Almacenamiento en memoria para el historial de chat por usuario.
-		// En un entorno de producción, esto debería ser un almacenamiento persistente (ej. base de datos, caché distribuida).
+		private readonly IServiceScopeFactory _scopeFactory;
+
+		// Memoria temporal rápida, pero ahora respaldada por BD
 		private static readonly ConcurrentDictionary<string, ChatHistory> _chatHistories = new ConcurrentDictionary<string, ChatHistory>();
 
 		public AgentOrchestrationService(
 			TramitesAgentes tramitesAgentes,
-			ILogger<AgentOrchestrationService> logger)
+			ILogger<AgentOrchestrationService> logger,
+			IServiceScopeFactory scopeFactory)
 		{
 			_tramitesAgentes = tramitesAgentes;
 			_logger = logger;
+			_scopeFactory = scopeFactory;
 		}
 
-		/// <summary>
-		/// Procesa una consulta de usuario utilizando el Agente de Ventas de Productos.
-		/// Mantiene el contexto de la conversación para cada usuario.
-		/// </summary>
-		/// <param name="userQuery">La consulta de texto del usuario.</param>
-		/// <param name="userId">El identificador único del usuario para mantener el contexto de la conversación.</param>
-		/// <returns>Un objeto ChatResponseDto con la respuesta del agente.</returns>
 		public async Task<ChatResponseIA> ProcessUserQueryAsync(string userQuery, string userId)
 		{
 			_logger.LogInformation($"Orquestando consulta para usuario '{userId}': '{userQuery}'");
 
+			using var scope = _scopeFactory.CreateScope();
+			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
+
+			int activeChatId = 0;
+
 			// Obtener o crear el historial de chat para el usuario
-			ChatHistory chatHistory = _chatHistories.GetOrAdd(userId, (id) =>
+			if (!_chatHistories.TryGetValue(userId, out ChatHistory chatHistory))
 			{
-				var newHistory = new ChatHistory();
-				newHistory.AddSystemMessage(_tramitesAgentes.GetSystemPrompt()); // Añadir el prompt del sistema al inicio de la nueva conversación
-				_logger.LogInformation($"Nuevo historial de chat creado para el usuario '{id}'.");
-				return newHistory;
-			});
+				chatHistory = new ChatHistory();
+				chatHistory.AddSystemMessage(_tramitesAgentes.GetSystemPrompt());
+
+				// Buscar en BD si ya existe el chat
+				var existingChatsResponse = await _conversationalDominio.GetChat(new PostGetChat { iIdProyecto = 1 });
+				if (existingChatsResponse.IsSuccess && existingChatsResponse.Data != null)
+				{
+					var myChat = existingChatsResponse.Data.FirstOrDefault(c => c.nvchThreadId == userId);
+					if (myChat != null)
+					{
+						activeChatId = myChat.iIdChat;
+						// Cargar mensajes de la BD
+						var msgsResponse = await _conversationalDominio.GetMensaje(new PostGetMensaje { iIdChat = activeChatId });
+						if (msgsResponse.IsSuccess && msgsResponse.Data != null)
+						{
+							foreach (var m in msgsResponse.Data.OrderBy(x => x.iOrden))
+							{
+								if (m.nvchRol == "user") chatHistory.AddUserMessage(m.nvchContenido);
+								else if (m.nvchRol == "assistant") chatHistory.AddAssistantMessage(m.nvchContenido);
+							}
+						}
+					}
+				}
+
+				if (activeChatId == 0)
+				{
+					// Crear nuevo chat en BD
+					var newChat = new PostSaveChat
+					{
+						iIdProyecto = 1, // Proyecto Santiago Conecta
+						nvchNombre = "Ciudadano (" + userId.Substring(0, Math.Min(userId.Length, 8)) + ")",
+						bActivo = true,
+						nvchThreadId = userId,
+						dtFechaCreacion = DateTime.Now
+					};
+					var saveChatRes = await _conversationalDominio.SaveChat(newChat);
+					if (saveChatRes.IsSuccess && saveChatRes.Data != null)
+					{
+						activeChatId = saveChatRes.Data.iIdChat;
+					}
+				}
+
+				_chatHistories.TryAdd(userId, chatHistory);
+				_logger.LogInformation($"Historial de chat cargado/creado para el usuario '{userId}' (ChatId: {activeChatId}).");
+			}
+			else
+			{
+				// Si ya está en memoria, al menos necesitamos el ID para guardar
+				var existingChatsResponse = await _conversationalDominio.GetChat(new PostGetChat { iIdProyecto = 1 });
+				if (existingChatsResponse.IsSuccess && existingChatsResponse.Data != null)
+				{
+					var myChat = existingChatsResponse.Data.FirstOrDefault(c => c.nvchThreadId == userId);
+					if (myChat != null) activeChatId = myChat.iIdChat;
+				}
+			}
 
 			try
 			{
-				// Invocar al ProductSalesAgent con la consulta del usuario y el historial de chat
+				// Invocar al Agente con la consulta del usuario y el historial
 				string agentResponse = await _tramitesAgentes.ChatAsync(userQuery, chatHistory);
 
+				// Guardar el mensaje del usuario y del asistente en BD
+				if (activeChatId > 0)
+				{
+					int nextOrder = chatHistory.Count; // Aproximación del orden
+					await _conversationalDominio.SaveMensaje(new PostSaveMensaje
+					{
+						iIdChat = activeChatId,
+						iOrden = nextOrder,
+						iIdFase = 1,
+						nvchRol = "user",
+						nvchContenido = userQuery,
+						dtFecha = DateTime.Now
+					});
+
+					await _conversationalDominio.SaveMensaje(new PostSaveMensaje
+					{
+						iIdChat = activeChatId,
+						iOrden = nextOrder + 1,
+						iIdFase = 1,
+						nvchRol = "assistant",
+						nvchContenido = agentResponse,
+						dtFecha = DateTime.Now
+					});
+				}
 
 				return new ChatResponseIA { nvchAgenteResponse = agentResponse };
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, $"Error al procesar la consulta del usuario '{userId}': {ex.Message}");
-				// Devolver una respuesta amigable en caso de error
-				return new ChatResponseIA { nvchAgenteResponse = "Lo siento, hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde." };
+				return new ChatResponseIA { nvchAgenteResponse = "EXCEPCIÓN: " + ex.ToString() };
 			}
 		}
 	}

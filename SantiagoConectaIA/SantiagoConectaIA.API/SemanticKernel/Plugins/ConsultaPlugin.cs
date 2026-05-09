@@ -1,4 +1,4 @@
-﻿using EngramaCoreStandar.Extensions;
+using EngramaCoreStandar.Extensions;
 
 using Microsoft.SemanticKernel;
 
@@ -15,13 +15,12 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 
 	public class ConsultaPlugin
 	{
-		private readonly IConversationalDominio _conversationalDominio;
+		private readonly IServiceScopeFactory _scopeFactory;
 
-		public ConsultaPlugin(IConversationalDominio conversationalDominio)
+		public ConsultaPlugin(IServiceScopeFactory scopeFactory)
 		{
-			_conversationalDominio = conversationalDominio;
+			_scopeFactory = scopeFactory;
 		}
-
 
 
 		/// <summary>
@@ -39,6 +38,8 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			int limit = 5)
 		{
 			// Invoca el servicio de negocio para realizar la búsqueda semántica.
+			using var scope = _scopeFactory.CreateScope();
+			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var OficinasEncontradas = await _conversationalDominio.SearchOficinaForChat(new PostSearchForChat { vchTexto = query, iLimit = limit });
 
 
@@ -71,6 +72,8 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			int limit = 5)
 		{
 			// Invoca el servicio de negocio para realizar la búsqueda semántica.
+			using var scope = _scopeFactory.CreateScope();
+			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var TramitesEncontrados = await _conversationalDominio.SearchTramitesForChat(new PostSearchForChat { vchTexto = query, iLimit = limit });
 
 
@@ -100,6 +103,8 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			[Description("El ID del trámite para el cual se buscan los requisitos.")]
 	int idTramite)
 		{
+			using var scope = _scopeFactory.CreateScope();
+			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var RequisitosEncontrados = await _conversationalDominio.SearchRequisitosForChat(new PostGetByIdForChat { iIdTramite = idTramite });
 
 			var options = new JsonSerializerOptions { WriteIndented = true };
@@ -128,6 +133,8 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 	int idTramite)
 		{
 			// Invoca el Dominio
+			using var scope = _scopeFactory.CreateScope();
+			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var CostoEncontrado = await _conversationalDominio.SearchCostoForChat(new PostGetByIdForChat { iIdTramite = idTramite });
 
 			// Serializa la respuesta
@@ -158,6 +165,8 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 	int idTramite)
 		{
 			// Invoca el Dominio
+			using var scope = _scopeFactory.CreateScope();
+			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var OficinasEncontradas = await _conversationalDominio.SearchOficinasByTramite(new PostGetByIdForChat { iIdTramite = idTramite });
 
 			// Serializa la respuesta

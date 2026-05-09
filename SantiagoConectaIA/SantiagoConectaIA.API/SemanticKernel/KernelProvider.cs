@@ -1,4 +1,4 @@
-﻿using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.SemanticKernel.Plugins;
@@ -9,17 +9,17 @@ namespace SantiagoConectaIA.API.SemanticKernel
 	{
 		private readonly IConfiguration _configuration;
 		private readonly ILogger<KernelProvider> _logger;
-		private IConversationalDominio _conversationalDominio;
+		private readonly IServiceScopeFactory _scopeFactory;
 		private Kernel _kernelInstance;
 
 		public KernelProvider(
 			IConfiguration configuration,
 			ILogger<KernelProvider> logger,
-			IConversationalDominio conversationalDominio)
+			IServiceScopeFactory scopeFactory)
 		{
 			_configuration = configuration;
 			_logger = logger;
-			_conversationalDominio = conversationalDominio;
+			_scopeFactory = scopeFactory;
 		}
 
 		/// <summary>
@@ -54,7 +54,7 @@ namespace SantiagoConectaIA.API.SemanticKernel
 			// Build kernel
 			_kernelInstance = kernelBuilder.Build();
 
-			_kernelInstance.Plugins.AddFromObject(new ConsultaPlugin(_conversationalDominio), "ConsultaBaseDatos");
+			_kernelInstance.Plugins.AddFromObject(new ConsultaPlugin(_scopeFactory), "ConsultaBaseDatos");
 			_logger.LogInformation("ConsultaPlugin registrado exitosamente con el Kernel.");
 
 

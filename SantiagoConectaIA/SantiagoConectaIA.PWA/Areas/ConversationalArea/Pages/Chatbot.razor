@@ -1,0 +1,430 @@
+@page "/chatbot"
+@using SantiagoConectaIA.PWA.Areas.ConversationalArea.Utiles
+@using SantiagoConectaIA.Share.Objects.ConversationalModule
+@inherits SantiagoConectaIA.PWA.Shared.Common.EngramaPage
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
+    
+    @* PAGE HEADER *@
+    <div class="d-flex align-center justify-space-between mb-4">
+        <div class="d-flex align-center">
+            <MudIcon Icon="@Icons.Material.Filled.SmartToy" Style="color: #A50A3A; font-size: 2.5rem;" Class="mr-3" />
+            <div>
+                <MudText Typo="Typo.h4" Style="color: #A50A3A; font-weight: bold; line-height: 1.2;">
+                    Santiago Conecta
+                </MudText>
+                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                    Historial de Conversaciones y Asistencia Virtual
+                </MudText>
+            </div>
+        </div>
+        <MudTooltip Text="Actualizar Listado">
+            <MudFab StartIcon="@Icons.Material.Filled.Refresh" 
+                    Color="Color.Primary" 
+                    Style="background-color: #A50A3A; color: white;" 
+                    OnClick="LoadChats" 
+                    Size="Size.Medium" />
+        </MudTooltip>
+    </div>
+
+    @* MAIN GRID LAYOUT *@
+    <MudGrid Style="height: calc(100vh - 190px); min-height: 550px;">
+        
+        @* LEFT SIDEBAR: CHAT LIST *@
+        <MudItem xs="12" md="4" Style="height: 100%;">
+            <MudPaper Outlined="true" Class="d-flex flex-column" Style="height: 100%; border-radius: 16px; overflow: hidden; background-color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                
+                @* SEARCH BAR *@
+                <div class="pa-4" Style="background-color: #FAF5F6; border-bottom: 1px solid #ECE0E2;">
+                    <MudTextField @bind-Value="FiltroTexto"
+                                  Label="Buscar conversación"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  AdornmentColor="Color.Primary"
+                                  Immediate="true"
+                                  Margin="Margin.Dense"
+                                  Style="background-color: white;" />
+                </div>
+
+                @* LIST OF CONVERSATIONS *@
+                <div class="flex-grow-1 overflow-auto" Style="height: 0;">
+                    @if (Data?.LstChats != null)
+                    {
+                        @if (!ChatsFiltrados.Any())
+                        {
+                            <div class="d-flex flex-column align-center justify-center pa-8 text-center" Style="height: 100%;">
+                                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Style="font-size: 3rem; color: #BDC3C7;" Class="mb-2" />
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                                    @if (!Data.LstChats.Any())
+                                    {
+                                        <text>Aún no hay historiales de conversación en la base de datos.</text>
+                                    }
+                                    else
+                                    {
+                                        <text>No se encontraron chats que coincidan con la búsqueda.</text>
+                                    }
+                                </MudText>
+                                @if (!Data.LstChats.Any())
+                                {
+                                    <MudButton Variant="Variant.Filled" 
+                                               Color="Color.Primary" 
+                                               Style="background-color: #A50A3A; color: white;" 
+                                               StartIcon="@Icons.Material.Filled.AutoAwesome" 
+                                               OnClick="SeedMockData">
+                                        Generar Datos de Prueba
+                                    </MudButton>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <MudList Clickable="true" T="Chat" Class="py-0">
+                                @foreach (var chat in ChatsFiltrados)
+                                {
+                                    bool isSelected = SelectedChat != null && SelectedChat.iIdChat == chat.iIdChat;
+                                    <div class="chat-item @(isSelected ? "selected" : "")" @onclick="() => SelectChat(chat)">
+                                        <div class="d-flex align-center pa-3" Style="cursor: pointer; transition: background-color 0.2s; border-bottom: 1px solid #F5F5F5;">
+                                            <MudAvatar Color="@(isSelected ? Color.Primary : Color.Default)" 
+                                                       Style="@(isSelected ? "background-color: #A50A3A; color: white;" : "background-color: #FCE9ED; color: #A50A3A;")"
+                                                       Class="mr-3" 
+                                                       Size="Size.Medium">
+                                                @if (!string.IsNullOrEmpty(chat.nvchNombre))
+                                                {
+                                                    @chat.nvchNombre.Substring(0, 1).ToUpper()
+                                                }
+                                                else
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                                }
+                                            </MudAvatar>
+                                            <div class="flex-grow-1 min-width-0">
+                                                <div class="d-flex justify-space-between align-center mb-1">
+                                                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold truncate" Style="@(isSelected ? "color: #A50A3A; font-weight: 700;" : "color: #2C3E50;")">
+                                                        @(string.IsNullOrWhiteSpace(chat.nvchNombre) ? "Ciudadano Anónimo" : chat.nvchNombre)
+                                                    </MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Style="font-size: 0.7rem;">
+                                                        @chat.dtFechaCreacion.ToString("dd/MM HH:mm")
+                                                    </MudText>
+                                                </div>
+                                                <div class="d-flex justify-space-between align-center">
+                                                    <MudText Typo="Typo.caption" Class="truncate" Color="Color.Secondary" Style="max-width: 180px;">
+                                                        ID: @(string.IsNullOrEmpty(chat.nvchThreadId) ? "N/A" : chat.nvchThreadId)
+                                                    </MudText>
+                                                    @if (chat.bActivo)
+                                                    {
+                                                        <span class="status-badge active">Activo</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="status-badge inactive">Inactivo</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </MudList>
+                        }
+                    }
+                    else
+                    {
+                        <div class="d-flex align-center justify-center pa-8" Style="height: 100%;">
+                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" Style="color: #A50A3A;" />
+                        </div>
+                    }
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        @* RIGHT SIDEBAR: MESSAGE WINDOW *@
+        <MudItem xs="12" md="8" Style="height: 100%;">
+            <MudPaper Outlined="true" Class="d-flex flex-column" Style="height: 100%; border-radius: 16px; overflow: hidden; background-color: #FDFEFE; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                
+                @if (SelectedChat == null)
+                {
+                    @* EMPTY STATE *@
+                    <div class="d-flex flex-column align-center justify-center flex-grow-1 pa-8 text-center" Style="background-color: #FCFDFD;">
+                        <div class="empty-state-illustration mb-4">
+                            <div class="circle-bg">
+                                <MudIcon Icon="@Icons.Material.Filled.ChatBubbleOutline" Style="font-size: 5rem; color: #A50A3A;" />
+                            </div>
+                        </div>
+                        <MudText Typo="Typo.h5" Style="font-weight: bold; color: #2C3E50;" Class="mb-1">
+                            Historial de Conversación
+                        </MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Style="max-width: 320px;">
+                            Seleccione una conversación del listado lateral para visualizar todo el historial de interacciones con el chatbot.
+                        </MudText>
+                    </div>
+                }
+                else
+                {
+                    @* ACTIVE CONVERSATION HEADER *@
+                    <div class="d-flex align-center justify-space-between pa-4" Style="background-color: white; border-bottom: 1px solid #ECEEF1; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Style="background-color: #A50A3A; color: white;" Class="mr-3" Size="Size.Medium">
+                                @SelectedChat.nvchNombre.Substring(0, 1).ToUpper()
+                            </MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: bold; color: #2C3E50; line-height: 1.2;">
+                                    @SelectedChat.nvchNombre
+                                </MudText>
+                                <div class="d-flex align-center">
+                                    <div class="indicator-dot @(SelectedChat.bActivo ? "active" : "inactive") mr-1"></div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @(SelectedChat.bActivo ? "Conversación Activa" : "Cerrada") | Thread: @(string.IsNullOrEmpty(SelectedChat.nvchThreadId) ? "N/A" : SelectedChat.nvchThreadId)
+                                    </MudText>
+                                </div>
+                            </div>
+                        </div>
+                        <MudTooltip Text="Actualizar Historial">
+                            <MudIconButton Icon="@Icons.Material.Filled.Sync" Color="Color.Primary" Style="color: #A50A3A;" OnClick="RefreshCurrentChat" />
+                        </MudTooltip>
+                    </div>
+
+                    @* MESSAGE LIST CONTAINER *@
+                    <div class="flex-grow-1 overflow-auto pa-4 chat-bg-pattern d-flex flex-column" Style="background-color: #F5EAEF; min-height: 0;">
+                        @if (IsLoadingMessages)
+                        {
+                            <div class="d-flex align-center justify-center flex-grow-1" Style="height: 100%;">
+                                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" Style="color: #A50A3A;" />
+                            </div>
+                        }
+                        else if (Data?.LstMensajes == null)
+                        {
+                            <div class="d-flex align-center justify-center flex-grow-1">
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Error al cargar mensajes.</MudText>
+                            </div>
+                        }
+                        else if (!Data.LstMensajes.Any())
+                        {
+                            <div class="d-flex flex-column align-center justify-center flex-grow-1 text-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Style="font-size: 3rem; color: #A50A3A;" Class="mb-2" />
+                                <MudText Typo="Typo.body1" Style="font-weight: bold; color: #2C3E50;">No hay mensajes registrados</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Esta conversación no tiene mensajes almacenados en la base de datos.</MudText>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column" Style="gap: 12px; width: 100%;">
+                                @foreach (var msg in Data.LstMensajes.OrderBy(m => m.iOrden))
+                                {
+                                    bool isUser = msg.nvchRol?.Equals("user", StringComparison.OrdinalIgnoreCase) ?? false;
+                                    
+                                    <div class="msg-bubble-container @(isUser ? "user-msg" : "bot-msg")">
+                                        <div class="msg-bubble shadow-sm @(isUser ? "msg-user-bg" : "msg-bot-bg")">
+                                            
+                                            @* Bubble Header / Role indicator *@
+                                            <div class="d-flex align-center justify-space-between mb-1" Style="gap: 12px;">
+                                                <span class="bubble-sender">
+                                                    @(isUser ? "Ciudadano" : "Santiaguero Conecta")
+                                                </span>
+                                                @if (!isUser && msg.iIdFase > 0)
+                                                {
+                                                    <span class="phase-chip">Fase @msg.iIdFase</span>
+                                                }
+                                            </div>
+
+                                            @* Content *@
+                                            <div class="bubble-text">
+                                                @msg.nvchContenido
+                                            </div>
+
+                                            @* Timestamp *@
+                                            <div class="bubble-footer text-right">
+                                                @msg.dtFecha.ToString("HH:mm")
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+            </MudPaper>
+        </MudItem>
+
+    </MudGrid>
+</MudContainer>
+
+<style>
+    /* Estilo general de la barra de scroll */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #A50A3A40;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #A50A3A80;
+    }
+
+    /* truncate helper */
+    .truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Badges de Estado */
+    .status-badge {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 20px;
+        font-weight: bold;
+    }
+    .status-badge.active {
+        background-color: #E8F8F5;
+        color: #117A65;
+    }
+    .status-badge.inactive {
+        background-color: #FADBD8;
+        color: #78281F;
+    }
+
+    /* Elementos de la lista de chat */
+    .chat-item {
+        transition: all 0.25s ease;
+    }
+    .chat-item:hover {
+        background-color: #FAF5F6;
+    }
+    .chat-item.selected {
+        background-color: #FCE9ED !important;
+        border-left: 4px solid #A50A3A;
+    }
+
+    /* Indicador de Estado Circular */
+    .indicator-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .indicator-dot.active {
+        background-color: #2ECC71;
+        box-shadow: 0 0 6px #2ECC7180;
+    }
+    .indicator-dot.inactive {
+        background-color: #95A5A6;
+    }
+
+    /* Contenedor de burbujas del Chat */
+    .msg-bubble-container {
+        display: flex;
+        width: 100%;
+        margin-bottom: 2px;
+    }
+    .msg-bubble-container.user-msg {
+        justify-content: flex-end;
+    }
+    .msg-bubble-container.bot-msg {
+        justify-content: flex-start;
+    }
+
+    /* Estructura de la burbuja */
+    .msg-bubble {
+        max-width: 75%;
+        padding: 10px 14px;
+        position: relative;
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    /* Burbuja del Usuario */
+    .msg-user-bg {
+        background-color: #A50A3A;
+        color: white;
+        border-radius: 18px 18px 4px 18px;
+        box-shadow: 0 2px 6px rgba(165,10,58,0.15);
+    }
+    .user-msg .bubble-sender {
+        color: #FFD4E1;
+        font-weight: bold;
+        font-size: 0.75rem;
+    }
+
+    /* Burbuja del Bot (Santiaguero) */
+    .msg-bot-bg {
+        background-color: white;
+        color: #2C3E50;
+        border-radius: 18px 18px 18px 4px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        border: 1px solid #ECEEF1;
+    }
+    .bot-msg .bubble-sender {
+        color: #A50A3A;
+        font-weight: bold;
+        font-size: 0.75rem;
+    }
+
+    /* Detalles internos de burbuja */
+    .bubble-text {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .bubble-footer {
+        font-size: 0.65rem;
+        margin-top: 4px;
+        opacity: 0.75;
+    }
+    .user-msg .bubble-footer {
+        color: #FFD4E1;
+    }
+    .bot-msg .bubble-footer {
+        color: #7F8C8D;
+    }
+
+    /* Chip de Fase en la burbuja */
+    .phase-chip {
+        background-color: #FCE9ED;
+        color: #A50A3A;
+        font-size: 0.62rem;
+        padding: 1px 6px;
+        border-radius: 10px;
+        font-weight: bold;
+    }
+
+    /* Ilustraciones y Efectos Vacíos */
+    .empty-state-illustration .circle-bg {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background-color: #FAF0F2;
+        display: flex;
+        align-center: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 8px 24px rgba(165,10,58,0.06);
+        animation: float 4s ease-in-out infinite;
+    }
+    
+    @@keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    /* Fondo decorativo de chat (WhatsApp-style pattern feel) */
+    .chat-bg-pattern {
+        position: relative;
+    }
+    .chat-bg-pattern::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        opacity: 0.04;
+        background-image: radial-gradient(#A50A3A 1px, transparent 1px), radial-gradient(#A50A3A 1px, transparent 1px);
+        background-size: 20px 20px;
+        background-position: 0 0, 10px 10px;
+        pointer-events: none;
+    }
+</style>
