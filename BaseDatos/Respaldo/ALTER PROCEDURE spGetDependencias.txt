@@ -1,0 +1,43 @@
+ALTER PROCEDURE spGetDependencias
+(
+    @iIdDependencia INT = 0,
+    @bActivo BIT = 0
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- 1. Declaramos la variable de tabla @Result
+    DECLARE @Result TABLE
+    (
+        bResult BIT DEFAULT (1),
+        vchMessage VARCHAR(500) DEFAULT(''),
+        iIdDependencia INT DEFAULT(-1),
+        vchNombre VARCHAR(250) DEFAULT(''),
+        nvchDescripcion NVARCHAR(MAX) DEFAULT(''),
+        vchUrlOficial VARCHAR(500) DEFAULT(''),
+        bActivo BIT DEFAULT(0),
+        dtFechaCreacion DATETIME NULL
+    );
+
+    BEGIN TRY
+        -- 2. Insertamos la información en @Result
+        INSERT INTO @Result (iIdDependencia, vchNombre, nvchDescripcion, vchUrlOficial, bActivo, dtFechaCreacion)
+        SELECT D.iIdDependencia, D.vchNombre, D.nvchDescripcion, D.vchUrlOficial, D.bActivo, D.dtFechaCreacion
+        FROM dbo.Dependencia D WITH(NOLOCK)
+        WHERE (@iIdDependencia = 0 OR D.iIdDependencia = @iIdDependencia)
+          AND (@bActivo = 0 OR D.bActivo = @bActivo);
+
+        -- 3. Si no hay registros insertados, agregamos el mensaje de aviso
+        IF NOT EXISTS (SELECT 1 FROM @Result)
+            INSERT INTO @Result (bResult, vchMessage) VALUES (0, 'No se encontraron dependencias.');
+    END TRY
+    BEGIN CATCH
+        -- 4. Captura de errores
+        INSERT INTO @Result (bResult, vchMessage)
+        VALUES (0, CONCAT(ERROR_PROCEDURE(), ': ', ERROR_MESSAGE(), ' - Línea ', ERROR_LINE()));
+    END CATCH;
+
+    -- 5. Seleccionamos el resultado final
+    SELECT * FROM @Result;
+END

@@ -1,0 +1,114 @@
+ALTER PROCEDURE spGetTramiteDetalle
+(
+    @iIdTramite INT
+)
+AS
+/*
+** Creador:      Alan
+** Propósito:    Obtener el detalle completo de UN trámite,
+** usando las tablas Requisito, TramitePaso y Documento.
+** Metodología:  Engrama (Uso de FOR JSON para listas)
+*/
+BEGIN
+    
+    CREATE TABLE #Result
+    (
+        bResult BIT DEFAULT (1),
+        vchMessage VARCHAR(500) DEFAULT (''),
+        
+        -- Campos de Tramite
+        iIdTramite INT DEFAULT(0),
+        vchNombre VARCHAR(250) DEFAULT(''),
+        nvchDescripcion NVARCHAR(MAX) DEFAULT(''),
+        iIdCategoria INT DEFAULT(0),
+        bModalidadEnLinea BIT DEFAULT(0),
+        mCosto MONEY DEFAULT(0),
+        
+        -- Campos de Oficina (denormalizados)
+        iIdOficina INT DEFAULT(0),
+        vchNombreOficina VARCHAR(250) DEFAULT(''),
+        vchDireccionOficina VARCHAR(500) DEFAULT(''),
+        vchTelefonoOficina VARCHAR(50) DEFAULT(''),
+        vchEmailOficina VARCHAR(150) DEFAULT(''),
+        vchHorarioOficina NVARCHAR(250) DEFAULT(''),
+        flLatitud FLOAT DEFAULT(0),
+        flLongitud FLOAT DEFAULT(0),
+
+        -- Campos JSON para las listas
+        jsnRequisitos NVARCHAR(MAX) DEFAULT('[]'),
+        jsnPasos NVARCHAR(MAX) DEFAULT('[]'),
+        jsnDocumentos NVARCHAR(MAX) DEFAULT('[]')
+    );
+
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        
+        IF NOT EXISTS (SELECT 1 FROM dbo.Tramite WHERE iIdTramite = @iIdTramite AND bActivo = 1)
+        BEGIN
+            INSERT INTO #Result (bResult, vchMessage)
+            VALUES (0, 'El trámite solicitado no existe o no está activo.');
+            GOTO _FIN;
+        END;
+
+        -- Insertar la información principal (Trámite y Oficina)
+        INSERT INTO #Result
+        (
+            iIdTramite, vchNombre, nvchDescripcion, iIdCategoria, bModalidadEnLinea, mCosto,
+            iIdOficina, vchNombreOficina, vchDireccionOficina, vchTelefonoOficina,
+            vchEmailOficina, vchHorarioOficina, flLatitud, flLongitud
+        )
+        SELECT 
+            T.iIdTramite, T.vchNombre, T.nvchDescripcion, T.iIdCategoria, T.bModalidadEnLinea, T.mCosto,
+            O.iIdOficina, O.vchNombre, O.vchDireccion, O.vchTelefono,
+            O.vchEmail, O.vchHorario, O.flLatitud, O.flLongitud
+        FROM 
+            dbo.Tramite T WITH(NOLOCK)
+        LEFT JOIN 
+            dbo.Oficina O WITH(NOLOCK) ON T.iIdOficina = O.iIdOficina -- Usando la FK directa
+        WHERE 
+            T.iIdTramite = @iIdTramite;
+
+        -- Actualizar la fila en #Result con los JSON de las listas
+        UPDATE #Result
+        SET
+            -- jsnRequisitos (de tu tabla Requisito)
+            jsnRequisitos = ISNULL((
+                SELECT 
+                    ISNULL(R.nvchDetalle, R.vchNombre)
+                FROM dbo.Requisito R WITH(NOLOCK)
+                WHERE R.iIdTramite = @iIdTramite AND R.bActivo = 1
+                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER 
+            ), '[]'),
+
+            -- jsnPasos (de tu tabla TramitePaso)
+            jsnPasos = ISNULL((
+                SELECT 
+                    P.nvchDescripcion
+                FROM dbo.TramitePaso P WITH(NOLOCK)
+                WHERE P.iIdTramite = @iIdTramite AND P.bActivo = 1
+                ORDER BY P.iOrden ASC
+                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+            ), '[]'),
+
+            -- jsnDocumentos (de tu tabla Documento, solo el nombre)
+            jsnDocumentos = ISNULL((
+                SELECT 
+                    D.vchNombre
+                FROM dbo.Documento D WITH(NOLOCK)
+                WHERE D.iIdTramite = @iIdTramite AND D.bActivo = 1
+                FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+            ), '[]')
+        WHERE iIdTramite = @iIdTramite;
+
+    END TRY
+    BEGIN CATCH
+        DELETE FROM #Result;
+        INSERT INTO #Result (bResult, vchMessage)
+        VALUES (0, CONCAT('Error en spGetTramiteDetalle: ', ERROR_MESSAGE(), ' - Línea ', ERROR_LINE()));
+    END CATCH;
+
+_FIN:
+    SELECT * FROM #Result;
+    DROP TABLE #Result;
+END

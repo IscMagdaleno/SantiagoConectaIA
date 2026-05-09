@@ -19,6 +19,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SantiagoConectaIA.Share\SantiagoConectaIA.Share.csproj" />
+		<ProjectReference Include="..\SantiagoConectaIA.DAL\SantiagoConectaIA.DAL.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

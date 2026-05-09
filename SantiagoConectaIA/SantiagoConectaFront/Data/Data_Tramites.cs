@@ -25,7 +25,6 @@ namespace SantiagoConectaFront.Data
 		}
 		public async Task<Response<List<Tramite>>> PostGetAllTramites(PostGetTramites data)
 		{
-			data.Culture = System.Globalization.CultureInfo.CurrentCulture.Name;
 			var url = "/api/Tramites/PostGetTramites";
 			var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_HttpClient.BaseAddress!, url));
 			request.Content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
@@ -44,7 +43,6 @@ namespace SantiagoConectaFront.Data
 		}
 		public async Task<Response<List<Tramite>>> PostGetAllTramitesCard(PostGetTramites data)
 		{
-			data.Culture = System.Globalization.CultureInfo.CurrentCulture.Name;
 			var url = "/api/Tramites/PostGetTramitesCard";
 			var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_HttpClient.BaseAddress!, url));
 			request.Content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");

@@ -9,6 +9,8 @@ using SantiagoConectaIA.API.SemanticKernel;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
 using SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository;
 using SantiagoConectaIA.API.Middleware;
+using Microsoft.EntityFrameworkCore;
+using SantiagoConectaIA.DAL.Models;
 
 using System.Reflection;
 
@@ -17,6 +19,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// Register DbContext for EF Core
+builder.Services.AddDbContext<EngramaContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EngramaCloudConnection")));
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
