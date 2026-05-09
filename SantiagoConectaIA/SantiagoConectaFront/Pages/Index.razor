@@ -1,559 +1,197 @@
-﻿@page "/"
+@page "/"
 @using SantiagoConectaFront.Data
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
 @using Microsoft.Extensions.Localization
 @inject NavigationManager NavManager
 @inject IStringLocalizer<App> Localizer
+@inject IJSRuntime JS
 
-<PageTitle>Home - Softy Pinko</PageTitle>
+<PageTitle>Santiaguero Conecta - Inicio</PageTitle>
 
-<!-- ***** Welcome Area Start ***** -->
-<div class="welcome-area" id="welcome">
-    <div class="header-text">
+<!-- ***** Hero Section (Bienvenida) ***** -->
+<div class="welcome-area" id="welcome" style="background-image: linear-gradient(135deg, rgba(136, 14, 79, 0.8), rgba(216, 27, 96, 0.9)), url('assets/images/banner-bg.jpg'); background-size: cover; background-position: center; min-height: 80vh; display: flex; align-items: center;">
+    <div class="header-text" style="width: 100%;">
         <div class="container">
             <div class="row">
-                <div class="offset-xl-3 col-xl-6 offset-lg-2 col-lg-8 col-md-12 col-sm-12">
-                    <h1>@Localizer["WelcomeTitle"]</h1>
-                    <p>
-                        @Localizer["WelcomeSubtitle"]
+                <div class="col-xl-8 col-lg-10 col-md-12 col-sm-12 mx-auto text-center" style="margin-top: 80px;">
+                    <h1 style="color: white; font-weight: 700; font-size: 3rem; margin-bottom: 20px;">Bienvenido a <span style="color: #ffb4a2;">Santiaguero Conecta</span></h1>
+                    <p style="color: rgba(255, 255, 255, 0.9); font-size: 1.2rem; margin-bottom: 30px;">
+                        Tu Asistente Virtual Inteligente 24/7. El H. Ayuntamiento de Santiago Papasquiaro pone a tu disposición esta herramienta para resolver tus dudas, consultar requisitos de trámites y evitar filas desde la comodidad de tu celular.
                     </p>
-                    <a href="#features" class="main-button-slider">@Localizer["DiscoverMore"]</a>
+                    <button class="main-button-slider pulse-animation" @onclick="OpenChatbot" style="border: none; padding: 12px 30px; font-size: 1.1rem; font-weight: 600; border-radius: 30px; background-color: white; color: #880e4f; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                        <i class="fa fa-comments mr-2"></i> Probar Chatbot Ahora
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- ***** Welcome Area End ***** -->
-<!-- ***** Features Small Start ***** -->
-<section class="section home-feature">
+<!-- ***** Hero Section End ***** -->
+
+<!-- ***** Módulos Principales ***** -->
+<section class="section home-feature" style="margin-top: -60px; position: relative; z-index: 10;">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
                 <div class="row">
-                    <!-- ***** Features Small Item Start ***** -->
-                    @* Se actualiza la navegación para dirigir a la página de Trámites *@
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.2s" @onclick='() => NavManager.NavigateTo("/tramites", forceLoad: true)' style="cursor: pointer;">
-                        <div class="features-small-item">
-                            <div class="icon">
-                                <i><img src="assets/images/Tramite-icon.png" alt=""></i>
+                    <!-- Trámites -->
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/tramites", forceLoad: true)' style="cursor: pointer;">
+                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Large" />
                             </div>
-                            <h5 class="features-title">@Localizer["Tramites"]</h5>
-                            <p>@Localizer["TramitesDesc"]</p>
+                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Catálogo de Trámites</h5>
+                            <p>Consulta requisitos, costos y ubicaciones de los trámites municipales en un solo lugar y de forma transparente.</p>
                         </div>
                     </div>
-                    <!-- ***** Features Small Item End ***** -->
-                    <!-- ***** Features Small Item Start ***** -->
-                    @* Se actualiza la navegación para dirigir a la página de Noticias *@
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.4s" @onclick='() => NavManager.NavigateTo("/noticias", forceLoad: true)' style="cursor: pointer;">
-                        <div class="features-small-item">
-                            <div class="icon">
-                                <i><img src="assets/images/noticias-icon.png" alt=""></i>
+                    <!-- Noticias -->
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/noticias", forceLoad: true)' style="cursor: pointer;">
+                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Primary" Size="Size.Large" />
                             </div>
-                            <h5 class="features-title">@Localizer["Noticias"]</h5>
-                            <p>@Localizer["NoticiasDesc"]</p>
+                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Noticias y Avisos</h5>
+                            <p>Mantente informado sobre los comunicados oficiales, eventos y noticias relevantes de Santiago Papasquiaro.</p>
                         </div>
                     </div>
-                    <!-- ***** Features Small Item End ***** -->
-                    <!-- ***** Features Small Item Start ***** -->
-                    @* Se actualiza la navegación para dirigir a la página de IA *@
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.6s" @onclick='() => NavManager.NavigateTo("/ia", forceLoad: true)' style="cursor: pointer;">
-                        <div class="features-small-item">
-                            <div class="icon">
-                                <i><img src="assets/images/ia-icon.png" alt=""></i>
+                    <!-- Chatbot Info -->
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick="OpenChatbot" style="cursor: pointer;">
+                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Primary" Size="Size.Large" />
                             </div>
-                            <h5 class="features-title">@Localizer["SantiagoConectaIA"]</h5>
-                            <p>@Localizer["SantiagoConectaIADesc"]</p>
+                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Inteligencia Artificial</h5>
+                            <p>Nuestro chatbot responde al instante a tus preguntas mediante lenguaje natural. ¡Pruébalo ahora mismo!</p>
                         </div>
                     </div>
-                    <!-- ***** Features Small Item End ***** -->
                 </div>
             </div>
         </div>
     </div>
 </section>
-<!-- ***** Features Small End ***** -->
-<!-- ***** Features Big Item Start ***** -->
-<section class="section padding-top-70 padding-bottom-0" id="features">
+<!-- ***** Módulos End ***** -->
+
+<!-- ***** Beneficios Section ***** -->
+<section class="section padding-top-70 padding-bottom-0" id="beneficios">
     <div class="container">
         <div class="row">
-            <div class="col-lg-5 col-md-12 col-sm-12 align-self-center" data-scroll-reveal="enter left move 30px over 0.6s after 0.4s">
-                <img src="assets/images/left-image.png" class="rounded img-fluid d-block mx-auto" alt="App">
+            <div class="col-lg-5 col-md-12 col-sm-12 align-self-center">
+                <!-- Usaremos un icono grande o imagen representativa -->
+                <div style="background: linear-gradient(135deg, #fce4ec, #f8bbd0); border-radius: 20px; padding: 40px; text-align: center;">
+                    <MudIcon Icon="@Icons.Material.Filled.PhonelinkRing" Style="font-size: 150px; color: #d81b60;" />
+                </div>
             </div>
             <div class="col-lg-1"></div>
             <div class="col-lg-6 col-md-12 col-sm-12 align-self-center mobile-top-fix">
                 <div class="left-heading">
-                    <h2 class="section-title">Let's discuss about you project</h2>
+                    <h2 class="section-title" style="color: #880e4f;">Cero Filas, Cero Complicaciones</h2>
                 </div>
                 <div class="left-text">
-                    <p>Nullam sit amet purus libero. Etiam ullamcorper nisl ut augue blandit, at finibus leo efficitur. Nam gravida purus non sapien auctor, ut aliquam magna ullamcorper.</p>
+                    <p>En el H. Ayuntamiento de Santiago Papasquiaro estamos comprometidos con la modernización de la atención ciudadana. Con <strong>Santiaguero Conecta</strong>, la administración municipal está al alcance de tu mano.</p>
+                    <ul style="list-style: none; padding-left: 0; margin-top: 20px;">
+                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Disponibilidad Total:</strong> Operativo 24 horas al día, 365 días al año.</li>
+                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Respuestas Inmediatas:</strong> Olvídate de los tiempos de espera telefónicos.</li>
+                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Lenguaje Natural:</strong> Pregunta como si hablaras con un humano.</li>
+                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Transparencia:</strong> Acceso equitativo a información actualizada de trámites.</li>
+                    </ul>
                 </div>
             </div>
         </div>
-        <div class="row">
+        <div class="row mt-5">
             <div class="col-lg-12">
                 <div class="hr"></div>
             </div>
         </div>
     </div>
 </section>
-<!-- ***** Features Big Item End ***** -->
-<!-- ***** Features Big Item Start ***** -->
-<section class="section padding-bottom-100">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-6 col-md-12 col-sm-12 align-self-center mobile-bottom-fix">
-                <div class="left-heading">
-                    <h2 class="section-title">We can help you to grow your business</h2>
-                </div>
-                <div class="left-text">
-                    <p>Aenean pretium, ipsum et porttitor auctor, metus ipsum iaculis nisi, a bibendum lectus libero vitae urna. Sed id leo eu dolor luctus congue sed eget ipsum. Nunc nec luctus libero. Etiam quis dolor elit.</p>
-                </div>
-            </div>
-            <div class="col-lg-1"></div>
-            <div class="col-lg-5 col-md-12 col-sm-12 align-self-center mobile-bottom-fix-big" data-scroll-reveal="enter right move 30px over 0.6s after 0.4s">
-                <img src="assets/images/right-image.png" class="rounded img-fluid d-block mx-auto" alt="App">
-            </div>
-        </div>
-    </div>
-</section>
-<!-- ***** Features Big Item End ***** -->
-<!-- ***** Home Parallax Start ***** -->
-<section class="mini" id="work-process">
-    <div class="mini-content">
-        <div class="container">
-            <div class="row">
-                <div class="offset-lg-3 col-lg-6">
-                    <div class="info">
-                        <h1>Work Process</h1>
-                        <p>Aenean nec tempor metus. Maecenas ligula dolor, commodo in imperdiet interdum, vehicula ut ex. Donec ante diam.</p>
-                    </div>
-                </div>
-            </div>
+<!-- ***** Beneficios End ***** -->
 
-            <!-- ***** Mini Box Start ***** -->
-            <div class="row">
-                <div class="col-lg-2 col-md-3 col-sm-6 col-6">
-                    <a href="#" class="mini-box">
-                        <i><img src="assets/images/work-process-item-01.png" alt=""></i>
-                        <strong>Get Ideas</strong>
-                        <span>Godard pabst prism fam cliche.</span>
-                    </a>
-                </div>
-                <div class="col-lg-2 col-md-3 col-sm-6 col-6">
-                    <a href="#" class="mini-box">
-                        <i><img src="assets/images/work-process-item-01.png" alt=""></i>
-                        <strong>Sketch Up</strong>
-                        <span>Godard pabst prism fam cliche.</span>
-                    </a>
-                </div>
-                <div class="col-lg-2 col-md-3 col-sm-6 col-6">
-                    <a href="#" class="mini-box">
-                        <i><img src="assets/images/work-process-item-01.png" alt=""></i>
-                        <strong>Discuss</strong>
-                        <span>Godard pabst prism fam cliche.</span>
-                    </a>
-                </div>
-                <div class="col-lg-2 col-md-3 col-sm-6 col-6">
-                    <a href="#" class="mini-box">
-                        <i><img src="assets/images/work-process-item-01.png" alt=""></i>
-                        <strong>Revise</strong>
-                        <span>Godard pabst prism fam cliche.</span>
-                    </a>
-                </div>
-                <div class="col-lg-2 col-md-3 col-sm-6 col-6">
-                    <a href="#" class="mini-box">
-                        <i><img src="assets/images/work-process-item-01.png" alt=""></i>
-                        <strong>Approve</strong>
-                        <span>Godard pabst prism fam cliche.</span>
-                    </a>
-                </div>
-                <div class="col-lg-2 col-md-3 col-sm-6 col-6">
-                    <a href="#" class="mini-box">
-                        <i><img src="assets/images/work-process-item-01.png" alt=""></i>
-                        <strong>Launch</strong>
-                        <span>Godard pabst prism fam cliche.</span>
-                    </a>
-                </div>
-            </div>
-            <!-- ***** Mini Box End ***** -->
-        </div>
-    </div>
-</section>
-<!-- ***** Home Parallax End ***** -->
-<!-- ***** Testimonials Start ***** -->
-<section class="section" id="testimonials">
+<!-- ***** Contact Us (Buzón Ciudadano) ***** -->
+<section class="section colored" id="contacto" style="background-color: #f8f9fa;">
     <div class="container">
-        <!-- ***** Section Title Start ***** -->
         <div class="row">
             <div class="col-lg-12">
                 <div class="center-heading">
-                    <h2 class="section-title">What do they say?</h2>
+                    <h2 class="section-title" style="color: #880e4f;">Buzón Ciudadano</h2>
                 </div>
             </div>
             <div class="offset-lg-3 col-lg-6">
                 <div class="center-text">
-                    <p>Donec tempus, sem non rutrum imperdiet, lectus orci fringilla nulla, at accumsan elit eros a turpis. Ut sagittis lectus libero.</p>
+                    <p>Tu opinión es importante para nosotros. Utiliza este espacio para enviarnos tus comentarios, sugerencias o reportes directos al H. Ayuntamiento.</p>
                 </div>
             </div>
         </div>
-        <!-- ***** Section Title End ***** -->
-
-        <div class="row">
-            <!-- ***** Testimonials Item Start ***** -->
-            <div class="col-lg-4 col-md-6 col-sm-12">
-                <div class="team-item">
-                    <div class="team-content">
-                        <i><img src="assets/images/testimonial-icon.png" alt=""></i>
-                        <p>Proin a neque nisi. Nam ipsum nisi, venenatis ut nulla quis, egestas scelerisque orci. Maecenas a finibus odio.</p>
-                        <div class="user-image">
-                            <img src="http://placehold.it/60x60" alt="">
-                        </div>
-                        <div class="team-info">
-                            <h3 class="user-name">Catherine Soft</h3>
-                            <span>Managing Director</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- ***** Testimonials Item End ***** -->
-            <!-- ***** Testimonials Item Start ***** -->
-            <div class="col-lg-4 col-md-6 col-sm-12">
-                <div class="team-item">
-                    <div class="team-content">
-                        <i><img src="assets/images/testimonial-icon.png" alt=""></i>
-                        <p>Integer molestie aliquam gravida. Nullam nec arcu finibus, imperdiet nulla vitae, placerat nibh. Cras maximus venenatis molestie.</p>
-                        <div class="user-image">
-                            <img src="http://placehold.it/60x60" alt="">
-                        </div>
-                        <div class="team-info">
-                            <h3 class="user-name">Kelvin Wood</h3>
-                            <span>Digital Marketer</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- ***** Testimonials Item End ***** -->
-            <!-- ***** Testimonials Item Start ***** -->
-            <div class="col-lg-4 col-md-6 col-sm-12">
-                <div class="team-item">
-                    <div class="team-content">
-                        <i><img src="assets/images/testimonial-icon.png" alt=""></i>
-                        <p>Quisque diam odio, maximus ac consectetur eu, auctor non lorem. Cras quis est non ante ultrices molestie. Ut vehicula et diam at aliquam.</p>
-                        <div class="user-image">
-                            <img src="http://placehold.it/60x60" alt="">
-                        </div>
-                        <div class="team-info">
-                            <h3 class="user-name">David Martin</h3>
-                            <span>Website Manager</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- ***** Testimonials Item End ***** -->
-        </div>
-    </div>
-</section>
-<!-- ***** Testimonials End ***** -->
-<!-- ***** Pricing Plans Start ***** -->
-<section class="section colored" id="pricing-plans">
-    <div class="container">
-        <!-- ***** Section Title Start ***** -->
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="center-heading">
-                    <h2 class="section-title">Pricing Plans</h2>
-                </div>
-            </div>
-            <div class="offset-lg-3 col-lg-6">
-                <div class="center-text">
-                    <p>Donec vulputate urna sed rutrum venenatis. Cras consequat magna quis arcu elementum, quis congue risus volutpat.</p>
-                </div>
-            </div>
-        </div>
-        <!-- ***** Section Title End ***** -->
-
-        <div class="row">
-            <!-- ***** Pricing Item Start ***** -->
-            <div class="col-lg-4 col-md-6 col-sm-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.2s">
-                <div class="pricing-item">
-                    <div class="pricing-header">
-                        <h3 class="pricing-title">Starter</h3>
-                    </div>
-                    <div class="pricing-body">
-                        <div class="price-wrapper">
-                            <span class="currency">$</span>
-                            <span class="price">14.50</span>
-                            <span class="period">monthly</span>
-                        </div>
-                        <ul class="list">
-                            <li class="active">60 GB space</li>
-                            <li class="active">600 GB transfer</li>
-                            <li class="active">Pro Design Panel</li>
-                            <li>15-minute support</li>
-                            <li>Unlimited Emails</li>
-                            <li>24/7 Security</li>
-                        </ul>
-                    </div>
-                    <div class="pricing-footer">
-                        <a href="#" class="main-button">Purchase Now</a>
-                    </div>
-                </div>
-            </div>
-            <!-- ***** Pricing Item End ***** -->
-            <!-- ***** Pricing Item Start ***** -->
-            <div class="col-lg-4 col-md-6 col-sm-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.4s">
-                <div class="pricing-item active">
-                    <div class="pricing-header">
-                        <h3 class="pricing-title">Premium</h3>
-                    </div>
-                    <div class="pricing-body">
-                        <div class="price-wrapper">
-                            <span class="currency">$</span>
-                            <span class="price">21.50</span>
-                            <span class="period">monthly</span>
-                        </div>
-                        <ul class="list">
-                            <li class="active">120 GB space</li>
-                            <li class="active">1200 GB transfer</li>
-                            <li class="active">Pro Design Panel</li>
-                            <li class="active">15-minute support</li>
-                            <li>Unlimited Emails</li>
-                            <li>24/7 Security</li>
-                        </ul>
-                    </div>
-                    <div class="pricing-footer">
-                        <a href="#" class="main-button">Purchase Now</a>
-                    </div>
-                </div>
-            </div>
-            <!-- ***** Pricing Item End ***** -->
-            <!-- ***** Pricing Item Start ***** -->
-            <div class="col-lg-4 col-md-6 col-sm-12" data-scroll-reveal="enter bottom move 50px over 0.6s after 0.6s">
-                <div class="pricing-item">
-                    <div class="pricing-header">
-                        <h3 class="pricing-title">Advanced</h3>
-                    </div>
-                    <div class="pricing-body">
-                        <div class="price-wrapper">
-                            <span class="currency">$</span>
-                            <span class="price">42.00</span>
-                            <span class="period">monthly</span>
-                        </div>
-                        <ul class="list">
-                            <li class="active">250 GB space</li>
-                            <li class="active">5000 GB transfer</li>
-                            <li class="active">Pro Design Panel</li>
-                            <li class="active">15-minute support</li>
-                            <li class="active">Unlimited Emails</li>
-                            <li class="active">24/7 Security</li>
-                        </ul>
-                    </div>
-                    <div class="pricing-footer">
-                        <a href="#" class="main-button">Purchase Now</a>
-                    </div>
-                </div>
-            </div>
-            <!-- ***** Pricing Item End ***** -->
-        </div>
-    </div>
-</section>
-<!-- ***** Pricing Plans End ***** -->
-<!-- ***** Counter Parallax Start ***** -->
-<section class="counter">
-    <div class="content">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-6 col-sm-12">
-                    <div class="count-item decoration-bottom">
-                        <strong>126</strong>
-                        <span>Projects</span>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 col-sm-12">
-                    <div class="count-item decoration-top">
-                        <strong>63</strong>
-                        <span>Happy Clients</span>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 col-sm-12">
-                    <div class="count-item decoration-bottom">
-                        <strong>18</strong>
-                        <span>Awards Wins</span>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 col-sm-12">
-                    <div class="count-item">
-                        <strong>27</strong>
-                        <span>Countries</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- ***** Counter Parallax End ***** -->
-<!-- ***** Blog Start ***** -->
-<section class="section" id="blog">
-    <div class="container">
-        <!-- ***** Section Title Start ***** -->
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="center-heading">
-                    <h2 class="section-title">Blog Entries</h2>
-                </div>
-            </div>
-            <div class="offset-lg-3 col-lg-6">
-                <div class="center-text">
-                    <p>Integer molestie aliquam gravida. Nullam nec arcu finibus, imperdiet nulla vitae, placerat nibh. Cras maximus venenatis molestie.</p>
-                </div>
-            </div>
-        </div>
-        <!-- ***** Section Title End ***** -->
 
         <div class="row">
             <div class="col-lg-4 col-md-6 col-sm-12">
-                <div class="blog-post-thumb">
-                    <div class="img">
-                        <img src="assets/images/blog-item-01.png" alt="">
-                    </div>
-                    <div class="blog-content">
-                        <h3>
-                            <a href="#">Vivamus ac vehicula dui</a>
-                        </h3>
-                        <div class="text">
-                            Cras aliquet ligula dui, vitae fermentum velit tincidunt id. Praesent eu finibus nunc. Nulla in sagittis eros. Aliquam egestas augue.
-                        </div>
-                        <a href="#" class="main-button">Read More</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 col-sm-12">
-                <div class="blog-post-thumb">
-                    <div class="img">
-                        <img src="assets/images/blog-item-02.png" alt="">
-                    </div>
-                    <div class="blog-content">
-                        <h3>
-                            <a href="#">Phasellus convallis augue</a>
-                        </h3>
-                        <div class="text">
-                            Aliquam commodo ornare nisl, et scelerisque nisl dignissim ac. Vestibulum finibus urna ut velit venenatis, vel ultrices sapien mattis.
-                        </div>
-                        <a href="#" class="main-button">Read More</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 col-sm-12">
-                <div class="blog-post-thumb">
-                    <div class="img">
-                        <img src="assets/images/blog-item-03.png" alt="">
-                    </div>
-                    <div class="blog-content">
-                        <h3>
-                            <a href="#">Nam gravida purus non</a>
-                        </h3>
-                        <div class="text">
-                            Maecenas eu erat vitae dui convallis consequat vel gravida nulla. Vestibulum finibus euismod odio, ut tempus enim varius eu.
-                        </div>
-                        <a href="#" class="main-button">Read More</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- ***** Blog End ***** -->
-<!-- ***** Contact Us Start ***** -->
-<section class="section colored" id="contact-us">
-    <div class="container">
-        <!-- ***** Section Title Start ***** -->
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="center-heading">
-                    <h2 class="section-title">Talk To Us</h2>
-                </div>
-            </div>
-            <div class="offset-lg-3 col-lg-6">
-                <div class="center-text">
-                    <p>Maecenas pellentesque ante faucibus lectus vulputate sollicitudin. Cras feugiat hendrerit semper.</p>
-                </div>
-            </div>
-        </div>
-        <!-- ***** Section Title End ***** -->
-
-        <div class="row">
-            <!-- ***** Contact Text Start ***** -->
-            <div class="col-lg-4 col-md-6 col-sm-12">
-                <h5 class="margin-bottom-30">Keep in touch</h5>
+                <h5 class="margin-bottom-30" style="color: #880e4f;">Información de Contacto</h5>
                 <div class="contact-text">
                     <p>
-                        110-220 Quisque diam odio, maximus ac consectetur eu, 10260
-                        <br>auctor non lorem
+                        <strong>Dirección:</strong><br>
+                        Calle Riva Palacio #19, Colonia Centro,<br>
+                        Santiago Papasquiaro, Durango.
                     </p>
-                    <p>You are NOT allowed to re-distribute Softy Pinko template on any template collection websites. Thank you.</p>
+                    <p>
+                        <strong>Teléfono Oficial:</strong><br>
+                        674 86 2 18 46
+                    </p>
+                    <p><strong>Atención Ciudadana:</strong> Lunes a Viernes de 8:00 a 15:00 hrs.</p>
                 </div>
             </div>
-            <!-- ***** Contact Text End ***** -->
-            <!-- ***** Contact Form Start ***** -->
             <div class="col-lg-8 col-md-6 col-sm-12">
-                <div class="contact-form">
+                <div class="contact-form" style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
                     <EditForm Model="@contactModel" OnValidSubmit="HandleSubmit">
                         <DataAnnotationsValidator />
                         <div class="row">
-                            <div class="col-lg-6 col-md-12 col-sm-12">
-                                <fieldset>
-                                    <InputText @bind-Value="contactModel.Name" class="form-control" placeholder="Full Name" />
-                                </fieldset>
+                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
+                                <MudTextField @bind-Value="contactModel.Name" Label="Nombre Completo" Variant="Variant.Outlined" Required="true" />
                             </div>
-                            <div class="col-lg-6 col-md-12 col-sm-12">
-                                <fieldset>
-                                    <InputText @bind-Value="contactModel.Email" type="email" class="form-control" placeholder="E-Mail Address" />
-                                </fieldset>
+                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
+                                <MudTextField @bind-Value="contactModel.Email" Label="Correo Electrónico" Variant="Variant.Outlined" Required="true" />
                             </div>
-                            <div class="col-lg-12">
-                                <fieldset>
-                                    <InputTextArea @bind-Value="contactModel.Message" rows="6" class="form-control" placeholder="Your Message" />
-                                </fieldset>
+                            <div class="col-lg-12 mb-3">
+                                <MudTextField @bind-Value="contactModel.Message" Label="Tu Mensaje, Queja o Sugerencia" Variant="Variant.Outlined" Lines="5" Required="true" />
                             </div>
                             <div class="col-lg-12">
-                                <fieldset>
-                                    <button type="submit" class="main-button">Send Message</button>
-                                </fieldset>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" Style="border-radius: 30px;">Enviar Mensaje</MudButton>
                             </div>
                         </div>
                     </EditForm>
                 </div>
             </div>
-            <!-- ***** Contact Form End ***** -->
         </div>
     </div>
 </section>
 
+<style>
+    .features-small-item:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(216, 27, 96, 0.2) !important;
+    }
+</style>
+
 @code {
     private ContactModel contactModel = new();
-    [Inject] Data_Tramites data_Tramites { get; set; } = null!;
     
-    // NOTA: Se ha inyectado NavigationManager arriba para usar la navegación.
-
     protected override async Task OnInitializedAsync()
     {
-        var request = new PostGetTramites
-        {
-            iIdTramite= 0,
-			bActivo = false
-        };
-        // Omitiendo la línea de llamada a la API por ahora ya que no tenemos la definición completa de Data_Tramites
-        // var resultado = await data_Tramites.PostGetAllTramites(request);
+        // Inicialización ligera si es necesaria
     }
+
     private void HandleSubmit()
     {
-        // Aquí puedes manejar el envío del formulario
-        Console.WriteLine($"Nombre: {contactModel.Name}");
-        Console.WriteLine($"Email: {contactModel.Email}");
-        Console.WriteLine($"Mensaje: {contactModel.Message}");
+        // TODO: Conectar a API de guardado de Buzón Ciudadano
+        Console.WriteLine($"Mensaje recibido de {contactModel.Name}");
+        contactModel = new(); // Reset
+    }
 
-        // Resetear el formulario
-        contactModel = new();
+    private async Task OpenChatbot()
+    {
+        try {
+            // Buscamos específicamente el botón del Chatbot usando su contenedor
+            // para evitar un loop infinito al hacer click en sí mismo.
+            await JS.InvokeVoidAsync("eval", "document.querySelector('.chatbot-container .pulse-animation')?.click()");
+        } catch { }
     }
 
     public class ContactModel
