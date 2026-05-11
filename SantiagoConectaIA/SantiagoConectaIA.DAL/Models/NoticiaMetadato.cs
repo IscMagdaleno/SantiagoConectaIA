@@ -13,7 +13,7 @@ public partial class NoticiaMetadato
 
     public int IIdTipoDato { get; set; }
 
-    public string VchClave { get; set; }
+    public string vchAlias { get; set; }
 
     public string NvchValor { get; set; }
 
