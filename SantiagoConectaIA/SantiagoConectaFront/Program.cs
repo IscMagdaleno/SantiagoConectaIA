@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SantiagoConectaFront;
-using SantiagoConectaFront.Data;
+using SantiagoConecta.SharedUI.Data;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using Microsoft.JSInterop;

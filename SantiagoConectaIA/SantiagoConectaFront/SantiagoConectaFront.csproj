@@ -20,4 +20,8 @@
 	  <ProjectReference Include="..\SantiagoConectaIA.Share\SantiagoConectaIA.Share.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SantiagoConecta.SharedUI\SantiagoConecta.SharedUI.csproj" />
+  </ItemGroup>
+
 </Project>
