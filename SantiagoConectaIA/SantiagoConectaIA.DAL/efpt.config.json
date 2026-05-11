@@ -39,6 +39,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CategoriaNoticia]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Chat]",
          "ObjectType": 0
       },
@@ -68,6 +72,10 @@
       },
       {
          "Name": "[dbo].[Modulo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NoticiaMetadato]",
          "ObjectType": 0
       },
       {
@@ -116,6 +124,10 @@
       },
       {
          "Name": "[dbo].[Test_Table]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TipoDatos]",
          "ObjectType": 0
       },
       {

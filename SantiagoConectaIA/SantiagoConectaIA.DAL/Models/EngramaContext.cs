@@ -23,6 +23,8 @@ public partial class EngramaContext : DbContext
 
     public virtual DbSet<Articulo> Articulos { get; set; }
 
+    public virtual DbSet<CategoriaNoticium> CategoriaNoticia { get; set; }
+
     public virtual DbSet<Chat> Chats { get; set; }
 
     public virtual DbSet<Documento> Documentos { get; set; }
@@ -40,6 +42,8 @@ public partial class EngramaContext : DbContext
     public virtual DbSet<Modulo> Modulos { get; set; }
 
     public virtual DbSet<Noticia> Noticias { get; set; }
+
+    public virtual DbSet<NoticiaMetadato> NoticiaMetadatos { get; set; }
 
     public virtual DbSet<NoticiasImagene> NoticiasImagenes { get; set; }
 
@@ -62,6 +66,8 @@ public partial class EngramaContext : DbContext
     public virtual DbSet<Requisito> Requisitos { get; set; }
 
     public virtual DbSet<TestTable> TestTables { get; set; }
+
+    public virtual DbSet<TipoDato> TipoDatos { get; set; }
 
     public virtual DbSet<Tramite> Tramites { get; set; }
 
@@ -213,6 +219,25 @@ public partial class EngramaContext : DbContext
             entity.HasOne(d => d.IIdProveedorNavigation).WithMany(p => p.Articulos)
                 .HasForeignKey(d => d.IIdProveedor)
                 .HasConstraintName("FK_Articulo_iIdProveedor");
+        });
+
+        modelBuilder.Entity<CategoriaNoticium>(entity =>
+        {
+            entity.HasKey(e => e.IIdCategoria);
+
+            entity.Property(e => e.IIdCategoria).HasColumnName("iIdCategoria");
+            entity.Property(e => e.BActivo)
+                .HasDefaultValue(true)
+                .HasColumnName("bActivo");
+            entity.Property(e => e.VchColorHex)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("vchColorHex");
+            entity.Property(e => e.VchNombre)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("vchNombre");
         });
 
         modelBuilder.Entity<Chat>(entity =>
@@ -453,6 +478,7 @@ public partial class EngramaContext : DbContext
             entity.Property(e => e.DtFechaPublicacion)
                 .HasColumnType("datetime")
                 .HasColumnName("dtFechaPublicacion");
+            entity.Property(e => e.IIdCategoria).HasColumnName("iIdCategoria");
             entity.Property(e => e.NvchContenido)
                 .IsRequired()
                 .HasColumnName("nvchContenido");
@@ -470,6 +496,39 @@ public partial class EngramaContext : DbContext
                 .HasMaxLength(200)
                 .IsUnicode(false)
                 .HasColumnName("vchTituloEn");
+
+            entity.HasOne(d => d.IIdCategoriaNavigation).WithMany(p => p.Noticia)
+                .HasForeignKey(d => d.IIdCategoria)
+                .HasConstraintName("FK_Noticias_CategoriaNoticia");
+        });
+
+        modelBuilder.Entity<NoticiaMetadato>(entity =>
+        {
+            entity.HasKey(e => e.IIdMetadato);
+
+            entity.ToTable("NoticiaMetadato");
+
+            entity.Property(e => e.IIdMetadato).HasColumnName("iIdMetadato");
+            entity.Property(e => e.IIdNoticia).HasColumnName("iIdNoticia");
+            entity.Property(e => e.IIdTipoDato).HasColumnName("iIdTipoDato");
+            entity.Property(e => e.IOrden).HasColumnName("iOrden");
+            entity.Property(e => e.NvchValor)
+                .IsRequired()
+                .HasColumnName("nvchValor");
+            entity.Property(e => e.VchClave)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("vchClave");
+
+            entity.HasOne(d => d.IIdNoticiaNavigation).WithMany(p => p.NoticiaMetadatos)
+                .HasForeignKey(d => d.IIdNoticia)
+                .HasConstraintName("FK_NoticiaMetadato_Noticias");
+
+            entity.HasOne(d => d.IIdTipoDatoNavigation).WithMany(p => p.NoticiaMetadatos)
+                .HasForeignKey(d => d.IIdTipoDato)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_NoticiaMetadato_Tipo_Datos");
         });
 
         modelBuilder.Entity<NoticiasImagene>(entity =>
@@ -780,6 +839,22 @@ public partial class EngramaContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("vchName");
+        });
+
+        modelBuilder.Entity<TipoDato>(entity =>
+        {
+            entity.HasKey(e => e.IIdTipoDato).HasName("PK_Tipo_Datos");
+
+            entity.Property(e => e.IIdTipoDato).HasColumnName("iIdTipoDato");
+            entity.Property(e => e.NcvhDescripcion)
+                .HasMaxLength(200)
+                .IsUnicode(false)
+                .HasColumnName("ncvhDescripcion");
+            entity.Property(e => e.NvchTipo)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("nvchTipo");
         });
 
         modelBuilder.Entity<Tramite>(entity =>

@@ -23,5 +23,11 @@ public partial class Noticia
 
     public bool BActivo { get; set; }
 
+    public int? IIdCategoria { get; set; }
+
+    public virtual CategoriaNoticium IIdCategoriaNavigation { get; set; }
+
+    public virtual ICollection<NoticiaMetadato> NoticiaMetadatos { get; set; } = new List<NoticiaMetadato>();
+
     public virtual ICollection<NoticiasImagene> NoticiasImagenes { get; set; } = new List<NoticiasImagene>();
 }
