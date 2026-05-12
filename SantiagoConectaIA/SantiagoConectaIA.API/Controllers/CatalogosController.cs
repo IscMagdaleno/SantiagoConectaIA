@@ -25,14 +25,13 @@ namespace SantiagoConectaIA.API.Controllers
         [HttpPost("PostGetTipoDatos")]
         public async Task<IActionResult> PostGetTipoDatos()
         {
-            var data = await _catalogosProvider.GetTipoDatosAsync();
-            
+            var data = await _catalogosProvider.GetTipoDatosAsync("tipos.datos.noticias");
             // Mapeo manual a DTO
             var dtos = data.Select(x => new TipoDatoDto
             {
-                iIdTipoDato = x.IIdTipoDato,
-                nvchTipo = x.NvchTipo,
-                ncvhDescripcion = x.NcvhDescripcion
+                iIdTipoDato = int.TryParse(x.Valor, out var id) ? id : x.IdCatalogo,
+                nvchTipo = x.Descripcion,
+                ncvhDescripcion = x.Descripcion
             }).ToList();
 
             var response = new Response<List<TipoDatoDto>>

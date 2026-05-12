@@ -2,9 +2,7 @@ namespace SantiagoConectaIA.Share.Objects.NoticiasModule
 {
     public enum TipoDatoMetadato
     {
-        Texto = 1,
-        Imagen = 2,
-        Video = 3,
-        Alerta = 4
+        Video = 1,
+        GaleriaImagenes = 2
     }
 }

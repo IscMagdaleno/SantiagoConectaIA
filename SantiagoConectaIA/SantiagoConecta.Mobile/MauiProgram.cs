@@ -33,6 +33,7 @@ public static class MauiProgram
 		builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseAddress), Timeout = TimeSpan.FromMinutes(10) });
 #endif
 		builder.Services.AddScoped<Data_Tramites>();
+		builder.Services.AddScoped<Data_Noticias>();
 		builder.Services.AddMudServices();
 		builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 

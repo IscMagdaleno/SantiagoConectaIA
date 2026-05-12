@@ -1,7 +1,9 @@
+@implements IDisposable
 @inherits LayoutComponentBase
 @using Microsoft.Extensions.Localization
 @using SantiagoConecta.SharedUI.Shared
 @inject IStringLocalizer<App> Localizer
+@inject NavigationManager NavManager
 
 <MudThemeProvider Theme="@MyCustomTheme" />
 <MudDialogProvider />
@@ -17,14 +19,14 @@
                         <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Primary" Size="Size.Large" Class="mr-2" />
                         <span style="font-weight: 700; font-size: 24px; color: #880e4f;">Santiaguero Conecta</span>
                     </a>
-                    <ul class="nav">
-                        <li><NavLink href="/" Match="NavLinkMatch.All">Inicio</NavLink></li>
-                        <li><NavLink href="tramites">Trámites</NavLink></li>
-                        <li><NavLink href="noticias">Noticias</NavLink></li>
-                        <li><a href="#contacto">Buzón Ciudadano</a></li>
+                    <ul class="nav" style="@(IsMenuOpen ? "display: block !important;" : "")">
+                        <li><NavLink href="/" Match="NavLinkMatch.All" @onclick="CloseMenu">Inicio</NavLink></li>
+                        <li><NavLink href="tramites" @onclick="CloseMenu">Trámites</NavLink></li>
+                        <li><NavLink href="noticias" @onclick="CloseMenu">Noticias</NavLink></li>
+                        <li><a href="#contacto" @onclick="CloseMenu">Buzón Ciudadano</a></li>
                         <li><LanguageSwitcher /></li>
                     </ul>
-                    <a class='menu-trigger'>
+                    <a class="menu-trigger @(IsMenuOpen ? "active" : "")" @onclick="ToggleMenu" @onclick:preventDefault>
                         <span>Menu</span>
                     </a>
                 </nav>
@@ -32,7 +34,7 @@
         </div>
     </div>
 </header>
-<main>
+<main class="@(IsHomePage() ? "home-main" : "inner-main")">
     @Body
 </main>
 
@@ -68,4 +70,38 @@
             AppbarText = "#ffffff"
         }
     };
+
+    private bool IsMenuOpen = false;
+
+    private void ToggleMenu()
+    {
+        IsMenuOpen = !IsMenuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        IsMenuOpen = false;
+    }
+
+    protected override void OnInitialized()
+    {
+        NavManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        IsMenuOpen = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private bool IsHomePage()
+    {
+        var relative = NavManager.ToBaseRelativePath(NavManager.Uri);
+        return string.IsNullOrEmpty(relative) || relative.StartsWith("#") || relative.StartsWith("?");
+    }
 }

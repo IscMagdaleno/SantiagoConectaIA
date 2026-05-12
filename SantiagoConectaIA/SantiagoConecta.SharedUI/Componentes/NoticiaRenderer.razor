@@ -1,0 +1,296 @@
+@using SantiagoConectaIA.Share.Objects.NoticiasModule
+@using MudBlazor
+
+@if (Noticia == null)
+{
+    <div class="d-flex justify-center align-center py-8">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    </div>
+}
+else if (Noticia.Metadatos == null || !Noticia.Metadatos.Any())
+{
+    <!-- Vista por defecto si no hay metadatos aún -->
+    <div class="default-content-view">
+        <p class="noticia-body-text">@Noticia.nvchContenido</p>
+    </div>
+}
+else
+{
+    <div class="dynamic-noticia-renderer">
+        @foreach (var bloque in Noticia.Metadatos.OrderBy(m => m.iOrden))
+        {
+            @switch (bloque.iIdTipoDato)
+            {
+                case TipoDatoMetadato.Video:
+                    <div class="block-video-container mb-6 animate-fade-in">
+                        @if (!string.IsNullOrWhiteSpace(bloque.nvchValor) && (bloque.nvchValor.Contains("youtube.com") || bloque.nvchValor.Contains("youtu.be")))
+                        {
+                            var videoId = GetYouTubeVideoId(bloque.nvchValor);
+                            var thumbnailUrl = !string.IsNullOrEmpty(videoId) 
+                                ? $"https://img.youtube.com/vi/{videoId}/hqdefault.jpg" 
+                                : "";
+                            
+                            <a href="@bloque.nvchValor" target="_blank" rel="noopener noreferrer" class="youtube-thumbnail-link">
+                                <div class="youtube-card rounded-xl shadow-lg overflow-hidden position-relative">
+                                    <img src="@thumbnailUrl" alt="Video de la Noticia" class="youtube-bg-img" />
+                                    <div class="youtube-overlay">
+                                        <div class="play-button-container">
+                                            <div class="play-button-inner">
+                                                <svg viewBox="0 0 24 24" class="play-svg">
+                                                    <path d="M8 5v14l11-7z" fill="#ffffff" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="youtube-text-tag">
+                                            <span>Ver Video en YouTube</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(bloque.nvchValor))
+                        {
+                            <div class="video-responsive rounded-xl shadow-lg overflow-hidden">
+                                <video controls width="100%" class="rounded-xl">
+                                    <source src="@bloque.nvchValor" type="video/mp4" />
+                                    Tu navegador no soporta reproducción de video.
+                                </video>
+                            </div>
+                        }
+                    </div>
+                    break;
+
+                case TipoDatoMetadato.GaleriaImagenes:
+                    {
+                        var urls = bloque.nvchValor?.Split(';', System.StringSplitOptions.RemoveEmptyEntries) ?? System.Array.Empty<string>();
+                        if (urls.Any())
+                        {
+                            <div class="block-gallery-container mb-6 animate-fade-in pa-4 border rounded-xl bg-light" style="box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <h6 class="gallery-title mb-4 font-weight-bold" style="color: #475569; font-size: 1.1rem; letter-spacing: 0.5px;">GALERÍA DE IMÁGENES</h6>
+                                <div class="d-flex flex-wrap gap-4 justify-center">
+                                    @foreach (var url in urls)
+                                    {
+                                        <div class="premium-gallery-item" style="position: relative; width: 220px; height: 160px; overflow: hidden; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); transition: all 0.3s ease;">
+                                            <img src="@url" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" class="gallery-img" />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    break;
+            }
+        }
+    </div>
+}
+
+<style>
+    .noticia-body-text {
+        font-size: 1.15rem;
+        line-height: 1.8;
+        color: #374151;
+        font-weight: 400;
+        text-align: justify;
+        white-space: pre-line;
+    }
+
+    .premium-image-wrapper {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .noticia-extra-img {
+        max-height: 550px;
+        object-fit: cover;
+        width: auto;
+        max-width: 100%;
+        transition: transform 0.5s ease, box-shadow 0.3s ease;
+    }
+
+    .noticia-extra-img:hover {
+        transform: scale(1.02);
+    }
+
+    .img-caption {
+        display: block;
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-top: 8px;
+        font-style: italic;
+    }
+
+    .video-responsive {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .premium-alerta-box {
+        background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        border-left: 6px solid #f59e0b;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.08);
+    }
+
+    .alerta-title {
+        color: #92400e;
+        font-size: 1.05rem;
+        letter-spacing: 0.5px;
+    }
+
+    .alerta-text {
+        color: #78350f;
+        font-size: 1.05rem;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Estilos Premium para la tarjeta de YouTube */
+    .youtube-thumbnail-link {
+        text-decoration: none !important;
+        display: block;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .youtube-card {
+        position: relative;
+        width: 100%;
+        height: 380px;
+        background-color: #000000;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 16px;
+    }
+
+    .youtube-bg-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.85;
+        transition: transform 0.5s ease, filter 0.3s ease;
+    }
+
+    .youtube-thumbnail-link:hover .youtube-bg-img {
+        transform: scale(1.05);
+        filter: brightness(0.75);
+    }
+
+    .youtube-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease;
+    }
+
+    .youtube-thumbnail-link:hover .youtube-overlay {
+        background: rgba(0, 0, 0, 0.35);
+    }
+
+    .play-button-container {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #ff0000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(255, 0, 0, 0.4);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease;
+    }
+
+    .youtube-thumbnail-link:hover .play-button-container {
+        transform: scale(1.15);
+        background-color: #e60000;
+        box-shadow: 0 6px 30px rgba(230, 0, 0, 0.6);
+    }
+
+    .play-button-inner {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .play-svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .youtube-text-tag {
+        margin-top: 16px;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        padding: 8px 16px;
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .youtube-text-tag span {
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .youtube-thumbnail-link:hover .youtube-text-tag {
+        background-color: rgba(255, 0, 0, 0.85);
+        transform: translateY(-2px);
+    }
+</style>
+
+@code {
+    [Parameter] public Noticia Noticia { get; set; }
+
+    private string GetYouTubeVideoId(string rawUrl)
+    {
+        try
+        {
+            if (rawUrl.Contains("embed/"))
+            {
+                return rawUrl.Split("embed/")[1].Split('?')[0];
+            }
+
+            if (rawUrl.Contains("youtu.be/"))
+            {
+                return rawUrl.Split("youtu.be/")[1].Split('?')[0];
+            }
+
+            if (rawUrl.Contains("v="))
+            {
+                return rawUrl.Split("v=")[1].Split('&')[0];
+            }
+        }
+        catch { }
+        return string.Empty;
+    }
+}

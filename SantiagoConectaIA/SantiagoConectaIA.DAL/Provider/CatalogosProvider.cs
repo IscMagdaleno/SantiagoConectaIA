@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SantiagoConectaIA.DAL.Models;
@@ -14,10 +15,16 @@ namespace SantiagoConectaIA.DAL.Provider
             _context = context;
         }
 
-        public async Task<List<TipoDato>> GetTipoDatosAsync()
+        public async Task<List<Catalogo>> GetTipoDatosAsync(string groupAlias)
         {
-            // Consulta LINQ para obtener los tipos de datos activos
-            return await _context.TipoDatos.ToListAsync();
+            // Buscar el grupo por su alias
+            var grupo = await _context.Grupos.FirstOrDefaultAsync(g => g.Alias == groupAlias);
+            if (grupo == null) return new List<Catalogo>();
+
+            // Obtener los catálogos vinculados a este grupo
+            return await _context.Catalogos
+                                 .Where(x => x.IdGrupo == grupo.IdGrupo)
+                                 .ToListAsync();
         }
     }
 }

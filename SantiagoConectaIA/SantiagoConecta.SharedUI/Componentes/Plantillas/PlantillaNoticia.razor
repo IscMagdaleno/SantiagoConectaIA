@@ -1,0 +1,496 @@
+@using SantiagoConectaIA.Share.Objects.NoticiasModule
+@using MudBlazor
+
+@if (Noticia == null)
+{
+    <div class="d-flex justify-center align-center py-12">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+else
+{
+    <!-- Selector Dinámico de Plantilla según Categoría Real de la Base de Datos -->
+    @switch (GetTemplateType())
+    {
+        case CategoriaNoticiaEnum.Deportes:
+            <!-- ================= PLANTILLA 2: DEPORTES & ENERGÍA (Categoría 3) ================= -->
+            <div class="template-sports animate-fade-in">
+                <div class="sports-banner mb-6">
+                    <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?sport" : Noticia.vchImagenPortada)" class="sports-hero-img" alt="Portada de Deporte" />
+                    <div class="sports-badge">DEPORTES</div>
+                </div>
+                <div class="px-4">
+                    <h1 class="sports-title">@Noticia.vchTitulo</h1>
+                    <div class="sports-divider"></div>
+                    <div class="sports-meta d-flex align-center gap-4 mb-6">
+                        <span class="d-flex align-center gap-1"><MudIcon Icon="@Icons.Material.Filled.SportsSoccer" Size="Size.Small" /> @Noticia.dtFechaPublicacion.ToString("dd/MM/yyyy")</span>
+                        <span class="d-flex align-center gap-1"><MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" /> 3 min de lectura</span>
+                    </div>
+                    <div class="sports-content">
+                        <NoticiaRenderer Noticia="Noticia" />
+                    </div>
+                </div>
+            </div>
+            break;
+
+        case CategoriaNoticiaEnum.Policiaca:
+            <!-- ================= PLANTILLA 3: ALERTA & SEGURIDAD / POLICIACA (Categoría 4) ================= -->
+            <div class="template-alert animate-fade-in">
+                <div class="alert-top-stripe">
+                    <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Class="alert-flash-icon" />
+                    <span>COMUNICADO DE SEGURIDAD / SECCIÓN POLICIACA</span>
+                </div>
+                <div class="alert-container p-6">
+                    <div class="row align-center mb-6">
+                        <div class="col-12 col-md-4">
+                            <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/600/400?warning" : Noticia.vchImagenPortada)" class="alert-hero-img" alt="Alerta" />
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <h1 class="alert-title">@Noticia.vchTitulo</h1>
+                            <span class="alert-timestamp d-flex align-center gap-1 mt-2">
+                                <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" />
+                                Publicado hace un momento • @Noticia.dtFechaPublicacion.ToString("dd MMMM, yyyy h:mm tt")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="alert-content-box">
+                        <NoticiaRenderer Noticia="Noticia" />
+                    </div>
+                </div>
+            </div>
+            break;
+
+        case CategoriaNoticiaEnum.Cultura:
+            <!-- ================= PLANTILLA 4: CULTURA & EVENTOS SOCIALES (Categoría 2) ================= -->
+            <div class="template-culture animate-fade-in">
+                <div class="culture-art-header text-center py-8">
+                    <span class="culture-sub">Cultura y Tradición</span>
+                    <h1 class="culture-title font-serif">@Noticia.vchTitulo</h1>
+                    <div class="culture-ornament">✦ ━━━━━━━━ ✦</div>
+                    <p class="culture-date">@Noticia.dtFechaPublicacion.ToString("dd 'de' MMMM, yyyy")</p>
+                </div>
+                <div class="culture-cover-wrapper mb-8">
+                    <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?art" : Noticia.vchImagenPortada)" class="culture-hero-img" alt="Cultura" />
+                </div>
+                <div class="culture-body px-md-12">
+                    <NoticiaRenderer Noticia="Noticia" />
+                </div>
+            </div>
+            break;
+
+        case CategoriaNoticiaEnum.ObrasPublicas:
+            <!-- ================= PLANTILLA 6: INNOVACIÓN & OBRA PÚBLICA (Categoría 5) ================= -->
+            <div class="template-innovation animate-fade-in">
+                <div class="innovation-glass-header p-6 rounded-2xl mb-6">
+                    <div class="d-flex align-center gap-2 mb-2">
+                        <span class="innovation-pulse"></span>
+                        <span class="innovation-category">OBRA PÚBLICA & INFRAESTRUCTURA</span>
+                    </div>
+                    <h1 class="innovation-title">@Noticia.vchTitulo</h1>
+                    <p class="innovation-meta">ID de Proyecto: SC-#@Noticia.iIdNoticia | @Noticia.dtFechaPublicacion.ToString("yyyy-MM-dd")</p>
+                </div>
+                <div class="innovation-image-panel mb-6">
+                    <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?tech" : Noticia.vchImagenPortada)" class="innovation-hero-img" alt="Innovación" />
+                </div>
+                <div class="innovation-body p-4">
+                    <NoticiaRenderer Noticia="Noticia" />
+                </div>
+            </div>
+            break;
+
+        case CategoriaNoticiaEnum.ComunicadoOficial:
+        default:
+            <!-- ================= PLANTILLA 1: CLÁSICA MUNICIPAL / COMUNICADO OFICIAL (Categoría 1) ================= -->
+            <div class="template-classic animate-fade-in">
+                <div class="classic-header py-6 border-bottom-double">
+                    <span class="classic-category-text">Boletín de Prensa Oficial</span>
+                    <h1 class="classic-title">@Noticia.vchTitulo</h1>
+                    <div class="classic-meta-row mt-3 d-flex flex-wrap gap-4 justify-space-between align-center">
+                        <span class="classic-date">Santiago Papasquiaro, Dgo. • @Noticia.dtFechaPublicacion.ToString("dd MMMM, yyyy")</span>
+                        <span class="classic-badge">Gobierno de Santiago</span>
+                    </div>
+                </div>
+                <div class="classic-image-container my-6">
+                    <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?city" : Noticia.vchImagenPortada)" class="classic-hero-img" alt="Portada de la noticia" />
+                </div>
+                <div class="classic-body">
+                    <NoticiaRenderer Noticia="Noticia" />
+                </div>
+            </div>
+            break;
+    }
+}
+
+<style>
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PLANTILLA 1: CLÁSICA MUNICIPAL / INSTITUCIONAL
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .template-classic {
+        background: #ffffff;
+        font-family: 'Inter', sans-serif;
+    }
+    .border-bottom-double {
+        border-bottom: 3px double #d1d5db;
+    }
+    .classic-category-text {
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+        color: #880e4f;
+        font-weight: 700;
+    }
+    .classic-title {
+        font-size: 2.3rem;
+        font-weight: 800;
+        color: #1f2937;
+        line-height: 1.25;
+        letter-spacing: -0.5px;
+        margin-top: 5px;
+    }
+    .classic-meta-row {
+        font-size: 0.95rem;
+        color: #6b7280;
+    }
+    .classic-badge {
+        background: #880e4f;
+        color: white;
+        font-weight: bold;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .classic-hero-img {
+        width: 100%;
+        max-height: 480px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+    .classic-body {
+        color: #374151;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PLANTILLA 2: DEPORTES & ENERGÍA
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .template-sports {
+        background: #0f172a;
+        color: #f8fafc;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 2px solid #334155;
+        padding-bottom: 2rem;
+    }
+    .sports-banner {
+        position: relative;
+        height: 380px;
+        overflow: hidden;
+    }
+    .sports-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: skewY(-2deg) translateY(-10px);
+        scale: 1.1;
+    }
+    .sports-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: #ff007f;
+        color: white;
+        font-weight: 900;
+        font-size: 1rem;
+        padding: 6px 16px;
+        transform: skewX(-12deg);
+        box-shadow: 4px 4px 0px #ffffff;
+    }
+    .sports-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.8rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 1.1;
+        letter-spacing: -1px;
+        color: #ffffff;
+        text-shadow: 2px 2px 0px #ff007f;
+    }
+    .sports-divider {
+        width: 80px;
+        height: 6px;
+        background: #ff007f;
+        margin: 15px 0;
+        transform: skewX(-12deg);
+    }
+    .sports-meta {
+        font-size: 0.9rem;
+        color: #94a3b8;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    .sports-content .noticia-body-text {
+        color: #e2e8f0 !important;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PLANTILLA 3: ALERTA & SEGURIDAD (POLICIACA)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .template-alert {
+        background: #fafafa;
+        border: 3px solid #b91c1c;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(185, 28, 28, 0.15);
+    }
+    .alert-top-stripe {
+        background: #b91c1c;
+        color: white;
+        font-weight: 900;
+        text-align: center;
+        padding: 12px;
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .alert-flash-icon {
+        animation: pulseStrobe 1s infinite alternate;
+        color: #fde047;
+    }
+    .alert-hero-img {
+        width: 100%;
+        border-radius: 8px;
+        border: 2px solid #b91c1c;
+    }
+    .alert-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #7f1d1d;
+        line-height: 1.2;
+    }
+    .alert-timestamp {
+        font-size: 0.9rem;
+        color: #b91c1c;
+        font-weight: 700;
+    }
+    .alert-content-box {
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        border-radius: 8px;
+        padding: 20px;
+    }
+    .alert-content-box .noticia-body-text {
+        color: #450a0a !important;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PLANTILLA 4: CULTURA & EVENTOS SOCIALES
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .template-culture {
+        background: #fdfbf7;
+        padding: 2rem 0;
+    }
+    .culture-art-header {
+        position: relative;
+    }
+    .culture-sub {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        color: #c2410c;
+        font-size: 1.2rem;
+    }
+    .culture-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 3rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 10px 0;
+    }
+    .culture-ornament {
+        color: #c2410c;
+        letter-spacing: 4px;
+        font-size: 0.9rem;
+    }
+    .culture-date {
+        font-size: 0.95rem;
+        color: #64748b;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+    .culture-cover-wrapper {
+        border-radius: 40px 10px 40px 10px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(194, 65, 12, 0.08);
+        border: 1px solid #fed7aa;
+    }
+    .culture-hero-img {
+        width: 100%;
+        max-height: 460px;
+        object-fit: cover;
+    }
+    .template-culture .noticia-body-text {
+        font-family: Georgia, serif;
+        color: #334155;
+        font-size: 1.2rem !important;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PLANTILLA 5: TURISMO & REPORTAJE GENERAL
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .template-turismo {
+        background: #ffffff;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.04);
+        border-radius: 24px;
+        overflow: hidden;
+    }
+    .turismo-hero {
+        height: 520px;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: flex-end;
+    }
+    .turismo-hero-content {
+        color: white;
+        width: 100%;
+    }
+    .turismo-tag {
+        background: #14b8a6;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 20px;
+        letter-spacing: 1px;
+    }
+    .turismo-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-top: 12px;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.7);
+    }
+    .turismo-date {
+        display: block;
+        font-size: 0.95rem;
+        color: #e2e8f0;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .turismo-body-wrapper {
+        background: #fafdfc;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PLANTILLA 6: INNOVACIÓN & OBRA PÚBLICA (FUTURISTA)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .template-innovation {
+        background: radial-gradient(circle at top left, #0b0f19, #020408);
+        border: 1px solid #1e293b;
+        border-radius: 24px;
+        color: #e2e8f0;
+        padding: 1.5rem;
+    }
+    .innovation-glass-header {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .innovation-pulse {
+        width: 8px;
+        height: 8px;
+        background: #06b6d4;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 10px #06b6d4;
+        animation: glowPulse 1.5s infinite;
+    }
+    .innovation-category {
+        font-weight: 900;
+        font-size: 0.8rem;
+        color: #06b6d4;
+        letter-spacing: 2px;
+    }
+    .innovation-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+    }
+    .innovation-meta {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+    .innovation-image-panel {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+    .innovation-hero-img {
+        width: 100%;
+        max-height: 400px;
+        object-fit: cover;
+    }
+    .template-innovation .noticia-body-text {
+        color: #cbd5e1 !important;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       ANIMACIONES Y SOPORTES COMUNES
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    @@keyframes pulseStrobe {
+        from { transform: scale(1); opacity: 0.85; }
+        to { transform: scale(1.15); opacity: 1; }
+    }
+
+    @@keyframes glowPulse {
+        0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(6, 182, 212, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+    }
+
+    .animate-fade-in {
+        animation: templateFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes templateFadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+@code {
+    [Parameter] public Noticia Noticia { get; set; }
+
+    private CategoriaNoticiaEnum GetTemplateType()
+    {
+        if (Noticia == null) return CategoriaNoticiaEnum.ComunicadoOficial;
+
+        // Si ya cuenta con una categoría ID que coincida con las categorías de base de datos
+        if (Noticia.iIdCategoria.HasValue && Noticia.iIdCategoria.Value >= 1 && Noticia.iIdCategoria.Value <= 5)
+        {
+            return (CategoriaNoticiaEnum)Noticia.iIdCategoria.Value;
+        }
+
+        // Búsqueda inteligente fallback basada en texto del título o categoría
+        var textToSearch = (Noticia.vchTitulo + " " + (Noticia.Categoria?.vchNombre ?? "")).ToLower();
+        
+        if (textToSearch.Contains("deporte") || textToSearch.Contains("futbol") || textToSearch.Contains("torneo") || textToSearch.Contains("carrera"))
+            return CategoriaNoticiaEnum.Deportes;
+
+        if (textToSearch.Contains("alerta") || textToSearch.Contains("policia") || textToSearch.Contains("urgente") || textToSearch.Contains("peligro") || textToSearch.Contains("clima"))
+            return CategoriaNoticiaEnum.Policiaca;
+
+        if (textToSearch.Contains("cultura") || textToSearch.Contains("teatro") || textToSearch.Contains("musica") || textToSearch.Contains("social") || textToSearch.Contains("arte"))
+            return CategoriaNoticiaEnum.Cultura;
+
+        if (textToSearch.Contains("obra") || textToSearch.Contains("tecnolog") || textToSearch.Contains("paviment") || textToSearch.Contains("futuro") || textToSearch.Contains("innovacion"))
+            return CategoriaNoticiaEnum.ObrasPublicas;
+
+        return CategoriaNoticiaEnum.ComunicadoOficial;
+    }
+}

@@ -6,10 +6,17 @@ using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.NoticiasModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
 using SantiagoConectaIA.Share.Objects.NoticiasModule;
 using SantiagoConectaIA.Share.PostModels.NoticiasModule;
+using SantiagoConectaIA.DAL.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+using NoticiaDto = SantiagoConectaIA.Share.Objects.NoticiasModule.Noticia;
+using NoticiaMetadatoDto = SantiagoConectaIA.Share.Objects.NoticiasModule.NoticiaMetadato;
+using NoticiaImagenDto = SantiagoConectaIA.Share.Objects.NoticiasModule.NoticiaImagen;
+using CategoriaNoticiaDto = SantiagoConectaIA.Share.Objects.NoticiasModule.CategoriaNoticia;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 {
@@ -18,91 +25,163 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
         private readonly INoticiasRepository _noticiasRepository;
         private readonly MapperHelper _mapperHelper;
         private readonly IResponseHelper _responseHelper;
+        private readonly EngramaContext _context;
 
-        public NoticiasDomain(INoticiasRepository noticiasRepository, MapperHelper mapperHelper, IResponseHelper responseHelper)
+        public NoticiasDomain(INoticiasRepository noticiasRepository, MapperHelper mapperHelper, IResponseHelper responseHelper, EngramaContext context)
         {
             _noticiasRepository = noticiasRepository;
             _mapperHelper = mapperHelper;
             _responseHelper = responseHelper;
+            _context = context;
         }
 
-        public async Task<Response<IEnumerable<Noticia>>> GetNoticias(PostGetNoticias postModel)
+        public async Task<Response<IEnumerable<NoticiaDto>>> GetNoticias(PostGetNoticias postModel)
         {
             try
             {
-                var model = _mapperHelper.Get<PostGetNoticias, spGetNoticias.Request>(postModel);
-                var result = await _noticiasRepository.spGetNoticias(model);
+                var query = _context.Noticias
+                    .Include(n => n.IIdCategoriaNavigation)
+                    .Include(n => n.NoticiaMetadatos)
+                    .Include(n => n.NoticiasImagenes)
+                    .AsQueryable();
 
-                // Group by Noticia
-                var groupedNews = result
-                    .GroupBy(x => x.iIdNoticia)
-                    .Select(g => 
-                    {
-                        var first = g.First();
-                        var noticia = _mapperHelper.Get<spGetNoticias.Result, Noticia>(first);
-                        
-                        // Populate Images
-                        noticia.Imagenes = g
-                            .Where(x => x.iIdNoticiaImagen.HasValue && !string.IsNullOrEmpty(x.vchUrlImagen))
-                            .Select(x => new NoticiaImagen 
-                            { 
-                                iIdNoticiaImagen = x.iIdNoticiaImagen.Value,
-                                iIdNoticia = x.iIdNoticia,
-                                vchUrlImagen = x.vchUrlImagen 
-                            })
-                            .ToList();
-                            
-                        return noticia;
-                    })
-                    .ToList();
-
-                return new Response<IEnumerable<Noticia>>
+                if (postModel.bActivo.HasValue)
                 {
-                    Data = groupedNews,
+                    query = query.Where(n => n.BActivo == postModel.bActivo.Value);
+                }
+
+                var noticiasDb = await query.OrderByDescending(n => n.DtFechaPublicacion).ToListAsync();
+
+                var list = noticiasDb.Select(n => new NoticiaDto
+                {
+                    iIdNoticia = n.IIdNoticia,
+                    vchTitulo = n.VchTitulo,
+                    vchTituloEn = n.VchTituloEn,
+                    nvchContenido = n.NvchContenido,
+                    nvchContenidoEn = n.NvchContenidoEn,
+                    vchImagenPortada = n.VchImagenPortada,
+                    dtFechaPublicacion = n.DtFechaPublicacion,
+                    bActivo = n.BActivo,
+                    iIdCategoria = n.IIdCategoria,
+                    Categoria = n.IIdCategoriaNavigation != null ? new CategoriaNoticiaDto
+                    {
+                        iIdCategoria = n.IIdCategoriaNavigation.IIdCategoria,
+                        vchNombre = n.IIdCategoriaNavigation.VchNombre,
+                        vchColorHex = n.IIdCategoriaNavigation.VchColorHex
+                    } : null,
+                    Imagenes = n.NoticiasImagenes.Select(img => new NoticiaImagenDto
+                    {
+                        iIdNoticiaImagen = img.IIdNoticiaImagen,
+                        iIdNoticia = img.IIdNoticia,
+                        vchUrlImagen = img.VchUrlImagen
+                    }).ToList(),
+                    Metadatos = n.NoticiaMetadatos.OrderBy(m => m.IOrden).Select(m => new NoticiaMetadatoDto
+                    {
+                        iIdMetadato = m.IIdMetadato,
+                        iIdNoticia = m.IIdNoticia,
+                        iIdTipoDato = (TipoDatoMetadato)m.IIdTipoDato,
+                        vchAlias = m.vchAlias,
+                        nvchValor = m.NvchValor,
+                        iOrden = m.IOrden
+                    }).ToList()
+                }).ToList();
+
+                return new Response<IEnumerable<NoticiaDto>>
+                {
+                    Data = list,
                     IsSuccess = true,
                     Message = "Ok"
                 };
             }
             catch (Exception ex)
             {
-                return Response<IEnumerable<Noticia>>.BadResult(ex.Message, new List<Noticia>());
+                return Response<IEnumerable<NoticiaDto>>.BadResult(ex.Message, new List<NoticiaDto>());
             }
         }
 
-        public async Task<Response<Noticia>> SaveNoticia(PostSaveNoticia postModel)
+        public async Task<Response<NoticiaDto>> SaveNoticia(PostSaveNoticia postModel)
         {
             try
             {
-                // 1. Save the Noticia itself
+                // 1. Guardar la noticia base usando el SP existente
                 var model = _mapperHelper.Get<PostSaveNoticia, spSaveNoticia.Request>(postModel);
                 var result = await _noticiasRepository.spSaveNoticia(model);
-                var validation = _responseHelper.Validacion<spSaveNoticia.Result, Noticia>(result);
+                var validation = _responseHelper.Validacion<spSaveNoticia.Result, NoticiaDto>(result);
 
                 if (validation.IsSuccess)
                 {
-                    // 2. If Noticia save was successful, save the images
                     int noticiaId = validation.Data.iIdNoticia;
 
-                    foreach (var img in postModel.Imagenes)
+                    // 2. Actualizar iIdCategoria y las listas hijas (Imágenes y Metadatos) usando EF Core
+                    var noticiaEntity = await _context.Noticias
+                        .FirstOrDefaultAsync(n => n.IIdNoticia == noticiaId);
+
+                    if (noticiaEntity != null)
                     {
-                        var imgRequest = new spSaveNoticiaImagen.Request
+                        // Guardar Categoría
+                        noticiaEntity.IIdCategoria = postModel.iIdCategoria;
+
+                        // Guardar Imágenes (Eliminar y recrear)
+                        var existingImages = _context.NoticiasImagenes.Where(x => x.IIdNoticia == noticiaId);
+                        _context.NoticiasImagenes.RemoveRange(existingImages);
+
+                        foreach (var img in postModel.Imagenes)
                         {
-                            iIdNoticia = noticiaId,
-                            vchUrlImagen = img.vchUrlImagen
-                        };
-                        await _noticiasRepository.spSaveNoticiaImagen(imgRequest);
+                            _context.NoticiasImagenes.Add(new DAL.Models.NoticiasImagene
+                            {
+                                IIdNoticia = noticiaId,
+                                VchUrlImagen = img.vchUrlImagen
+                            });
+                        }
+
+                        // Guardar Metadatos (Eliminar y recrear)
+                        var existingMetadatos = _context.NoticiaMetadatos.Where(x => x.IIdNoticia == noticiaId);
+                        _context.NoticiaMetadatos.RemoveRange(existingMetadatos);
+
+                        if (postModel.Metadatos != null)
+                        {
+                            foreach (var meta in postModel.Metadatos)
+                            {
+                                _context.NoticiaMetadatos.Add(new DAL.Models.NoticiaMetadato
+                                {
+                                    IIdNoticia = noticiaId,
+                                    IIdTipoDato = (int)meta.iIdTipoDato,
+                                    vchAlias = meta.vchAlias,
+                                    NvchValor = meta.nvchValor,
+                                    IOrden = meta.iOrden
+                                });
+                            }
+                        }
+
+                        await _context.SaveChangesAsync();
                     }
+
+                    // Actualizar el modelo devuelto para que contenga las listas y categorías nuevas
+                    postModel.iIdNoticia = noticiaId;
                     
-                    // Update the returned data with the ID (and potentially images if we re-queried, but for now just ID is critical)
-                     postModel.iIdNoticia = noticiaId;
-                     validation.Data = _mapperHelper.Get<PostSaveNoticia, Noticia>(postModel);
+                    var responseData = _mapperHelper.Get<PostSaveNoticia, NoticiaDto>(postModel);
+                    if (postModel.iIdCategoria.HasValue)
+                    {
+                        var cat = await _context.CategoriaNoticia.FirstOrDefaultAsync(c => c.IIdCategoria == postModel.iIdCategoria.Value);
+                        if (cat != null)
+                        {
+                            responseData.Categoria = new CategoriaNoticiaDto
+                            {
+                                iIdCategoria = cat.IIdCategoria,
+                                vchNombre = cat.VchNombre,
+                                vchColorHex = cat.VchColorHex
+                            };
+                        }
+                    }
+                    responseData.Metadatos = postModel.Metadatos;
+                    validation.Data = responseData;
                 }
 
                 return validation;
             }
             catch (Exception ex)
             {
-                return Response<Noticia>.BadResult(ex.Message, new Noticia());
+                return Response<NoticiaDto>.BadResult(ex.Message, new NoticiaDto());
             }
         }
     }

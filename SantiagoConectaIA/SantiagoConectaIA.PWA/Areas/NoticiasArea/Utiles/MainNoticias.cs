@@ -66,8 +66,10 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
             // Map NoticiaSelected to PostSaveNoticia
             var model = _mapper.Get<Noticia, PostSaveNoticia>(NoticiaSelected);
             
-            // Ensure images are included if mapped manually or check if mapper handles nested lists
+            // Ensure child lists and categories are included
             model.Imagenes = NoticiaSelected.Imagenes;
+            model.Metadatos = NoticiaSelected.Metadatos;
+            model.iIdCategoria = NoticiaSelected.iIdCategoria;
 
             var response = await _httpService.Post<PostSaveNoticia, Response<Noticia>>(APIUrl, model);
             var validation = _validaServicioService.ValidadionServicio(response,
@@ -112,6 +114,29 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
             });
 
             return validation;
+        }
+
+        public async Task<string> UploadGenericFile(IBrowserFile file)
+        {
+            if (file == null) return string.Empty;
+
+            long maxFileSize = 1024L * 1024L * 5L; // 5MB
+
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream(maxFileSize).CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+
+            StreamContent? img = new StreamContent(memoryStream);
+
+            var response = await _httpService.PostWithFile<Response<BlobSaved>>(urlAzure, img);
+            string url = string.Empty;
+            _validaServicioService.ValidadionServicio(response, ContinueWarning: false, ContinueError: false,
+                onSuccess: data =>
+                {
+                    url = data.URL;
+                });
+
+            return url;
         }
     }
 }

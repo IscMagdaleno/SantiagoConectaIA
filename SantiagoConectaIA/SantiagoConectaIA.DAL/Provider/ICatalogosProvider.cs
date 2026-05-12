@@ -6,6 +6,6 @@ namespace SantiagoConectaIA.DAL.Provider
 {
     public interface ICatalogosProvider
     {
-        Task<List<TipoDato>> GetTipoDatosAsync();
+        Task<List<Catalogo>> GetTipoDatosAsync(string groupAlias);
     }
 }
