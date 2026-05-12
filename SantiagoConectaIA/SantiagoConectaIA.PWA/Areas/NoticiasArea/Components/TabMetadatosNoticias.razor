@@ -1,0 +1,74 @@
+@using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
+@using SantiagoConectaIA.Share.Objects.NoticiasModule
+@using MudBlazor
+@inherits TabMetadatosNoticiasBase
+
+<MudGrid>
+    @* Izquierda: Grid de Metadatos Existentes *@
+    <MudItem xs="12" md="7">
+        <MudCard Elevation="1" Class="pa-4 h-100" Style="border: 1px solid #e0e0e0; min-height: 400px; background-color: #f8f9fa;">
+            <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold" Color="Color.Primary">Estructura de la Noticia</MudText>
+            
+            @if (Data.NoticiaSelected.Metadatos == null || !Data.NoticiaSelected.Metadatos.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Text">No hay bloques agregados a esta noticia.</MudAlert>
+            }
+            else
+            {
+                <MudStack Spacing="2" Style="max-height: 500px; overflow-y: auto;">
+                    @foreach (var (meta, index) in Data.NoticiaSelected.Metadatos.Select((m, i) => (m, i)))
+                    {
+                        <MudPaper Elevation="0" Class="pa-3" Style="border: 1px solid #dee2e6; border-radius: 8px;">
+                            <MudGrid AlignItems="AlignItems.Center">
+                                <MudItem xs="10">
+                                    <MudText Typo="Typo.body2" Class="font-weight-bold">
+                                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Size="Size.Small" Class="mr-1 text-muted" />
+                                        @meta.iIdTipoDato.ToString() - @meta.vchAlias
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Class="text-muted d-block mt-1">
+                                        @if(meta.nvchValor.Length > 100) { @(meta.nvchValor.Substring(0, 100) + "...") } else { @meta.nvchValor }
+                                    </MudText>
+                                </MudItem>
+                                <MudItem xs="2" Class="d-flex justify-end">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarMetadato(meta))" />
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    }
+                </MudStack>
+            }
+        </MudCard>
+    </MudItem>
+
+    @* Derecha: Formulario para Agregar *@
+    <MudItem xs="12" md="5">
+        <MudCard Elevation="1" Class="pa-4 h-100" Style="border: 1px solid #e0e0e0;">
+            <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold" Color="Color.Secondary">Agregar Nuevo Bloque</MudText>
+            
+            <MudSelect T="TipoDatoMetadato" @bind-Value="nuevoMetadato.iIdTipoDato" Label="Tipo de Bloque" Variant="Variant.Outlined" Class="mb-3" Dense="true">
+                @if (Data?.LstTipoDatos != null)
+                {
+                    @foreach (var tipo in Data.LstTipoDatos)
+                    {
+                        <MudSelectItem Value="@((TipoDatoMetadato)tipo.iIdTipoDato)">@tipo.nvchTipo</MudSelectItem>
+                    }
+                }
+            </MudSelect>
+
+            <MudTextField @bind-Value="nuevoMetadato.vchAlias" Label="Alias (ej. imagen.galeria)" Variant="Variant.Outlined" Class="mb-3" Dense="true" />
+            
+            @if (nuevoMetadato.iIdTipoDato == TipoDatoMetadato.Texto || nuevoMetadato.iIdTipoDato == TipoDatoMetadato.Alerta)
+            {
+                <MudTextField @bind-Value="nuevoMetadato.nvchValor" Label="Contenido" Variant="Variant.Outlined" Lines="4" Class="mb-3" />
+            }
+            else if (nuevoMetadato.iIdTipoDato == TipoDatoMetadato.Imagen || nuevoMetadato.iIdTipoDato == TipoDatoMetadato.Video)
+            {
+                <MudTextField @bind-Value="nuevoMetadato.nvchValor" Label="URL (Link)" Variant="Variant.Outlined" Class="mb-3" Dense="true" />
+            }
+
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" FullWidth="true" OnClick="AgregarMetadato">
+                Agregar a la Noticia
+            </MudButton>
+        </MudCard>
+    </MudItem>
+</MudGrid>

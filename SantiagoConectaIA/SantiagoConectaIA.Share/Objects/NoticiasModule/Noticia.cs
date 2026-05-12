@@ -14,6 +14,10 @@ namespace SantiagoConectaIA.Share.Objects.NoticiasModule
         public DateTime dtFechaPublicacion { get; set; } = DateTime.Now;
         public bool bActivo { get; set; }
 
+        public int? iIdCategoria { get; set; }
+        public CategoriaNoticia? Categoria { get; set; }
+
         public List<NoticiaImagen> Imagenes { get; set; } = new List<NoticiaImagen>();
+        public List<NoticiaMetadato> Metadatos { get; set; } = new List<NoticiaMetadato>();
     }
 }

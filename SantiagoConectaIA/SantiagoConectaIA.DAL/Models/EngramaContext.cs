@@ -515,11 +515,11 @@ public partial class EngramaContext : DbContext
             entity.Property(e => e.NvchValor)
                 .IsRequired()
                 .HasColumnName("nvchValor");
-            entity.Property(e => e.VchClave)
+            entity.Property(e => e.vchAlias)
                 .IsRequired()
                 .HasMaxLength(100)
                 .IsUnicode(false)
-                .HasColumnName("vchClave");
+                .HasColumnName("vchAlias");
 
             entity.HasOne(d => d.IIdNoticiaNavigation).WithMany(p => p.NoticiaMetadatos)
                 .HasForeignKey(d => d.IIdNoticia)

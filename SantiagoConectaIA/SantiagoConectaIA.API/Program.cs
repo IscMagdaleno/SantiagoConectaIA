@@ -11,6 +11,7 @@ using SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository;
 using SantiagoConectaIA.API.Middleware;
 using Microsoft.EntityFrameworkCore;
 using SantiagoConectaIA.DAL.Models;
+using SantiagoConectaIA.DAL.Provider;
 
 using System.Reflection;
 
@@ -44,6 +45,7 @@ builder.Services.AddScoped<IConversationalRepository, ConversationalRepository>(
 builder.Services.AddScoped<IAzureBlobRepository, AzureBlobRepository>();
 builder.Services.AddScoped<ILogsRepository, LogsRepository>();
 builder.Services.AddScoped<INoticiasRepository, NoticiasRepository>();
+builder.Services.AddScoped<ICatalogosProvider, CatalogosProvider>();
 
 
 builder.Services.AddScoped<KernelProvider>();

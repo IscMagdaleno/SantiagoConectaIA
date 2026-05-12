@@ -27,6 +27,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
 
         #region PROPIEDADES
         public List<Noticia> LstNoticias { get; set; }
+        public List<TipoDatoDto> LstTipoDatos { get; set; }
         public Noticia NoticiaSelected { get; set; }
         public IBrowserFile SelectedImage { get; set; }
         #endregion
@@ -38,7 +39,16 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
             _validaServicioService = validaServicioService;
 
             LstNoticias = new List<Noticia>();
+            LstTipoDatos = new List<TipoDatoDto>();
             NoticiaSelected = new Noticia();
+        }
+
+        public async Task<SeverityMessage> PostGetTipoDatos()
+        {
+            var APIUrl = "api/Catalogos/PostGetTipoDatos";
+            var response = await _httpService.Post<object, Response<List<TipoDatoDto>>>(APIUrl, new { });
+            var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => LstTipoDatos = data.ToList());
+            return validation;
         }
 
         public async Task<SeverityMessage> PostGetNoticias()
