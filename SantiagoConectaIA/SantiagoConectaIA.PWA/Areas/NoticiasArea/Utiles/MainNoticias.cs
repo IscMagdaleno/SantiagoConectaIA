@@ -68,7 +68,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
             
             // Ensure child lists and categories are included
             model.Imagenes = NoticiaSelected.Imagenes;
-            model.Metadatos = NoticiaSelected.Metadatos;
+            model.Filas = NoticiaSelected.Filas;
             model.iIdCategoria = NoticiaSelected.iIdCategoria;
 
             var response = await _httpService.Post<PostSaveNoticia, Response<Noticia>>(APIUrl, model);

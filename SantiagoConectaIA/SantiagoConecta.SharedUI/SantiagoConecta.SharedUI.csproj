@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <StaticWebAssetsBuildCompressionEnabled>false</StaticWebAssetsBuildCompressionEnabled>
   </PropertyGroup>
 
 
@@ -19,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SantiagoConectaIA.Share\SantiagoConectaIA.Share.csproj" />
+    <Content Remove="wwwroot\assets\css\app.css" />
   </ItemGroup>
 
 </Project>

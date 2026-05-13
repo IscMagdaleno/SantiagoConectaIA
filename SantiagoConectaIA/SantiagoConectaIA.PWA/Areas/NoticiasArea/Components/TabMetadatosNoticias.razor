@@ -3,190 +3,379 @@
 @using MudBlazor
 @inherits TabMetadatosNoticiasBase
 
-<MudGrid>
-    @* Izquierda: Grid de Metadatos Existentes *@
-    <MudItem xs="12" md="7">
-        <MudCard Elevation="1" Class="pa-4 h-100" Style="border: 1px solid #e0e0e0; min-height: 400px; background-color: #f8f9fa;">
-            <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold" Color="Color.Primary">Estructura de la Noticia</MudText>
+<style>
+    .pb-app {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 0;
+        min-height: 700px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+    
+    .pb-sidebar {
+        background: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+    }
+    
+    .pb-canvas-area {
+        background: #ffffff;
+        padding: 24px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .pb-block-type {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        cursor: grab;
+        background: #ffffff;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+        user-select: none;
+    }
+    
+    .pb-block-type:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+    }
+
+    .pb-row-wrap {
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        background: #f8fafc;
+        transition: all 0.2s;
+    }
+    
+    .mud-dropzone-dragging .pb-row-wrap {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .pb-block {
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 12px;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    .pb-block:hover {
+        border-color: #94a3b8;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    
+    .pb-block.selected {
+        border-color: #3b82f6;
+        border-width: 2px;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+    
+    .min-h-80 {
+        min-height: 80px;
+    }
+    
+    .pb-row-blocks {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 12px;
+        align-items: start;
+        width: 100%;
+    }
+
+    .pb-row-blocks .mud-drop-item {
+        grid-column: span 12;
+        display: flex;
+    }
+
+    .pb-row-blocks .mud-drop-item:has(.col-3) { grid-column: span 3; }
+    .pb-row-blocks .mud-drop-item:has(.col-6) { grid-column: span 6; }
+    .pb-row-blocks .mud-drop-item:has(.col-9) { grid-column: span 9; }
+    .pb-row-blocks .mud-drop-item:has(.col-12) { grid-column: span 12; }
+
+</style>
+
+<MudDropContainer T="DropItem" @ref="_dropContainer" Items="@_dropItems" ItemsSelector="@((item, dropzone) => item.Zone == dropzone)" ItemDropped="ItemDropped" Class="pb-app" DraggingClass="mud-dropzone-dragging">
+        <ChildContent>
+            <!-- === SIDEBAR === -->
+            <div class="pb-sidebar">
+                <div>
+                    <MudText Typo="Typo.caption" Class="font-weight-bold text-uppercase text-muted mb-1 d-block" Style="letter-spacing: 0.5px;">Tipos de bloque</MudText>
+                    <MudText Typo="Typo.body2" Class="text-muted mb-3">Arrastra un bloque al lienzo o a una fila</MudText>
+                    
+                    <MudDropZone T="DropItem" Identifier="sidebar" Class="d-flex flex-column gap-2" AllowReorder="false" />
+                </div>
+                
+                <MudDivider Class="my-2" />
+                
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.Add" OnClick="AddFilaVacia" Class="mb-2">
+                    Agregar fila vacía
+                </MudButton>
+                
+                @if (itemSeleccionado != null)
+                {
+                    <MudDivider Class="my-3" />
+                    <div class="pb-config-panel">
+                        <div class="d-flex align-center justify-space-between mb-3">
+                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Color="Color.Primary">Configuración del Bloque</MudText>
+                            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="CancelarSeleccion" />
+                        </div>
+                        
+                        <MudTextField @bind-Value="itemSeleccionado.Metadato.vchTitulo" Label="Título del bloque" Variant="Variant.Outlined" Dense="true" Class="mb-4" />
+                        
+                        <div class="mb-4">
+                            <MudText Typo="Typo.caption" Class="mb-1 d-block text-muted">Ancho (Columnas xs)</MudText>
+                            <div class="d-flex gap-1">
+                                <MudButton Variant="@(blockWidth == 3 ? Variant.Filled : Variant.Outlined)" Color="Color.Dark" Size="Size.Small" OnClick="@(() => UpdateBlockWidth(3))" Class="flex-grow-1 px-1 py-2">
+                                    <div class="d-flex flex-column align-center">
+                                        <span>3</span>
+                                        <span style="font-size: 10px; opacity: 0.7;">25%</span>
+                                    </div>
+                                </MudButton>
+                                <MudButton Variant="@(blockWidth == 6 ? Variant.Filled : Variant.Outlined)" Color="Color.Dark" Size="Size.Small" OnClick="@(() => UpdateBlockWidth(6))" Class="flex-grow-1 px-1 py-2">
+                                    <div class="d-flex flex-column align-center">
+                                        <span>6</span>
+                                        <span style="font-size: 10px; opacity: 0.7;">50%</span>
+                                    </div>
+                                </MudButton>
+                                <MudButton Variant="@(blockWidth == 9 ? Variant.Filled : Variant.Outlined)" Color="Color.Dark" Size="Size.Small" OnClick="@(() => UpdateBlockWidth(9))" Class="flex-grow-1 px-1 py-2">
+                                    <div class="d-flex flex-column align-center">
+                                        <span>9</span>
+                                        <span style="font-size: 10px; opacity: 0.7;">75%</span>
+                                    </div>
+                                </MudButton>
+                                <MudButton Variant="@(blockWidth == 12 ? Variant.Filled : Variant.Outlined)" Color="Color.Dark" Size="Size.Small" OnClick="@(() => UpdateBlockWidth(12))" Class="flex-grow-1 px-1 py-2">
+                                    <div class="d-flex flex-column align-center">
+                                        <span>12</span>
+                                        <span style="font-size: 10px; opacity: 0.7;">100%</span>
+                                    </div>
+                                </MudButton>
+                            </div>
+                        </div>
+
+                        <MudSelect T="string" @bind-Value="blockFloat" Label="Alineación del contenido" Variant="Variant.Outlined" Dense="true" Class="mb-4">
+                            <MudSelectItem Value='"left"'>Izquierda</MudSelectItem>
+                            <MudSelectItem Value='"center"'>Centro</MudSelectItem>
+                            <MudSelectItem Value='"right"'>Derecha</MudSelectItem>
+                        </MudSelect>
+
+                        @if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.Contenido)
+                        {
+                            <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="Contenido (Texto)" Variant="Variant.Outlined" Lines="6" Class="mb-4" />
+                        }
+                        else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.Video)
+                        {
+                            <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="URL del Video" Variant="Variant.Outlined" Dense="true" Class="mb-4" />
+                        }
+                        else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
+                        {
+                            <div class="d-flex flex-column gap-2 mb-4">
+                                <div class="d-flex align-center justify-space-between mb-1">
+                                    <MudText Typo="Typo.caption" Class="font-weight-bold">Imágenes (@tempGalleryUrls.Count)</MudText>
+                                    <MudFileUpload T="IBrowserFile" FilesChanged="OnUploadGalleryImage" Accept=".png, .jpg, .jpeg">
+                                        <ActivatorContent>
+                                            <MudButton HtmlTag="label" Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" Size="Size.Small">Subir</MudButton>
+                                        </ActivatorContent>
+                                    </MudFileUpload>
+                                </div>
+                                
+                                @if (_isUploadingGallery)
+                                {
+                                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-2" />
+                                }
+
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var url in tempGalleryUrls)
+                                    {
+                                        <div style="position: relative; width: 60px; height: 60px; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0;">
+                                            <img src="@url" style="width: 100%; height: 100%; object-fit: cover;" />
+                                            <div style="position: absolute; top: 0; right: 0; background: rgba(255,255,255,0.8);">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveGalleryImage(url))" Style="padding: 2px;" />
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.ImagenSola)
+                        {
+                            <div class="d-flex flex-column gap-2 mb-4">
+                                <MudFileUpload T="IBrowserFile" FilesChanged="OnUploadSingleImage" Accept=".png, .jpg, .jpeg">
+                                    <ActivatorContent>
+                                        <MudButton HtmlTag="label" Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Filled.Image" FullWidth="true">Seleccionar Imagen</MudButton>
+                                    </ActivatorContent>
+                                </MudFileUpload>
+                                @if (_isUploadingGallery)
+                                {
+                                    <MudProgressLinear Color="Color.Info" Indeterminate="true" Class="my-2" />
+                                }
+                                @if (!string.IsNullOrEmpty(itemSeleccionado.Metadato.nvchValor))
+                                {
+                                    <div class="mt-2 text-center" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                                        <img src="@itemSeleccionado.Metadato.nvchValor" style="max-width: 100%; max-height: 150px; object-fit: contain;" />
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.RedesSociales)
+                        {
+                            <MudText Typo="Typo.caption" Class="font-weight-bold d-block mb-2">Configurar Redes (deja en blanco las que no usarás):</MudText>
+                            <MudTextField @bind-Value="RedesConfig.WhatsApp" Label="WhatsApp (Link/Número)" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" />
+                            <MudTextField @bind-Value="RedesConfig.Facebook" Label="Facebook URL" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" />
+                            <MudTextField @bind-Value="RedesConfig.Instagram" Label="Instagram URL" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" />
+                            <MudTextField @bind-Value="RedesConfig.TikTok" Label="TikTok URL" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" />
+                            <MudTextField @bind-Value="RedesConfig.X" Label="X (Twitter) URL" Variant="Variant.Outlined" Dense="true" Class="mb-4" OnBlur="OnRedesSocialesChanged" />
+                        }
+                        else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.DatosCuriosos)
+                        {
+                            <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="Dato Curioso" Variant="Variant.Outlined" Lines="4" Class="mb-4" />
+                        }
+                        
+                        <MudTextField @bind-Value="blockConfigExtra" Label="JSON Configuración Extra" Variant="Variant.Outlined" Lines="3" Class="mb-4" />
+
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="GuardarConfiguracionBloque" Class="mb-2">Guardar Cambios</MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Error" FullWidth="true" StartIcon="@Icons.Material.Filled.Delete" OnClick="EliminarBloqueSeleccionado">Eliminar Bloque</MudButton>
+                    </div>
+                }
+            </div>
             
-            @if (Data.NoticiaSelected.Metadatos == null || !Data.NoticiaSelected.Metadatos.Any())
+            <!-- === CANVAS === -->
+            <div class="pb-canvas-area">
+                <div class="d-flex align-center justify-space-between mb-6 pb-3" style="border-bottom: 1px solid #e2e8f0;">
+                    <div class="d-flex align-center gap-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Web" Color="Color.Dark" />
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">Lienzo de la noticia</MudText>
+                    </div>
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined">@_filas.Count Filas</MudChip>
+                </div>
+                
+                @if (!_filas.Any())
+                {
+                    <div class="text-center pa-10 text-muted" style="background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;">
+                        <MudIcon Icon="@Icons.Material.Filled.ViewQuilt" Style="font-size: 4rem; color: #cbd5e1;" Class="mb-3" />
+                        <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Dark">El lienzo está vacío</MudText>
+                        <MudText Typo="Typo.body1" Class="mt-1">Agrega una fila vacía o arrastra bloques desde el panel izquierdo para comenzar.</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="AddFilaVacia" StartIcon="@Icons.Material.Filled.Add">Agregar Fila</MudButton>
+                    </div>
+                }
+                
+                @foreach (var fila in _filas)
+                {
+                    <div class="pb-row-wrap">
+                        <div class="d-flex align-center justify-space-between mb-3">
+                            <div class="d-flex align-center gap-2 text-muted">
+                                <MudIcon Icon="@Icons.Material.Filled.TableRows" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Fila @fila.iOrden</MudText>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Dark" Class="ml-2">
+                                    @(fila.Metadatos?.Sum(m => m.iAncho ?? 0) ?? 0)/12 columnas
+                                </MudChip>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small" OnClick="@(() => MoveFilaUp(fila))" Disabled="@(_filas.IndexOf(fila) == 0)" />
+                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" OnClick="@(() => MoveFilaDown(fila))" Disabled="@(_filas.IndexOf(fila) == _filas.Count - 1)" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteFila(fila))" />
+                            </div>
+                        </div>
+                        
+                        <MudDropZone T="DropItem" Identifier="@($"row-{fila.UI_Id}")" Class="pb-row-blocks min-h-80 w-100" AllowReorder="true" />
+                    </div>
+                }
+            </div>
+        </ChildContent>
+        
+        <ItemRenderer>
+            @if (context.IsTemplate)
             {
-                <MudAlert Severity="Severity.Info" Variant="Variant.Text">No hay bloques agregados a esta noticia.</MudAlert>
+                <div class="pb-block-type">
+                    <MudIcon Icon="@GetBlockIcon(context.Metadato.iIdTipoDato)" Color="@GetBlockIconColor(context.Metadato.iIdTipoDato)" />
+                    <span>@context.Metadato.vchTitulo</span>
+                    <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="ml-auto text-muted" Size="Size.Small" />
+                </div>
             }
             else
             {
-                <div style="max-height: 500px; overflow-y: auto; padding-right: 4px;" class="d-flex flex-column gap-2">
-                    @foreach (var metadato in Data.NoticiaSelected.Metadatos.OrderBy(m => m.iOrden))
-                    {
-                        <MudPaper Elevation="1" 
-                                  Class="pa-3 premium-metadata-card" 
-                                  Style="@(metadatoSeleccionado != null && metadatoSeleccionado.iOrden == metadato.iOrden ? "border: 2px solid #5c6bc0; border-radius: 8px; background-color: #f0f3ff; cursor: pointer; transform: scale(1.01); box-shadow: 0 4px 12px rgba(92,107,192,0.15);" : "border: 1px solid #dee2e6; border-radius: 8px; background-color: #ffffff; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;")"
-                                  @onclick="@(() => SeleccionarMetadato(metadato))">
-                            <MudGrid AlignItems="AlignItems.Center">
-                                @* Izquierda: Botones de Flecha para Ordenar y Secuencia *@
-                                <MudItem xs="3" Class="d-flex align-center justify-start gap-2">
-                                    <div class="d-flex flex-column align-center justify-center" @onclick:stopPropagation="true">
-                                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" 
-                                                       Color="Color.Primary" 
-                                                       Size="Size.Small" 
-                                                       Disabled="@(metadato.iOrden == 1)" 
-                                                       OnClick="@(() => MoverArriba(metadato))" 
-                                                       Class="pa-1" />
-                                        
-                                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" 
-                                                       Color="Color.Primary" 
-                                                       Size="Size.Small" 
-                                                       Disabled="@(metadato.iOrden == Data.NoticiaSelected.Metadatos.Count)" 
-                                                       OnClick="@(() => MoverAbajo(metadato))" 
-                                                       Class="pa-1" />
-                                    </div>
-                                    @* Badge del Orden/Secuencia *@
-                                    <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Size="Size.Small" Class="font-weight-bold" Style="font-size: 0.75rem;">
-                                        #@metadato.iOrden
-                                    </MudAvatar>
-                                </MudItem>
-                                
-                                @* Centro: Información del Metadato *@
-                                <MudItem xs="7">
-                                    <div class="d-flex align-center gap-2 flex-wrap">
-                                        <MudChip T="string" Color="@GetChipColor(metadato.iIdTipoDato)" Size="Size.Small" Variant="Variant.Filled" Class="font-weight-bold">
-                                            @GetTypeName(metadato.iIdTipoDato)
-                                        </MudChip>
-                                        @if (!string.IsNullOrWhiteSpace(metadato.vchAlias))
-                                        {
-                                            <MudText Typo="Typo.caption" Class="text-muted font-weight-bold">(@metadato.vchAlias)</MudText>
-                                        }
-                                    </div>
-                                    @if (metadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
+                var isSelected = itemSeleccionado == context;
+                var colClass = $"col-{context.Metadato.iAncho ?? 12}";
+                
+                <div class="pb-block @colClass @(isSelected ? "selected" : "")" style="width: 100%; height: 100%;" @onclick="@(() => SeleccionarBloque(context))">
+                    <div class="d-flex align-center mb-2 gap-2">
+                        <MudIcon Icon="@GetBlockIcon(context.Metadato.iIdTipoDato)" Size="Size.Small" Color="@GetBlockIconColor(context.Metadato.iIdTipoDato)" />
+                        <MudText Typo="Typo.body2" Class="font-weight-bold text-truncate flex-grow-1">
+                            @(string.IsNullOrEmpty(context.Metadato.vchTitulo) ? "Sin Título" : context.Metadato.vchTitulo)
+                        </MudText>
+                        <MudChip T="string" Size="Size.Small" Color="@GetBlockIconColor(context.Metadato.iIdTipoDato)" Variant="Variant.Filled" Class="ml-auto" Style="font-size: 10px; height: 20px;">
+                            @context.Metadato.iIdTipoDato.ToString()
+                        </MudChip>
+                    </div>
+                    
+                    <div class="flex-grow-1 mb-2">
+                        @if (context.Metadato.iIdTipoDato == TipoDatoMetadato.Contenido)
+                        {
+                            <MudText Typo="Typo.caption" Class="text-muted d-block text-truncate" Style="max-height: 40px; overflow: hidden;">
+                                @(string.IsNullOrEmpty(context.Metadato.nvchValor) ? "Bloque vacío" : context.Metadato.nvchValor)
+                            </MudText>
+                        }
+                        else if (context.Metadato.iIdTipoDato == TipoDatoMetadato.Video)
+                        {
+                            <div class="d-flex align-center justify-center rounded" style="background: #fef2f2; height: 50px; border: 1px solid #fee2e2;">
+                                <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Error" />
+                                <MudText Typo="Typo.caption" Class="ml-2 text-muted">Video Youtube</MudText>
+                            </div>
+                        }
+                        else if (context.Metadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
+                        {
+                            <div class="d-flex gap-1 overflow-hidden" style="height: 50px;">
+                                @{
+                                    var urls = (context.Metadato.nvchValor ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries);
+                                    if (urls.Any())
                                     {
-                                        var urls = metadato.nvchValor?.Split(';', System.StringSplitOptions.RemoveEmptyEntries) ?? System.Array.Empty<string>();
-                                        <div class="d-flex align-center gap-2 mt-2 flex-wrap">
-                                            @foreach (var url in urls)
-                                            {
-                                                <div style="width: 48px; height: 48px; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                                    <img src="@url" style="width: 100%; height: 100%; object-fit: cover;" />
-                                                </div>
-                                            }
-                                        </div>
+                                        foreach(var url in urls.Take(3))
+                                        {
+                                            <div style="flex: 1; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                                                <img src="@url" style="width: 100%; height: 100%; object-fit: cover;" />
+                                            </div>
+                                        }
                                     }
                                     else
                                     {
-                                        <MudText Typo="Typo.body2" Class="text-muted d-block mt-1" Style="font-family: 'Inter', sans-serif;">
-                                            @if(metadato.nvchValor != null && metadato.nvchValor.Length > 80) { @(metadato.nvchValor.Substring(0, 80) + "...") } else { @metadato.nvchValor }
-                                        </MudText>
+                                        <div class="w-100 d-flex align-center justify-center rounded" style="background: #f0fdf4; border: 1px solid #dcfce7;">
+                                            <MudIcon Icon="@Icons.Material.Filled.PhotoLibrary" Color="Color.Success" />
+                                        </div>
                                     }
-                                </MudItem>
-                                
-                                @* Derecha: Botón de Eliminar *@
-                                <MudItem xs="2" Class="d-flex justify-end">
-                                    <span @onclick:stopPropagation="true">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarMetadato(metadato))" />
-                                    </span>
-                                </MudItem>
-                            </MudGrid>
-                        </MudPaper>
-                    }
-                </div>
-            }
-        </MudCard>
-    </MudItem>
-
-    @* Derecha: Formulario para Agregar / Editar *@
-    <MudItem xs="12" md="5">
-        <MudCard Elevation="1" Class="pa-4 h-100" Style="border: 1px solid #e0e0e0;">
-            @if (metadatoSeleccionado == null)
-            {
-                <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold" Color="Color.Secondary">Agregar Nuevo Bloque</MudText>
-            }
-            else
-            {
-                <div class="d-flex align-center justify-space-between mb-3">
-                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold" Style="color: #5c6bc0;">Editar Bloque (#@metadatoSeleccionado.iOrden)</MudText>
-                    <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.Clear" OnClick="CancelarSeleccion" Size="Size.Small">Cancelar</MudButton>
-                </div>
-            }
-            
-            <MudSelect T="TipoDatoMetadato" @bind-Value="nuevoMetadato.iIdTipoDato" Label="Tipo de Bloque" Variant="Variant.Outlined" Class="mb-3" Dense="true">
-                @if (Data?.LstTipoDatos != null)
-                {
-                    @foreach (var tipo in Data.LstTipoDatos)
-                    {
-                        <MudSelectItem Value="@((TipoDatoMetadato)tipo.iIdTipoDato)">@tipo.nvchTipo</MudSelectItem>
-                    }
-                }
-            </MudSelect>
-
-            <MudTextField @bind-Value="nuevoMetadato.vchAlias" Label="Alias (ej. imagen.galeria)" Variant="Variant.Outlined" Class="mb-3" Dense="true" />
-            
-            @if (nuevoMetadato.iIdTipoDato == TipoDatoMetadato.Video)
-            {
-                <MudTextField @bind-Value="nuevoMetadato.nvchValor" Label="URL de YouTube" Variant="Variant.Outlined" Class="mb-3" Dense="true" />
-            }
-            else if (nuevoMetadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
-            {
-                <div class="d-flex flex-column gap-2 mb-3">
-                    <div class="d-flex align-center justify-space-between mb-1">
-                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold" Color="Color.Primary">Imágenes de la Galería (@tempGalleryUrls.Count)</MudText>
-                        
-                        <MudFileUpload T="IBrowserFile" FilesChanged="OnUploadGalleryImage" Accept=".png, .jpg, .jpeg">
-                            <ActivatorContent>
-                                <MudButton HtmlTag="label"
-                                           Variant="Variant.Filled"
-                                           Color="Color.Info"
-                                           StartIcon="@Icons.Material.Filled.CloudUpload"
-                                           Size="Size.Small">
-                                    Subir Foto
-                                </MudButton>
-                            </ActivatorContent>
-                        </MudFileUpload>
+                                }
+                            </div>
+                        }
                     </div>
-
-                    @if (_isUploadingGallery)
-                    {
-                        <div class="d-flex align-center gap-2 py-1">
-                            <MudProgressCircular Color="Color.Info" Size="Size.Small" Indeterminate="true" />
-                            <MudText Typo="Typo.caption" Class="text-muted">Subiendo a blobs de Azure...</MudText>
+                    
+                    <div class="d-flex align-center justify-space-between pt-2 mt-auto" style="border-top: 1px solid #e2e8f0;">
+                        <div class="d-flex align-center text-muted">
+                            <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Class="ml-1" Style="font-size: 10px;">Arrastrar</MudText>
                         </div>
-                    }
-
-                    @if (tempGalleryUrls.Any())
-                    {
-                        <div class="d-flex flex-wrap gap-2 p-2 border rounded" style="background-color: #f8fafc; max-height: 150px; overflow-y: auto;">
-                            @foreach (var url in tempGalleryUrls)
-                            {
-                                <div style="position: relative; width: 64px; height: 64px; border-radius: 8px; border: 1px solid #dee2e6; overflow: hidden; background-color: #ffffff;">
-                                    <img src="@url" style="width: 100%; height: 100%; object-fit: cover;" />
-                                    <div style="position: absolute; top: 2px; right: 2px; background-color: rgba(255,255,255,0.95); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveGalleryImage(url))" Class="pa-0" Style="width: 18px; height: 18px; font-size: 0.75rem;" />
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="pa-4 text-center border rounded" style="border-style: dashed !important; background-color: #f8fafc;">
-                            <MudText Typo="Typo.caption" Class="text-muted">No se han subido imágenes aún para este bloque.</MudText>
-                        </div>
-                    }
-
-                    @if (tempGalleryUrls.Count < 3)
-                    {
-                        <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-1" Style="font-size: 0.8rem; border-radius: 8px;">
-                            Sube al menos 3 fotos para activar la galería de imágenes (llevas @tempGalleryUrls.Count/3)
-                        </MudAlert>
-                    }
+                        <MudText Typo="Typo.caption" Class="text-muted font-weight-bold" Style="font-size: 10px;">@(context.Metadato.iAncho ?? 12) col</MudText>
+                    </div>
                 </div>
             }
-
-            <MudButton Variant="Variant.Filled" 
-                       Color="Color.Secondary" 
-                       StartIcon="@(metadatoSeleccionado == null ? Icons.Material.Filled.Add : Icons.Material.Filled.Save)" 
-                       FullWidth="true" 
-                       OnClick="AgregarMetadato"
-                       Disabled="@(nuevoMetadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes && tempGalleryUrls.Count < 3)">
-                @(metadatoSeleccionado == null ? "Agregar a la Noticia" : "Guardar Cambios")
-            </MudButton>
-        </MudCard>
-    </MudItem>
-</MudGrid>
+        </ItemRenderer>
+    </MudDropContainer>

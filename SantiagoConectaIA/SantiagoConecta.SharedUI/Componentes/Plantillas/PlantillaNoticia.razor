@@ -27,7 +27,7 @@ else
                         <span class="d-flex align-center gap-1"><MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" /> 3 min de lectura</span>
                     </div>
                     <div class="sports-content">
-                        <NoticiaRenderer Noticia="Noticia" />
+                        <NoticiaRenderer Noticia="@this.Noticia" />
                     </div>
                 </div>
             </div>
@@ -54,7 +54,7 @@ else
                         </div>
                     </div>
                     <div class="alert-content-box">
-                        <NoticiaRenderer Noticia="Noticia" />
+                        <NoticiaRenderer Noticia="@this.Noticia" />
                     </div>
                 </div>
             </div>
@@ -73,7 +73,7 @@ else
                     <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?art" : Noticia.vchImagenPortada)" class="culture-hero-img" alt="Cultura" />
                 </div>
                 <div class="culture-body px-md-12">
-                    <NoticiaRenderer Noticia="Noticia" />
+                    <NoticiaRenderer Noticia="@this.Noticia" />
                 </div>
             </div>
             break;
@@ -93,7 +93,7 @@ else
                     <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?tech" : Noticia.vchImagenPortada)" class="innovation-hero-img" alt="Innovación" />
                 </div>
                 <div class="innovation-body p-4">
-                    <NoticiaRenderer Noticia="Noticia" />
+                    <NoticiaRenderer Noticia="@this.Noticia" />
                 </div>
             </div>
             break;
@@ -114,7 +114,7 @@ else
                     <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?city" : Noticia.vchImagenPortada)" class="classic-hero-img" alt="Portada de la noticia" />
                 </div>
                 <div class="classic-body">
-                    <NoticiaRenderer Noticia="Noticia" />
+                    <NoticiaRenderer Noticia="@this.Noticia" />
                 </div>
             </div>
             break;

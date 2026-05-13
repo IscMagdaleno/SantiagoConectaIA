@@ -41,7 +41,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             {
                 var query = _context.Noticias
                     .Include(n => n.IIdCategoriaNavigation)
-                    .Include(n => n.NoticiaMetadatos)
+                    .Include(n => n.NoticiaFilas)
+                        .ThenInclude(f => f.NoticiaMetadatos)
                     .Include(n => n.NoticiasImagenes)
                     .AsQueryable();
 
@@ -75,14 +76,25 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                         iIdNoticia = img.IIdNoticia,
                         vchUrlImagen = img.VchUrlImagen
                     }).ToList(),
-                    Metadatos = n.NoticiaMetadatos.OrderBy(m => m.IOrden).Select(m => new NoticiaMetadatoDto
+                    Filas = n.NoticiaFilas.OrderBy(f => f.IOrden).Select(f => new SantiagoConectaIA.Share.Objects.NoticiasModule.NoticiaFila
                     {
-                        iIdMetadato = m.IIdMetadato,
-                        iIdNoticia = m.IIdNoticia,
-                        iIdTipoDato = (TipoDatoMetadato)m.IIdTipoDato,
-                        vchAlias = m.vchAlias,
-                        nvchValor = m.NvchValor,
-                        iOrden = m.IOrden
+                        iIdFila = f.IIdFila,
+                        iIdNoticia = f.IIdNoticia,
+                        iOrden = f.IOrden,
+                        Metadatos = f.NoticiaMetadatos.OrderBy(m => m.IOrden).Select(m => new NoticiaMetadatoDto
+                        {
+                            iIdMetadato = m.IIdMetadato,
+                            iIdNoticia = m.IIdNoticia,
+                            iIdFila = m.IIdFila,
+                            iIdTipoDato = (TipoDatoMetadato)m.IIdTipoDato,
+                            vchTitulo = m.VchTitulo,
+                            nvchValor = m.NvchValor,
+                            iOrden = m.IOrden,
+                            iAncho = m.IAncho ?? 12,
+                            vchAlineacion = m.VchAlineacion ?? "none",
+                            vchAlto = m.VchAlto ?? "auto",
+                            nvchConfiguracion = m.NvchConfiguracion ?? "{}"
+                        }).ToList()
                     }).ToList()
                 }).ToList();
 
@@ -134,22 +146,44 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                             });
                         }
 
-                        // Guardar Metadatos (Eliminar y recrear)
+                        // Guardar Filas y Metadatos (Eliminar y recrear)
                         var existingMetadatos = _context.NoticiaMetadatos.Where(x => x.IIdNoticia == noticiaId);
+                        var existingFilas = _context.NoticiaFilas.Where(x => x.IIdNoticia == noticiaId);
+                        
                         _context.NoticiaMetadatos.RemoveRange(existingMetadatos);
+                        _context.NoticiaFilas.RemoveRange(existingFilas);
 
-                        if (postModel.Metadatos != null)
+                        if (postModel.Filas != null)
                         {
-                            foreach (var meta in postModel.Metadatos)
+                            foreach (var fila in postModel.Filas)
                             {
-                                _context.NoticiaMetadatos.Add(new DAL.Models.NoticiaMetadato
+                                var nuevaFila = new DAL.Models.NoticiaFila
                                 {
                                     IIdNoticia = noticiaId,
-                                    IIdTipoDato = (int)meta.iIdTipoDato,
-                                    vchAlias = meta.vchAlias,
-                                    NvchValor = meta.nvchValor,
-                                    IOrden = meta.iOrden
-                                });
+                                    IOrden = fila.iOrden
+                                };
+                                _context.NoticiaFilas.Add(nuevaFila);
+                                await _context.SaveChangesAsync(); // Para obtener el IIdFila
+
+                                if (fila.Metadatos != null)
+                                {
+                                    foreach (var meta in fila.Metadatos)
+                                    {
+                                        _context.NoticiaMetadatos.Add(new DAL.Models.NoticiaMetadato
+                                        {
+                                            IIdNoticia = noticiaId,
+                                            IIdFila = nuevaFila.IIdFila,
+                                            IIdTipoDato = (int)meta.iIdTipoDato,
+                                            VchTitulo = meta.vchTitulo,
+                                            NvchValor = meta.nvchValor,
+                                            IOrden = meta.iOrden,
+                                            IAncho = meta.iAncho ?? 12,
+                                            VchAlineacion = meta.vchAlineacion ?? "none",
+                                            VchAlto = meta.vchAlto ?? "auto",
+                                            NvchConfiguracion = meta.nvchConfiguracion
+                                        });
+                                    }
+                                }
                             }
                         }
 
@@ -173,7 +207,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                             };
                         }
                     }
-                    responseData.Metadatos = postModel.Metadatos;
+                    responseData.Filas = postModel.Filas;
                     validation.Data = responseData;
                 }
 

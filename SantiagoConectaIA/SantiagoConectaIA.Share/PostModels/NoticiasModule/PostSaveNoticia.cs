@@ -17,6 +17,6 @@ namespace SantiagoConectaIA.Share.PostModels.NoticiasModule
 
         public int? iIdCategoria { get; set; }
         public List<NoticiaImagen> Imagenes { get; set; } = new List<NoticiaImagen>();
-        public List<NoticiaMetadato> Metadatos { get; set; } = new List<NoticiaMetadato>();
+        public List<NoticiaFila> Filas { get; set; } = new List<NoticiaFila>();
     }
 }

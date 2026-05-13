@@ -486,7 +486,7 @@ else
             temp = temp.Where(x => 
                 x.vchTitulo.ToLower().Contains(query) || 
                 x.nvchContenido.ToLower().Contains(query) ||
-                (x.Metadatos != null && x.Metadatos.Any(m => m.nvchValor.ToLower().Contains(query)))
+                (x.Filas != null && x.Filas.Any(f => f.Metadatos != null && f.Metadatos.Any(m => m.nvchValor.ToLower().Contains(query))))
             );
         }
 
