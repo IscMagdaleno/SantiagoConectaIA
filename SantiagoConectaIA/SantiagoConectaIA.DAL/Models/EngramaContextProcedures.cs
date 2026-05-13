@@ -1747,7 +1747,7 @@ namespace SantiagoConectaIA.DAL.Models
             return _;
         }
 
-        public virtual async Task<List<spSaveNoticiaResult>> spSaveNoticiaAsync(int? iIdNoticia, string vchTitulo, string vchTituloEn, string nvchContenido, string nvchContenidoEn, string vchImagenPortada, DateTime? dtFechaPublicacion, bool? bActivo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<List<spSaveNoticiaResult>> spSaveNoticiaAsync(int? iIdNoticia, string vchTitulo, string vchTituloEn, string nvchContenido, string nvchContenidoEn, string vchImagenPortada, DateTime? dtFechaPublicacion, bool? bActivo, int? iIdCategoria, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
             {
@@ -1811,9 +1811,15 @@ namespace SantiagoConectaIA.DAL.Models
                     Value = bActivo ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Bit,
                 },
+                new SqlParameter
+                {
+                    ParameterName = "iIdCategoria",
+                    Value = iIdCategoria ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.Int,
+                },
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<spSaveNoticiaResult>("EXEC @returnValue = [dbo].[spSaveNoticia] @iIdNoticia = @iIdNoticia, @vchTitulo = @vchTitulo, @vchTituloEn = @vchTituloEn, @nvchContenido = @nvchContenido, @nvchContenidoEn = @nvchContenidoEn, @vchImagenPortada = @vchImagenPortada, @dtFechaPublicacion = @dtFechaPublicacion, @bActivo = @bActivo", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<spSaveNoticiaResult>("EXEC @returnValue = [dbo].[spSaveNoticia] @iIdNoticia = @iIdNoticia, @vchTitulo = @vchTitulo, @vchTituloEn = @vchTituloEn, @nvchContenido = @nvchContenido, @nvchContenidoEn = @nvchContenidoEn, @vchImagenPortada = @vchImagenPortada, @dtFechaPublicacion = @dtFechaPublicacion, @bActivo = @bActivo, @iIdCategoria = @iIdCategoria", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 

@@ -5,17 +5,15 @@ using System.Collections.Generic;
 
 namespace SantiagoConectaIA.DAL.Models;
 
-public partial class Catalogo
+public partial class NoticiaFila
 {
-    public int IdCatalogo { get; set; }
+    public int IIdFila { get; set; }
 
-    public int IdGrupo { get; set; }
+    public int IIdNoticia { get; set; }
 
-    public string Descripcion { get; set; }
+    public int IOrden { get; set; }
 
-    public string Valor { get; set; }
-
-    public virtual Grupo IdGrupoNavigation { get; set; }
+    public virtual Noticia IIdNoticiaNavigation { get; set; }
 
     public virtual ICollection<NoticiaMetadato> NoticiaMetadatos { get; set; } = new List<NoticiaMetadato>();
 }

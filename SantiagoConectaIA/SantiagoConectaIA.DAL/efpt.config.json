@@ -39,6 +39,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[Catalogos]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[CategoriaNoticia]",
          "ObjectType": 0
       },
@@ -59,6 +63,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[Grupos]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[HistorialConsulta]",
          "ObjectType": 0
       },
@@ -72,6 +80,10 @@
       },
       {
          "Name": "[dbo].[Modulo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NoticiaFila]",
          "ObjectType": 0
       },
       {
