@@ -1,116 +1,75 @@
-﻿@inherits EngramaComponent
+@inherits EngramaComponent
 @using SantiagoConectaIA.Share.Objects.TramitesModule
+@using SantiagoConectaIA.Share.Objects.OficinasModule
 @inject ISnackbar Snackbar
 @using System.ComponentModel.DataAnnotations
 
 @using MudBlazor
 
-<EditForm Model="@TramiteModel"
-		  OnValidSubmit="OnSubmit">
-	<DataAnnotationsValidator />
-	<MudFocusTrap>
+<EditForm Model="@TramiteModel" OnValidSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+    
+    <MudCard>
+        <MudCardContent>
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                
+                @* TABS 1: Información General *@
+                <MudTabPanel Text="Información General" Icon="@Icons.Material.Filled.Info">
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="TramiteModel.vchNombre" Label="Nombre del Trámite" MaxLength="50" Variant="Variant.Outlined" Class="mb-4" />
+                            <MudTextField @bind-Value="TramiteModel.nvchDescripcion" Label="Descripción del Trámite" Lines="3" MaxLength="500" Variant="Variant.Outlined" />
+                            <MudTextField @bind-Value="TramiteModel.vchNombreEn" Label="Nombre del Trámite (Inglés)" MaxLength="250" Variant="Variant.Outlined" Class="mb-4 mt-4" />
+                            <MudTextField @bind-Value="TramiteModel.nvchDescripcionEn" Label="Descripción del Trámite (Inglés)" Lines="3" MaxLength="500" Variant="Variant.Outlined" />
+                        </MudItem>
 
-		<MudCard>
-			<MudCardContent>
-				<MudGrid>
-					<MudItem xs="12" sm="6">
-						@* Nombre del Trámite (vchNombre) - Ya estaba presente *@
-						<MudTextField @bind-Value="TramiteModel.vchNombre"
-									  Label="Nombre del Trámite"
-									  MaxLength="50"
-									  Variant="Variant.Outlined"
-									  Class="mb-4" />
+                        <MudItem xs="12" sm="6">
+                            <MudGrid>
+                                <MudItem xs="12" sm="6">
+                                    <MudNumericField @bind-Value="TramiteModel.mCosto" Label="Costo" Variant="Variant.Outlined" Format="C2" Min="0" Class="mb-4" />
+                                </MudItem>
 
-						@* Descripción (nvchDescripcion) - Ya estaba presente *@
-						<MudTextField @bind-Value="TramiteModel.nvchDescripcion"
-									  Label="Descripción del Trámite"
-									  Lines="3"
-									  MaxLength="500"
-									  Variant="Variant.Outlined" />
+                                <MudItem xs="12">
+                                    <MudSelect @bind-Value="TramiteModel.iIdOficina" Label="Oficina Responsable" Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Business" Class="mb-4">
+                                        @if (Data?.LstOficinas != null)
+                                        {
+                                            @foreach (var oficina in Data.LstOficinas)
+                                            {
+                                                <MudSelectItem Value="oficina.iIdOficina">@oficina.vchNombre</MudSelectItem>
+                                            }
+                                        }
+                                        <MudSelectItem Value="1">Oficina de Trámites (Placeholder)</MudSelectItem>
+                                    </MudSelect>
+                                </MudItem>
 
-						@* ENGLISH FIELDS *@
-						<MudTextField @bind-Value="TramiteModel.vchNombreEn"
-									  Label="Nombre del Trámite (Inglés)"
-									  MaxLength="250"
-									  Variant="Variant.Outlined"
-									  Class="mb-4 mt-4" />
+                                <MudItem xs="12" sm="6">
+                                    <MudSwitch @bind-Value="TramiteModel.bModalidadEnLinea" Color="Color.Info" Label="Modalidad En Línea" Class="mt-4" />
+                                </MudItem>
 
-						<MudTextField @bind-Value="TramiteModel.nvchDescripcionEn"
-									  Label="Descripción del Trámite (Inglés)"
-									  Lines="3"
-									  MaxLength="500"
-									  Variant="Variant.Outlined" />
+                                <MudItem xs="12" sm="6">
+                                    <MudSwitch @bind-Value="TramiteModel.bActivo" Color="Color.Success" Label="Trámite Activo" Class="mt-4" />
+                                </MudItem>
+                            </MudGrid>
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
 
-					</MudItem>
+                @* TABS 2: Requisitos *@
+                <FormRequisito TramiteModel="TramiteModel" />
 
-					<MudItem xs="12" sm="6">
-						<MudGrid>
+                @* TABS 3: Pasos a Seguir *@
+                <FormPaso TramiteModel="TramiteModel" />
 
+                @* TABS 4: Documentos *@
+                <FormDocumento TramiteModel="TramiteModel" />
 
-							@* Costo (mCosto) *@
-							<MudItem xs="12" sm="6">
-								<MudNumericField @bind-Value="TramiteModel.mCosto"
-												 Label="Costo"
-												 Variant="Variant.Outlined"
-												 Format="C2"
-												 Min="0"
-												 Class="mb-4" />
-							</MudItem>
+            </MudTabs>
+        </MudCardContent>
 
-							@* ID de la Oficina (iIdOficina) - Se usa MudSelect para representar una FK *@
-							<MudItem xs="12">
-								@*
-								NOTA: En un entorno real, aquí se usaría un MudSelect con elementos cargados
-								en Data.LstOficinas (asumiendo que existe) y el Value sería iIdOficina.
-							*@
-								<MudSelect @bind-Value="TramiteModel.iIdOficina"
-										   Label="Oficina Responsable"
-										   Variant="Variant.Outlined"
-										   AdornmentIcon="@Icons.Material.Filled.Business"
-										   Class="mb-4">
-
-									@foreach (var oficina in Data.LstOficinas)
-									{
-										<MudSelectItem Value="oficina.iIdOficina">@oficina.vchNombre</MudSelectItem>
-									}
-
-									<MudSelectItem Value="1">Oficina de Trámites (Placeholder)</MudSelectItem>
-								</MudSelect>
-							</MudItem>
-
-							@* Modalidad En Línea (bModalidadEnLinea) *@
-							<MudItem xs="12" sm="6">
-								<MudSwitch @bind-Value="TramiteModel.bModalidadEnLinea"
-										   Color="Color.Info"
-										   Label="Modalidad En Línea"
-										   Class="mt-4" />
-							</MudItem>
-
-							@* Activo (bActivo) *@
-							<MudItem xs="12" sm="6">
-								<MudSwitch @bind-Value="TramiteModel.bActivo"
-										   Color="Color.Success"
-										   Label="Trámite Activo"
-										   Class="mt-4" />
-							</MudItem>
- 
-						</MudGrid>
-					</MudItem>
-				</MudGrid>
-			</MudCardContent>
-
-
-			<MudCardActions>
-				@* Botón de guardar *@
-				<MudButton ButtonType="ButtonType.Submit"
-						   Variant="Variant.Filled"
-						   Color="Color.Primary"
-						   StartIcon="@Icons.Material.Filled.Save">
-					Guardar Tramite
-				</MudButton>
-			
-			</MudCardActions>
-		</MudCard>
-	</MudFocusTrap>
-
+        <MudCardActions Class="px-6 pb-6">
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Large">
+                @(TramiteModel.iIdTramite <= 0 ? "Crear Trámite para Configurar" : "Guardar Trámite Completo")
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
 </EditForm>

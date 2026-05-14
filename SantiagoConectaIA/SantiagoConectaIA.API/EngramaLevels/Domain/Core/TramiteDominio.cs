@@ -1,4 +1,4 @@
-﻿using EngramaCoreStandar.Mapper;
+using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
@@ -81,12 +81,30 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			try
 			{
 				var model = mapperHelper.Get<PostSaveTramite, spSaveTramite.Request>(PostModel);
+				
+				model.jsonRequisitos = PostModel.Requisitos != null && PostModel.Requisitos.Any() 
+					? System.Text.Json.JsonSerializer.Serialize(PostModel.Requisitos) : null;
+				model.jsonPasos = PostModel.Pasos != null && PostModel.Pasos.Any() 
+					? System.Text.Json.JsonSerializer.Serialize(PostModel.Pasos) : null;
+				model.jsonDocumentos = PostModel.Documentos != null && PostModel.Documentos.Any() 
+					? System.Text.Json.JsonSerializer.Serialize(PostModel.Documentos) : null;
+
 				var result = await tramitesRepository.spSaveTramite(model);
 				var validation = responseHelper.Validacion<spSaveTramite.Result, Tramite>(result);
 				if (validation.IsSuccess)
 				{
 					PostModel.iIdTramite = validation.Data.iIdTramite;
-					validation.Data = mapperHelper.Get<PostSaveTramite, Tramite>(PostModel);
+					
+					// Mapeo manual básico para evitar excepciones de AutoMapper con listas complejas anidadas
+					validation.Data.vchNombre = PostModel.vchNombre;
+					validation.Data.nvchDescripcion = PostModel.nvchDescripcion;
+					validation.Data.vchNombreEn = PostModel.vchNombreEn;
+					validation.Data.nvchDescripcionEn = PostModel.nvchDescripcionEn;
+					validation.Data.iIdCategoria = PostModel.iIdCategoria;
+					validation.Data.bModalidadEnLinea = PostModel.bModalidadEnLinea;
+					validation.Data.mCosto = PostModel.mCosto;
+					validation.Data.iIdOficina = PostModel.iIdOficina;
+					validation.Data.bActivo = PostModel.bActivo;
 				}
 				return validation;
 			}

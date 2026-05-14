@@ -1,29 +1,39 @@
-﻿using Microsoft.AspNetCore.Components;
-
-using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
+using Microsoft.AspNetCore.Components;
 using SantiagoConectaIA.PWA.Shared.Common;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
+using MudBlazor;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 {
 	public partial class FormRequisito : EngramaComponent
 	{
+		[Parameter] public Tramite TramiteModel { get; set; }
 
-		[Parameter] public MainTramites Data { get; set; }
-		[Parameter] public EventCallback<Requisitos> OnRequisitoSaved { get; set; }
+		private Requisitos nuevoRequisito = new Requisitos();
 
-		private async Task OnSubmint()
+		private void AgregarRequisito()
 		{
-			Loading.Show();
-
-			var result = await Data.PostSaveRequisito();
-			ShowSnake(result);
-			if (result.bResult)
+			if (string.IsNullOrWhiteSpace(nuevoRequisito.vchNombre))
 			{
-				await OnRequisitoSaved.InvokeAsync(Data.RequisitoSelected);
+				Snackbar.Add("El nombre del requisito es obligatorio.", Severity.Warning);
+				return;
 			}
-			Loading.Hide();
+			
+			if (TramiteModel.Requisitos == null)
+				TramiteModel.Requisitos = new List<Requisitos>();
 
+			TramiteModel.Requisitos.Add(new Requisitos
+			{
+				vchNombre = nuevoRequisito.vchNombre,
+				nvchDetalle = nuevoRequisito.nvchDetalle,
+				bObligatorio = nuevoRequisito.bObligatorio
+			});
+			nuevoRequisito = new Requisitos();
+		}
+
+		private void EliminarRequisito(Requisitos req)
+		{
+			TramiteModel.Requisitos.Remove(req);
 		}
 	}
 }

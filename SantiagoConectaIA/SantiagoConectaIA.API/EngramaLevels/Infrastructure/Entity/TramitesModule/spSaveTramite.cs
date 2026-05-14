@@ -1,4 +1,4 @@
-﻿using EngramaCoreStandar.Dapper.Interfaces;
+using EngramaCoreStandar.Dapper.Interfaces;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModule
 {
@@ -17,6 +17,9 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModu
 			public decimal mCosto { get; set; } = 0;
 			public int? iIdOficina { get; set; } = null;
 			public bool bActivo { get; set; } = true;
+			public string jsonRequisitos { get; set; }
+			public string jsonPasos { get; set; }
+			public string jsonDocumentos { get; set; }
 		}
 
 		public class Result : DbResult
