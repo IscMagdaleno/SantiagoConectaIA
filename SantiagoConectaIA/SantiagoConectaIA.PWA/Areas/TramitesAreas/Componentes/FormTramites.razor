@@ -1,4 +1,5 @@
-@inherits EngramaComponent
+@inherits EngramaWorkspaceComponent
+@using SantiagoConectaIA.PWA.Shared.Workspace
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @using SantiagoConectaIA.Share.Objects.OficinasModule
 @inject ISnackbar Snackbar
@@ -17,20 +18,20 @@
                 <MudTabPanel Text="Información General" Icon="@Icons.Material.Filled.Info">
                     <MudGrid>
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="TramiteModel.vchNombre" Label="Nombre del Trámite" MaxLength="50" Variant="Variant.Outlined" Class="mb-4" />
-                            <MudTextField @bind-Value="TramiteModel.nvchDescripcion" Label="Descripción del Trámite" Lines="3" MaxLength="500" Variant="Variant.Outlined" />
-                            <MudTextField @bind-Value="TramiteModel.vchNombreEn" Label="Nombre del Trámite (Inglés)" MaxLength="250" Variant="Variant.Outlined" Class="mb-4 mt-4" />
-                            <MudTextField @bind-Value="TramiteModel.nvchDescripcionEn" Label="Descripción del Trámite (Inglés)" Lines="3" MaxLength="500" Variant="Variant.Outlined" />
+                            <MudTextField @bind-Value="TramiteModel.vchNombre" Label="Nombre del Trámite" MaxLength="50" Variant="Variant.Outlined" Class="mb-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                            <MudTextField @bind-Value="TramiteModel.nvchDescripcion" Label="Descripción del Trámite" Lines="3" MaxLength="500" Variant="Variant.Outlined" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                            <MudTextField @bind-Value="TramiteModel.vchNombreEn" Label="Nombre del Trámite (Inglés)" MaxLength="250" Variant="Variant.Outlined" Class="mb-4 mt-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                            <MudTextField @bind-Value="TramiteModel.nvchDescripcionEn" Label="Descripción del Trámite (Inglés)" Lines="3" MaxLength="500" Variant="Variant.Outlined" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
                             <MudGrid>
                                 <MudItem xs="12" sm="6">
-                                    <MudNumericField @bind-Value="TramiteModel.mCosto" Label="Costo" Variant="Variant.Outlined" Format="C2" Min="0" Class="mb-4" />
+                                    <MudNumericField @bind-Value="TramiteModel.mCosto" Label="Costo" Variant="Variant.Outlined" Format="C2" Min="0" Class="mb-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                                 </MudItem>
 
                                 <MudItem xs="12">
-                                    <MudSelect @bind-Value="TramiteModel.iIdOficina" Label="Oficina Responsable" Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Business" Class="mb-4">
+                                    <MudSelect @bind-Value="TramiteModel.iIdOficina" Label="Oficina Responsable" Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Business" Class="mb-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">
                                         @if (Data?.LstOficinas != null)
                                         {
                                             @foreach (var oficina in Data.LstOficinas)
@@ -43,11 +44,11 @@
                                 </MudItem>
 
                                 <MudItem xs="12" sm="6">
-                                    <MudSwitch @bind-Value="TramiteModel.bModalidadEnLinea" Color="Color.Info" Label="Modalidad En Línea" Class="mt-4" />
+                                    <MudSwitch @bind-Value="TramiteModel.bModalidadEnLinea" Color="Color.Info" Label="Modalidad En Línea" Class="mt-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                                 </MudItem>
 
                                 <MudItem xs="12" sm="6">
-                                    <MudSwitch @bind-Value="TramiteModel.bActivo" Color="Color.Success" Label="Trámite Activo" Class="mt-4" />
+                                    <MudSwitch @bind-Value="TramiteModel.bActivo" Color="Color.Success" Label="Trámite Activo" Class="mt-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                                 </MudItem>
                             </MudGrid>
                         </MudItem>
@@ -55,21 +56,16 @@
                 </MudTabPanel>
 
                 @* TABS 2: Requisitos *@
-                <FormRequisito TramiteModel="TramiteModel" />
-
+                <FormRequisito TramiteModel="TramiteModel" EstadoControl="EstadoControl" />
+ 
                 @* TABS 3: Pasos a Seguir *@
-                <FormPaso TramiteModel="TramiteModel" />
-
+                <FormPaso TramiteModel="TramiteModel" EstadoControl="EstadoControl" />
+ 
                 @* TABS 4: Documentos *@
-                <FormDocumento TramiteModel="TramiteModel" />
+                <FormDocumento TramiteModel="TramiteModel" EstadoControl="EstadoControl" />
 
             </MudTabs>
         </MudCardContent>
 
-        <MudCardActions Class="px-6 pb-6">
-            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Large">
-                @(TramiteModel.iIdTramite <= 0 ? "Crear Trámite para Configurar" : "Guardar Trámite Completo")
-            </MudButton>
-        </MudCardActions>
     </MudCard>
 </EditForm>

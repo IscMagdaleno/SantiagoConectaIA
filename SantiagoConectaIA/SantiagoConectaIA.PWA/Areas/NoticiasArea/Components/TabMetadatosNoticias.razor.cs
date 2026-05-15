@@ -3,37 +3,16 @@ using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
 using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles;
 using SantiagoConectaIA.Share.Objects.NoticiasModule;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Text.Json;
+using SantiagoConectaIA.PWA.Shared.Workspace;
 
 namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 {
-    public class DropItem
-    {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Zone { get; set; } = string.Empty;
-        public NoticiaMetadato Metadato { get; set; } = new NoticiaMetadato();
-        public bool IsTemplate { get; set; } = false;
-        public int Order { get; set; } = 0;
-    }
-
-    public class RedesSocialesConfig
-    {
-        public string Facebook { get; set; } = string.Empty;
-        public string WhatsApp { get; set; } = string.Empty;
-        public string Instagram { get; set; } = string.Empty;
-        public string TikTok { get; set; } = string.Empty;
-        public string X { get; set; } = string.Empty;
-    }
-
     public class TabMetadatosNoticiasBase : ComponentBase
     {
         [Inject] public ISnackbar Snackbar { get; set; } = default!;
 
         [Parameter] public MainNoticias Data { get; set; } = default!;
+        [Parameter] public TipoEstadoControl EstadoControl { get; set; } = default!;
 
         // Filas del layout
         protected List<NoticiaFila> _filas = new List<NoticiaFila>();
@@ -474,4 +453,21 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
             };
         }
     }
+	public class DropItem
+	{
+		public string Id { get; set; } = Guid.NewGuid().ToString();
+		public string Zone { get; set; } = string.Empty;
+		public NoticiaMetadato Metadato { get; set; } = new NoticiaMetadato();
+		public bool IsTemplate { get; set; } = false;
+		public int Order { get; set; } = 0;
+	}
+
+	public class RedesSocialesConfig
+	{
+		public string Facebook { get; set; } = string.Empty;
+		public string WhatsApp { get; set; } = string.Empty;
+		public string Instagram { get; set; } = string.Empty;
+		public string TikTok { get; set; } = string.Empty;
+		public string X { get; set; } = string.Empty;
+	}
 }

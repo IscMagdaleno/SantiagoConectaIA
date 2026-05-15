@@ -1,16 +1,19 @@
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @inherits EngramaComponent
+@using SantiagoConectaIA.PWA.Shared.Workspace
 
 <MudTabPanel Text="Documentos" Icon="@Icons.Material.Filled.PictureAsPdf" Disabled="@(TramiteModel.iIdTramite <= 0)">
     <MudText Typo="Typo.subtitle1" Class="mb-4">Documentos y Formularios</MudText>
     
     <div class="d-flex align-center gap-2 mb-4">
-        <MudTextField @bind-Value="nuevoDocumento.vchNombre" Label="Nombre del Documento" Variant="Variant.Outlined" />
-        <MudTextField @bind-Value="nuevoDocumento.vchUrlDocumento" Label="URL / Enlace" Variant="Variant.Outlined" />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AgregarDocumento">Agregar Doc</MudButton>
+        <MudTextField @bind-Value="nuevoDocumento.vchNombre" Label="Nombre del Documento" Variant="Variant.Outlined" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudTextField @bind-Value="nuevoDocumento.vchUrlDocumento" Label="URL / Enlace" Variant="Variant.Outlined" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AgregarDocumento" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">Agregar Doc</MudButton>
     </div>
-
-    <MudTable Items="@TramiteModel.Documentos" Hover="true" Dense="true" Elevation="0" CanCancelEdit="true" CommitEditTooltip="Guardar edición" CancelEditTooltip="Cancelar">
+ 
+    <MudTable Items="@TramiteModel.Documentos" Hover="true" Dense="true" Elevation="0" 
+              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)"
+              CanCancelEdit="@(EstadoControl != TipoEstadoControl.Lectura)" CommitEditTooltip="Guardar edición" CancelEditTooltip="Cancelar">
         <HeaderContent>
             <MudTh>Nombre</MudTh>
             <MudTh>Enlace</MudTh>
@@ -22,7 +25,7 @@
                 <MudLink Href="@doc.vchUrlDocumento" Target="_blank" Color="Color.Info">Ver Documento</MudLink>
             </MudTd>
             <MudTd DataLabel="Acciones">
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarDocumento(doc))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarDocumento(doc))" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudTd>
         </RowTemplate>
         <RowEditingTemplate Context="doc">

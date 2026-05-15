@@ -1,31 +1,11 @@
-@page "/chatbot"
 @using SantiagoConectaIA.PWA.Areas.ConversationalArea.Utiles
 @using SantiagoConectaIA.Share.Objects.ConversationalModule
-@inherits SantiagoConectaIA.PWA.Shared.Common.EngramaPage
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
     
-    @* PAGE HEADER *@
-    <div class="d-flex align-center justify-space-between mb-4">
-        <div class="d-flex align-center">
-            <MudIcon Icon="@Icons.Material.Filled.SmartToy" Style="color: #A50A3A; font-size: 2.5rem;" Class="mr-3" />
-            <div>
-                <MudText Typo="Typo.h4" Style="color: #A50A3A; font-weight: bold; line-height: 1.2;">
-                    Santiago Conecta
-                </MudText>
-                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
-                    Historial de Conversaciones y Asistencia Virtual
-                </MudText>
-            </div>
-        </div>
-        <MudTooltip Text="Actualizar Listado">
-            <MudFab StartIcon="@Icons.Material.Filled.Refresh" 
-                    Color="Color.Primary" 
-                    Style="background-color: #A50A3A; color: white;" 
-                    OnClick="LoadChats" 
-                    Size="Size.Medium" />
-        </MudTooltip>
-    </div>
+
 
     @* MAIN GRID LAYOUT *@
     <MudGrid Style="height: calc(100vh - 190px); min-height: 550px;">

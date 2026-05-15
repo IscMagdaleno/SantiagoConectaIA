@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Components;
 using SantiagoConectaIA.PWA.Shared.Common;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
 using MudBlazor;
+using SantiagoConectaIA.PWA.Shared.Workspace;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 {
 	public partial class FormRequisito : EngramaComponent
 	{
 		[Parameter] public Tramite TramiteModel { get; set; }
+		[Parameter] public TipoEstadoControl EstadoControl { get; set; }
 
 		private Requisitos nuevoRequisito = new Requisitos();
 

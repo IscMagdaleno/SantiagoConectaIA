@@ -1,5 +1,6 @@
 @using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
-@inherits EngramaComponent
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
 @inject ISnackbar Snackbar
 @using MudBlazor
 
@@ -12,16 +13,16 @@
             <MudTabPanel Text="Información General" Icon="@Icons.Material.Filled.Article">
                 <MudGrid>
                     <MudItem xs="12" sm="6">
-                        <MudTextField @bind-Value="Data.NoticiaSelected.vchTitulo" Label="Título (Español)" Variant="Variant.Outlined" Class="mb-4" />
-                        <MudTextField @bind-Value="Data.NoticiaSelected.nvchContenido" Label="Contenido (Español)" Variant="Variant.Outlined" Lines="5" Class="mb-4" />
+                        <MudTextField @bind-Value="Data.NoticiaSelected.vchTitulo" Label="Título (Español)" Variant="Variant.Outlined" Class="mb-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        <MudTextField @bind-Value="Data.NoticiaSelected.nvchContenido" Label="Contenido (Español)" Variant="Variant.Outlined" Lines="5" Class="mb-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudTextField @bind-Value="Data.NoticiaSelected.vchTituloEn" Label="Title (English)" Variant="Variant.Outlined" Class="mb-4" />
-                        <MudTextField @bind-Value="Data.NoticiaSelected.nvchContenidoEn" Label="Content (English)" Variant="Variant.Outlined" Lines="5" Class="mb-4" />
+                        <MudTextField @bind-Value="Data.NoticiaSelected.vchTituloEn" Label="Title (English)" Variant="Variant.Outlined" Class="mb-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        <MudTextField @bind-Value="Data.NoticiaSelected.nvchContenidoEn" Label="Content (English)" Variant="Variant.Outlined" Lines="5" Class="mb-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        @* TODO: Llenar con API de Categorías *@
-                        <MudSelect T="int?" @bind-Value="Data.NoticiaSelected.iIdCategoria" Label="Categoría" Variant="Variant.Outlined">
+                        @* Llenar con API de Categorías *@
+                        <MudSelect T="int?" @bind-Value="Data.NoticiaSelected.iIdCategoria" Label="Categoría" Variant="Variant.Outlined" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">
                             <MudSelectItem T="int?" Value="1">Comunicado Oficial</MudSelectItem>
                             <MudSelectItem T="int?" Value="2">Cultura</MudSelectItem>
                             <MudSelectItem T="int?" Value="3">Deportes</MudSelectItem>
@@ -29,37 +30,14 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudCheckBox T="bool" @bind-Value="Data.NoticiaSelected.bActivo" Label="Noticia Activa" Color="Color.Primary"></MudCheckBox>
+                        <MudCheckBox T="bool" @bind-Value="Data.NoticiaSelected.bActivo" Label="Noticia Activa" Color="Color.Primary" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"></MudCheckBox>
                     </MudItem>
                 </MudGrid>
             </MudTabPanel>
 
-            @* --- TAB 2: METADATOS (BLOQUES DINÁMICOS) --- *@
             <MudTabPanel Text="Bloques / Metadatos" Icon="@Icons.Material.Filled.Extension">
-                <TabMetadatosNoticias Data="Data" />
+                <TabMetadatosNoticias Data="Data" EstadoControl="EstadoControl" />
             </MudTabPanel>
-
         </MudTabs>
-
-        <MudCardActions Class="pa-4 d-flex justify-end bg-light">
-              <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Large">
-                Guardar Noticia Completamente
-              </MudButton>
-        </MudCardActions>
     </MudCard>
 </EditForm>
-
-@code {
-    [Parameter] public MainNoticias Data { get; set; }
-    [Parameter] public EventCallback OnSuccess { get; set; }
-
-    private async Task Submit()
-    {
-        var result = await Data.PostSaveNoticia();
-        ShowSnake(result);
-        if (result.bResult)
-        {
-            await OnSuccess.InvokeAsync();
-        }
-    }
-}

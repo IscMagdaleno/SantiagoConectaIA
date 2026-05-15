@@ -1,15 +1,18 @@
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @inherits EngramaComponent
+@using SantiagoConectaIA.PWA.Shared.Workspace
 
 <MudTabPanel Text="Pasos a Seguir" Icon="@Icons.Material.Filled.FormatListNumbered" Disabled="@(TramiteModel.iIdTramite <= 0)">
     <MudText Typo="Typo.subtitle1" Class="mb-4">Pasos a Seguir</MudText>
     
     <div class="d-flex align-center gap-2 mb-4">
-        <MudTextField @bind-Value="nuevoPaso.nvchDescripcion" Label="Descripción del Paso" Variant="Variant.Outlined" Lines="2" />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AgregarPaso">Agregar Paso</MudButton>
+        <MudTextField @bind-Value="nuevoPaso.nvchDescripcion" Label="Descripción del Paso" Variant="Variant.Outlined" Lines="2" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AgregarPaso" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">Agregar Paso</MudButton>
     </div>
-
-    <MudTable Items="@(TramiteModel.Pasos?.OrderBy(p => p.iOrden) ?? Enumerable.Empty<Pasos>())" Hover="true" Dense="true" Elevation="0" CanCancelEdit="true" CommitEditTooltip="Guardar edición" CancelEditTooltip="Cancelar">
+ 
+    <MudTable Items="@(TramiteModel.Pasos?.OrderBy(p => p.iOrden) ?? Enumerable.Empty<Pasos>())" Hover="true" Dense="true" Elevation="0" 
+              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)"
+              CanCancelEdit="@(EstadoControl != TipoEstadoControl.Lectura)" CommitEditTooltip="Guardar edición" CancelEditTooltip="Cancelar">
         <HeaderContent>
             <MudTh>Orden</MudTh>
             <MudTh>Descripción</MudTh>
@@ -21,9 +24,9 @@
             </MudTd>
             <MudTd DataLabel="Descripción">@paso.nvchDescripcion</MudTd>
             <MudTd DataLabel="Acciones">
-                <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Default" Size="Size.Small" OnClick="@(() => MoverPaso(paso, -1))" Disabled="@(paso.iOrden == 1)" />
-                <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Default" Size="Size.Small" OnClick="@(() => MoverPaso(paso, 1))" Disabled="@(paso.iOrden == TramiteModel.Pasos?.Count)" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarPaso(paso))" Class="ml-2" />
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Default" Size="Size.Small" OnClick="@(() => MoverPaso(paso, -1))" Disabled="@(paso.iOrden == 1 || EstadoControl == TipoEstadoControl.Lectura)" />
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Default" Size="Size.Small" OnClick="@(() => MoverPaso(paso, 1))" Disabled="@(paso.iOrden == TramiteModel.Pasos?.Count || EstadoControl == TipoEstadoControl.Lectura)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarPaso(paso))" Class="ml-2" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudTd>
         </RowTemplate>
         <RowEditingTemplate Context="paso">

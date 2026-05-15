@@ -1,0 +1,52 @@
+@using SantiagoConectaIA.PWA.Areas.OficinasArea.Utiles
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
+
+<MudGrid Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudItem>
+        <MudText Typo="Typo.h4" Style="color: #A50A3A; font-weight: bold;">
+            Catálogo de Oficinas
+        </MudText>
+    </MudItem>
+</MudGrid>
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudTextField @bind-Value="filtroTexto"
+                      Label="Buscar Oficina"
+                      Variant="Variant.Outlined"
+                      Immediate="true"
+                      TextChanged="CuandoCambiaTexto"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Class="mb-4" />
+    </MudItem>
+
+    @if (listaFiltrada != null)
+    {
+        @foreach (var oficina in listaFiltrada)
+        {
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <CardOficina Oficina="@oficina"
+                             OnView="OnViewOficina"
+                             OnEdit="OnEditOficina"
+                             OnDelete="OnDeleteOficina" />
+            </MudItem>
+        }
+
+        @if (!listaFiltrada.Any())
+        {
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    No se encontraron oficinas que coincidan con "@filtroTexto".
+                </MudAlert>
+            </MudItem>
+        }
+    }
+    else
+    {
+        <MudItem xs="12">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </MudItem>
+    }
+</MudGrid>

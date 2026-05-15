@@ -1,17 +1,20 @@
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @inherits EngramaComponent
+@using SantiagoConectaIA.PWA.Shared.Workspace
 
 <MudTabPanel Text="Requisitos" Icon="@Icons.Material.Filled.Checklist" Disabled="@(TramiteModel.iIdTramite <= 0)">
     <MudText Typo="Typo.subtitle1" Class="mb-4">Requisitos del Trámite</MudText>
     
     <div class="d-flex align-center gap-2 mb-4">
-        <MudTextField @bind-Value="nuevoRequisito.vchNombre" Label="Nombre del Requisito" Variant="Variant.Outlined" MaxLength="250" />
-        <MudTextField @bind-Value="nuevoRequisito.nvchDetalle" Label="Detalle (Opcional)" Variant="Variant.Outlined" />
-        <MudSwitch @bind-Value="nuevoRequisito.bObligatorio" Color="Color.Error" Label="Obligatorio" />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AgregarRequisito">Agregar</MudButton>
+        <MudTextField @bind-Value="nuevoRequisito.vchNombre" Label="Nombre del Requisito" Variant="Variant.Outlined" MaxLength="250" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudTextField @bind-Value="nuevoRequisito.nvchDetalle" Label="Detalle (Opcional)" Variant="Variant.Outlined" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudSwitch @bind-Value="nuevoRequisito.bObligatorio" Color="Color.Error" Label="Obligatorio" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AgregarRequisito" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">Agregar</MudButton>
     </div>
-
-    <MudTable Items="@TramiteModel.Requisitos" Hover="true" Dense="true" Elevation="0" CanCancelEdit="true" CommitEditTooltip="Guardar edición" CancelEditTooltip="Cancelar">
+ 
+    <MudTable Items="@TramiteModel.Requisitos" Hover="true" Dense="true" Elevation="0" 
+              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)"
+              CanCancelEdit="@(EstadoControl != TipoEstadoControl.Lectura)" CommitEditTooltip="Guardar edición" CancelEditTooltip="Cancelar">
         <HeaderContent>
             <MudTh>Nombre</MudTh>
             <MudTh>Detalle</MudTh>
@@ -27,7 +30,7 @@
                 </MudChip>
             </MudTd>
             <MudTd DataLabel="Acciones">
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarRequisito(req))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarRequisito(req))" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudTd>
         </RowTemplate>
         <RowEditingTemplate Context="req">

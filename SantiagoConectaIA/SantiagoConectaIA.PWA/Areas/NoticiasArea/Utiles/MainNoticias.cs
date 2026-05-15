@@ -77,7 +77,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
                 {
                     // Refresh list or update specific item
                     PostGetNoticias(); 
-                    NoticiaSelected = new Noticia(); // Reset selection
+                    NoticiaSelected = data;
                 });
             return validation;
         }

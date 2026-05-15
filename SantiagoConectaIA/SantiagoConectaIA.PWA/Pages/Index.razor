@@ -1,4 +1,5 @@
-﻿@page "/"
+@page "/"
+@inject SantiagoConectaIA.PWA.Shared.Workspace.WorkspaceService WorkspaceService
 
 <PageTitle>Santiago Conecta 2025</PageTitle>
 
@@ -22,7 +23,7 @@
         <MudItem xs="12" sm="6" md="6" lg="3">
             <MudCard Class="service-card"
                      Style="height: 100%; cursor: pointer;"
-                     @onclick="@(() => NavigateToPage("/PageTramites"))">
+                     @onclick="WorkspaceService.RequestTramites">
                 <MudCardContent Style="text-align: center; padding: 2rem;">
                     <div class="card-icon-container">
                         <MudIcon Icon="Icons.Material.Filled.Description"
@@ -45,7 +46,8 @@
         <!-- Tarjeta Noticias -->
         <MudItem xs="12" sm="6" md="6" lg="3">
             <MudCard Class="service-card"
-                     Style="height: 100%; cursor: pointer;">
+                     Style="height: 100%; cursor: pointer;"
+                     @onclick="WorkspaceService.RequestNoticias">
                 <MudCardContent Style="text-align: center; padding: 2rem;">
                     <div class="card-icon-container">
                         <MudIcon Icon="Icons.Material.Filled.Newspaper"
@@ -69,7 +71,7 @@
         <MudItem xs="12" sm="6" md="6" lg="3">
             <MudCard Class="service-card"
                      Style="height: 100%; cursor: pointer;"
-                     @onclick="@(() => NavigateToPage("/chatbot"))">
+                     @onclick="WorkspaceService.RequestChatbot">
                 <MudCardContent Style="text-align: center; padding: 2rem;">
                     <div class="card-icon-container">
                         <MudIcon Icon="Icons.Material.Filled.Chat"
@@ -89,25 +91,25 @@
             </MudCard>
         </MudItem>
 
-        <!-- Tarjeta Directorio -->
+        <!-- Tarjeta Oficinas -->
         <MudItem xs="12" sm="6" md="6" lg="3">
             <MudCard Class="service-card"
                      Style="height: 100%; cursor: pointer;"
-                     @onclick="@(() => NavigateToPage("/contacto"))">
+                     @onclick="WorkspaceService.RequestOficinas">
                 <MudCardContent Style="text-align: center; padding: 2rem;">
                     <div class="card-icon-container">
-                        <MudIcon Icon="Icons.Material.Filled.ContactMail"
+                        <MudIcon Icon="Icons.Material.Filled.Business"
                                  Size="Size.Large"
                                  Class="card-icon"
                                  Style="color: #A50A3A;" />
                     </div>
                     <MudText Typo="Typo.h5"
                              Style="color: #333333; font-weight: bold; margin: 1rem 0;">
-                        Directorio
+                        Oficinas
                     </MudText>
                     <MudText Typo="Typo.body1"
                              Style="color: #666666; line-height: 1.6;">
-                        Encuentra la información de contacto de todas las dependencias
+                        Consulta la ubicación y contacto de nuestras oficinas municipales
                     </MudText>
                 </MudCardContent>
             </MudCard>
@@ -183,6 +185,4 @@
         transform: scale(1.1);
         color: #A50A3A !important;
     }
-
-    
 </style>

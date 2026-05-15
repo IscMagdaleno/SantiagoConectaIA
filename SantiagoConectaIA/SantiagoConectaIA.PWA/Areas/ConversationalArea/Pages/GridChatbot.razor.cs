@@ -8,12 +8,15 @@ using EngramaCoreStandar.Dapper.Results;
 using SantiagoConectaIA.PWA.Areas.ConversationalArea.Utiles;
 using SantiagoConectaIA.PWA.Shared.Common;
 using SantiagoConectaIA.Share.Objects.ConversationalModule;
+using SantiagoConectaIA.PWA.Shared.Workspace;
 
 namespace SantiagoConectaIA.PWA.Areas.ConversationalArea.Pages
 {
-	public partial class Chatbot : EngramaPage
+	public partial class GridChatbot : EngramaWorkspaceComponent
 	{
 		[Inject] public MainConversational Data { get; set; }
+		[Inject] public EngramaCoreStandar.Servicios.IHttpService httpService { get; set; }
+		[Inject] public EngramaCoreStandar.Servicios.IValidaServicioService validaServicioService { get; set; }
 
 		public Chat SelectedChat { get; set; }
 		public string FiltroTexto { get; set; } = string.Empty;
@@ -90,6 +93,32 @@ namespace SantiagoConectaIA.PWA.Areas.ConversationalArea.Pages
 			{
 				Loading.Hide();
 			}
+		}
+
+		protected override List<MenuItemModel> GetMenuItems()
+		{
+			var items = new List<MenuItemModel>();
+
+			items.Add(new MenuItemModel
+			{
+				Text = "Actualizar Listado",
+				Icon = MudBlazor.Icons.Material.Filled.Refresh,
+				Color = MudBlazor.Color.Info,
+				Action = EventCallback.Factory.Create(this, async () => { await LoadChats(); })
+			});
+
+			if (Data?.LstChats != null && !Data.LstChats.Any())
+			{
+				items.Add(new MenuItemModel
+				{
+					Text = "Generar Datos de Prueba",
+					Icon = MudBlazor.Icons.Material.Filled.AutoAwesome,
+					Color = MudBlazor.Color.Primary,
+					Action = EventCallback.Factory.Create(this, async () => { await SeedMockData(); })
+				});
+			}
+
+			return items;
 		}
 	}
 }

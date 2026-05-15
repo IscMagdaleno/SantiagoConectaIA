@@ -1,7 +1,12 @@
-﻿@using SantiagoConectaIA.PWA.Shared.Common
+@using SantiagoConectaIA.PWA.Shared.Common
+@using SantiagoConectaIA.PWA.Shared.Workspace
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject WorkspaceService WorkspaceService
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
 
-<MudThemeProvider   />
+<MudThemeProvider Theme="@_customTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudPopoverProvider />
@@ -30,17 +35,22 @@
                                Class="nav-link mx-2">
                         Inicio
                     </MudButton>
-                    <MudButton Href="/tramites"
+                    <MudButton OnClick="WorkspaceService.RequestTramites"
                                Color="Color.Inherit"
                                Class="nav-link mx-2">
                         Trámites
                     </MudButton>
-                    <MudButton Href="/contacto"
+                    <MudButton OnClick="WorkspaceService.RequestNoticias"
                                Color="Color.Inherit"
                                Class="nav-link mx-2">
-                        Contacto
+                        Noticias
                     </MudButton>
-                    <MudButton Href="/chatbot"
+                    <MudButton OnClick="WorkspaceService.RequestOficinas"
+                               Color="Color.Inherit"
+                               Class="nav-link mx-2">
+                        Oficinas
+                    </MudButton>
+                    <MudButton OnClick="WorkspaceService.RequestChatbot"
                                Color="Color.Inherit"
                                Class="nav-link mx-2">
                         ChatBot
@@ -70,27 +80,31 @@
                     <MudIcon Icon="Icons.Material.Filled.Home" Class="mr-3" />
                     Inicio
                 </MudButton>
-                <MudButton Href="/tramites"
+                <MudButton OnClick="WorkspaceService.RequestTramites"
                            Color="Color.Inherit"
                            FullWidth="true"
-                           Style="color: white; justify-content: flex-start;"
-                           OnClick="@CloseMobileMenu">
+                           Style="color: white; justify-content: flex-start;">
                     <MudIcon Icon="Icons.Material.Filled.Description" Class="mr-3" />
                     Trámites
                 </MudButton>
-                <MudButton Href="/contacto"
+                <MudButton OnClick="WorkspaceService.RequestNoticias"
                            Color="Color.Inherit"
                            FullWidth="true"
-                           Style="color: white; justify-content: flex-start;"
-                           OnClick="@CloseMobileMenu">
-                    <MudIcon Icon="Icons.Material.Filled.ContactMail" Class="mr-3" />
-                    Contacto
+                           Style="color: white; justify-content: flex-start;">
+                    <MudIcon Icon="Icons.Material.Filled.Article" Class="mr-3" />
+                    Noticias
                 </MudButton>
-                <MudButton Href="/chatbot"
+                <MudButton OnClick="WorkspaceService.RequestOficinas"
                            Color="Color.Inherit"
                            FullWidth="true"
-                           Style="color: white; justify-content: flex-start;"
-                           OnClick="@CloseMobileMenu">
+                           Style="color: white; justify-content: flex-start;">
+                    <MudIcon Icon="Icons.Material.Filled.Business" Class="mr-3" />
+                    Oficinas
+                </MudButton>
+                <MudButton OnClick="WorkspaceService.RequestChatbot"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;">
                     <MudIcon Icon="Icons.Material.Filled.Chat" Class="mr-3" />
                     ChatBot
                 </MudButton>
@@ -99,11 +113,52 @@
     </MudCollapse>
 
     <!-- Contenido principal -->
-    <MudMainContent Style="padding-top: 64px; min-height: calc(100vh - 64px); background-color: #F9F9F9;">
+    <MudMainContent Style="padding-top: 64px; min-height: calc(100vh - 64px); background-color: #F9F9F9;" @oncontextmenu:preventDefault="true">
 
         <Loading></Loading>
 
-        @Body
+        @if (tabsList.Count != 0)
+        {
+            <ToolbarSuperior />
+
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" 
+                     ActivePanelIndex="tabsSelectedIndex" 
+                     ActivePanelIndexChanged="OnTabChanged">
+                @foreach (var tab in tabsList)
+                {
+                    <MudTabPanel ID="@tab.Id">
+                        <ChildContent>
+                            <div class="pa-4">
+                                @tab.Componente
+                            </div>
+                        </ChildContent>
+                        <TabContent>
+                            <MudMenu ActivationEvent="@MouseEvent.RightClick" PositionAtCursor="true" AnchorOrigin="Origin.BottomCenter">
+                                <ActivatorContent>
+                                    <div class="d-flex align-center px-4 py-2" style="cursor: pointer; min-width: 120px;">
+                                        <MudIcon Icon="@tab.Icono" Class="mr-2" Size="Size.Small" />
+                                        <MudText Typo="Typo.body2" Style="white-space: nowrap;">@tab.Text</MudText>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                                                       Size="Size.Small" 
+                                                       Class="ml-2 pa-1" 
+                                                       OnClick="@(async () => await CloseCurrentTabAsync(tab.EstadoControl == TipoEstadoControl.Alta || tab.EstadoControl == TipoEstadoControl.Edicion, tab.Id))" />
+                                    </div>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Close" OnClick="@(async () => await CloseCurrentTabAsync(tab.EstadoControl == TipoEstadoControl.Alta || tab.EstadoControl == TipoEstadoControl.Edicion, tab.Id))">Cerrar pestaña</MudMenuItem>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.CloseFullscreen" OnClick="CloseOtherTabsAsync">Cerrar las demás</MudMenuItem>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.DeleteSweep" OnClick="CloseAllTabsAsync" Disabled="@(tabsList.Count <= 1)">Cerrar todas</MudMenuItem>
+                                </ChildContent>
+                            </MudMenu>
+                        </TabContent>
+                    </MudTabPanel>
+                }
+            </MudTabs>
+        }
+        else
+        {
+            @Body
+        }
     </MudMainContent>
 
     <!-- Footer -->
@@ -224,6 +279,304 @@
 @code {
     private bool _mobileMenuOpen = false;
 
+    private List<WorkspaceTab> tabsList = new List<WorkspaceTab>();
+    private int tabsSelectedIndex = 0;
+
+    protected override void OnInitialized()
+    {
+        WorkspaceService.OnMenuTabSelected += AddTab;
+        WorkspaceService.MenuChanged += () => InvokeAsync(StateHasChanged);
+        WorkspaceService.TabNameChanged += RenameCurrentTab;
+        WorkspaceService.TabStateChanged += SetTabState;
+        WorkspaceService.CloseCurrentTab += async (withWarning) => await CloseCurrentTabAsync(withWarning);
+        
+        WorkspaceService.OnTramitesRequest += AbrirTramitesEnTab;
+        WorkspaceService.OnNoticiasRequest += AbrirNoticiasEnTab;
+        WorkspaceService.OnChatbotRequest += AbrirChatbotEnTab;
+        WorkspaceService.OnOficinasRequest += AbrirOficinasEnTab;
+    }
+
+    public void Dispose()
+    {
+        WorkspaceService.OnMenuTabSelected -= AddTab;
+        WorkspaceService.OnTramitesRequest -= AbrirTramitesEnTab;
+        WorkspaceService.OnNoticiasRequest -= AbrirNoticiasEnTab;
+        WorkspaceService.OnChatbotRequest -= AbrirChatbotEnTab;
+        WorkspaceService.OnOficinasRequest -= AbrirOficinasEnTab;
+    }
+
+    private void RenameCurrentTab(string tabName, string iconText)
+    {
+        if (tabsList.Any() && tabsSelectedIndex < tabsList.Count)
+        {
+            tabsList[tabsSelectedIndex].Text = tabName;
+            tabsList[tabsSelectedIndex].Icono = iconText;
+            base.StateHasChanged();
+        }
+    }
+
+    private void SetTabState(TipoEstadoControl tabState)
+    {
+        if (tabsList.Any() && tabsSelectedIndex < tabsList.Count)
+        {
+            tabsList[tabsSelectedIndex].EstadoControl = tabState;
+        }
+    }
+
+    private void OnTabChanged(int index)
+    {
+        if (index >= 0 && index < tabsList.Count)
+        {
+            tabsSelectedIndex = index;
+            var activeTab = tabsList.ElementAtOrDefault(index);
+
+            if (activeTab?.InstanciaComponente != null)
+            {
+                activeTab.InstanciaComponente.TriggerMenuUpdate();
+            }
+            else
+            {
+                WorkspaceService.SetMenuItems(new List<MenuItemModel>());
+            }
+        }
+    }
+
+    private void AddTab(WorkspaceTab tab)
+    {
+        if (tab.Repetir)
+        {
+            tabsList.Add(tab);
+            tabsSelectedIndex = tabsList.Count - 1;
+            base.StateHasChanged();
+            return;
+        }
+
+        var instanciaTab = tabsList
+            .Select((t, index) => new { Tab = t, Index = index })
+            .FirstOrDefault(m => m.Tab.TipoControl == tab.TipoControl);
+
+        if (instanciaTab != null)
+        {
+            tabsSelectedIndex = instanciaTab.Index;
+            // Si ya existe, forzar actualización del menú
+            OnTabChanged(tabsSelectedIndex);
+        }
+        else
+        {
+            tabsList.Add(tab);
+            tabsSelectedIndex = tabsList.Count - 1;
+        }
+
+        base.StateHasChanged();
+    }
+
+    private async Task CloseCurrentTabAsync(bool withWarning = false, Guid? specificTabId = null)
+    {
+        bool canClose = true;
+        int indexToRemove = tabsSelectedIndex;
+
+        if (specificTabId.HasValue)
+        {
+            indexToRemove = tabsList.FindIndex(t => t.Id == specificTabId.Value);
+            if (indexToRemove < 0) return;
+        }
+
+        if (withWarning)
+        {
+            var parameters = new DialogParameters { { "ContentText", "Tienes cambios sin guardar en esta pestaña. ¿Seguro que deseas cerrarla?" } };
+            var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Atención", parameters);
+            var result = await dialog.Result;
+            canClose = !result.Canceled;
+        }
+
+        if (canClose)
+        {
+            tabsList.RemoveAt(indexToRemove);
+            
+            // Reajustar indice si es necesario
+            if (tabsSelectedIndex >= tabsList.Count)
+            {
+                tabsSelectedIndex = Math.Max(0, tabsList.Count - 1);
+            }
+            else if (indexToRemove < tabsSelectedIndex)
+            {
+                tabsSelectedIndex--;
+            }
+            
+            base.StateHasChanged();
+            if (tabsList.Any())
+            {
+                OnTabChanged(tabsSelectedIndex);
+            }
+            else
+            {
+                WorkspaceService.SetMenuItems(new List<MenuItemModel>());
+            }
+        }
+    }
+
+    private async Task CloseOtherTabsAsync()
+    {
+        var parameters = new DialogParameters { { "ContentText", "¿Seguro que deseas cerrar todas las pestañas excepto la actual?" } };
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Atención", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var activeTab = tabsList[tabsSelectedIndex];
+            tabsList.Clear();
+            tabsList.Add(activeTab);
+            tabsSelectedIndex = 0;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CloseAllTabsAsync()
+    {
+        var parameters = new DialogParameters { { "ContentText", "¿Seguro que deseas cerrar todas las pestañas abiertas?" } };
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Atención", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            tabsList.Clear();
+            tabsSelectedIndex = 0;
+            WorkspaceService.SetMenuItems(new List<MenuItemModel>());
+            StateHasChanged();
+        }
+    }
+
+    private void AbrirTramitesEnTab()
+    {
+        var type = typeof(SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes.GridTramites);
+        var tab = new WorkspaceTab
+        {
+            Icono = Icons.Material.Filled.Description,
+            Text = "Trámites",
+            TipoControl = type,
+            Repetir = false
+        };
+
+        tab.Componente = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddComponentReferenceCapture(1, instance =>
+            {
+                if (instance is EngramaWorkspaceComponent baseComponent)
+                {
+                    tab.InstanciaComponente = baseComponent;
+                    baseComponent.IconoBase = tab.Icono ?? "";
+                    if (tabsList.Count > 0 && tabsList[tabsSelectedIndex].Id == tab.Id)
+                    {
+                        baseComponent.TriggerMenuUpdate();
+                    }
+                }
+            });
+            builder.CloseComponent();
+        };
+
+        WorkspaceService.AddComponenteTab(tab);
+    }
+
+    private void AbrirNoticiasEnTab()
+    {
+        CloseMobileMenu();
+        var type = typeof(SantiagoConectaIA.PWA.Areas.NoticiasArea.Components.GridNoticias);
+        var tab = new WorkspaceTab
+        {
+            Icono = Icons.Material.Filled.Article,
+            Text = "Noticias",
+            TipoControl = type,
+            Repetir = false
+        };
+
+        tab.Componente = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddComponentReferenceCapture(1, instance =>
+            {
+                if (instance is EngramaWorkspaceComponent baseComponent)
+                {
+                    tab.InstanciaComponente = baseComponent;
+                    baseComponent.IconoBase = tab.Icono ?? "";
+                    if (tabsList.Count > 0 && tabsList[tabsSelectedIndex].Id == tab.Id)
+                    {
+                        baseComponent.TriggerMenuUpdate();
+                    }
+                }
+            });
+            builder.CloseComponent();
+        };
+
+        WorkspaceService.AddComponenteTab(tab);
+    }
+
+    private void AbrirChatbotEnTab()
+    {
+        CloseMobileMenu();
+        var type = typeof(SantiagoConectaIA.PWA.Areas.ConversationalArea.Pages.GridChatbot);
+        var tab = new WorkspaceTab
+        {
+            Icono = Icons.Material.Filled.Chat,
+            Text = "ChatBot",
+            TipoControl = type,
+            Repetir = false
+        };
+
+        tab.Componente = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddComponentReferenceCapture(1, instance =>
+            {
+                if (instance is EngramaWorkspaceComponent baseComponent)
+                {
+                    tab.InstanciaComponente = baseComponent;
+                    baseComponent.IconoBase = tab.Icono ?? "";
+                    if (tabsList.Count > 0 && tabsList[tabsSelectedIndex].Id == tab.Id)
+                    {
+                        baseComponent.TriggerMenuUpdate();
+                    }
+                }
+            });
+            builder.CloseComponent();
+        };
+
+        WorkspaceService.AddComponenteTab(tab);
+    }
+
+    private void AbrirOficinasEnTab()
+    {
+        CloseMobileMenu();
+        var type = typeof(SantiagoConectaIA.PWA.Areas.OficinasArea.Components.GridOficinas);
+        var tab = new WorkspaceTab
+        {
+            Icono = Icons.Material.Filled.Business,
+            Text = "Oficinas",
+            TipoControl = type,
+            Repetir = false
+        };
+
+        tab.Componente = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddComponentReferenceCapture(1, instance =>
+            {
+                if (instance is EngramaWorkspaceComponent baseComponent)
+                {
+                    tab.InstanciaComponente = baseComponent;
+                    baseComponent.IconoBase = tab.Icono ?? "";
+                    if (tabsList.Count > 0 && tabsList[tabsSelectedIndex].Id == tab.Id)
+                    {
+                        baseComponent.TriggerMenuUpdate();
+                    }
+                }
+            });
+            builder.CloseComponent();
+        };
+
+        WorkspaceService.AddComponenteTab(tab);
+    }
+
     private void ToggleMobileMenu()
     {
         _mobileMenuOpen = !_mobileMenuOpen;
@@ -233,4 +586,26 @@
     {
         _mobileMenuOpen = false;
     }
+
+    private MudTheme _customTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#A50A3A",
+            Secondary = "#2b2b2b",
+            AppbarBackground = "#A50A3A",
+            Background = "#F8FAFC",
+            Surface = "#FFFFFF",
+            DrawerBackground = "#FFFFFF",
+            DrawerText = "#333333",
+            TextPrimary = "#1E293B",
+            TextSecondary = "#64748B",
+            ActionDefault = "#0f172a",
+            PrimaryContrastText = "#FFFFFF",
+            Success = "#10B981",
+            Warning = "#F59E0B",
+            Error = "#EF4444",
+            Info = "#3B82F6"
+        }
+    };
 }

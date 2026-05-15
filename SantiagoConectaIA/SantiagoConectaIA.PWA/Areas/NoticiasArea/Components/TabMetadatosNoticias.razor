@@ -142,7 +142,7 @@
                             <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="CancelarSeleccion" />
                         </div>
                         
-                        <MudTextField @bind-Value="itemSeleccionado.Metadato.vchTitulo" Label="Título del bloque" Variant="Variant.Outlined" Dense="true" Class="mb-4" />
+                        <MudTextField @bind-Value="itemSeleccionado.Metadato.vchTitulo" Label="Título del bloque" Variant="Variant.Outlined" Dense="true" Class="mb-4" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
                         
                         <div class="mb-4">
                             <MudText Typo="Typo.caption" Class="mb-1 d-block text-muted">Ancho (Columnas xs)</MudText>
@@ -182,11 +182,11 @@
 
                         @if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.Contenido)
                         {
-                            <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="Contenido (Texto)" Variant="Variant.Outlined" Lines="6" Class="mb-4" />
+                            <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="Contenido (Texto)" Variant="Variant.Outlined" Lines="6" Class="mb-4" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
                         }
                         else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.Video)
                         {
-                            <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="URL del Video" Variant="Variant.Outlined" Dense="true" Class="mb-4" />
+                            <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="URL del Video" Variant="Variant.Outlined" Dense="true" Class="mb-4" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
                         }
                         else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
                         {
@@ -241,21 +241,21 @@
                         else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.RedesSociales)
                         {
                             <MudText Typo="Typo.caption" Class="font-weight-bold d-block mb-2">Configurar Redes (deja en blanco las que no usarás):</MudText>
-                            <MudTextField @bind-Value="RedesConfig.WhatsApp" Label="WhatsApp (Link/Número)" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" />
-                            <MudTextField @bind-Value="RedesConfig.Facebook" Label="Facebook URL" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" />
-                            <MudTextField @bind-Value="RedesConfig.Instagram" Label="Instagram URL" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" />
-                            <MudTextField @bind-Value="RedesConfig.TikTok" Label="TikTok URL" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" />
-                            <MudTextField @bind-Value="RedesConfig.X" Label="X (Twitter) URL" Variant="Variant.Outlined" Dense="true" Class="mb-4" OnBlur="OnRedesSocialesChanged" />
+                            <MudTextField @bind-Value="RedesConfig.WhatsApp" Label="WhatsApp (Link/Número)" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
+                            <MudTextField @bind-Value="RedesConfig.Facebook" Label="Facebook URL" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
+                            <MudTextField @bind-Value="RedesConfig.Instagram" Label="Instagram URL" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
+                            <MudTextField @bind-Value="RedesConfig.TikTok" Label="TikTok URL" Variant="Variant.Outlined" Dense="true" Class="mb-2" OnBlur="OnRedesSocialesChanged" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
+                            <MudTextField @bind-Value="RedesConfig.X" Label="X (Twitter) URL" Variant="Variant.Outlined" Dense="true" Class="mb-4" OnBlur="OnRedesSocialesChanged" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
                         }
                         else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.DatosCuriosos)
                         {
                             <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="Dato Curioso" Variant="Variant.Outlined" Lines="4" Class="mb-4" />
                         }
                         
-                        <MudTextField @bind-Value="blockConfigExtra" Label="JSON Configuración Extra" Variant="Variant.Outlined" Lines="3" Class="mb-4" />
+                        <MudTextField @bind-Value="blockConfigExtra" Label="JSON Configuración Extra" Variant="Variant.Outlined" Lines="3" Class="mb-4" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
 
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="GuardarConfiguracionBloque" Class="mb-2">Guardar Cambios</MudButton>
-                        <MudButton Variant="Variant.Text" Color="Color.Error" FullWidth="true" StartIcon="@Icons.Material.Filled.Delete" OnClick="EliminarBloqueSeleccionado">Eliminar Bloque</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="GuardarConfiguracionBloque" Class="mb-2" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)">Guardar Cambios</MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Error" FullWidth="true" StartIcon="@Icons.Material.Filled.Delete" OnClick="EliminarBloqueSeleccionado" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)">Eliminar Bloque</MudButton>
                     </div>
                 }
             </div>
