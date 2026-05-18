@@ -1,188 +1,254 @@
 @page "/"
 @inject SantiagoConectaIA.PWA.Shared.Workspace.WorkspaceService WorkspaceService
 
-<PageTitle>Santiago Conecta 2025</PageTitle>
+<PageTitle>Santiago Conecta | Portal Municipal</PageTitle>
 
-<!-- Sección principal de bienvenida -->
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding: 2rem 1rem;">
-    <!-- Hero Section -->
-    <div class="hero-section">
-        <MudText Typo="Typo.h3"
-                 Style="color: #A50A3A; font-weight: bold; text-align: center; margin-bottom: 1rem;">
-            Bienvenidos al Portal Municipal
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-10 pb-16">
+    <!-- Hero Section con Búsqueda Inteligente -->
+    <div class="hero-minimal animate-fade-in-up">
+        <MudText Typo="Typo.h2" Class="hero-title-main">
+            Santiago Papasquiaro <span class="gradient-text">Conecta</span>
         </MudText>
-        <MudText Typo="Typo.h6"
-                 Style="color: #333333; text-align: center; margin-bottom: 3rem; font-weight: 300;">
-            Servicios digitales al alcance de todos los ciudadanos
+        <MudText Typo="Typo.h6" Class="hero-subtitle-minimal">
+            Panel centralizado para la administración y gestión de servicios digitales.
         </MudText>
     </div>
 
-    <!-- Grid de tarjetas principales -->
-    <MudGrid Spacing="4" Justify="Justify.Center">
-        <!-- Tarjeta Trámites -->
-        <MudItem xs="12" sm="6" md="6" lg="3">
-            <MudCard Class="service-card"
-                     Style="height: 100%; cursor: pointer;"
-                     @onclick="WorkspaceService.RequestTramites">
-                <MudCardContent Style="text-align: center; padding: 2rem;">
-                    <div class="card-icon-container">
-                        <MudIcon Icon="Icons.Material.Filled.Description"
-                                 Size="Size.Large"
-                                 Class="card-icon"
-                                 Style="color: #A50A3A;" />
-                    </div>
-                    <MudText Typo="Typo.h5"
-                             Style="color: #333333; font-weight: bold; margin: 1rem 0;">
-                        Trámites
-                    </MudText>
-                    <MudText Typo="Typo.body1"
-                             Style="color: #666666; line-height: 1.6;">
-                        Realiza tus trámites y servicios municipales de forma rápida y sencilla
-                    </MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <!-- Tarjeta Noticias -->
-        <MudItem xs="12" sm="6" md="6" lg="3">
-            <MudCard Class="service-card"
-                     Style="height: 100%; cursor: pointer;"
-                     @onclick="WorkspaceService.RequestNoticias">
-                <MudCardContent Style="text-align: center; padding: 2rem;">
-                    <div class="card-icon-container">
-                        <MudIcon Icon="Icons.Material.Filled.Newspaper"
-                                 Size="Size.Large"
-                                 Class="card-icon"
-                                 Style="color: #A50A3A;" />
-                    </div>
-                    <MudText Typo="Typo.h5"
-                             Style="color: #333333; font-weight: bold; margin: 1rem 0;">
-                        Noticias
-                    </MudText>
-                    <MudText Typo="Typo.body1"
-                             Style="color: #666666; line-height: 1.6;">
-                        Mantente informado sobre las últimas actividades y eventos municipales
-                    </MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <!-- Tarjeta ChatBot -->
-        <MudItem xs="12" sm="6" md="6" lg="3">
-            <MudCard Class="service-card"
-                     Style="height: 100%; cursor: pointer;"
-                     @onclick="WorkspaceService.RequestChatbot">
-                <MudCardContent Style="text-align: center; padding: 2rem;">
-                    <div class="card-icon-container">
-                        <MudIcon Icon="Icons.Material.Filled.Chat"
-                                 Size="Size.Large"
-                                 Class="card-icon"
-                                 Style="color: #A50A3A;" />
-                    </div>
-                    <MudText Typo="Typo.h5"
-                             Style="color: #333333; font-weight: bold; margin: 1rem 0;">
-                        ChatBot
-                    </MudText>
-                    <MudText Typo="Typo.body1"
-                             Style="color: #666666; line-height: 1.6;">
-                        Obtén respuestas inmediatas a tus preguntas más frecuentes
-                    </MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <!-- Tarjeta Oficinas -->
-        <MudItem xs="12" sm="6" md="6" lg="3">
-            <MudCard Class="service-card"
-                     Style="height: 100%; cursor: pointer;"
-                     @onclick="WorkspaceService.RequestOficinas">
-                <MudCardContent Style="text-align: center; padding: 2rem;">
-                    <div class="card-icon-container">
-                        <MudIcon Icon="Icons.Material.Filled.Business"
-                                 Size="Size.Large"
-                                 Class="card-icon"
-                                 Style="color: #A50A3A;" />
-                    </div>
-                    <MudText Typo="Typo.h5"
-                             Style="color: #333333; font-weight: bold; margin: 1rem 0;">
-                        Oficinas
-                    </MudText>
-                    <MudText Typo="Typo.body1"
-                             Style="color: #666666; line-height: 1.6;">
-                        Consulta la ubicación y contacto de nuestras oficinas municipales
-                    </MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-    </MudGrid>
-
-    <!-- Sección de información adicional -->
-    <MudPaper Style="margin-top: 3rem; padding: 2rem; background-color: white; border-radius: 8px;" Elevation="2">
-        <MudGrid>
-            <MudItem xs="12" md="6">
-                <MudText Typo="Typo.h4"
-                         Style="color: #A50A3A; font-weight: bold; margin-bottom: 1rem;">
-                    Transparencia y Gobierno Abierto
+    <!-- Bento Grid Layout -->
+    <div class="bento-grid mt-16">
+        <!-- 2x2: Servicios Principales (Hero Card) -->
+        <div class="bento-item bento-2x2 glass-premium animate-fade-in-up delay-1" @onclick="WorkspaceService.RequestTramites">
+            <div class="bento-header">
+                <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Text" Class="mb-2">Administración</MudChip>
+                <MudText Typo="Typo.h4" Class="bento-title">Catálogo de Trámites</MudText>
+                <MudText Typo="Typo.body1" Class="bento-desc-large">
+                    Administra y registra nuevos trámites, así como sus requisitos y pasos a seguir.
                 </MudText>
-                <MudText Typo="Typo.body1"
-                         Style="color: #333333; line-height: 1.6; margin-bottom: 1rem;">
-                    Nuestro compromiso es mantener un gobierno transparente, cercano a la ciudadanía y que rinda cuentas de sus acciones. Aquí encontrarás toda la información pública disponible.
-                </MudText>
-                <MudButton Variant="Variant.Outlined"
-                           Style="border-color: #A50A3A; color: #A50A3A;"
-                           StartIcon="Icons.Material.Filled.Visibility">
-                    Ver Transparencia
-                </MudButton>
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudText Typo="Typo.h4"
-                         Style="color: #A50A3A; font-weight: bold; margin-bottom: 1rem;">
-                    Participación Ciudadana
-                </MudText>
-                <MudText Typo="Typo.body1"
-                         Style="color: #333333; line-height: 1.6; margin-bottom: 1rem;">
-                    Tu voz es importante. Participa en las decisiones que afectan a nuestra comunidad a través de los mecanismos de consulta y participación ciudadana.
-                </MudText>
-                <MudButton Variant="Variant.Outlined"
-                           Style="border-color: #A50A3A; color: #A50A3A;"
-                           StartIcon="Icons.Material.Filled.HowToVote">
-                    Participar
-                </MudButton>
-            </MudItem>
-        </MudGrid>
-    </MudPaper>
+            </div>
+            <div class="bento-illustration">
+                <img src="city_services_illustration_1778873977467.png" alt="City Services" class="illustration-img" />
+            </div>
+            <div class="bento-footer">
+                <MudButton EndIcon="@Icons.Material.Rounded.ArrowOutward" Color="Color.Primary" Class="px-0">Entrar al catálogo</MudButton>
+            </div>
+        </div>
+
+        <!-- 2x1: Noticias Recientes -->
+        <div class="bento-item bento-2x1 glass-premium animate-fade-in-up delay-2" @onclick="WorkspaceService.RequestNoticias">
+            <div class="bento-header-flex">
+                <div>
+                    <MudText Typo="Typo.h5" Class="bento-title">Catálogo de Noticias</MudText>
+                    <MudText Typo="Typo.body2" Class="bento-desc">Publica, edita y gestiona comunicados del municipio.</MudText>
+                </div>
+                <div class="icon-circle">
+                    <MudIcon Icon="@Icons.Material.Rounded.Newspaper" />
+                </div>
+            </div>
+            <div class="news-preview-list">
+                <div class="news-item-mini">
+                    <div class="news-dot"></div>
+                    <MudText Typo="Typo.caption">Administración de publicaciones activas</MudText>
+                </div>
+                <div class="news-item-mini">
+                    <div class="news-dot"></div>
+                    <MudText Typo="Typo.caption">Control de historial y categorías</MudText>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1x1: ChatBot IA -->
+        <div class="bento-item bento-1x1 glass-premium animate-fade-in-up delay-3" @onclick="WorkspaceService.RequestChatbot">
+            <div class="icon-wrapper-bento">
+                <MudIcon Icon="@Icons.Material.Rounded.AutoAwesome" />
+            </div>
+            <div>
+                <MudText Typo="Typo.h6" Class="bento-title">Gestión de IA</MudText>
+                <MudText Typo="Typo.caption" Class="bento-desc">Configura comportamiento y respuestas.</MudText>
+            </div>
+            <div class="pulse-indicator"></div>
+        </div>
+
+        <!-- 1x1: Oficinas -->
+        <div class="bento-item bento-1x1 glass-premium animate-fade-in-up delay-4" @onclick="WorkspaceService.RequestOficinas">
+            <div class="icon-wrapper-bento secondary">
+                <MudIcon Icon="@Icons.Material.Rounded.Map" />
+            </div>
+            <div>
+                <MudText Typo="Typo.h6" Class="bento-title">Catálogo de Oficinas</MudText>
+                <MudText Typo="Typo.caption" Class="bento-desc">Controla ubicaciones y contactos de dependencias.</MudText>
+            </div>
+        </div>
+
+
+    </div>
 </MudContainer>
 
 <style>
-    /* Hero Section */
-    .hero-section {
-        padding: 2rem 0;
+    .hero-minimal {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
     }
 
-    /* Tarjetas de servicios con efectos hover */
-    .service-card {
-        transition: all 0.3s ease;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        background-color: white;
+    .hero-title-main {
+        font-weight: 900 !important;
+        letter-spacing: -0.05em;
+        margin-bottom: 1rem;
+        color: #1E293B;
     }
 
-    .service-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 8px 25px rgba(165, 10, 58, 0.15);
+    .hero-subtitle-minimal {
+        color: #64748B;
+        font-weight: 400;
+        opacity: 0.8;
     }
 
-    /* Contenedor de iconos en las tarjetas */
-    .card-icon-container {
+    /* Premium Search Bar */
+    .search-container-premium {
+        display: flex;
+        align-items: center;
+        padding: 8px 8px 8px 24px;
+        border-radius: 100px;
+        max-width: 650px;
+        margin: 0 auto;
+    }
+
+    .search-input-field {
+        flex-grow: 1;
+    }
+
+    .search-button-premium {
+        border-radius: 100px !important;
+        padding: 10px 32px !important;
+        text-transform: none !important;
+        font-weight: 600 !important;
+        box-shadow: 0 8px 16px rgba(165, 10, 58, 0.2) !important;
+    }
+
+    /* Bento Item Specifics */
+    .bento-header {
         margin-bottom: 1rem;
     }
 
-    .card-icon {
-        transition: all 0.3s ease;
+    .bento-title {
+        font-weight: 800 !important;
+        letter-spacing: -0.02em;
+        color: #1E293B;
     }
 
-    .service-card:hover .card-icon {
-        transform: scale(1.1);
-        color: #A50A3A !important;
+    .bento-desc-large {
+        color: #64748B;
+        line-height: 1.6;
+        max-width: 80%;
+    }
+
+    .bento-illustration {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 60%;
+        height: 60%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        pointer-events: none;
+    }
+
+    .illustration-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transform: translate(10%, 10%);
+        opacity: 0.9;
+    }
+
+    .bento-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .icon-circle {
+        width: 48px;
+        height: 48px;
+        background: rgba(165, 10, 58, 0.1);
+        color: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .news-preview-list {
+        margin-top: auto;
+    }
+
+    .news-item-mini {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+        color: #64748B;
+    }
+
+    .news-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--primary);
+        border-radius: 50%;
+    }
+
+    .icon-wrapper-bento {
+        width: 56px;
+        height: 56px;
+        background: var(--primary);
+        color: white;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        box-shadow: 0 8px 16px rgba(165, 10, 58, 0.15);
+    }
+
+    .icon-wrapper-bento.secondary {
+        background: #1E293B;
+    }
+
+    .pulse-indicator {
+        position: absolute;
+        top: 32px;
+        right: 32px;
+        width: 12px;
+        height: 12px;
+        background: #10B981;
+        border-radius: 50%;
+        animation: pulse-soft 2s infinite;
+    }
+
+    .stats-grid-bento {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: auto;
+    }
+
+    .stat-num {
+        font-weight: 900 !important;
+        color: var(--primary);
+        letter-spacing: -0.03em;
+    }
+
+    .bento-item {
+        cursor: pointer;
     }
 </style>
+
+@code {
+    private string _searchQuery = "";
+
+    private void HandleSearch()
+    {
+        // Implementación futura de búsqueda
+    }
+}
