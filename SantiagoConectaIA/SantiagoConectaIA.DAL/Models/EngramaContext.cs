@@ -59,6 +59,8 @@ public partial class EngramaContext : DbContext
 
     public virtual DbSet<OficinaTramite> OficinaTramites { get; set; }
 
+    public virtual DbSet<Parametro> Parametros { get; set; }
+
     public virtual DbSet<Paso> Pasos { get; set; }
 
     public virtual DbSet<Pedido> Pedidos { get; set; }
@@ -735,6 +737,47 @@ public partial class EngramaContext : DbContext
                 .HasForeignKey(d => d.IIdTramite)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_OficinaTramite_Tramite");
+        });
+
+        modelBuilder.Entity<Parametro>(entity =>
+        {
+            entity.HasKey(e => e.IIdParametro).HasName("PK_Parametros_iIdParametro");
+
+            entity.Property(e => e.IIdParametro).HasColumnName("iIdParametro");
+            entity.Property(e => e.BHabilitado)
+                .HasDefaultValue(true)
+                .HasColumnName("bHabilitado");
+            entity.Property(e => e.BTieneValores).HasColumnName("bTieneValores");
+            entity.Property(e => e.IIdParametroPadre).HasColumnName("iIdParametroPadre");
+            entity.Property(e => e.ISecuencia).HasColumnName("iSecuencia");
+            entity.Property(e => e.NvchAlias)
+                .HasMaxLength(200)
+                .UseCollation("Modern_Spanish_CI_AS")
+                .HasColumnName("nvchAlias");
+            entity.Property(e => e.NvchDescripcion)
+                .HasMaxLength(1000)
+                .UseCollation("Modern_Spanish_CI_AS")
+                .HasColumnName("nvchDescripcion");
+            entity.Property(e => e.NvchDescripcionEn)
+                .HasMaxLength(1000)
+                .UseCollation("Modern_Spanish_CI_AS")
+                .HasColumnName("nvchDescripcionEN");
+            entity.Property(e => e.NvchNombre)
+                .IsRequired()
+                .HasMaxLength(200)
+                .UseCollation("Modern_Spanish_CI_AS")
+                .HasColumnName("nvchNombre");
+            entity.Property(e => e.NvchNombreEn)
+                .IsRequired()
+                .HasMaxLength(200)
+                .UseCollation("Modern_Spanish_CI_AS")
+                .HasColumnName("nvchNombreEN");
+            entity.Property(e => e.NvchValor1)
+                .UseCollation("Modern_Spanish_CI_AS")
+                .HasColumnName("nvchValor1");
+            entity.Property(e => e.NvchValor2)
+                .UseCollation("Modern_Spanish_CI_AS")
+                .HasColumnName("nvchValor2");
         });
 
         modelBuilder.Entity<Paso>(entity =>

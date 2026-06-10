@@ -2,6 +2,7 @@ using Microsoft.SemanticKernel;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.SemanticKernel.Plugins;
+using SantiagoConectaIA.DAL.Provider;
 
 namespace SantiagoConectaIA.API.SemanticKernel
 {
@@ -30,9 +31,21 @@ namespace SantiagoConectaIA.API.SemanticKernel
 			if (_kernelInstance != null) return _kernelInstance;
 
 			// *************** 1. OBTENER CONFIGURACIÓN DE GEMINI ***************
-			// Usamos la misma sección del appsettings.json, pero leemos la clave
-			var modelName = _configuration["Gemini:ModelName"] ?? "gemini-2.5-flash"; // Modelo de Gemini a usar
-			var apiKey = _configuration["Gemini:KeyVaultSecretName"]; // La clave que apunta a tu API Key
+			// Se consulta desde la base de datos usando el alias "key.gemini"
+			string modelName = "gemini-2.5-flash";
+			string apiKey = null;
+
+			using (var scope = _scopeFactory.CreateScope())
+			{
+				var catalogosProvider = scope.ServiceProvider.GetRequiredService<ICatalogosProvider>();
+				var parametro = catalogosProvider.GetParametroByAliasAsync("key.gemini").GetAwaiter().GetResult();
+
+				if (parametro != null)
+				{
+					if (!string.IsNullOrWhiteSpace(parametro.NvchValor1)) modelName = parametro.NvchValor1;
+					if (!string.IsNullOrWhiteSpace(parametro.NvchValor2)) apiKey = parametro.NvchValor2;
+				}
+			}
 
 			if (string.IsNullOrWhiteSpace(apiKey))
 			{

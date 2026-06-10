@@ -26,5 +26,11 @@ namespace SantiagoConectaIA.DAL.Provider
                                  .Where(x => x.IdGrupo == grupo.IdGrupo)
                                  .ToListAsync();
         }
+
+        public async Task<Parametro> GetParametroByAliasAsync(string alias)
+        {
+            return await _context.Parametros
+                                 .FirstOrDefaultAsync(p => p.NvchAlias == alias && p.BHabilitado);
+        }
     }
 }
