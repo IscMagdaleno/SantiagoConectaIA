@@ -4,10 +4,10 @@ using Microsoft.SemanticKernel.Connectors.Google;
 
 namespace SantiagoConectaIA.API.SemanticKernel.Agentes
 {
-	public class TramitesAgentes
+	public class SantiagoIAAgentes
 	{
 		private readonly Kernel _kernel;
-		private readonly ILogger<TramitesAgentes> _logger;
+		private readonly ILogger<SantiagoIAAgentes> _logger;
 		private readonly IChatCompletionService _chatCompletionService;
 
 		private readonly PromptExecutionSettings _executionSettings;
@@ -28,7 +28,7 @@ namespace SantiagoConectaIA.API.SemanticKernel.Agentes
 			"5. **Si la consulta es ambigua:** Pide al usuario que aclare el nombre del trámite o la dependencia para realizar una búsqueda precisa. \n" +
 			"6. **Respuesta Final:** Genera una respuesta completa y natural a partir de los datos JSON que obtengas de tus herramientas. **Nunca muestres el JSON directamente** al usuario; solo usa la información contenida en él.";
 
-		public TramitesAgentes(Kernel kernel, ILogger<TramitesAgentes> logger)
+		public SantiagoIAAgentes(Kernel kernel, ILogger<SantiagoIAAgentes> logger)
 		{
 			_kernel = kernel;
 			_logger = logger;

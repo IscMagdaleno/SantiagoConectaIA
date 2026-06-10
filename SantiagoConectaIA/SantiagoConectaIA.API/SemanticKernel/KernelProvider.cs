@@ -54,7 +54,7 @@ namespace SantiagoConectaIA.API.SemanticKernel
 			// Build kernel
 			_kernelInstance = kernelBuilder.Build();
 
-			_kernelInstance.Plugins.AddFromObject(new ConsultaPlugin(_conversationalDominio), "ConsultaBaseDatos");
+			_kernelInstance.Plugins.AddFromObject(new TramitesPlugin(_conversationalDominio), "ConsultaBaseDatos");
 			_logger.LogInformation("ConsultaPlugin registrado exitosamente con el Kernel.");
 
 

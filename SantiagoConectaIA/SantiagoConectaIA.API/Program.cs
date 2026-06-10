@@ -38,7 +38,7 @@ builder.Services.AddScoped<KernelProvider>();
 builder.Services.AddScoped(sp => sp.GetRequiredService<KernelProvider>().GetKernel());
 
 
-builder.Services.AddScoped<TramitesAgentes>();
+builder.Services.AddScoped<SantiagoIAAgentes>();
 
 
 builder.Services.AddScoped<IAgentOrchestrationService, AgentOrchestrationService>();

@@ -13,11 +13,11 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 {
 
 
-	public class ConsultaPlugin
+	public class TramitesPlugin
 	{
 		private readonly IConversationalDominio _conversationalDominio;
 
-		public ConsultaPlugin(IConversationalDominio conversationalDominio)
+		public TramitesPlugin(IConversationalDominio conversationalDominio)
 		{
 			_conversationalDominio = conversationalDominio;
 		}

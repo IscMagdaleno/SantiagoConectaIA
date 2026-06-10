@@ -14,14 +14,14 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 	/// </summary>
 	public class AgentOrchestrationService : IAgentOrchestrationService
 	{
-		private readonly TramitesAgentes _tramitesAgentes;
+		private readonly SantiagoIAAgentes _tramitesAgentes;
 		private readonly ILogger<AgentOrchestrationService> _logger;
 		// Almacenamiento en memoria para el historial de chat por usuario.
 		// En un entorno de producción, esto debería ser un almacenamiento persistente (ej. base de datos, caché distribuida).
 		private static readonly ConcurrentDictionary<string, ChatHistory> _chatHistories = new ConcurrentDictionary<string, ChatHistory>();
 
 		public AgentOrchestrationService(
-			TramitesAgentes tramitesAgentes,
+			SantiagoIAAgentes tramitesAgentes,
 			ILogger<AgentOrchestrationService> logger)
 		{
 			_tramitesAgentes = tramitesAgentes;
