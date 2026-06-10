@@ -57,6 +57,11 @@
                                Class="nav-button mx-2">
                         ChatBot
                     </MudButton>
+                    <MudButton OnClick="WorkspaceService.RequestMockup"
+                               Color="Color.Inherit"
+                               Class="nav-button mx-2">
+                        Mockup
+                    </MudButton>
                 </div>
 
                 <!-- Menú hamburguesa para móviles -->
@@ -109,6 +114,13 @@
                            Style="color: white; justify-content: flex-start;">
                     <MudIcon Icon="Icons.Material.Filled.Chat" Class="mr-3" />
                     ChatBot
+                </MudButton>
+                <MudButton OnClick="WorkspaceService.RequestMockup"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;">
+                    <MudIcon Icon="Icons.Material.Filled.Extension" Class="mr-3" />
+                    Mockup (Ejemplo)
                 </MudButton>
             </MudStack>
         </MudContainer>
@@ -188,6 +200,7 @@
         WorkspaceService.OnNoticiasRequest += AbrirNoticiasEnTab;
         WorkspaceService.OnChatbotRequest += AbrirChatbotEnTab;
         WorkspaceService.OnOficinasRequest += AbrirOficinasEnTab;
+        WorkspaceService.OnMockupRequest += AbrirMockupEnTab; // Evento del Mockup
     }
 
     public void Dispose()
@@ -197,6 +210,7 @@
         WorkspaceService.OnNoticiasRequest -= AbrirNoticiasEnTab;
         WorkspaceService.OnChatbotRequest -= AbrirChatbotEnTab;
         WorkspaceService.OnOficinasRequest -= AbrirOficinasEnTab;
+        WorkspaceService.OnMockupRequest -= AbrirMockupEnTab; // Evento del Mockup
     }
 
     private void RenameCurrentTab(string tabName, string iconText)
@@ -448,6 +462,40 @@
             Text = "Oficinas",
             TipoControl = type,
             Repetir = false
+        };
+
+        tab.Componente = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddComponentReferenceCapture(1, instance =>
+            {
+                if (instance is EngramaWorkspaceComponent baseComponent)
+                {
+                    tab.InstanciaComponente = baseComponent;
+                    baseComponent.IconoBase = tab.Icono ?? "";
+                    if (tabsList.Count > 0 && tabsList[tabsSelectedIndex].Id == tab.Id)
+                    {
+                        baseComponent.TriggerMenuUpdate();
+                    }
+                }
+            });
+            builder.CloseComponent();
+        };
+
+        WorkspaceService.AddComponenteTab(tab);
+    }
+
+    // Método de ejemplo para abrir el Catálogo Mockup
+    private void AbrirMockupEnTab()
+    {
+        CloseMobileMenu();
+        var type = typeof(SantiagoConectaIA.PWA.Areas.MockupArea.Components.GridMockup);
+        var tab = new WorkspaceTab
+        {
+            Icono = Icons.Material.Filled.Extension,
+            Text = "Mockup Catálogo",
+            TipoControl = type,
+            Repetir = false // Solo queremos un catálogo abierto a la vez
         };
 
         tab.Componente = builder =>

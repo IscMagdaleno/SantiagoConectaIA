@@ -22,9 +22,21 @@
             <div class="chatbot-messages flex-grow-1 p-3" style="overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background-color: #f8f9fa;">
                 @if (messages.Count == 0)
                 {
-                    <div class="text-center mt-5 text-muted">
+                    <div class="text-center mt-3 text-muted">
                         <MudIcon Icon="@Icons.Material.Filled.ChatBubbleOutline" Size="Size.Large" Style="opacity: 0.5;" />
                         <MudText Typo="Typo.body2" Class="mt-2">¡Hola! Soy tu asistente virtual. ¿En qué te puedo ayudar hoy?</MudText>
+                    </div>
+
+                    <div class="d-flex flex-column gap-2 mt-4 px-2">
+                        <button class="suggestion-btn" @onclick='() => SendQuickMessage("¿Cómo pago el impuesto predial?")'>
+                            🏠 Pago de Impuesto Predial
+                        </button>
+                        <button class="suggestion-btn" @onclick='() => SendQuickMessage("Requisitos para copia de Acta de Nacimiento")'>
+                            📄 Acta de Nacimiento
+                        </button>
+                        <button class="suggestion-btn" @onclick='() => SendQuickMessage("¿Cuáles son los horarios de atención y oficinas?")'>
+                            ⏰ Oficinas y Horarios
+                        </button>
                     </div>
                 }
                 
@@ -33,7 +45,7 @@
                     <div class="d-flex @(msg.IsUser ? "justify-end" : "justify-start")">
                         <MudPaper Elevation="1" Class="@($"{(msg.IsUser ? "user-msg" : "bot-msg")} px-3 py-2")" 
                                   Style="@(msg.IsUser ? "background: linear-gradient(135deg, #e91e63, #c2185b); color: white; border-radius: 16px 16px 0 16px; max-width: 85%; word-break: break-word;" : "background: #ffffff; color: #333; border-radius: 16px 16px 16px 0; max-width: 85%; word-break: break-word; border: 1px solid #e0e0e0;")">
-                            <MudText Typo="Typo.body2">@msg.Content</MudText>
+                            <MudText Typo="Typo.body2">@FormatMessage(msg.Content)</MudText>
                         </MudPaper>
                     </div>
                 }
@@ -52,8 +64,8 @@
 
             <div class="chatbot-input p-2 d-flex align-center" style="border-top: 1px solid #eeeeee; background: white;">
                 <MudTextField @bind-Value="currentMessage" Placeholder="Escribe un mensaje..." DisableUnderLine="true" 
-                              Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1"
-                              OnKeyDown="HandleKeyDown" Disabled="isLoading" Style="border-radius: 20px; background-color: #f5f5f5;" />
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1"
+                               OnKeyDown="HandleKeyDown" Disabled="isLoading" Style="border-radius: 20px; background-color: #f5f5f5;" />
                 <MudIconButton Icon="@Icons.Material.Filled.Send" Color="Color.Primary" Disabled="@(string.IsNullOrWhiteSpace(currentMessage) || isLoading)" OnClick="SendMessage" Class="ml-1" />
             </div>
         </MudPaper>
@@ -121,6 +133,26 @@
         0%, 80%, 100% { transform: translateY(0); }
         40% { transform: translateY(-5px); }
     }
+
+    .suggestion-btn {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        color: #d81b60;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .suggestion-btn:hover {
+        background: #fce4ec;
+        border-color: #f8bbd0;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(216, 27, 96, 0.08);
+    }
 </style>
 
 @code {
@@ -151,9 +183,13 @@
         }
     }
 
-    private void ToggleChat()
+    private async Task ToggleChat()
     {
         isOpen = !isOpen;
+        if (isOpen)
+        {
+            await ScrollToBottom();
+        }
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
@@ -162,6 +198,22 @@
         {
             await SendMessage();
         }
+    }
+
+    private async Task ScrollToBottom()
+    {
+        try
+        {
+            await Task.Delay(50); // Pequeño delay para dejar que Blazor renderice el nuevo nodo
+            await JS.InvokeVoidAsync("eval", "const el = document.querySelector('.chatbot-messages'); if (el) el.scrollTop = el.scrollHeight;");
+        }
+        catch { }
+    }
+
+    private async Task SendQuickMessage(string question)
+    {
+        currentMessage = question;
+        await SendMessage();
     }
 
     private async Task SendMessage()
@@ -174,6 +226,7 @@
         messages.Add(new ChatMessage { Content = userQuery, IsUser = true, Timestamp = DateTime.Now });
         isLoading = true;
         StateHasChanged();
+        await ScrollToBottom();
 
         try
         {
@@ -211,7 +264,35 @@
         {
             isLoading = false;
             StateHasChanged();
+            await ScrollToBottom();
         }
+    }
+
+    private MarkupString FormatMessage(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return (MarkupString)"";
+
+        // 1. Escapar HTML para evitar inyecciones XSS
+        string encoded = System.Net.WebUtility.HtmlEncode(content);
+
+        // 2. Convertir saltos de línea a <br />
+        encoded = encoded.Replace("\n", "<br />");
+
+        // 3. Convertir negritas (**texto**) a <strong>texto</strong>
+        encoded = System.Text.RegularExpressions.Regex.Replace(encoded, @"\*\*(.*?)\*\*", "<strong>$1</strong>");
+
+        // 4. Convertir viñetas (* o • al inicio de línea)
+        encoded = System.Text.RegularExpressions.Regex.Replace(encoded, @"(<br\s*/?>|^)\s*[•\*\-]\s+", "$1&bull; ");
+
+        // 5. Convertir enlaces markdown [texto](url) a <a href="url" target="_blank">texto</a>
+        encoded = System.Text.RegularExpressions.Regex.Replace(encoded, @"\[(.*?)\]\((.*?)\)", m => 
+        {
+            var label = m.Groups[1].Value;
+            var url = System.Net.WebUtility.HtmlDecode(m.Groups[2].Value);
+            return $"<a href=\"{url}\" target=\"_blank\" style=\"color: #d81b60; font-weight: bold; text-decoration: underline;\">{label}</a>";
+        });
+
+        return new MarkupString(encoded);
     }
 
     public class ChatMessage
@@ -221,7 +302,6 @@
         public DateTime Timestamp { get; set; }
     }
     
-    // Asumimos que PostChatRequest y ChatResponseIA están definidos en el backend, los mapeamos aquí si no están expuestos adecuadamente
     public class PostChatRequest
     {
         public string nvchUserQuery { get; set; } = "";

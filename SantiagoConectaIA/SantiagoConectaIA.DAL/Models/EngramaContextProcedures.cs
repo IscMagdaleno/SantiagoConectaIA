@@ -2295,7 +2295,7 @@ namespace SantiagoConectaIA.DAL.Models
             return _;
         }
 
-        public virtual async Task<List<spSaveTramiteResult>> spSaveTramiteAsync(int? iIdTramite, string vchNombre, string nvchDescripcion, string vchNombreEn, string nvchDescripcionEn, int? iIdCategoria, bool? bModalidadEnLinea, decimal? mCosto, int? iIdOficina, bool? bActivo, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
+        public virtual async Task<List<spSaveTramiteResult>> spSaveTramiteAsync(int? iIdTramite, string vchNombre, string nvchDescripcion, string vchNombreEn, string nvchDescripcionEn, int? iIdCategoria, bool? bModalidadEnLinea, decimal? mCosto, int? iIdOficina, bool? bActivo, string jsonRequisitos, string jsonPasos, string jsonDocumentos, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)
         {
             var parameterreturnValue = new SqlParameter
             {
@@ -2372,9 +2372,30 @@ namespace SantiagoConectaIA.DAL.Models
                     Value = bActivo ?? Convert.DBNull,
                     SqlDbType = System.Data.SqlDbType.Bit,
                 },
+                new SqlParameter
+                {
+                    ParameterName = "jsonRequisitos",
+                    Size = -1,
+                    Value = jsonRequisitos ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "jsonPasos",
+                    Size = -1,
+                    Value = jsonPasos ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
+                new SqlParameter
+                {
+                    ParameterName = "jsonDocumentos",
+                    Size = -1,
+                    Value = jsonDocumentos ?? Convert.DBNull,
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                },
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<spSaveTramiteResult>("EXEC @returnValue = [dbo].[spSaveTramite] @iIdTramite = @iIdTramite, @vchNombre = @vchNombre, @nvchDescripcion = @nvchDescripcion, @vchNombreEn = @vchNombreEn, @nvchDescripcionEn = @nvchDescripcionEn, @iIdCategoria = @iIdCategoria, @bModalidadEnLinea = @bModalidadEnLinea, @mCosto = @mCosto, @iIdOficina = @iIdOficina, @bActivo = @bActivo", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<spSaveTramiteResult>("EXEC @returnValue = [dbo].[spSaveTramite] @iIdTramite = @iIdTramite, @vchNombre = @vchNombre, @nvchDescripcion = @nvchDescripcion, @vchNombreEn = @vchNombreEn, @nvchDescripcionEn = @nvchDescripcionEn, @iIdCategoria = @iIdCategoria, @bModalidadEnLinea = @bModalidadEnLinea, @mCosto = @mCosto, @iIdOficina = @iIdOficina, @bActivo = @bActivo, @jsonRequisitos = @jsonRequisitos, @jsonPasos = @jsonPasos, @jsonDocumentos = @jsonDocumentos", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 

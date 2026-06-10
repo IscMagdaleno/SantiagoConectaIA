@@ -9,6 +9,7 @@ using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles;
 using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
 using SantiagoConectaIA.PWA.Areas.ConversationalArea.Utiles;
 using SantiagoConectaIA.PWA.Areas.OficinasArea.Utiles;
+using SantiagoConectaIA.PWA.Areas.MockupArea.Utiles;
 using SantiagoConectaIA.PWA.Helpers;
 using SantiagoConectaIA.PWA.Shared.Workspace;
 
@@ -35,6 +36,7 @@ builder.Services.AddScoped<MainTramites>();
 builder.Services.AddScoped<MainNoticias>();
 builder.Services.AddScoped<MainConversational>();
 builder.Services.AddScoped<MainOficinas>();
+builder.Services.AddScoped<MainMockup>();
 
 builder.Services.AddEngramaDependenciesBlazor();
 

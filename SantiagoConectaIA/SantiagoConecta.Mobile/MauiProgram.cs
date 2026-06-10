@@ -23,13 +23,22 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
+#if DEBUG
 #if ANDROID
-        var apiBaseAddress = "https://10.0.2.2:7196";
+        var apiBaseAddress = "https://10.0.2.2:7196"; // Local para emulador Android
+#else
+        var apiBaseAddress = "https://localhost:7196"; // Local para iOS/Windows
+#endif
+#else
+        // Modo Release (producción/staging)
+        var apiBaseAddress = "https://santiagoconecta-api-atejc4e2hjane8dq.centralus-01.azurewebsites.net";
+#endif
+
+#if ANDROID && DEBUG
         var handler = new HttpClientHandler();
         handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
         builder.Services.AddScoped(sp => new HttpClient(handler) { BaseAddress = new Uri(apiBaseAddress), Timeout = TimeSpan.FromMinutes(10) });
 #else
-        var apiBaseAddress = "https://localhost:7196";
 		builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseAddress), Timeout = TimeSpan.FromMinutes(10) });
 #endif
 		builder.Services.AddScoped<Data_Tramites>();

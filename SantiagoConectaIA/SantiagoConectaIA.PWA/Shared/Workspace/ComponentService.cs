@@ -54,5 +54,9 @@ namespace SantiagoConectaIA.PWA.Shared.Workspace
 
         public event Action OnOficinasRequest;
         public void RequestOficinas() => OnOficinasRequest?.Invoke();
+
+        // Evento de ejemplo para el Mockup
+        public event Action OnMockupRequest;
+        public void RequestMockup() => OnMockupRequest?.Invoke();
 	}
 }

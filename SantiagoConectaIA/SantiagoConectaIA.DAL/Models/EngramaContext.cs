@@ -23,6 +23,8 @@ public partial class EngramaContext : DbContext
 
     public virtual DbSet<Articulo> Articulos { get; set; }
 
+    public virtual DbSet<BuzonCiudadano> BuzonCiudadanos { get; set; }
+
     public virtual DbSet<Catalogo> Catalogos { get; set; }
 
     public virtual DbSet<CategoriaNoticium> CategoriaNoticia { get; set; }
@@ -225,6 +227,39 @@ public partial class EngramaContext : DbContext
             entity.HasOne(d => d.IIdProveedorNavigation).WithMany(p => p.Articulos)
                 .HasForeignKey(d => d.IIdProveedor)
                 .HasConstraintName("FK_Articulo_iIdProveedor");
+        });
+
+        modelBuilder.Entity<BuzonCiudadano>(entity =>
+        {
+            entity.HasKey(e => e.IIdReporte).HasName("PK__BuzonCiu__A3D36F46F8579FB7");
+
+            entity.ToTable("BuzonCiudadano");
+
+            entity.Property(e => e.IIdReporte).HasColumnName("iIdReporte");
+            entity.Property(e => e.DtFechaReporte)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("dtFechaReporte");
+            entity.Property(e => e.NvchCategoria)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("nvchCategoria");
+            entity.Property(e => e.NvchDescripcion)
+                .IsRequired()
+                .HasColumnName("nvchDescripcion");
+            entity.Property(e => e.NvchEmail)
+                .HasMaxLength(150)
+                .HasColumnName("nvchEmail");
+            entity.Property(e => e.NvchNombreCiudadano)
+                .IsRequired()
+                .HasMaxLength(150)
+                .HasColumnName("nvchNombreCiudadano");
+            entity.Property(e => e.NvchTelefono)
+                .HasMaxLength(50)
+                .HasColumnName("nvchTelefono");
+            entity.Property(e => e.NvchThreadId)
+                .HasMaxLength(100)
+                .HasColumnName("nvchThreadId");
         });
 
         modelBuilder.Entity<Catalogo>(entity =>

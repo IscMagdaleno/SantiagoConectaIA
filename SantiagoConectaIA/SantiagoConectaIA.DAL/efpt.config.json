@@ -39,6 +39,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[BuzonCiudadano]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Catalogos]",
          "ObjectType": 0
       },

@@ -1,4 +1,6 @@
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.EntityFrameworkCore;
+using SantiagoConectaIA.DAL.Models;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
@@ -19,9 +21,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 		private readonly ILogger<AgentOrchestrationService> _logger;
 		private readonly IServiceScopeFactory _scopeFactory;
 
-		// Memoria temporal rápida, pero ahora respaldada por BD
-		private static readonly ConcurrentDictionary<string, ChatHistory> _chatHistories = new ConcurrentDictionary<string, ChatHistory>();
-
 		public AgentOrchestrationService(
 			TramitesAgentes tramitesAgentes,
 			ILogger<AgentOrchestrationService> logger,
@@ -38,65 +37,69 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 
 			using var scope = _scopeFactory.CreateScope();
 			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
+			var context = scope.ServiceProvider.GetRequiredService<EngramaContext>();
+
+			// Asegurar que exista al menos una fase válida para este proyecto (iIdProyecto = 1) para evitar fallas FK_Mensaje_Fase
+			var targetFase = await context.Fases.FirstOrDefaultAsync(f => f.IIdProyecto == 1);
+			if (targetFase == null)
+			{
+				targetFase = new Fase
+				{
+					IIdProyecto = 1,
+					SmNumeroSecuencia = 1,
+					NvchTitulo = "Conversación General",
+					NvchDescripcion = "Fase general de interacción con el asistente de trámites",
+					DtCreadoEn = DateTime.Now,
+					DtActualizadoEn = DateTime.Now
+				};
+				context.Fases.Add(targetFase);
+				await context.SaveChangesAsync();
+			}
+			int activeFaseId = targetFase.IIdFase;
 
 			int activeChatId = 0;
+			int dbMessageCount = 0;
+			var chatHistory = new ChatHistory();
+			chatHistory.AddSystemMessage(_tramitesAgentes.GetSystemPrompt());
 
-			// Obtener o crear el historial de chat para el usuario
-			if (!_chatHistories.TryGetValue(userId, out ChatHistory chatHistory))
+			// Buscar en BD si ya existe el chat
+			var existingChatsResponse = await _conversationalDominio.GetChat(new PostGetChat { iIdProyecto = 1 });
+			if (existingChatsResponse.IsSuccess && existingChatsResponse.Data != null)
 			{
-				chatHistory = new ChatHistory();
-				chatHistory.AddSystemMessage(_tramitesAgentes.GetSystemPrompt());
-
-				// Buscar en BD si ya existe el chat
-				var existingChatsResponse = await _conversationalDominio.GetChat(new PostGetChat { iIdProyecto = 1 });
-				if (existingChatsResponse.IsSuccess && existingChatsResponse.Data != null)
+				var myChat = existingChatsResponse.Data.FirstOrDefault(c => c.nvchThreadId == userId);
+				if (myChat != null)
 				{
-					var myChat = existingChatsResponse.Data.FirstOrDefault(c => c.nvchThreadId == userId);
-					if (myChat != null)
+					activeChatId = myChat.iIdChat;
+					// Cargar mensajes de la BD
+					var msgsResponse = await _conversationalDominio.GetMensaje(new PostGetMensaje { iIdChat = activeChatId });
+					if (msgsResponse.IsSuccess && msgsResponse.Data != null)
 					{
-						activeChatId = myChat.iIdChat;
-						// Cargar mensajes de la BD
-						var msgsResponse = await _conversationalDominio.GetMensaje(new PostGetMensaje { iIdChat = activeChatId });
-						if (msgsResponse.IsSuccess && msgsResponse.Data != null)
+						var sortedMsgs = msgsResponse.Data.OrderBy(x => x.iOrden).ToList();
+						dbMessageCount = sortedMsgs.Count;
+						foreach (var m in sortedMsgs)
 						{
-							foreach (var m in msgsResponse.Data.OrderBy(x => x.iOrden))
-							{
-								if (m.nvchRol == "user") chatHistory.AddUserMessage(m.nvchContenido);
-								else if (m.nvchRol == "assistant") chatHistory.AddAssistantMessage(m.nvchContenido);
-							}
+							if (m.nvchRol == "user") chatHistory.AddUserMessage(m.nvchContenido);
+							else if (m.nvchRol == "assistant") chatHistory.AddAssistantMessage(m.nvchContenido);
 						}
 					}
 				}
-
-				if (activeChatId == 0)
-				{
-					// Crear nuevo chat en BD
-					var newChat = new PostSaveChat
-					{
-						iIdProyecto = 1, // Proyecto Santiago Conecta
-						nvchNombre = "Ciudadano (" + userId.Substring(0, Math.Min(userId.Length, 8)) + ")",
-						bActivo = true,
-						nvchThreadId = userId,
-						dtFechaCreacion = DateTime.Now
-					};
-					var saveChatRes = await _conversationalDominio.SaveChat(newChat);
-					if (saveChatRes.IsSuccess && saveChatRes.Data != null)
-					{
-						activeChatId = saveChatRes.Data.iIdChat;
-					}
-				}
-
-				_chatHistories.TryAdd(userId, chatHistory);
-				_logger.LogInformation($"Historial de chat cargado/creado para el usuario '{userId}' (ChatId: {activeChatId}).");
 			}
-			else
+
+			if (activeChatId == 0)
 			{
-				// Si ya está en memoria, al menos necesitamos el ID para guardar
-				var existingChatsResponse = await _conversationalDominio.GetChat(new PostGetChat { iIdProyecto = 1 });
-				if (existingChatsResponse.IsSuccess && existingChatsResponse.Data != null)
+				// Crear nuevo chat en BD
+				var newChat = new PostSaveChat
 				{
-					var myChat = existingChatsResponse.Data.FirstOrDefault(c => c.nvchThreadId == userId);
-					if (myChat != null) activeChatId = myChat.iIdChat;
+					iIdProyecto = 1, // Proyecto Santiago Conecta
+					nvchNombre = "Ciudadano (" + userId.Substring(0, Math.Min(userId.Length, 8)) + ")",
+					bActivo = true,
+					nvchThreadId = userId,
+					dtFechaCreacion = DateTime.Now
+				};
+				var saveChatRes = await _conversationalDominio.SaveChat(newChat);
+				if (saveChatRes.IsSuccess && saveChatRes.Data != null)
+				{
+					activeChatId = saveChatRes.Data.iIdChat;
 				}
 			}
 
@@ -108,12 +111,12 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 				// Guardar el mensaje del usuario y del asistente en BD
 				if (activeChatId > 0)
 				{
-					int nextOrder = chatHistory.Count; // Aproximación del orden
+					// El orden exacto de inserción
 					await _conversationalDominio.SaveMensaje(new PostSaveMensaje
 					{
 						iIdChat = activeChatId,
-						iOrden = nextOrder,
-						iIdFase = 1,
+						iOrden = dbMessageCount + 1,
+						iIdFase = activeFaseId,
 						nvchRol = "user",
 						nvchContenido = userQuery,
 						dtFecha = DateTime.Now
@@ -122,8 +125,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 					await _conversationalDominio.SaveMensaje(new PostSaveMensaje
 					{
 						iIdChat = activeChatId,
-						iOrden = nextOrder + 1,
-						iIdFase = 1,
+						iOrden = dbMessageCount + 2,
+						iIdFase = activeFaseId,
 						nvchRol = "assistant",
 						nvchContenido = agentResponse,
 						dtFecha = DateTime.Now
