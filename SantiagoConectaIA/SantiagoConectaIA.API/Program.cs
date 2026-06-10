@@ -8,6 +8,10 @@ using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository;
 using SantiagoConectaIA.API.SemanticKernel;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
 using SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository;
+using SantiagoConectaIA.API.Middleware;
+using Microsoft.EntityFrameworkCore;
+using SantiagoConectaIA.DAL.Models;
+using SantiagoConectaIA.DAL.Provider;
 
 using System.Reflection;
 
@@ -16,6 +20,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// Register DbContext for EF Core
+builder.Services.AddDbContext<EngramaContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EngramaCloudConnection")));
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
@@ -27,11 +36,18 @@ builder.Services.AddScoped<ITramiteDominio, TramiteDominio>();
 builder.Services.AddScoped<IOficinasDomain, OficinasDomain>();
 builder.Services.AddScoped<IConversationalDominio, ConversationalDominio>();
 builder.Services.AddScoped<IAzureBlobDomain, AzureBlobDomain>();
+builder.Services.AddScoped<ILogsDomain, LogsDomain>();
+builder.Services.AddScoped<INoticiasDomain, NoticiasDomain>();
+builder.Services.AddScoped<IBuzonCiudadanoDomain, BuzonCiudadanoDomain>();
 
 builder.Services.AddScoped<ITramitesRepository, TramitesRepository>();
 builder.Services.AddScoped<IOficinasRepository, OficinasRepository>();
 builder.Services.AddScoped<IConversationalRepository, ConversationalRepository>();
 builder.Services.AddScoped<IAzureBlobRepository, AzureBlobRepository>();
+builder.Services.AddScoped<ILogsRepository, LogsRepository>();
+builder.Services.AddScoped<INoticiasRepository, NoticiasRepository>();
+builder.Services.AddScoped<IBuzonCiudadanoRepository, BuzonCiudadanoRepository>();
+builder.Services.AddScoped<ICatalogosProvider, CatalogosProvider>();
 
 
 builder.Services.AddScoped<KernelProvider>();
@@ -79,6 +95,8 @@ app.UseCors(x => x
 
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ApiLoggingMiddleware>();
 
 app.UseAuthorization();
 

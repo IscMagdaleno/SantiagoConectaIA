@@ -1,0 +1,107 @@
+@implements IDisposable
+@inherits LayoutComponentBase
+@using Microsoft.Extensions.Localization
+@using SantiagoConecta.SharedUI.Shared
+@inject IStringLocalizer<App> Localizer
+@inject NavigationManager NavManager
+
+<MudThemeProvider Theme="@MyCustomTheme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<header class="header-area header-sticky">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav class="main-nav">
+                    <a href="/" class="logo d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Primary" Size="Size.Large" Class="mr-2" />
+                        <span style="font-weight: 700; font-size: 24px; color: #880e4f;">Santiaguero Conecta</span>
+                    </a>
+                    <ul class="nav" style="@(IsMenuOpen ? "display: block !important;" : "")">
+                        <li><NavLink href="/" Match="NavLinkMatch.All" @onclick="CloseMenu">Inicio</NavLink></li>
+                        <li><NavLink href="tramites" @onclick="CloseMenu">Trámites</NavLink></li>
+                        <li><NavLink href="noticias" @onclick="CloseMenu">Noticias</NavLink></li>
+                        <li><a href="#contacto" @onclick="CloseMenu">Buzón Ciudadano</a></li>
+                        <li><LanguageSwitcher /></li>
+                    </ul>
+                    <a class="menu-trigger @(IsMenuOpen ? "active" : "")" @onclick="ToggleMenu" @onclick:preventDefault>
+                        <span>Menu</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+<main class="@(IsHomePage() ? "home-main" : "inner-main")">
+    @Body
+</main>
+
+<ChatbotWidget />
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <ul class="social">
+                    <li><a href="https://www.facebook.com/PapasquiaroH.Ayuntamiento"><i class="fa fa-facebook"></i></a></li>
+                    <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                    <li><a href="#"><i class="fa fa-instagram"></i></a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <p class="copyright">Copyright &copy; 2026 H. Ayuntamiento de Santiago Papasquiaro 2025-2028 - Santiaguero Conecta</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+@code {
+    private MudTheme MyCustomTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#d81b60", // Rosa Oscuro
+            Secondary = "#880e4f", // Vino
+            AppbarBackground = "#880e4f",
+            AppbarText = "#ffffff"
+        }
+    };
+
+    private bool IsMenuOpen = false;
+
+    private void ToggleMenu()
+    {
+        IsMenuOpen = !IsMenuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        IsMenuOpen = false;
+    }
+
+    protected override void OnInitialized()
+    {
+        NavManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        IsMenuOpen = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private bool IsHomePage()
+    {
+        var relative = NavManager.ToBaseRelativePath(NavManager.Uri);
+        return string.IsNullOrEmpty(relative) || relative.StartsWith("#") || relative.StartsWith("?");
+    }
+}

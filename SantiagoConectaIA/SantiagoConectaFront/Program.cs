@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SantiagoConectaFront;
-using SantiagoConectaFront.Data;
+using SantiagoConecta.SharedUI.Data;
+using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
+using Microsoft.JSInterop;
+using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -21,4 +25,22 @@ else
 }
 
 builder.Services.AddScoped<Data_Tramites>();
-await builder.Build().RunAsync();
+builder.Services.AddScoped<Data_Noticias>();
+builder.Services.AddMudServices();
+
+
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+var host = builder.Build();
+
+var jsInterop = host.Services.GetRequiredService<IJSRuntime>();
+var result = await jsInterop.InvokeAsync<string>("blazorCulture.get");
+CultureInfo culture;
+if (result != null)
+    culture = new CultureInfo(result);
+else
+    culture = new CultureInfo("es-MX");
+
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+await host.RunAsync();

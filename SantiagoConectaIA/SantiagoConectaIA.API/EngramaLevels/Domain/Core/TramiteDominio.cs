@@ -1,9 +1,10 @@
-﻿using EngramaCoreStandar.Mapper;
+using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
+using SantiagoConectaIA.Share.Objects.OficinasModule;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
 using SantiagoConectaIA.Share.PostModels.OficinasModule;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
@@ -80,12 +81,30 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			try
 			{
 				var model = mapperHelper.Get<PostSaveTramite, spSaveTramite.Request>(PostModel);
+				
+				model.jsonRequisitos = PostModel.Requisitos != null && PostModel.Requisitos.Any() 
+					? System.Text.Json.JsonSerializer.Serialize(PostModel.Requisitos) : null;
+				model.jsonPasos = PostModel.Pasos != null && PostModel.Pasos.Any() 
+					? System.Text.Json.JsonSerializer.Serialize(PostModel.Pasos) : null;
+				model.jsonDocumentos = PostModel.Documentos != null && PostModel.Documentos.Any() 
+					? System.Text.Json.JsonSerializer.Serialize(PostModel.Documentos) : null;
+
 				var result = await tramitesRepository.spSaveTramite(model);
 				var validation = responseHelper.Validacion<spSaveTramite.Result, Tramite>(result);
 				if (validation.IsSuccess)
 				{
 					PostModel.iIdTramite = validation.Data.iIdTramite;
-					validation.Data = mapperHelper.Get<PostSaveTramite, Tramite>(PostModel);
+					
+					// Mapeo manual básico para evitar excepciones de AutoMapper con listas complejas anidadas
+					validation.Data.vchNombre = PostModel.vchNombre;
+					validation.Data.nvchDescripcion = PostModel.nvchDescripcion;
+					validation.Data.vchNombreEn = PostModel.vchNombreEn;
+					validation.Data.nvchDescripcionEn = PostModel.nvchDescripcionEn;
+					validation.Data.iIdCategoria = PostModel.iIdCategoria;
+					validation.Data.bModalidadEnLinea = PostModel.bModalidadEnLinea;
+					validation.Data.mCosto = PostModel.mCosto;
+					validation.Data.iIdOficina = PostModel.iIdOficina;
+					validation.Data.bActivo = PostModel.bActivo;
 				}
 				return validation;
 			}
@@ -141,7 +160,44 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			{
 				var request = mapperHelper.Get<PostGetTramites, spGetTramitesCard.Request>(daoModel);
 				var result = await tramitesRepository.spGetTramitesCard(request);
-				return responseHelper.Validacion<spGetTramitesCard.Result, Tramite>(result);
+
+				// Validación manual de error (si el repositorio devuelve indicador de error en el primer elemento)
+				var first = result.FirstOrDefault();
+				if (first != null && !first.bResult)
+				{
+					return Response<IEnumerable<Tramite>>.BadResult(first.vchMessage, new List<Tramite>());
+				}
+
+				// Mapeo Manual
+				var listaTramites = result.Select(r => new Tramite
+				{
+					iIdTramite = r.iIdTramite,
+					vchNombre = r.vchNombreTramite, // Mapeo de vchNombreTramite -> vchNombre
+					nvchDescripcion = r.vchDescripcionTramite,
+					vchNombreEn = r.vchNombreTramiteEn,
+					nvchDescripcionEn = r.vchDescripcionTramiteEn,
+					bModalidadEnLinea = r.bModalidadEnLinea,
+					mCosto = r.dCosto,
+					iIdOficina = r.iIdOficina,
+					bActivo = true, // Asumimos true si viene del SP o agregar campo bActivo en Result
+					
+					// Mapeo del objeto anidado Oficina
+					Oficina = new Oficina
+					{
+						iIdOficina = r.iIdOficina,
+						vchNombre = r.vchNombreOficina,
+						vchDireccion = r.vchDireccionOficina,
+						vchTelefono = r.vchTelefonoOficina,
+						vchHorario = r.vchHorarioOficina
+					}
+				}).ToList();
+
+				return new Response<IEnumerable<Tramite>>
+				{
+					IsSuccess = true,
+					Data = listaTramites,
+					Message = "Consulta Exitosa"
+				};
 			}
 			catch (Exception ex)
 			{

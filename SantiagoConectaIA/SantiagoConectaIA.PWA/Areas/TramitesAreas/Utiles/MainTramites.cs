@@ -1,4 +1,4 @@
-﻿using EngramaCoreStandar.Dapper.Results;
+using EngramaCoreStandar.Dapper.Results;
 using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 using EngramaCoreStandar.Servicios;
@@ -90,12 +90,45 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		public async Task<SeverityMessage> PostSaveTramite(Tramite tramite)
 		{
 			var APIUrl = url + "/PostSaveTramite";
-			var model = _mapper.Get<Tramite, PostSaveTramite>(tramite);
+			
+			// Mapeo manual para evitar excepciones de AutoMapper con listas anidadas de distinto tipo
+			var model = new PostSaveTramite
+			{
+				iIdTramite = tramite.iIdTramite,
+				vchNombre = tramite.vchNombre,
+				nvchDescripcion = tramite.nvchDescripcion,
+				vchNombreEn = tramite.vchNombreEn,
+				nvchDescripcionEn = tramite.nvchDescripcionEn,
+				iIdCategoria = tramite.iIdCategoria,
+				bModalidadEnLinea = tramite.bModalidadEnLinea,
+				mCosto = tramite.mCosto,
+				iIdOficina = tramite.iIdOficina,
+				bActivo = tramite.bActivo,
+				
+				Requisitos = tramite.Requisitos?.Select(r => new PostSaveRequisito 
+				{ 
+					vchNombre = r.vchNombre, 
+					nvchDetalle = r.nvchDetalle, 
+					bObligatorio = r.bObligatorio 
+				}).ToList() ?? new List<PostSaveRequisito>(),
+				
+				Pasos = tramite.Pasos?.Select(p => new PostSaveTramitePaso 
+				{ 
+					iOrden = p.iOrden, 
+					nvchDescripcion = p.nvchDescripcion 
+				}).ToList() ?? new List<PostSaveTramitePaso>(),
+				
+				Documentos = tramite.Documentos?.Select(d => new PostSaveDocumento 
+				{ 
+					vchNombre = d.vchNombre, 
+					vchUrlDocumento = d.vchUrlDocumento 
+				}).ToList() ?? new List<PostSaveDocumento>()
+			};
+
 			var response = await _httpService.Post<PostSaveTramite, Response<Tramite>>(APIUrl, model);
 			var validacion = _validaServicioService.ValidadionServicio(response,
 			onSuccess: data => AfterSaveTramite(data));
 			return validacion;
-
 		}
 
 

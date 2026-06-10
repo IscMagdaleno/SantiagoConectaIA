@@ -1,0 +1,418 @@
+@page "/"
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.PostModels.TramitesModule
+@using Microsoft.Extensions.Localization
+@inject NavigationManager NavManager
+@inject IStringLocalizer<App> Localizer
+@inject IJSRuntime JS
+
+<PageTitle>Santiaguero Conecta - Inicio</PageTitle>
+
+<!-- ***** Hero Section (Bienvenida) ***** -->
+<div class="welcome-area hero-animated-bg" id="welcome" style="min-height: 85vh; display: flex; align-items: center; position: relative; overflow: hidden;">
+    
+    <!-- Efecto Glow que sigue al cursor -->
+    <div class="hero-glow" id="hero-glow"></div>
+
+    <!-- Sistema interactivo de partículas en Canvas -->
+    <canvas id="hero-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.8;"></canvas>
+
+    <div class="header-text" style="width: 100%; position: relative; z-index: 5; padding-bottom: 8vh;">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-8 col-lg-10 col-md-12 col-sm-12 mx-auto text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="font-size: 60px; color: #ffb4a2; margin-bottom: 20px; animation: float 3s ease-in-out infinite;" />
+                    <h1 style="color: white; font-weight: 800; font-size: 3.5rem; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -1px;">
+                        Bienvenido a <span style="color: #ffb4a2;">Santiaguero Conecta</span>
+                    </h1>
+                    <p style="color: rgba(255, 255, 255, 0.95); font-size: 1.25rem; margin-bottom: 40px; font-weight: 300; line-height: 1.6; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                        Tu Asistente Virtual Inteligente 24/7. El H. Ayuntamiento de Santiago Papasquiaro pone a tu disposición esta herramienta de nueva generación para resolver tus dudas, consultar trámites y evitar filas.
+                    </p>
+                    <button class="main-button-slider hero-btn" @onclick="OpenChatbot">
+                        <i class="fa fa-comments mr-2"></i> Iniciar Conversación Mágica
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ondas Animadas SVG -->
+    <div class="waves-container">
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </div>
+</div>
+<!-- ***** Hero Section End ***** -->
+
+<!-- ***** Módulos Principales ***** -->
+<section class="section home-feature" style="margin-top: -60px; position: relative; z-index: 10;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="row">
+                    <!-- Trámites -->
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/tramites", forceLoad: true)' style="cursor: pointer;">
+                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Large" />
+                            </div>
+                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Catálogo de Trámites</h5>
+                            <p>Consulta requisitos, costos y ubicaciones de los trámites municipales en un solo lugar y de forma transparente.</p>
+                        </div>
+                    </div>
+                    <!-- Noticias -->
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/noticias", forceLoad: true)' style="cursor: pointer;">
+                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Primary" Size="Size.Large" />
+                            </div>
+                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Noticias y Avisos</h5>
+                            <p>Mantente informado sobre los comunicados oficiales, eventos y noticias relevantes de Santiago Papasquiaro.</p>
+                        </div>
+                    </div>
+                    <!-- Chatbot Info -->
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick="OpenChatbot" style="cursor: pointer;">
+                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Primary" Size="Size.Large" />
+                            </div>
+                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Inteligencia Artificial</h5>
+                            <p>Nuestro chatbot responde al instante a tus preguntas mediante lenguaje natural. ¡Pruébalo ahora mismo!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ***** Módulos End ***** -->
+
+<!-- ***** Beneficios Section ***** -->
+<section class="section padding-top-70 padding-bottom-0" id="beneficios">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-5 col-md-12 col-sm-12 align-self-center">
+                <!-- Usaremos un icono grande o imagen representativa -->
+                <div style="background: linear-gradient(135deg, #fce4ec, #f8bbd0); border-radius: 20px; padding: 40px; text-align: center;">
+                    <MudIcon Icon="@Icons.Material.Filled.PhonelinkRing" Style="font-size: 150px; color: #d81b60;" />
+                </div>
+            </div>
+            <div class="col-lg-1"></div>
+            <div class="col-lg-6 col-md-12 col-sm-12 align-self-center mobile-top-fix">
+                <div class="left-heading">
+                    <h2 class="section-title" style="color: #880e4f;">Cero Filas, Cero Complicaciones</h2>
+                </div>
+                <div class="left-text">
+                    <p>En el H. Ayuntamiento de Santiago Papasquiaro estamos comprometidos con la modernización de la atención ciudadana. Con <strong>Santiaguero Conecta</strong>, la administración municipal está al alcance de tu mano.</p>
+                    <ul style="list-style: none; padding-left: 0; margin-top: 20px;">
+                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Disponibilidad Total:</strong> Operativo 24 horas al día, 365 días al año.</li>
+                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Respuestas Inmediatas:</strong> Olvídate de los tiempos de espera telefónicos.</li>
+                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Lenguaje Natural:</strong> Pregunta como si hablaras con un humano.</li>
+                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Transparencia:</strong> Acceso equitativo a información actualizada de trámites.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-5">
+            <div class="col-lg-12">
+                <div class="hr"></div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ***** Beneficios End ***** -->
+
+<!-- ***** Contact Us (Buzón Ciudadano) ***** -->
+<section class="section colored" id="contacto" style="background-color: #f8f9fa;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="center-heading">
+                    <h2 class="section-title" style="color: #880e4f;">Buzón Ciudadano</h2>
+                </div>
+            </div>
+            <div class="offset-lg-3 col-lg-6">
+                <div class="center-text">
+                    <p>Tu opinión es importante para nosotros. Utiliza este espacio para enviarnos tus comentarios, sugerencias o reportes directos al H. Ayuntamiento.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <h5 class="margin-bottom-30" style="color: #880e4f;">Información de Contacto</h5>
+                <div class="contact-text">
+                    <p>
+                        <strong>Dirección:</strong><br>
+                        Calle Riva Palacio #19, Colonia Centro,<br>
+                        Santiago Papasquiaro, Durango.
+                    </p>
+                    <p>
+                        <strong>Teléfono Oficial:</strong><br>
+                        674 86 2 18 46
+                    </p>
+                    <p><strong>Atención Ciudadana:</strong> Lunes a Viernes de 8:00 a 15:00 hrs.</p>
+                </div>
+            </div>
+            <div class="col-lg-8 col-md-6 col-sm-12">
+                <div class="contact-form" style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <EditForm Model="@contactModel" OnValidSubmit="HandleSubmit">
+                        <DataAnnotationsValidator />
+                        <div class="row">
+                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
+                                <MudTextField @bind-Value="contactModel.Name" Label="Nombre Completo" Variant="Variant.Outlined" Required="true" />
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
+                                <MudTextField @bind-Value="contactModel.Email" Label="Correo Electrónico" Variant="Variant.Outlined" Required="true" />
+                            </div>
+                            <div class="col-lg-12 mb-3">
+                                <MudTextField @bind-Value="contactModel.Message" Label="Tu Mensaje, Queja o Sugerencia" Variant="Variant.Outlined" Lines="5" Required="true" />
+                            </div>
+                            <div class="col-lg-12">
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" Style="border-radius: 30px;">Enviar Mensaje</MudButton>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .features-small-item:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(216, 27, 96, 0.2) !important;
+    }
+    
+    /* Hero Animations */
+    .hero-animated-bg {
+        background: linear-gradient(-45deg, #880e4f, #d81b60, #4a148c, #c2185b);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+    }
+    
+    .hero-glow {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(255,180,162,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        transition: opacity 0.3s ease;
+        opacity: 0;
+        z-index: 1;
+    }
+
+    .waves-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        line-height: 0;
+        z-index: 2;
+    }
+    .waves {
+        position: relative;
+        width: 100%;
+        height: 15vh;
+        margin-bottom: -7px; /* Fix para un bug visual en Safari */
+        min-height: 100px;
+        max-height: 150px;
+    }
+    .parallax > use {
+        animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
+    }
+    .parallax > use:nth-child(1) { animation-delay: -2s; animation-duration: 7s; }
+    .parallax > use:nth-child(2) { animation-delay: -3s; animation-duration: 10s; }
+    .parallax > use:nth-child(3) { animation-delay: -4s; animation-duration: 13s; }
+    .parallax > use:nth-child(4) { animation-delay: -5s; animation-duration: 20s; }
+    @@keyframes move-forever {
+        0% { transform: translate3d(-90px,0,0); }
+        100% { transform: translate3d(85px,0,0); }
+    }
+    @@keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+    @@keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    .hero-btn {
+        border: none;
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        border-radius: 50px;
+        background-color: white;
+        color: #880e4f;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+    }
+    .hero-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(255,255,255,0.4);
+    }
+</style>
+
+@code {
+    private ContactModel contactModel = new();
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var initScript = @"
+                const hero = document.getElementById('welcome');
+                const glow = document.getElementById('hero-glow');
+                const canvas = document.getElementById('hero-canvas');
+                
+                if (hero && glow && canvas) {
+                    const ctx = canvas.getContext('2d');
+                    let width, height;
+                    let particles = [];
+                    let mouse = { x: -1000, y: -1000 };
+
+                    function resize() {
+                        width = hero.clientWidth;
+                        height = hero.clientHeight;
+                        canvas.width = width;
+                        canvas.height = height;
+                    }
+                    window.addEventListener('resize', resize);
+                    resize();
+
+                    // Partículas
+                    class Particle {
+                        constructor() {
+                            this.x = Math.random() * width;
+                            this.y = Math.random() * height;
+                            this.vx = (Math.random() - 0.5) * 1;
+                            this.vy = (Math.random() - 0.5) * 1;
+                            this.radius = Math.random() * 2 + 1;
+                        }
+                        update() {
+                            // Interacción con linterna (mouse)
+                            let dx = mouse.x - this.x;
+                            let dy = mouse.y - this.y;
+                            let distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            // Efecto repulsión suave
+                            if (distance < 150) {
+                                let force = (150 - distance) / 150;
+                                this.vx -= (dx / distance) * force * 0.5;
+                                this.vy -= (dy / distance) * force * 0.5;
+                            }
+
+                            // Fricción y límite de velocidad
+                            this.vx *= 0.98;
+                            this.vy *= 0.98;
+                            
+                            // Movimiento natural base
+                            this.vx += (Math.random() - 0.5) * 0.1;
+                            this.vy += (Math.random() - 0.5) * 0.1;
+
+                            this.x += this.vx;
+                            this.y += this.vy;
+
+                            // Rebote en bordes
+                            if (this.x < 0 || this.x > width) this.vx *= -1;
+                            if (this.y < 0 || this.y > height) this.vy *= -1;
+                        }
+                        draw() {
+                            ctx.beginPath();
+                            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                            ctx.fill();
+                        }
+                    }
+
+                    for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+                    function animate() {
+                        ctx.clearRect(0, 0, width, height);
+                        
+                        // Conexiones
+                        for(let i=0; i<particles.length; i++){
+                            particles[i].update();
+                            particles[i].draw();
+                            for(let j=i; j<particles.length; j++){
+                                let dx = particles[i].x - particles[j].x;
+                                let dy = particles[i].y - particles[j].y;
+                                let dist = Math.sqrt(dx*dx + dy*dy);
+                                if(dist < 100){
+                                    ctx.beginPath();
+                                    ctx.strokeStyle = `rgba(255,255,255,${0.2 - dist/500})`;
+                                    ctx.lineWidth = 1;
+                                    ctx.moveTo(particles[i].x, particles[i].y);
+                                    ctx.lineTo(particles[j].x, particles[j].y);
+                                    ctx.stroke();
+                                }
+                            }
+                        }
+                        requestAnimationFrame(animate);
+                    }
+                    animate();
+
+                    hero.addEventListener('mousemove', (e) => {
+                        const rect = hero.getBoundingClientRect();
+                        mouse.x = e.clientX - rect.left;
+                        mouse.y = e.clientY - rect.top;
+                        
+                        // Glow Linterna
+                        glow.style.left = mouse.x + 'px';
+                        glow.style.top = mouse.y + 'px';
+                        glow.style.opacity = '1';
+                        // Hacer la linterna más fuerte
+                        glow.style.background = 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 180, 162, 0.15) 30%, transparent 70%)';
+                    });
+                    hero.addEventListener('mouseleave', () => {
+                        glow.style.opacity = '0';
+                        mouse.x = -1000;
+                        mouse.y = -1000;
+                    });
+                }
+            ";
+            try {
+                await JS.InvokeVoidAsync("eval", initScript);
+            } catch { }
+        }
+    }
+
+    private void HandleSubmit()
+    {
+        // TODO: Conectar a API de guardado de Buzón Ciudadano
+        Console.WriteLine($"Mensaje recibido de {contactModel.Name}");
+        contactModel = new(); // Reset
+    }
+
+    private async Task OpenChatbot()
+    {
+        try {
+            await JS.InvokeVoidAsync("eval", "document.querySelector('.chatbot-container .pulse-animation')?.click()");
+        } catch { }
+    }
+
+    public class ContactModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+    }
+}

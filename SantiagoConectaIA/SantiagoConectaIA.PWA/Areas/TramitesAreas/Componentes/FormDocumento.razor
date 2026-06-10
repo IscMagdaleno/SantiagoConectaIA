@@ -1,64 +1,40 @@
-﻿@inherits EngramaComponent
+@using SantiagoConectaIA.Share.Objects.TramitesModule
+@inherits EngramaComponent
+@using SantiagoConectaIA.PWA.Shared.Workspace
 
-<EditForm Model="@Data.DocumentoSelected"
-		  OnValidSubmit="OnSubmint">
-	<DataAnnotationsValidator />
-
-	<MudFocusTrap>
-
-		<MudGrid>
-			<MudItem sm="6">
-
-
-				<MudTextField @bind-Value="@Data.DocumentoSelected.vchNombre"
-							  Label="Nombre"
-							  MaxLength="250"
-							  Variant="Variant.Outlined" />
-
-
-			</MudItem>
-			<MudItem sm="6">
-				<MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
-					<ActivatorContent>
-						<MudButton Variant="Variant.Filled"
-								   Color="Color.Primary"
-								   StartIcon="@Icons.Material.Filled.CloudUpload">
-							Cargar Archivo
-						</MudButton>
-					</ActivatorContent>
-				</MudFileUpload>
-
-				@if (Data.SelectedFile != null)
-				{
-					<MudText Typo="Typo.caption" Class="mt-2">
-						Archivo Seleccionado: <b>@Data.SelectedFile.Name</b> (@((Data.SelectedFile.Size / 1024).ToString("N0")) KB)
-					</MudText>
-
-					@if (!string.IsNullOrEmpty(Data.DocumentoSelected.vchUrlDocumento))
-					{
-						<MudText Typo="Typo.caption" Color="Color.Success">
-							URL Temporal: @Data.DocumentoSelected.vchUrlDocumento
-						</MudText>
-					}
-				}
-
-			</MudItem>
-			<MudItem sm="6">
-				<MudSwitch @bind-Value="Data.DocumentoSelected.bActivo"
-						   Label="Activo"
-						   Color="Color.Success" />
-
-
-			</MudItem>
-			<MudItem sm="12">
-				<MudButton Variant="Variant.Filled"
-						   ButtonType="ButtonType.Submit"
-						   Color="Color.Secondary">Guardar Documento</MudButton>
-			</MudItem>
-		</MudGrid>
-	</MudFocusTrap>
-</EditForm>
-
-@code {
-
-}
+<MudTabPanel Text="Documentos" Icon="@Icons.Material.Filled.PictureAsPdf" Disabled="@(TramiteModel.iIdTramite <= 0)">
+    <MudText Typo="Typo.subtitle1" Class="mb-4">Documentos y Formularios</MudText>
+    
+    <div class="d-flex align-center gap-2 mb-4">
+        <MudTextField @bind-Value="nuevoDocumento.vchNombre" Label="Nombre del Documento" Variant="Variant.Outlined" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudTextField @bind-Value="nuevoDocumento.vchUrlDocumento" Label="URL / Enlace" Variant="Variant.Outlined" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AgregarDocumento" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">Agregar Doc</MudButton>
+    </div>
+ 
+    <MudTable Items="@TramiteModel.Documentos" Hover="true" Dense="true" Elevation="0" 
+              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)"
+              CanCancelEdit="@(EstadoControl != TipoEstadoControl.Lectura)" CommitEditTooltip="Guardar edición" CancelEditTooltip="Cancelar">
+        <HeaderContent>
+            <MudTh>Nombre</MudTh>
+            <MudTh>Enlace</MudTh>
+            <MudTh>Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="doc">
+            <MudTd DataLabel="Nombre">@doc.vchNombre</MudTd>
+            <MudTd DataLabel="Enlace">
+                <MudLink Href="@doc.vchUrlDocumento" Target="_blank" Color="Color.Info">Ver Documento</MudLink>
+            </MudTd>
+            <MudTd DataLabel="Acciones">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarDocumento(doc))" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudTd>
+        </RowTemplate>
+        <RowEditingTemplate Context="doc">
+            <MudTd DataLabel="Nombre">
+                <MudTextField @bind-Value="doc.vchNombre" Required="true" />
+            </MudTd>
+            <MudTd DataLabel="Enlace">
+                <MudTextField @bind-Value="doc.vchUrlDocumento" Required="true" />
+            </MudTd>
+        </RowEditingTemplate>
+    </MudTable>
+</MudTabPanel>

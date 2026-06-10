@@ -15,6 +15,9 @@ namespace SantiagoConectaIA.Share.Objects.TramitesModule
 		[Required]
 		public string nvchDescripcion { get; set; }
 
+		public string vchNombreEn { get; set; }
+		public string nvchDescripcionEn { get; set; }
+
 		public int iIdCategoria { get; set; }
 		public bool bModalidadEnLinea { get; set; }
 		public decimal mCosto { get; set; }

@@ -1,0 +1,63 @@
+@using SantiagoConectaIA.PWA.Areas.MockupArea.Utiles
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
+
+@* HEADER / NAVIGATION *@
+<MudGrid Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudItem>
+        <MudText Typo="Typo.h4" Style="color: #A50A3A; font-weight: bold;">
+            Catálogo Mockup
+        </MudText>
+    </MudItem>
+</MudGrid>
+
+@* CONTENT *@
+<MudGrid>
+    @if (Data != null && Data.LstRegistros != null)
+    {
+        <MudItem xs="12">
+            <MudTextField @bind-Value="filtroTexto"
+                          Label="Buscar Registro"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4" />
+        </MudItem>
+
+        @foreach (var registro in Data.LstRegistros)
+        {
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Elevation="2" Class="pa-3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Registro de Ejemplo</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">Descripción breve del registro.</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" OnClick="@(() => OnViewRegistro(registro))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" OnClick="@(() => OnEditRegistro(registro))" />
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+
+        @if (!Data.LstRegistros.Any())
+        {
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    No hay registros.
+                </MudAlert>
+            </MudItem>
+        }
+    }
+    else
+    {
+        <MudItem xs="12">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </MudItem>
+    }
+</MudGrid>

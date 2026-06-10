@@ -1,45 +1,40 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
-
-using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
+using Microsoft.AspNetCore.Components;
 using SantiagoConectaIA.PWA.Shared.Common;
 using SantiagoConectaIA.Share.Objects.TramitesModule;
+using MudBlazor;
+using SantiagoConectaIA.PWA.Shared.Workspace;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 {
 	public partial class FormDocumento : EngramaComponent
 	{
+		[Parameter] public Tramite TramiteModel { get; set; }
+		[Parameter] public TipoEstadoControl EstadoControl { get; set; }
 
+		private Documento nuevoDocumento = new Documento();
 
-		[Parameter] public MainTramites Data { get; set; }
-		[Parameter] public EventCallback<Documento> OnDocumentoSaved { get; set; }
-
-		private async Task OnSubmint()
+		private void AgregarDocumento()
 		{
-			Loading.Show();
-
-			var uploadResult = await Data.UploadFile();
-
-			if (!uploadResult.bResult)
+			if (string.IsNullOrWhiteSpace(nuevoDocumento.vchNombre) || string.IsNullOrWhiteSpace(nuevoDocumento.vchUrlDocumento))
 			{
-				Loading.Hide();
-				ShowSnake(uploadResult);
+				Snackbar.Add("Nombre y Enlace son obligatorios.", Severity.Warning);
 				return;
 			}
+			
+			if (TramiteModel.Documentos == null)
+				TramiteModel.Documentos = new List<Documento>();
 
-			var result = await Data.PostSaveDocumento();
-			ShowSnake(result);
-			if (result.bResult)
+			TramiteModel.Documentos.Add(new Documento
 			{
-				await OnDocumentoSaved.InvokeAsync(Data.DocumentoSelected);
-			}
-			Loading.Hide();
-
+				vchNombre = nuevoDocumento.vchNombre,
+				vchUrlDocumento = nuevoDocumento.vchUrlDocumento
+			});
+			nuevoDocumento = new Documento();
 		}
 
-		private void UploadFiles(IBrowserFile file)
+		private void EliminarDocumento(Documento doc)
 		{
-			Data.SelectedFile = (file);
+			TramiteModel.Documentos.Remove(doc);
 		}
 	}
 }

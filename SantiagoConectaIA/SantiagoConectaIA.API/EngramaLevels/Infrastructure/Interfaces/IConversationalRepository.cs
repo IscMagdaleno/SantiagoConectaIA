@@ -1,4 +1,4 @@
-﻿using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.ConversationalModule;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.ConversationalModule;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces
 {
@@ -9,5 +9,9 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces
 		Task<IEnumerable<spSearchRequisitosForChat.Result>> spSearchRequisitosForChat(spSearchRequisitosForChat.Request req);
 		Task<IEnumerable<spSearchCostoForChat.Result>> spSearchCostoForChat(spSearchCostoForChat.Request req);
 		Task<IEnumerable<spSearchOficinasByTramite.Result>> spSearchOficinasByTramite(spSearchOficinasByTramite.Request req);
+		Task<IEnumerable<spGetChat.Result>> spGetChat(spGetChat.Request req);
+		Task<spSaveChat.Result> spSaveChat(spSaveChat.Request req);
+		Task<IEnumerable<spGetMensaje.Result>> spGetMensaje(spGetMensaje.Request req);
+		Task<spSaveMensaje.Result> spSaveMensaje(spSaveMensaje.Request req);
 	}
 }

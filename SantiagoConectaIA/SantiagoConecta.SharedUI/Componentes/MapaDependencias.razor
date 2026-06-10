@@ -1,0 +1,45 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<div style="position: relative; width: 100%; height: @Height; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <div id="@MapId" style="height: 100%; width: 100%; z-index: 1;"></div>
+</div>
+
+@code {
+    [Parameter] public string MapId { get; set; } = "leaflet-map-" + Guid.NewGuid().ToString("N");
+    [Parameter] public string Height { get; set; } = "400px";
+    
+    // Coordenadas iniciales (Centro de Santiago Papasquiaro, Durango)
+    [Parameter] public double Latitud { get; set; } = 25.0433;
+    [Parameter] public double Longitud { get; set; } = -105.4333;
+    [Parameter] public string TituloMarcador { get; set; } = "Presidencia Municipal";
+    [Parameter] public string SubtituloMarcador { get; set; } = "Atención Ciudadana";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var initScript = $@"
+                setTimeout(function() {{
+                    if (window.miMapa) {{ window.miMapa.remove(); }}
+                    var map = L.map('{MapId}').setView([{Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}], 15);
+                    window.miMapa = map;
+
+                    L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
+                        maxZoom: 19,
+                        attribution: '&copy; <a href=""http://www.openstreetmap.org/copyright"">OpenStreetMap</a>'
+                    }}).addTo(map);
+
+                    var marker = L.marker([{Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}]).addTo(map)
+                        .bindPopup('<b>{TituloMarcador}</b><br>{SubtituloMarcador}').openPopup();
+                }}, 500); // Pequeño delay para asegurar que el DOM está listo en MAUI
+            ";
+            
+            try 
+            {
+                await JS.InvokeVoidAsync("eval", initScript);
+            } 
+            catch { }
+        }
+    }
+}

@@ -1,4 +1,4 @@
-﻿using EngramaCoreStandar.Extensions;
+using EngramaCoreStandar.Extensions;
 
 using Microsoft.AspNetCore.Components;
 
@@ -15,7 +15,8 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		#region PARAMETROS
 		[Parameter] public MainTramites Data { get; set; }
 		[Parameter] public Tramite Tramite { get; set; }
-		[Parameter] public EventCallback<Tramite> OnTramiteSelected { get; set; }
+		[Parameter] public EventCallback<Tramite> OnTramiteView { get; set; }
+		[Parameter] public EventCallback<Tramite> OnTramiteEdit { get; set; }
 		[Parameter] public EventCallback<Tramite> OnDeleteTramite { get; set; }
 		#endregion
 
@@ -26,9 +27,13 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		}
 		#endregion
 
-		private async void OnClickTramiteSelected()
+		private async Task OnClickVer()
 		{
-			await OnTramiteSelected.InvokeAsync(Tramite);
+			await OnTramiteView.InvokeAsync(Tramite);
+		}
+		private async Task OnClickEditar()
+		{
+			await OnTramiteEdit.InvokeAsync(Tramite);
 		}
 		private async void OnCLickEliminarTramite(Tramite tramite)
 		{

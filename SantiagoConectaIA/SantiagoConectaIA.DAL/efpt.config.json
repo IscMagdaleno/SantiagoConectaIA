@@ -1,0 +1,462 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "EngramaContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "IrregularWords": null,
+   "MinimumProductVersion": "2.6.1465",
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Models",
+   "PluralRules": null,
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "SantiagoConectaIA.DAL",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "SingularRules": null,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[AbonoApartado]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Apartado]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApartadoDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApiCallLogs]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Articulo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BuzonCiudadano]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Catalogos]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CategoriaNoticia]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Chat]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Documento]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Fase]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Funcionalidad]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Grupos]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[HistorialConsulta]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Inventario]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Mensaje]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Modulo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NoticiaFila]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NoticiaMetadato]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Noticias]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Noticias_Imagenes]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Oficina]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[OficinaTramite]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Paso]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Pedido]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PedidoDetalle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PlanTrabajo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Proveedor]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Proyecto]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Requisito]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Test_Table]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TipoDatos]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Tramite]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TramitePaso]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Usuario]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Venta]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[spDeletePedidoDetalle]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetAbonoApartado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetApartado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetApartadoDetalle]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetArticulo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetChat]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetDependencias]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetDocumentosPorTramite]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetED_Descripcion]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetED_Proceso]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetFase]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetFuncionalidad]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetInventario]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetMensaje]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetModulo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetNoticias]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetOficinas]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetOficinasPorTramite]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetPaso]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetPasosPorTramite]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetPedido]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetPedidoDetalle]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetPlanTrabajo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetProveedor]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetProyecto]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetRequisitosPorTramite]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetTestTable]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetTestTableDataType]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetTestTableOneResult]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetTestTableParameters]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetTramiteDetalle]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetTramites]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetTramitesCard]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetUsuario]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spGetVenta]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spLinkOficinaTramite]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveAbonoApartado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveApartado]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveArticulo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveChat]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveDocumento]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveED_Descripcion]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveED_Imagenes]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveED_Proceso]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveFase]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveHistorialConsultaSimple]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveMensaje]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveModulo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveNoticia]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveNoticiaImagen]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveOficina]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSavePedido]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSavePedidoDetalle]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSavePlanTrabajo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveProveedor]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveProyecto]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveRequisito]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveTest_Table]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveTramite]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSaveVenta]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSearchCostoForChat]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSearchOficinas]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSearchOficinasByTramite]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSearchOficinasForChat]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSearchRequisitosForChat]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSearchTramites]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[spSearchTramitesForChat]",
+         "ObjectType": 1
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false,
+   "UseTypedTvpParameters": true
+}

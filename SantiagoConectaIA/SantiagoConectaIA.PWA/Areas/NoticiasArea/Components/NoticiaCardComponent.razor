@@ -1,0 +1,26 @@
+@using SantiagoConectaIA.Share.Objects.NoticiasModule
+@inherits EngramaComponent
+
+<MudCard Elevation="3" Class="d-flex flex-column" Style="height:100%; width:100%;">
+    <MudCardMedia Image="@Noticia.vchImagenPortada" Height="200" />
+    <MudCardContent>
+        <MudText Typo="Typo.h6">@Noticia.vchTitulo</MudText>
+        <MudText Typo="Typo.body2">@Noticia.dtFechaPublicacion.ToShortDateString()</MudText>
+        <MudText Typo="Typo.body2" Class="mt-2" Style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+            @Noticia.nvchContenido
+        </MudText>
+    </MudCardContent>
+    <MudCardActions Style="padding: 1rem; margin-top: auto;">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickVer">Ver</MudButton>
+        <MudButton Variant="Variant.Outlined" Style="border-color: #A50A3A; color: #A50A3A;" Class="ml-2" OnClick="OnClickEditar">Editar</MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => OnClickEliminarNoticia(Noticia))">Eliminar</MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter] public Noticia Noticia { get; set; }
+    [Parameter] public EventCallback<Noticia> OnView { get; set; }
+    [Parameter] public EventCallback<Noticia> OnEdit { get; set; }
+    [Parameter] public EventCallback<Noticia> OnDelete { get; set; }
+}

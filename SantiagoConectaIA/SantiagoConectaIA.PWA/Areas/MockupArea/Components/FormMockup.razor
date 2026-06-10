@@ -1,0 +1,36 @@
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
+
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+    <MudTabPanel Text="Datos Generales" Icon="@Icons.Material.Filled.Info">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-4">Información Principal</MudText>
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <!-- Ejemplo de campo de texto. El campo está deshabilitado si el estado es Lectura -->
+                        <MudTextField T="string" 
+                                      Label="Ejemplo Campo 1" 
+                                      Variant="Variant.Outlined" 
+                                      Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" 
+                                      Label="Ejemplo Campo 2" 
+                                      Variant="Variant.Outlined" 
+                                      Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Configuraciones" Icon="@Icons.Material.Filled.Settings">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.body1">Aquí puedes colocar otras secciones secundarias de tu entidad, como imágenes, permisos, o historial.</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+</MudTabs>

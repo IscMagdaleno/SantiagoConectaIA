@@ -1,0 +1,174 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.inner-main {
+    padding-top: 0; /* Las páginas internas usan héroes full-bleed animados que suben hasta y=0 */
+}
+
+.sidebar {
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+}
+
+.top-row {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d6d5d5;
+    justify-content: flex-end;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .top-row ::deep a, .top-row ::deep .btn-link {
+        white-space: nowrap;
+        margin-left: 1.5rem;
+        text-decoration: none;
+    }
+
+    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    .top-row ::deep a:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+@media (max-width: 640.98px) {
+    .top-row {
+        justify-content: space-between;
+    }
+
+    .top-row ::deep a, .top-row ::deep .btn-link {
+        margin-left: 0;
+    }
+}
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .top-row {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .top-row.auth ::deep a:first-child {
+        flex: 1;
+        text-align: right;
+        width: 0;
+    }
+
+    .top-row, article {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;
+    }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   HERO HEADERS ANIMADOS CON ONDAS (STYLISH & PREMIUM)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+::deep .custom-hero-header {
+    position: relative;
+    background: linear-gradient(135deg, #880e4f 0%, #b01262 50%, #4a0072 100%);
+    color: white !important;
+    padding: 140px 0 90px 0;
+    overflow: hidden;
+    text-align: center;
+    width: 100%;
+}
+
+::deep .header-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+    color: white !important;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    font-family: 'Inter', sans-serif;
+    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+::deep .header-subtitle {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.85) !important;
+    max-width: 750px;
+    margin: 0 auto 20px auto;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+::deep .waves-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    min-height: 45px;
+    max-height: 90px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+::deep .waves {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    margin-bottom: -7px; /* Evita que queden pixeles vacíos abajo */
+}
+
+/* Animación de ondas */
+::deep .parallax > use {
+    animation: move-forever 20s cubic-bezier(.55,.5,.45,.5) infinite;
+}
+::deep .parallax > use:nth-child(1) {
+    animation-delay: -2s;
+    animation-duration: 7s;
+}
+::deep .parallax > use:nth-child(2) {
+    animation-delay: -3s;
+    animation-duration: 10s;
+}
+::deep .parallax > use:nth-child(3) {
+    animation-delay: -4s;
+    animation-duration: 13s;
+}
+::deep .parallax > use:nth-child(4) {
+    animation-delay: -5s;
+    animation-duration: 18s;
+}
+
+@keyframes move-forever {
+    0% {
+        transform: translate3d(-90px,0,0);
+    }
+    100% { 
+        transform: translate3d(85px,0,0);
+    }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+}

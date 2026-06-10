@@ -1,0 +1,72 @@
+@using SantiagoConectaIA.PWA.Areas.OficinasArea.Utiles
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
+
+<EditForm Model="@Data.OficinaSelected" OnValidSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+    <MudFocusTrap>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="@Data.OficinaSelected.vchNombre"
+                              Label="Nombre"
+                              MaxLength="250"
+                              Variant="Variant.Outlined"
+                              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="@Data.OficinaSelected.vchDireccion"
+                              Label="Dirección"
+                              MaxLength="500"
+                              Variant="Variant.Outlined"
+                              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="@Data.OficinaSelected.vchTelefono"
+                              Label="Teléfono"
+                              MaxLength="50"
+                              Variant="Variant.Outlined"
+                              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="@Data.OficinaSelected.vchEmail"
+                              Label="Correo"
+                              MaxLength="150"
+                              Variant="Variant.Outlined"
+                              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="@Data.OficinaSelected.vchHorario"
+                              Label="Horario"
+                              MaxLength="250"
+                              Variant="Variant.Outlined"
+                              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudNumericField @bind-Value="Data.OficinaSelected.flLatitud"
+                                 Label="Latitud"
+                                 Variant="Variant.Outlined"
+                                 ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudNumericField @bind-Value="Data.OficinaSelected.flLongitud"
+                                 Label="Longitud"
+                                 Variant="Variant.Outlined"
+                                 ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="@Data.OficinaSelected.vchNotas"
+                              Label="Notas"
+                              MaxLength="350"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudSwitch @bind-Value="Data.OficinaSelected.bActivo"
+                           Color="Color.Success"
+                           Label="Activo"
+                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudItem>
+        </MudGrid>
+    </MudFocusTrap>
+</EditForm>

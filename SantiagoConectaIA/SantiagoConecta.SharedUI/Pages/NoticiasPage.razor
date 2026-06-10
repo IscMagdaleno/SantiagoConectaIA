@@ -1,0 +1,524 @@
+@page "/noticias"
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.Objects.NoticiasModule
+@using SantiagoConectaIA.Share.PostModels.NoticiasModule
+@using SantiagoConecta.SharedUI.Componentes.Plantillas
+@inject Data_Noticias dataNoticias
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+
+<PageTitle>Santiaguero Conecta - Noticias y Avisos</PageTitle>
+
+@if (selectedNoticia == null)
+{
+    <!-- Hero Section: Premium animated waves background -->
+    <div class="custom-hero-header">
+        <div class="container relative z-10 mx-auto px-4 text-center">
+            <MudIcon Icon="@Icons.Material.Filled.Newspaper" Style="font-size: 56px; color: #ffffff; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
+            <h1 class="header-title mt-2">Noticias y Avisos Oficiales</h1>
+            <p class="header-subtitle">Mantente al tanto de los comunicados oficiales, obras y eventos en Santiago Papasquiaro</p>
+        </div>
+        <!-- Animated waves at bottom -->
+        <div class="waves-wrapper">
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                 viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                <defs>
+                    <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" /> <!-- matches bg of container perfectly! -->
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <div class="noticias-container py-8 px-4 px-md-8">
+        <!-- ================= LISTADO DE NOTICIAS ================= -->
+        <div class="list-view animate-fade-in">
+            <!-- Filtros y Búsqueda -->
+            <div class="row mb-8 justify-center">
+                <div class="col-12 col-md-8">
+                    <div class="filter-glass-card p-4 d-flex flex-column gap-4">
+                        <!-- Barra de Búsqueda -->
+                        <MudTextField @bind-Value="_searchQuery" 
+                                      Placeholder="Buscar noticias por título o contenido..." 
+                                      Adornment="Adornment.Start" 
+                                      AdornmentIcon="@Icons.Material.Filled.Search" 
+                                      IconSize="Size.Medium"
+                                      Variant="Variant.Outlined" 
+                                      Immediate="true"
+                                      Class="search-field" />
+
+                        <!-- Categorías Chips -->
+                        <div class="d-flex flex-wrap gap-2 justify-center mt-2">
+                            <button class="cat-chip @(selectedCategory == null ? "active-all" : "")" @onclick="() => FilterByCategory(null)">
+                                Todas
+                            </button>
+                            @foreach (var cat in categoriesList)
+                            {
+                                var isActive = selectedCategory == cat.iIdCategoria;
+                                <button class="cat-chip @(isActive ? "active" : "")" 
+                                        style="--cat-color: @cat.vchColorHex; --cat-bg: @(cat.vchColorHex + "15")"
+                                        @onclick="() => FilterByCategory(cat.iIdCategoria)">
+                                    <span class="dot" style="background-color: @cat.vchColorHex"></span>
+                                    @cat.vchNombre
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid de Noticias -->
+            @if (loading)
+            {
+                <div class="d-flex flex-column align-center py-12">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                    <p class="mt-4 text-muted">Cargando la información al instante...</p>
+                </div>
+            }
+            else if (!filteredNoticias.Any())
+            {
+                <div class="text-center py-12 animate-fade-in">
+                    <MudIcon Icon="@Icons.Material.Filled.FolderOpen" Style="font-size: 64px; color: #bdbdbd;" />
+                    <h3 class="mt-4 font-weight-bold" style="color: #616161;">No se encontraron noticias</h3>
+                    <p class="text-muted">Prueba cambiando tu búsqueda o seleccionando otra categoría.</p>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var noticia in filteredNoticias)
+                    {
+                        <div class="col-12 col-md-6 col-lg-4 mb-6">
+                            <div class="premium-news-card h-100 d-flex flex-column" @onclick="() => VerDetalle(noticia)">
+                                <!-- Portada -->
+                                <div class="card-image-wrapper">
+                                    <img src="@(string.IsNullOrEmpty(noticia.vchImagenPortada) ? "https://picsum.photos/600/400?sig=" + noticia.iIdNoticia : noticia.vchImagenPortada)" 
+                                         alt="@noticia.vchTitulo" 
+                                         class="news-card-image" />
+                                    @if (noticia.Categoria != null)
+                                    {
+                                        <span class="category-badge shadow-sm" style="background-color: @noticia.Categoria.vchColorHex">
+                                            @noticia.Categoria.vchNombre
+                                        </span>
+                                    }
+                                </div>
+
+                                <!-- Cuerpo de la tarjeta -->
+                                <div class="card-body p-5 d-flex flex-column flex-grow-1">
+                                    <span class="card-date d-flex align-center gap-1">
+                                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Style="color: #d81b60;" />
+                                        @noticia.dtFechaPublicacion.ToString("dd MMMM, yyyy")
+                                    </span>
+                                    <h3 class="card-news-title mt-2 mb-3">@noticia.vchTitulo</h3>
+                                    <p class="card-news-excerpt mb-4 flex-grow-1">
+                                        @GetExcerpt(noticia)
+                                    </p>
+                                    <div class="d-flex justify-space-between align-center mt-auto pt-3 border-top-dash">
+                                        <span class="read-more-text d-flex align-center gap-1 font-weight-bold">
+                                            Leer artículo completo
+                                            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <!-- Contenedor separado para el detalle para poder aplicar padding de separación superior de forma limpia -->
+    <div class="noticias-container pt-32 pb-8 px-4 px-md-8">
+        <!-- ================= VISTA DE DETALLE DE LA NOTICIA ================= -->
+        <div class="detail-view animate-slide-up">
+            <!-- Botón Volver -->
+            <button class="back-btn mb-6 d-flex align-center gap-2" @onclick="VolverAlListado">
+                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Medium" />
+                Volver a Noticias y Avisos
+            </button>
+
+            <div class="shadow-xl rounded-2xl overflow-hidden bg-white mb-8 border border-gray-100">
+                <PlantillaNoticia Noticia="selectedNoticia" />
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    /* Estructura Base y Colores Premium */
+    .noticias-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        min-height: 80vh;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .section-title {
+        color: #880e4f;
+        font-weight: 800;
+        font-size: 2.5rem;
+        letter-spacing: -1px;
+    }
+
+    .section-subtitle {
+        color: #616161;
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Tarjeta Filtro Glassmorphism */
+    .filter-glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(216, 27, 96, 0.15);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(136, 14, 79, 0.05);
+    }
+
+    /* Estilo CategorÃ­as Chips */
+    .cat-chip {
+        border: 1px solid #e0e0e0;
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        background: white;
+        color: #424242;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .cat-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border-color: #bdbdbd;
+    }
+
+    .cat-chip.active-all {
+        background: #880e4f;
+        color: white;
+        border-color: #880e4f;
+        box-shadow: 0 4px 15px rgba(136, 14, 79, 0.3);
+    }
+
+    .cat-chip.active {
+        background-color: var(--cat-color);
+        color: white;
+        border-color: var(--cat-color);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .cat-chip .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    /* Tarjeta de Noticia Premium */
+    .premium-news-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.03);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .premium-news-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(136, 14, 79, 0.12);
+        border-color: rgba(216, 27, 96, 0.2);
+    }
+
+    .card-image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+    }
+
+    .news-card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .premium-news-card:hover .news-card-image {
+        transform: scale(1.06);
+    }
+
+    .category-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .card-date {
+        font-size: 0.85rem;
+        color: #757575;
+        font-weight: 500;
+    }
+
+    .card-news-title {
+        color: #880e4f;
+        font-weight: 700;
+        font-size: 1.35rem;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        transition: color 0.3s ease;
+    }
+
+    .premium-news-card:hover .card-news-title {
+        color: #d81b60;
+    }
+
+    .card-news-excerpt {
+        color: #616161;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .border-top-dash {
+        border-top: 1px dashed #e0e0e0;
+    }
+
+    .read-more-text {
+        color: #d81b60;
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+    }
+
+    .premium-news-card:hover .read-more-text {
+        color: #880e4f;
+        transform: translateX(4px);
+    }
+
+    /* Vista de Detalle (ArtÃ­culo) */
+    .back-btn {
+        background: transparent;
+        border: none;
+        color: #880e4f;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .back-btn:hover {
+        color: #d81b60;
+        transform: translateX(-4px);
+    }
+
+    .premium-article {
+        border: 1px solid #eaeaea;
+        background: white;
+    }
+
+    .article-hero {
+        height: 480px;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: flex-end;
+        position: relative;
+    }
+
+    .article-hero-content {
+        width: 100%;
+        color: white;
+        z-index: 5;
+    }
+
+    .article-category {
+        display: inline-block;
+        color: white;
+        padding: 6px 16px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+    }
+
+    .article-main-title {
+        font-weight: 800;
+        font-size: 3rem;
+        line-height: 1.15;
+        text-shadow: 0 3px 15px rgba(0,0,0,0.6);
+    }
+
+    .article-meta {
+        font-size: 0.95rem;
+        color: rgba(255,255,255,0.85);
+        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    /* Animaciones */
+    .animate-fade-in {
+        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .article-hero {
+            height: 320px;
+        }
+
+        .article-main-title {
+            font-size: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+
+@code {
+    private List<Noticia> noticiasList = new();
+    private List<Noticia> filteredNoticias = new();
+    private List<CategoriaNoticia> categoriesList = new();
+    private bool loading = true;
+    private string searchQuery = string.Empty;
+    private int? selectedCategory = null;
+    private Noticia selectedNoticia = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarNoticias();
+    }
+
+    private async Task CargarNoticias()
+    {
+        try
+        {
+            loading = true;
+            var response = await dataNoticias.PostGetAllNoticias(new PostGetNoticias { bActivo = true });
+            if (response != null && response.IsSuccess && response.Data != null)
+            {
+                noticiasList = response.Data.OrderByDescending(x => x.dtFechaPublicacion).ToList();
+                
+                // Extraer categorÃ­as Ãºnicas reales para la barra de filtros
+                categoriesList = noticiasList
+                    .Where(x => x.Categoria != null)
+                    .GroupBy(x => x.Categoria.iIdCategoria)
+                    .Select(g => g.First().Categoria)
+                    .ToList();
+
+                AplicarFiltros();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando noticias: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void FilterByCategory(int? categoryId)
+    {
+        selectedCategory = categoryId;
+        AplicarFiltros();
+    }
+
+    private void AplicarFiltros()
+    {
+        var temp = noticiasList.AsEnumerable();
+
+        // Filtro por categorÃ­a
+        if (selectedCategory.HasValue)
+        {
+            temp = temp.Where(x => x.iIdCategoria == selectedCategory.Value);
+        }
+
+        // Filtro por caja de texto
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var query = searchQuery.Trim().ToLower();
+            temp = temp.Where(x => 
+                x.vchTitulo.ToLower().Contains(query) || 
+                x.nvchContenido.ToLower().Contains(query) ||
+                (x.Filas != null && x.Filas.Any(f => f.Metadatos != null && f.Metadatos.Any(m => m.nvchValor.ToLower().Contains(query))))
+            );
+        }
+
+        filteredNoticias = temp.ToList();
+        StateHasChanged();
+    }
+
+    // Actualiza los resultados en tiempo real cuando cambia el campo de bÃºsqueda
+    private string _searchQuery { get => searchQuery; set { searchQuery = value; AplicarFiltros(); } }
+
+    private void VerDetalle(Noticia noticia)
+    {
+        selectedNoticia = noticia;
+        // Ir al inicio de la pÃ¡gina para comodidad del usuario
+        JS.InvokeVoidAsync("window.scrollTo", 0, 0);
+    }
+
+    private void VolverAlListado()
+    {
+        selectedNoticia = null;
+    }
+
+    private string GetExcerpt(Noticia noticia)
+    {
+        string text = noticia.nvchContenido;
+
+        if (string.IsNullOrWhiteSpace(text)) return "...";
+
+        if (text.Length > 150)
+        {
+            return text.Substring(0, 147) + "...";
+        }
+        return text;
+    }
+}

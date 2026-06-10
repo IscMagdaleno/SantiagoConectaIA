@@ -1,47 +1,48 @@
-﻿@inherits EngramaComponent
+@using SantiagoConectaIA.Share.Objects.TramitesModule
+@inherits EngramaComponent
+@using SantiagoConectaIA.PWA.Shared.Workspace
 
-<EditForm Model="@Data.RequisitoSelected"
-		  OnValidSubmit="OnSubmint">
-	<DataAnnotationsValidator />
-
-	<MudFocusTrap>
-
-		<MudGrid>
-			<MudItem sm="6">
-
-				<MudTextField @bind-Value="@Data.RequisitoSelected.vchNombre"
-							  Label="Nombre"
-							  MaxLength="250"
-							  Variant="Variant.Outlined" />
-
-
-				<MudTextField @bind-Value="@Data.RequisitoSelected.nvchDetalle"
-							  Label="Detalle"
-							  MaxLength="1000"
-							  Variant="Variant.Outlined" />
-
-
-			</MudItem>
-			<MudItem sm="6">
-				<MudSwitch @bind-Value="Data.RequisitoSelected.bObligatorio"
-						   Label="Obligatorio"
-						   Color="Color.Success" />
-
-
-				<MudSwitch @bind-Value="Data.RequisitoSelected.bActivo"
-						   Label="Activo" />
-
-
-			</MudItem>
-			<MudItem sm="12">
-				<MudButton Variant="Variant.Filled"
-						   ButtonType="ButtonType.Submit"
-						   Color="Color.Secondary">Guardar Requisito</MudButton>
-			</MudItem>
-		</MudGrid>
-	</MudFocusTrap>
-</EditForm>
-
-@code {
-
-}
+<MudTabPanel Text="Requisitos" Icon="@Icons.Material.Filled.Checklist" Disabled="@(TramiteModel.iIdTramite <= 0)">
+    <MudText Typo="Typo.subtitle1" Class="mb-4">Requisitos del Trámite</MudText>
+    
+    <div class="d-flex align-center gap-2 mb-4">
+        <MudTextField @bind-Value="nuevoRequisito.vchNombre" Label="Nombre del Requisito" Variant="Variant.Outlined" MaxLength="250" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudTextField @bind-Value="nuevoRequisito.nvchDetalle" Label="Detalle (Opcional)" Variant="Variant.Outlined" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudSwitch @bind-Value="nuevoRequisito.bObligatorio" Color="Color.Error" Label="Obligatorio" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AgregarRequisito" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">Agregar</MudButton>
+    </div>
+ 
+    <MudTable Items="@TramiteModel.Requisitos" Hover="true" Dense="true" Elevation="0" 
+              ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)"
+              CanCancelEdit="@(EstadoControl != TipoEstadoControl.Lectura)" CommitEditTooltip="Guardar edición" CancelEditTooltip="Cancelar">
+        <HeaderContent>
+            <MudTh>Nombre</MudTh>
+            <MudTh>Detalle</MudTh>
+            <MudTh>Obligatorio</MudTh>
+            <MudTh>Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="req">
+            <MudTd DataLabel="Nombre">@req.vchNombre</MudTd>
+            <MudTd DataLabel="Detalle">@req.nvchDetalle</MudTd>
+            <MudTd DataLabel="Obligatorio">
+                <MudChip T="string" Color="@(req.bObligatorio ? Color.Error : Color.Info)" Size="Size.Small">
+                    @(req.bObligatorio ? "Sí" : "No")
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Acciones">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => EliminarRequisito(req))" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+            </MudTd>
+        </RowTemplate>
+        <RowEditingTemplate Context="req">
+            <MudTd DataLabel="Nombre">
+                <MudTextField @bind-Value="req.vchNombre" Required="true" />
+            </MudTd>
+            <MudTd DataLabel="Detalle">
+                <MudTextField @bind-Value="req.nvchDetalle" />
+            </MudTd>
+            <MudTd DataLabel="Obligatorio">
+                <MudSwitch @bind-Value="req.bObligatorio" Color="Color.Error" />
+            </MudTd>
+        </RowEditingTemplate>
+    </MudTable>
+</MudTabPanel>

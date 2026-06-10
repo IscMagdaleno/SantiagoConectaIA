@@ -1,4 +1,4 @@
-﻿using EngramaCoreStandar.Mapper;
+using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
@@ -121,5 +121,74 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			}
 		}
 
+		public async Task<Response<IEnumerable<Chat>>> GetChat(PostGetChat postModel)
+		{
+			try
+			{
+				var req = _mapperHelper.Get<PostGetChat, spGetChat.Request>(postModel);
+				var repoResult = await _conversationalRepository.spGetChat(req);
+				var validation = _responseHelper.Validacion<spGetChat.Result, Chat>(repoResult);
+				return validation;
+			}
+			catch (Exception ex)
+			{
+				return Response<IEnumerable<Chat>>.BadResult(ex.Message, Enumerable.Empty<Chat>());
+			}
+		}
+
+		public async Task<Response<Chat>> SaveChat(PostSaveChat postModel)
+		{
+			try
+			{
+				var req = _mapperHelper.Get<PostSaveChat, spSaveChat.Request>(postModel);
+				var repoResult = await _conversationalRepository.spSaveChat(req);
+				var validation = _responseHelper.Validacion<spSaveChat.Result, Chat>(repoResult);
+				if (validation.IsSuccess)
+				{
+					postModel.iIdChat = validation.Data.iIdChat;
+					validation.Data = _mapperHelper.Get<PostSaveChat, Chat>(postModel);
+				}
+				return validation;
+			}
+			catch (Exception ex)
+			{
+				return Response<Chat>.BadResult(ex.Message, new Chat());
+			}
+		}
+
+		public async Task<Response<IEnumerable<Mensaje>>> GetMensaje(PostGetMensaje postModel)
+		{
+			try
+			{
+				var req = _mapperHelper.Get<PostGetMensaje, spGetMensaje.Request>(postModel);
+				var repoResult = await _conversationalRepository.spGetMensaje(req);
+				var validation = _responseHelper.Validacion<spGetMensaje.Result, Mensaje>(repoResult);
+				return validation;
+			}
+			catch (Exception ex)
+			{
+				return Response<IEnumerable<Mensaje>>.BadResult(ex.Message, Enumerable.Empty<Mensaje>());
+			}
+		}
+
+		public async Task<Response<Mensaje>> SaveMensaje(PostSaveMensaje postModel)
+		{
+			try
+			{
+				var req = _mapperHelper.Get<PostSaveMensaje, spSaveMensaje.Request>(postModel);
+				var repoResult = await _conversationalRepository.spSaveMensaje(req);
+				var validation = _responseHelper.Validacion<spSaveMensaje.Result, Mensaje>(repoResult);
+				if (validation.IsSuccess)
+				{
+					postModel.iIdMensaje = validation.Data.iIdMensaje;
+					validation.Data = _mapperHelper.Get<PostSaveMensaje, Mensaje>(postModel);
+				}
+				return validation;
+			}
+			catch (Exception ex)
+			{
+				return Response<Mensaje>.BadResult(ex.Message, new Mensaje());
+			}
+		}
 	}
 }
