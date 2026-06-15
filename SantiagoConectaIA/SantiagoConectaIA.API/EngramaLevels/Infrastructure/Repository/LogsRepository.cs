@@ -16,7 +16,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 
         public async Task<spSaveApiCallLog.Result> spSaveApiCallLog(spSaveApiCallLog.Request request)
         {
-            var res = await _managerHelper.GetAsync<spSaveApiCallLog.Result, spSaveApiCallLog.Request>(request, "");
+            var res = await _managerHelper.GetAsync<spSaveApiCallLog.Result, spSaveApiCallLog.Request>(request, "","SCIA");
             if (res.Ok && res.Data != null) return res.Data;
             return new spSaveApiCallLog.Result { bResult = false, vchMessage = res.Msg };
         }

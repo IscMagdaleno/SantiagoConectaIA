@@ -17,21 +17,21 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 
 		public async Task<IEnumerable<spGetOficinas.Result>> spGetOficinas(spGetOficinas.Request request)
 		{
-			var res = await _managerHelper.GetAllAsync<spGetOficinas.Result, spGetOficinas.Request>(request, "");
+			var res = await _managerHelper.GetAllAsync<spGetOficinas.Result, spGetOficinas.Request>(request, "","SCIA");
 			if (res.Ok) return res.Data;
 			return new List<spGetOficinas.Result> { new spGetOficinas.Result { bResult = false, vchMessage = res.Msg } };
 		}
 
 		public async Task<spSearchOficinas.Result[]> spSearchOficinas(spSearchOficinas.Request request)
 		{
-			var res = await _managerHelper.GetAllAsync<spSearchOficinas.Result, spSearchOficinas.Request>(request, "");
+			var res = await _managerHelper.GetAllAsync<spSearchOficinas.Result, spSearchOficinas.Request>(request, "","SCIA");
 			if (res.Ok) return res.Data?.ToArray() ?? Array.Empty<spSearchOficinas.Result>();
 			return new spSearchOficinas.Result[] { new spSearchOficinas.Result { bResult = false, vchMessage = res.Msg } };
 		}
 
 		public async Task<spSaveOficina.Result> spSaveOficina(spSaveOficina.Request request)
 		{
-			var res = await _managerHelper.GetAsync<spSaveOficina.Result, spSaveOficina.Request>(request, "");
+			var res = await _managerHelper.GetAsync<spSaveOficina.Result, spSaveOficina.Request>(request, "","SCIA");
 			if (res.Ok && res.Data != null) return res.Data;
 			return new spSaveOficina.Result { bResult = false, vchMessage = res.Msg };
 		}
@@ -40,14 +40,14 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 
 		public async Task<spLinkOficinaTramite.Result> spLinkOficinaTramite(spLinkOficinaTramite.Request request)
 		{
-			var res = await _managerHelper.GetAsync<spLinkOficinaTramite.Result, spLinkOficinaTramite.Request>(request, "");
+			var res = await _managerHelper.GetAsync<spLinkOficinaTramite.Result, spLinkOficinaTramite.Request>(request, "","SCIA");
 			if (res.Ok && res.Data != null) return res.Data;
 			return new spLinkOficinaTramite.Result { bResult = false, vchMessage = res.Msg };
 		}
 
 		public async Task<IEnumerable<spGetOficinasPorTramite.Result>> spGetOficinasPorTramite(spGetOficinasPorTramite.Request request)
 		{
-			var res = await _managerHelper.GetAllAsync<spGetOficinasPorTramite.Result, spGetOficinasPorTramite.Request>(request, "");
+			var res = await _managerHelper.GetAllAsync<spGetOficinasPorTramite.Result, spGetOficinasPorTramite.Request>(request, "","SCIA");
 			if (res.Ok) return res.Data;
 			return new List<spGetOficinasPorTramite.Result> { new spGetOficinasPorTramite.Result { bResult = false, vchMessage = res.Msg } };
 		}

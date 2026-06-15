@@ -17,7 +17,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 
 		public async Task<spSaveBuzonCiudadano.Result> spSaveBuzonCiudadano(spSaveBuzonCiudadano.Request daoModel)
 		{
-			var respuesta = await _managerHelper.GetAsync<spSaveBuzonCiudadano.Result, spSaveBuzonCiudadano.Request>(daoModel, "");
+			var respuesta = await _managerHelper.GetAsync<spSaveBuzonCiudadano.Result, spSaveBuzonCiudadano.Request>(daoModel, "","SCIA");
 			if (respuesta.Ok)
 			{
 				return respuesta.Data;

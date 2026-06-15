@@ -18,7 +18,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 
         public async Task<IEnumerable<spGetNoticias.Result>> spGetNoticias(spGetNoticias.Request daoModel)
         {
-            var respuesta = await _managerHelper.GetAllAsync<spGetNoticias.Result, spGetNoticias.Request>(daoModel, "");
+            var respuesta = await _managerHelper.GetAllAsync<spGetNoticias.Result, spGetNoticias.Request>(daoModel, "","SCIA");
             if (respuesta.Ok)
             {
                 return respuesta.Data;
@@ -28,7 +28,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 
         public async Task<spSaveNoticia.Result> spSaveNoticia(spSaveNoticia.Request daoModel)
         {
-            var respuesta = await _managerHelper.GetAsync<spSaveNoticia.Result, spSaveNoticia.Request>(daoModel, "");
+            var respuesta = await _managerHelper.GetAsync<spSaveNoticia.Result, spSaveNoticia.Request>(daoModel, "","SCIA");
             if (respuesta.Ok)
             {
                 return respuesta.Data;
@@ -38,7 +38,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 
         public async Task<spSaveNoticiaImagen.Result> spSaveNoticiaImagen(spSaveNoticiaImagen.Request daoModel)
         {
-            var respuesta = await _managerHelper.GetAsync<spSaveNoticiaImagen.Result, spSaveNoticiaImagen.Request>(daoModel, "");
+            var respuesta = await _managerHelper.GetAsync<spSaveNoticiaImagen.Result, spSaveNoticiaImagen.Request>(daoModel, "","SCIA");
             if (respuesta.Ok)
             {
                 return respuesta.Data;
