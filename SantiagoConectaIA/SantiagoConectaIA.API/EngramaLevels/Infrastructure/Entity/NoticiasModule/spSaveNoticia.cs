@@ -18,6 +18,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.NoticiasModu
             public DateTime dtFechaPublicacion { get; set; }
             public bool bActivo { get; set; }
             public int? iIdCategoria { get; set; }
+            public string jsonImagenes { get; set; }
+            public string jsonFilas { get; set; }
         }
 
         public class Result : DbResult

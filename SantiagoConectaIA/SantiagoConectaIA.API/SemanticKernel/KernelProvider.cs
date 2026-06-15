@@ -2,7 +2,7 @@ using Microsoft.SemanticKernel;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.SemanticKernel.Plugins;
-using SantiagoConectaIA.DAL.Provider;
+using SantiagoConectaIA.Share.PostModels.CatalogosModule;
 
 namespace SantiagoConectaIA.API.SemanticKernel
 {
@@ -37,11 +37,13 @@ namespace SantiagoConectaIA.API.SemanticKernel
 
 			using (var scope = _scopeFactory.CreateScope())
 			{
-				var catalogosProvider = scope.ServiceProvider.GetRequiredService<ICatalogosProvider>();
-				var parametro = catalogosProvider.GetParametroByAliasAsync("key.gemini").GetAwaiter().GetResult();
+				var catalogosDomain = scope.ServiceProvider.GetRequiredService<ICatalogosDomain>();
+				var req = new PostGetParametro { vchAlias = "key.gemini" };
+				var res = catalogosDomain.GetParametroByAlias(req).GetAwaiter().GetResult();
 
-				if (parametro != null)
+				if (res != null && res.IsSuccess && res.Data != null)
 				{
+					var parametro = res.Data;
 					if (!string.IsNullOrWhiteSpace(parametro.NvchValor1)) modelName = parametro.NvchValor1;
 					if (!string.IsNullOrWhiteSpace(parametro.NvchValor2)) apiKey = parametro.NvchValor2;
 				}
