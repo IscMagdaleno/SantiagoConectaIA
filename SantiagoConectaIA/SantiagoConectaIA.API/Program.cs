@@ -12,6 +12,7 @@ using SantiagoConectaIA.API.Middleware;
 using Microsoft.EntityFrameworkCore;
 using SantiagoConectaIA.DAL.Models;
 using SantiagoConectaIA.DAL.Provider;
+using SantiagoConectaIA.API.BackgroundServices;
 
 using System.Reflection;
 
@@ -48,6 +49,10 @@ builder.Services.AddScoped<ILogsRepository, LogsRepository>();
 builder.Services.AddScoped<INoticiasRepository, NoticiasRepository>();
 builder.Services.AddScoped<IBuzonCiudadanoRepository, BuzonCiudadanoRepository>();
 builder.Services.AddScoped<ICatalogosProvider, CatalogosProvider>();
+
+builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
+builder.Services.AddScoped<INoticiasScraperService, NoticiasScraperService>();
+builder.Services.AddHostedService<DailyScraperBackgroundService>();
 
 
 builder.Services.AddScoped<KernelProvider>();
