@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.Share.PostModels.CatalogosModule;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,34 +22,14 @@ namespace SantiagoConectaIA.API.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Scraper Background Service iniciado. Se ejecutará cada 1 hora.");
-
-            /* 
-            // Ejecución Inmediata
-            try
-            {
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    var scraperService = scope.ServiceProvider.GetRequiredService<INoticiasScraperService>();
-                    await scraperService.RunScrapingAsync(stoppingToken);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ocurrió un error al ejecutar el Scraping Inmediato.");
-            }
-            */
+            _logger.LogInformation("Scraper Background Service iniciado.");
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                // Esperar 1 hora antes de la siguiente ejecución
-                _logger.LogInformation("Esperando 1 hora para la siguiente extracción...");
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
-
-                // Ejecutar el scraping
+                // 1. Ejecutar el scraping primero
                 try
                 {
-                    _logger.LogInformation("Ejecutando extracción horaria de noticias...");
+                    _logger.LogInformation("Ejecutando extracción de noticias...");
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var scraperService = scope.ServiceProvider.GetRequiredService<INoticiasScraperService>();
@@ -57,8 +38,35 @@ namespace SantiagoConectaIA.API.BackgroundServices
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Ocurrió un error al ejecutar el Scraping Horario.");
+                    _logger.LogError(ex, "Ocurrió un error al ejecutar el Scraping de noticias.");
                 }
+
+                // Determinar tiempo de espera basado en parámetros de BD
+                int hoursDelay = 24;
+                try
+                {
+                    using (var scope = _serviceProvider.CreateScope())
+                    {
+                        var catalogosDomain = scope.ServiceProvider.GetRequiredService<ICatalogosDomain>();
+                        var reqParam = new PostGetParametro { vchAlias = "noticias.service" };
+                        var resParam = await catalogosDomain.GetParametroByAlias(reqParam);
+                        
+                        if (resParam.IsSuccess && resParam.Data != null && !string.IsNullOrWhiteSpace(resParam.Data.NvchValor1))
+                        {
+                            if (int.TryParse(resParam.Data.NvchValor1, out int parsedHours) && parsedHours > 0)
+                            {
+                                hoursDelay = parsedHours;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "No se pudo obtener el parámetro noticias.service, se usarán 24 horas por defecto.");
+                }
+
+                _logger.LogInformation($"Esperando {hoursDelay} hora(s) para la siguiente extracción...");
+                await Task.Delay(TimeSpan.FromHours(hoursDelay), stoppingToken);
             }
         }
     }
