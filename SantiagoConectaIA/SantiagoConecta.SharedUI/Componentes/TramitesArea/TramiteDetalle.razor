@@ -7,7 +7,7 @@
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
 
-<PageTitle>Detalle del Tr�mite</PageTitle>
+<PageTitle>Detalle del trámite</PageTitle>
 
 <div class="min-h-screen bg-gray-50">
     @* ELIMINADO: <HeaderComponent /> *@
@@ -21,8 +21,8 @@
     else if (Tramite == null)
     {
         <div class="container mx-auto px-4 py-20 text-center">
-            <h1 class="text-2xl font-bold text-gray-800 mb-4">Tr�mite no encontrado</h1>
-            <a href="/tramites" class="text-blue-600 hover:underline">Volver a tr�mites</a>
+            <h1 class="text-2xl font-bold text-gray-800 mb-4">Trámite no encontrado</h1>
+            <a href="/tramites" class="text-blue-600 hover:underline">Volver a trámites</a>
         </div>
     }
     else
@@ -38,7 +38,7 @@
                         class="inline-flex items-center text-rose-100 hover:text-white transition-colors mr-6"
                     >
                         @Icon.ArrowLeft("w-5 h-5 mr-2")
-                        Volver a tr�mites
+                        Volver a trámites
                     </a>
                 </div>
 
@@ -56,7 +56,7 @@
                             {
                                 <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-emerald-800 bg-emerald-100 rounded-full">
                                     @Icon.CheckCircle("w-4 h-4 mr-2")
-                                    Disponible en l�nea
+                                    Disponible en línea
                                 </span>
                             }
                             else
@@ -72,7 +72,7 @@
 
                     <div class="lg:col-span-1">
                         <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-rose-500/30">
-                            <h3 class="text-xl font-semibold mb-4">Informaci�n General</h3>
+                            <h3 class="text-xl font-semibold mb-4">Información General</h3>
                             <div class="space-y-4">
                                 <div class="flex items-center">
                                     @Icon.DollarSign("w-5 h-5 mr-3 text-emerald-400")
@@ -158,7 +158,7 @@
                             {
                                 <div class="border-t pt-6">
                                     <h4 class="text-md font-semibold text-gray-800 mb-3 border-l-4 border-rose-600 pl-3">
-                                        Documentos que se requieren para el tr�mite:
+                                        Documentos que se requieren para el trámite:
                                     </h4>
                                     <div class="space-y-2">
                                         @foreach (var documento in Tramite.Documentos)
@@ -189,7 +189,7 @@
                     {
                         <div class="space-y-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-4 border-l-4 border-rose-600 pl-3">
-                                Pasos para completar el tr�mite
+                                Pasos para completar el trámite
                             </h3>
                             @if (Tramite.Pasos?.Any() == true)
                             {
@@ -222,7 +222,7 @@
                                     <div>
                                         <h4 class="font-medium text-amber-800 mb-1">Importante</h4>
                                         <p class="text-amber-700 text-sm">
-                                            Se recomienda verificar que todos los documentos est�n vigentes y en buen estado
+                                            Se recomienda verificar que todos los documentos están vigentes y en buen estado
                                             antes de acudir a la oficina para evitar contratiempos.
                                         </p>
                                     </div>
@@ -231,14 +231,14 @@
                         </div>
                     }
 
-                    <!-- Ubicaci�n Tab -->
+                    <!-- Ubicación Tab -->
                     @if (ActiveTab == "ubicacion")
                     {
                         <div class="space-y-6">
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4 border-l-4 border-rose-600 pl-3">
-                                        Informaci�n de la oficina
+                                        Información de la oficina
                                     </h3>
                                     
                                     @if (OficinaInfo != null)
@@ -247,7 +247,7 @@
                                             <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                                                 @Icon.MapPin("w-5 h-5 text-rose-600 mt-1")
                                                 <div>
-                                                    <h4 class="font-medium text-gray-800">Direcci�n</h4>
+                                                    <h4 class="font-medium text-gray-800">Dirección</h4>
                                                     <p class="text-gray-600">@OficinaInfo.vchDireccion</p>
                                                     @if (!string.IsNullOrEmpty(OficinaInfo.vchDireccion))
                                                     {
@@ -266,7 +266,7 @@
                                                 <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                                                     @Icon.Phone("w-5 h-5 text-rose-600")
                                                     <div>
-                                                        <h4 class="font-medium text-gray-800">Tel�fono</h4>
+                                                        <h4 class="font-medium text-gray-800">Teléfono</h4>
                                                         <a href="@($"tel:{OficinaInfo.vchTelefono}")" class="text-gray-600 hover:text-rose-700">
                                                             @OficinaInfo.vchTelefono
                                                         </a>
@@ -279,7 +279,7 @@
                                                 <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                                                     @Icon.Mail("w-5 h-5 text-rose-600")
                                                     <div>
-                                                        <h4 class="font-medium text-gray-800">Correo electr�nico</h4>
+                                                        <h4 class="font-medium text-gray-800">Correo electrónico</h4>
                                                         <a href="@($"mailto:{OficinaInfo.vchEmail}")" class="text-gray-600 hover:text-rose-700">
                                                             @OficinaInfo.vchEmail
                                                         </a>
@@ -288,7 +288,7 @@
                                             }
                     
                                             <div class="bg-gray-50 rounded-lg p-4">
-                                                <h4 class="font-medium text-gray-800 mb-2">Horarios de atenci�n</h4>
+                                                <h4 class="font-medium text-gray-800 mb-2">Horarios de atención</h4>
                                                 <div class="text-sm text-gray-600 space-y-1 whitespace-pre-line">
                                                     @(string.IsNullOrEmpty(OficinaInfo.vchHorario) ? "No disponible" : OficinaInfo.vchHorario)
                                                 </div>
@@ -297,13 +297,13 @@
                                     }
                                     else
                                     {
-                                        <p class="text-gray-500">No hay informaci�n de oficina disponible.</p>
+                                        <p class="text-gray-500">No hay Información de oficina disponible.</p>
                                     }
                                 </div>
                     
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                                        Ubicaci�n en el mapa
+                                        Ubicación en el mapa
                                     </h3>
                                     
                                     @if (OficinaInfo?.flLatitud.HasValue == true && OficinaInfo?.flLongitud.HasValue == true && OficinaInfo.flLatitud != 0)
@@ -348,7 +348,7 @@ else
     {
         ("requisitos", "Requisitos", @<span class="lucide-icon">@Icon.FileText("w-5 h-5")</span>),
         ("proceso", "Proceso", @<span class="lucide-icon">@Icon.CheckCircle("w-5 h-5")</span>),
-        ("ubicacion", "Ubicaci�n", @<span class="lucide-icon">@Icon.MapPin("w-5 h-5")</span>)
+        ("ubicacion", "Ubicación", @<span class="lucide-icon">@Icon.MapPin("w-5 h-5")</span>)
     };
 
     protected override async Task OnInitializedAsync()
@@ -363,7 +363,7 @@ else
             else
             {
                 // Opcional: Mostrar error con Snackbar
-                Tramite = null; // Para que muestre "Tr�mite no encontrado"
+                Tramite = null; // Para que muestre "trámite no encontrado"
             }
             Loading = false;
     }

@@ -40,6 +40,7 @@ builder.Services.AddScoped<IAzureBlobDomain, AzureBlobDomain>();
 builder.Services.AddScoped<ILogsDomain, LogsDomain>();
 builder.Services.AddScoped<INoticiasDomain, NoticiasDomain>();
 builder.Services.AddScoped<IBuzonCiudadanoDomain, BuzonCiudadanoDomain>();
+builder.Services.AddScoped<ICatalogosDomain, CatalogosDomain>();
 
 builder.Services.AddScoped<ITramitesRepository, TramitesRepository>();
 builder.Services.AddScoped<IOficinasRepository, OficinasRepository>();
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IAzureBlobRepository, AzureBlobRepository>();
 builder.Services.AddScoped<ILogsRepository, LogsRepository>();
 builder.Services.AddScoped<INoticiasRepository, NoticiasRepository>();
 builder.Services.AddScoped<IBuzonCiudadanoRepository, BuzonCiudadanoRepository>();
+builder.Services.AddScoped<ICatalogosRepository, CatalogosRepository>();
 builder.Services.AddScoped<ICatalogosProvider, CatalogosProvider>();
 
 builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
