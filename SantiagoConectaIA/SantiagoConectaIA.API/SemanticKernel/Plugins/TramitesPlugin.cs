@@ -37,23 +37,25 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			[Description("El número máximo de oficinas a devolver. Por defecto es 5.")]
 			int limit = 5)
 		{
-			// Invoca el servicio de negocio para realizar la búsqueda semántica.
 			using var scope = _scopeFactory.CreateScope();
 			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var OficinasEncontradas = await _conversationalDominio.SearchOficinaForChat(new PostSearchForChat { vchTexto = query, iLimit = limit });
 
-
-			// Serializa la lista de productos a una cadena JSON para que el LLM pueda interpretarla.
-			// Usamos JsonSerializer.Serialize con opciones para una salida legible.
-			var options = new JsonSerializerOptions { WriteIndented = true };
-			string jsonResult = JsonSerializer.Serialize(OficinasEncontradas, options);
-
-			if (OficinasEncontradas.IsSuccess.False())
+			if (OficinasEncontradas.IsSuccess.False() || OficinasEncontradas.Data == null)
 			{
 				return $"No se encontraron oficinas para la consulta '{query}'.";
 			}
 
-			return jsonResult;
+			var resultado = OficinasEncontradas.Data.Select(o => new
+			{
+				o.iIdOficina,
+				o.vchNombre,
+				o.vchDireccion,
+				o.vchTelefono,
+				o.vchHorario
+			});
+
+			return JsonSerializer.Serialize(resultado);
 		}
 
 
@@ -71,23 +73,25 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			[Description("El número máximo de tramites a devolver. Por defecto es 5.")]
 			int limit = 5)
 		{
-			// Invoca el servicio de negocio para realizar la búsqueda semántica.
 			using var scope = _scopeFactory.CreateScope();
 			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var TramitesEncontrados = await _conversationalDominio.SearchTramitesForChat(new PostSearchForChat { vchTexto = query, iLimit = limit });
 
-
-			// Serializa la lista de productos a una cadena JSON para que el LLM pueda interpretarla.
-			// Usamos JsonSerializer.Serialize con opciones para una salida legible.
-			var options = new JsonSerializerOptions { WriteIndented = true };
-			string jsonResult = JsonSerializer.Serialize(TramitesEncontrados, options);
-
-			if (TramitesEncontrados.IsSuccess.False())
+			if (TramitesEncontrados.IsSuccess.False() || TramitesEncontrados.Data == null)
 			{
-				return $"No se encontraron productos para la consulta '{query}'.";
+				return $"No se encontraron tramites para la consulta '{query}'.";
 			}
 
-			return jsonResult;
+			var resultado = TramitesEncontrados.Data.Select(t => new
+			{
+				t.iIdTramite,
+				t.vchNombre,
+				t.nvchDescripcion,
+				t.bModalidadEnLinea,
+				t.mCosto
+			});
+
+			return JsonSerializer.Serialize(resultado);
 		}
 
 
@@ -107,15 +111,20 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var RequisitosEncontrados = await _conversationalDominio.SearchRequisitosForChat(new PostGetByIdForChat { iIdTramite = idTramite });
 
-			var options = new JsonSerializerOptions { WriteIndented = true };
-			string jsonResult = JsonSerializer.Serialize(RequisitosEncontrados, options);
-
-			if (RequisitosEncontrados.IsSuccess.False())
+			if (RequisitosEncontrados.IsSuccess.False() || RequisitosEncontrados.Data == null)
 			{
 				return $"No se encontraron requisitos para el ID de trámite {idTramite}.";
 			}
 
-			return jsonResult;
+			var resultado = RequisitosEncontrados.Data.Select(r => new
+			{
+				r.iIdRequisito,
+				r.vchNombre,
+				r.nvchDetalle,
+				r.bObligatorio
+			});
+
+			return JsonSerializer.Serialize(resultado);
 		}
 
 
@@ -132,21 +141,22 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			[Description("El ID del trámite para el cual se busca el costo.")]
 	int idTramite)
 		{
-			// Invoca el Dominio
 			using var scope = _scopeFactory.CreateScope();
 			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var CostoEncontrado = await _conversationalDominio.SearchCostoForChat(new PostGetByIdForChat { iIdTramite = idTramite });
 
-			// Serializa la respuesta
-			var options = new JsonSerializerOptions { WriteIndented = true };
-			string jsonResult = JsonSerializer.Serialize(CostoEncontrado, options);
-
-			if (CostoEncontrado.IsSuccess.False())
+			if (CostoEncontrado.IsSuccess.False() || CostoEncontrado.Data == null)
 			{
 				return $"No se encontró información de costo para el ID de trámite {idTramite}.";
 			}
 
-			return jsonResult;
+			var resultado = CostoEncontrado.Data.Select(c => new
+			{
+				c.mCosto,
+				c.bModalidadEnLinea
+			});
+
+			return JsonSerializer.Serialize(resultado);
 		}
 
 
@@ -164,21 +174,25 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			[Description("El ID del trámite para el cual se buscan las oficinas.")]
 	int idTramite)
 		{
-			// Invoca el Dominio
 			using var scope = _scopeFactory.CreateScope();
 			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
 			var OficinasEncontradas = await _conversationalDominio.SearchOficinasByTramite(new PostGetByIdForChat { iIdTramite = idTramite });
 
-			// Serializa la respuesta
-			var options = new JsonSerializerOptions { WriteIndented = true };
-			string jsonResult = JsonSerializer.Serialize(OficinasEncontradas, options);
-
-			if (OficinasEncontradas.IsSuccess.False())
+			if (OficinasEncontradas.IsSuccess.False() || OficinasEncontradas.Data == null)
 			{
 				return $"No se encontraron oficinas para el ID de trámite {idTramite}.";
 			}
 
-			return jsonResult;
+			var resultado = OficinasEncontradas.Data.Select(o => new
+			{
+				o.iIdOficina,
+				o.vchNombre,
+				o.vchDireccion,
+				o.vchTelefono,
+				o.vchHorario
+			});
+
+			return JsonSerializer.Serialize(resultado);
 		}
 	}
 }

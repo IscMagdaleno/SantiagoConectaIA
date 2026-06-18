@@ -1,6 +1,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
+using Microsoft.SemanticKernel.Http;
 
 namespace SantiagoConectaIA.API.SemanticKernel.Agentes
 {
@@ -10,16 +11,11 @@ namespace SantiagoConectaIA.API.SemanticKernel.Agentes
 		private readonly ILogger<TramitesAgentes> _logger;
 		private readonly IChatCompletionService _chatCompletionService;
 
-		private readonly PromptExecutionSettings _executionSettings;
-
-		// El prompt del sistema, que define el rol y las capacidades del asistente
 		private const string SystemPrompt =
 			"Eres **Santiago Conecta IA**, un asistente virtual oficial del municipio de Santiago Papasquiaro, Durango. " +
 			"Tu objetivo principal es proporcionar a los ciudadanos **información precisa, actualizada y confiable** sobre trámites gubernamentales, noticias/eventos locales, y permitirles registrar reportes o sugerencias. " +
 			"Tu tono debe ser **profesional, amigable y muy claro**. " +
 			"Siempre debes basar tus respuestas en la información que obtienes de tus herramientas de consulta (Funciones/Plugins). " +
-
-			// Instrucciones específicas para el uso de herramientas:
 			"**INSTRUCCIONES CLAVE PARA BUSCAR INFORMACIÓN:**\n" +
 			"1. **Para buscar un trámite:** Utiliza la herramienta `TramitesOficinas.SearchTramites` con palabras clave para obtener el ID del trámite y su información básica. \n" +
 			"2. **Para detalles de ubicación:** Una vez que tengas el ID del trámite, utiliza `TramitesOficinas.SearchOficinasByTramite` para obtener la lista completa de oficinas donde se puede realizar. \n" +
@@ -34,52 +30,49 @@ namespace SantiagoConectaIA.API.SemanticKernel.Agentes
 		{
 			_kernel = kernel;
 			_logger = logger;
-
-			// Obtenemos el servicio de chat del Kernel
 			_chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-
-			// CAMBIO CLAVE 2: Usar la clase base sin configuración específica de OpenAI.
-			// Esto permite que el conector de Gemini maneje la llamada a funciones correctamente.
-			_executionSettings = new GeminiPromptExecutionSettings
-			{
-				// ToolCallBehavior está disponible en esta clase, pero usa los tipos de GeminiToolCallBehavior
-				// Nota: Es posible que necesite el using Microsoft.SemanticKernel.Connectors.Google; para GeminiToolCallBehavior también.
-				ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
-			};
 			_logger.LogInformation("TramitesAgentes inicializado con el Kernel y el servicio de chat.");
 		}
 
-
-		/// <summary>
-		/// Inicia o continúa una conversación con el asistente.
-		/// </summary>
-		/// <param name="userMessage">El mensaje del usuario.</param>
-		/// <param name="chatHistory">El historial de chat actual para la conversación.</param>
-		/// <returns>La respuesta del asistente.</returns>
-		public async Task<string> ChatAsync(string userMessage, ChatHistory chatHistory) // Modificado para aceptar ChatHistory
+		public async Task<string> ChatAsync(string userMessage, ChatHistory chatHistory)
 		{
 			_logger.LogInformation($"Usuario: {userMessage}");
 
 			chatHistory.AddUserMessage(userMessage);
 
-			var result = await _chatCompletionService.GetChatMessageContentAsync(
-				chatHistory,
-				executionSettings: _executionSettings,
-				kernel: _kernel // Se pasa el kernel para que el servicio tenga acceso a los plugins registrados
-			);
+			// Crear nuevos settings por cada llamada para evitar estado corrupto entre invocaciones
+			var executionSettings = new GeminiPromptExecutionSettings
+			{
+				ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
+			};
 
-			string assistantResponse = result.Content ?? "No pude generar una respuesta.";
+			_logger.LogInformation("Enviando ChatHistory con {Count} mensajes a Gemini...", chatHistory.Count);
 
-			chatHistory.AddAssistantMessage(assistantResponse);
+			try
+			{
+				var result = await _chatCompletionService.GetChatMessageContentAsync(
+					chatHistory,
+					executionSettings: executionSettings,
+					kernel: _kernel
+				);
 
-			_logger.LogInformation($"Asistente: {assistantResponse}");
-			return assistantResponse;
+				string assistantResponse = result.Content ?? "No pude generar una respuesta.";
+				chatHistory.AddAssistantMessage(assistantResponse);
+				_logger.LogInformation($"Asistente: {assistantResponse}");
+				return assistantResponse;
+			}
+			catch (HttpOperationException ex)
+			{
+				_logger.LogError(ex, "[Gemini HTTP Error] Status: {Status} | ResponseContent: {Content}",
+					ex.StatusCode, ex.ResponseContent ?? "(null)");
+
+				// Limpiar el historial de posibles mensajes de tool call/result corruptos
+				// para que el próximo intento empiece limpio
+				throw new Exception(
+					$"Gemini API error ({ex.StatusCode}): {ex.ResponseContent ?? "No response content"}", ex);
+			}
 		}
 
-		/// <summary>
-		/// Obtiene el prompt del sistema configurado para el agente.
-		/// </summary>
-		/// <returns>El prompt del sistema.</returns>
 		public string GetSystemPrompt() => SystemPrompt;
 	}
 }

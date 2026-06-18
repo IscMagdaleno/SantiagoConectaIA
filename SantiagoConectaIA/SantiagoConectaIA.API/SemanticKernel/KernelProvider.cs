@@ -11,16 +11,19 @@ namespace SantiagoConectaIA.API.SemanticKernel
 		private readonly IConfiguration _configuration;
 		private readonly ILogger<KernelProvider> _logger;
 		private readonly IServiceScopeFactory _scopeFactory;
+		private readonly IServiceProvider _serviceProvider;
 		private Kernel _kernelInstance;
 
 		public KernelProvider(
 			IConfiguration configuration,
 			ILogger<KernelProvider> logger,
-			IServiceScopeFactory scopeFactory)
+			IServiceScopeFactory scopeFactory,
+			IServiceProvider serviceProvider)
 		{
 			_configuration = configuration;
 			_logger = logger;
 			_scopeFactory = scopeFactory;
+			_serviceProvider = serviceProvider;
 		}
 
 		/// <summary>
@@ -59,11 +62,19 @@ namespace SantiagoConectaIA.API.SemanticKernel
 
 			var kernelBuilder = Kernel.CreateBuilder();
 
-			// *************** 2. AGREGAR EL CONECTOR DE GEMINI ***************
-			// El conector de Google Gemini usa la API Key directamente.
+			// *************** 2. AGREGAR EL CONECTOR DE GEMINI CON LOGGING ***************
+			var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+			var geminiLogger = loggerFactory.CreateLogger<GeminiLoggingHandler>();
+			var loggingHandler = new GeminiLoggingHandler(geminiLogger)
+			{
+				InnerHandler = new HttpClientHandler()
+			};
+			var httpClient = new HttpClient(loggingHandler);
+
 			kernelBuilder.AddGoogleAIGeminiChatCompletion(
 				modelId: modelName,
-				apiKey: apiKey // Pasa la API Key directamente
+				apiKey: apiKey,
+				httpClient: httpClient
 			);
 
 			// Build kernel
