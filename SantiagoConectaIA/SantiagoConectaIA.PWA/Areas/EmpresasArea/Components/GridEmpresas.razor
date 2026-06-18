@@ -1,0 +1,77 @@
+@using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
+
+@* HEADER / NAVIGATION *@
+<MudGrid Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudItem>
+        <MudText Typo="Typo.h4" Style="color: #A50A3A; font-weight: bold;">
+            Catálogo de Emprendimientos
+        </MudText>
+    </MudItem>
+</MudGrid>
+
+@* CONTENT *@
+<MudGrid>
+    @if (Data != null && Data.LstRegistros != null)
+    {
+        <MudItem xs="12">
+            <MudTextField @bind-Value="filtroTexto"
+                          Label="Buscar Empresa"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          TextChanged="CuandoCambiaTexto"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4" />
+        </MudItem>
+
+        @foreach (var registro in listaFiltrada)
+        {
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Class="service-card" Style="height: 100%; display: flex; flex-direction: column;">
+                    <MudCardContent Style="text-align: center; padding: 2rem; flex-grow: 1;">
+                        <div class="card-icon-container">
+                            <MudIcon Icon="@Icons.Material.Filled.Storefront"
+                                     Size="Size.Large"
+                                     Class="card-icon"
+                                     Style="color: #A50A3A;" />
+                        </div>
+                        <MudText Typo="Typo.h5" Style="color: #333333; font-weight: bold; margin: 1rem 0;">
+                            @registro.vchNombreComercial
+                        </MudText>
+                        <MudText Typo="Typo.body2" Style="color: #666666; line-height: 1.6;">
+                            @(string.IsNullOrWhiteSpace(registro.vchSlogan) ? "Sin eslogan" : registro.vchSlogan)
+                        </MudText>
+                        @if(!string.IsNullOrWhiteSpace(registro.vchTelefono))
+                        {
+                            <MudText Typo="Typo.body2" Style="color: #666666;" Class="mt-1">
+                                <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Class="mr-1" /> @registro.vchTelefono
+                            </MudText>
+                        }
+                    </MudCardContent>
+                    <MudCardActions Style="padding: 1rem; margin-top: auto;">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OnViewRegistro(registro))">Ver</MudButton>
+                        <MudButton Variant="Variant.Outlined" Style="border-color: #A50A3A; color: #A50A3A;" Class="ml-2" OnClick="@(() => OnEditRegistro(registro))">Editar</MudButton>
+                        <MudSpacer />
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+
+        @if (!listaFiltrada.Any())
+        {
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    No se encontraron empresas que coincidan con la búsqueda.
+                </MudAlert>
+            </MudItem>
+        }
+    }
+    else
+    {
+        <MudItem xs="12">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </MudItem>
+    }
+</MudGrid>

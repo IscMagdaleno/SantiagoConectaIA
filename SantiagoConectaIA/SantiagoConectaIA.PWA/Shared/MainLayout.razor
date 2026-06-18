@@ -62,6 +62,11 @@
                                Class="nav-button mx-2">
                         Mockup
                     </MudButton>
+                    <MudButton OnClick="WorkspaceService.RequestEmpresas"
+                               Color="Color.Inherit"
+                               Class="nav-button mx-2">
+                        Empresas
+                    </MudButton>
                 </div>
 
                 <!-- Menú hamburguesa para móviles -->
@@ -121,6 +126,13 @@
                            Style="color: white; justify-content: flex-start;">
                     <MudIcon Icon="Icons.Material.Filled.Extension" Class="mr-3" />
                     Mockup (Ejemplo)
+                </MudButton>
+                <MudButton OnClick="WorkspaceService.RequestEmpresas"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;">
+                    <MudIcon Icon="Icons.Material.Filled.Storefront" Class="mr-3" />
+                    Empresas
                 </MudButton>
             </MudStack>
         </MudContainer>
@@ -201,6 +213,7 @@
         WorkspaceService.OnChatbotRequest += AbrirChatbotEnTab;
         WorkspaceService.OnOficinasRequest += AbrirOficinasEnTab;
         WorkspaceService.OnMockupRequest += AbrirMockupEnTab; // Evento del Mockup
+        WorkspaceService.OnEmpresasRequest += AbrirEmpresasEnTab;
     }
 
     public void Dispose()
@@ -211,6 +224,7 @@
         WorkspaceService.OnChatbotRequest -= AbrirChatbotEnTab;
         WorkspaceService.OnOficinasRequest -= AbrirOficinasEnTab;
         WorkspaceService.OnMockupRequest -= AbrirMockupEnTab; // Evento del Mockup
+        WorkspaceService.OnEmpresasRequest -= AbrirEmpresasEnTab;
     }
 
     private void RenameCurrentTab(string tabName, string iconText)
@@ -496,6 +510,39 @@
             Text = "Mockup Catálogo",
             TipoControl = type,
             Repetir = false // Solo queremos un catálogo abierto a la vez
+        };
+
+        tab.Componente = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddComponentReferenceCapture(1, instance =>
+            {
+                if (instance is EngramaWorkspaceComponent baseComponent)
+                {
+                    tab.InstanciaComponente = baseComponent;
+                    baseComponent.IconoBase = tab.Icono ?? "";
+                    if (tabsList.Count > 0 && tabsList[tabsSelectedIndex].Id == tab.Id)
+                    {
+                        baseComponent.TriggerMenuUpdate();
+                    }
+                }
+            });
+            builder.CloseComponent();
+        };
+
+        WorkspaceService.AddComponenteTab(tab);
+    }
+
+    private void AbrirEmpresasEnTab()
+    {
+        CloseMobileMenu();
+        var type = typeof(SantiagoConectaIA.PWA.Areas.EmpresasArea.Components.GridEmpresas);
+        var tab = new WorkspaceTab
+        {
+            Icono = Icons.Material.Filled.Storefront,
+            Text = "Empresas",
+            TipoControl = type,
+            Repetir = false
         };
 
         tab.Componente = builder =>

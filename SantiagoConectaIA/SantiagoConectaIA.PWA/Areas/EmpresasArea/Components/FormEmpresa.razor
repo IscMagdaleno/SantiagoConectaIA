@@ -1,0 +1,80 @@
+@using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
+
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+    <MudTabPanel Text="Datos Generales" Icon="@Icons.Material.Filled.Info">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-4">Información de la Empresa</MudText>
+                @if (Data != null && Data.RegistroSeleccionado != null)
+                {
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchNombreComercial"
+                                          Label="Nombre Comercial" 
+                                          Variant="Variant.Outlined" 
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchSlogan"
+                                          Label="Eslogan" 
+                                          Variant="Variant.Outlined" 
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.nvchDescripcion"
+                                          Label="Descripción" 
+                                          Variant="Variant.Outlined" 
+                                          Lines="3"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchTelefono"
+                                          Label="Teléfono" 
+                                          Variant="Variant.Outlined" 
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchCorreo"
+                                          Label="Correo Electrónico" 
+                                          Variant="Variant.Outlined" 
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Misión y Visión" Icon="@Icons.Material.Filled.Assignment">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                @if (Data != null && Data.RegistroSeleccionado != null)
+                {
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.nvchMision"
+                                          Label="Misión" 
+                                          Variant="Variant.Outlined" 
+                                          Lines="3"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.nvchVision"
+                                          Label="Visión" 
+                                          Variant="Variant.Outlined" 
+                                          Lines="3"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+</MudTabs>

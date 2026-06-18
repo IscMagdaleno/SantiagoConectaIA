@@ -2,8 +2,10 @@ using EngramaCoreStandar.Extensions;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Core;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Servicios;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.EmpresasModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository;
 using SantiagoConectaIA.API.SemanticKernel;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
@@ -15,6 +17,7 @@ using SantiagoConectaIA.DAL.Provider;
 using SantiagoConectaIA.API.BackgroundServices;
 
 using System.Reflection;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +44,7 @@ builder.Services.AddScoped<ILogsDomain, LogsDomain>();
 builder.Services.AddScoped<INoticiasDomain, NoticiasDomain>();
 builder.Services.AddScoped<IBuzonCiudadanoDomain, BuzonCiudadanoDomain>();
 builder.Services.AddScoped<ICatalogosDomain, CatalogosDomain>();
+builder.Services.AddScoped<IEmpresasDomain, EmpresasDomain>();
 
 builder.Services.AddScoped<ITramitesRepository, TramitesRepository>();
 builder.Services.AddScoped<IOficinasRepository, OficinasRepository>();
@@ -51,6 +55,7 @@ builder.Services.AddScoped<INoticiasRepository, NoticiasRepository>();
 builder.Services.AddScoped<IBuzonCiudadanoRepository, BuzonCiudadanoRepository>();
 builder.Services.AddScoped<ICatalogosRepository, CatalogosRepository>();
 builder.Services.AddScoped<ICatalogosProvider, CatalogosProvider>();
+builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
 
 builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
 builder.Services.AddScoped<INoticiasScraperService, NoticiasScraperService>();
