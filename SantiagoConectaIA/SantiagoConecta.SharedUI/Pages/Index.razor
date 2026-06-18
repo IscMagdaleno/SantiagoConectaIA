@@ -1,10 +1,11 @@
 @page "/"
 @using SantiagoConecta.SharedUI.Data
-@using SantiagoConectaIA.Share.PostModels.TramitesModule
+@using SantiagoConectaIA.Share.PostModels.BuzonCiudadanoModule
 @using Microsoft.Extensions.Localization
 @inject NavigationManager NavManager
 @inject IStringLocalizer<App> Localizer
 @inject IJSRuntime JS
+@inject Data_BuzonCiudadano _dataBuzon
 
 <PageTitle>Santiaguero Conecta - Inicio</PageTitle>
 
@@ -165,6 +166,18 @@
             </div>
             <div class="col-lg-8 col-md-6 col-sm-12">
                 <div class="contact-form" style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    @if (!string.IsNullOrEmpty(_successMessage))
+                    {
+                        <div class="alert alert-success" role="alert" style="border-radius: 12px; padding: 15px; margin-bottom: 20px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="mr-2" /> @_successMessage
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert" style="border-radius: 12px; padding: 15px; margin-bottom: 20px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
+                            <MudIcon Icon="@Icons.Material.Filled.Error" Class="mr-2" /> @_errorMessage
+                        </div>
+                    }
                     <EditForm Model="@contactModel" OnValidSubmit="HandleSubmit">
                         <DataAnnotationsValidator />
                         <div class="row">
@@ -174,11 +187,34 @@
                             <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
                                 <MudTextField @bind-Value="contactModel.Email" Label="Correo Electrónico" Variant="Variant.Outlined" Required="true" />
                             </div>
+                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
+                                <MudTextField @bind-Value="contactModel.Phone" Label="Teléfono (opcional)" Variant="Variant.Outlined" />
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
+                                <MudSelect T="string" @bind-Value="contactModel.Category" Label="Categoría" Variant="Variant.Outlined" Required="true">
+                                    <MudSelectItem Value="@("Queja")" />
+                                    <MudSelectItem Value="@("Sugerencia")" />
+                                    <MudSelectItem Value="@("Reporte")" />
+                                    <MudSelectItem Value="@("Solicitud")" />
+                                    <MudSelectItem Value="@("Otro")" />
+                                </MudSelect>
+                            </div>
                             <div class="col-lg-12 mb-3">
                                 <MudTextField @bind-Value="contactModel.Message" Label="Tu Mensaje, Queja o Sugerencia" Variant="Variant.Outlined" Lines="5" Required="true" />
                             </div>
                             <div class="col-lg-12">
-                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" Style="border-radius: 30px;">Enviar Mensaje</MudButton>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" Style="border-radius: 30px;" Disabled="@_isSubmitting">
+                                    @if (_isSubmitting)
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                        @("Enviando...")
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Send" Class="mr-2" />
+                                        @("Enviar Mensaje")
+                                    }
+                                </MudButton>
                             </div>
                         </div>
                     </EditForm>
@@ -273,7 +309,10 @@
 
 @code {
     private ContactModel contactModel = new();
-    
+    private bool _isSubmitting = false;
+    private string _successMessage = string.Empty;
+    private string _errorMessage = string.Empty;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -395,11 +434,45 @@
         }
     }
 
-    private void HandleSubmit()
+    private async Task HandleSubmit()
     {
-        // TODO: Conectar a API de guardado de Buzón Ciudadano
-        Console.WriteLine($"Mensaje recibido de {contactModel.Name}");
-        contactModel = new(); // Reset
+        _isSubmitting = true;
+        _successMessage = string.Empty;
+        _errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var postModel = new PostSaveBuzonCiudadano
+            {
+                nvchNombreCiudadano = contactModel.Name,
+                nvchEmail = contactModel.Email,
+                nvchTelefono = contactModel.Phone,
+                nvchCategoria = contactModel.Category,
+                nvchDescripcion = contactModel.Message
+            };
+
+            var result = await _dataBuzon.PostSaveReporte(postModel);
+
+            if (result != null && result.IsSuccess)
+            {
+                _successMessage = "Tu mensaje ha sido enviado exitosamente. ¡Gracias por tus comentarios!";
+                contactModel = new();
+            }
+            else
+            {
+                _errorMessage = result?.Message ?? "Ocurrió un error al enviar tu mensaje. Intenta de nuevo.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Error de conexión. Por favor, intenta más tarde.";
+        }
+        finally
+        {
+            _isSubmitting = false;
+            StateHasChanged();
+        }
     }
 
     private async Task OpenChatbot()
@@ -413,6 +486,8 @@
     {
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Category { get; set; } = "Sugerencia";
         public string Message { get; set; } = string.Empty;
     }
 }
