@@ -1,0 +1,75 @@
+@using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
+@using SantiagoConectaIA.Share.Objetos.EmpresasModulo
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddLocation" OnClick="AbrirDialogoNuevaUbicacion">
+            Agregar Ubicación
+        </MudButton>
+    </MudItem>
+    <MudItem xs="12">
+        <MudTable Items="@Data.LstUbicaciones" Hover="true" Elevation="0">
+            <HeaderContent>
+                <MudTh>Alias</MudTh>
+                <MudTh>Dirección</MudTh>
+                <MudTh>Latitud</MudTh>
+                <MudTh>Longitud</MudTh>
+                <MudTh Style="width: 120px;">Estatus</MudTh>
+                <MudTh Style="width: 100px;">Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Alias">@context.vchAlias</MudTd>
+                <MudTd DataLabel="Dirección">@context.vchDireccion</MudTd>
+                <MudTd DataLabel="Latitud">@context.flLatitud</MudTd>
+                <MudTd DataLabel="Longitud">@context.flLongitud</MudTd>
+                <MudTd DataLabel="Estatus">
+                    <MudChip T="string" Color="@(context.bActivo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(context.bActivo ? "Activo" : "Inactivo")
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Acciones">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditarUbicacion(context))" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Typo="Typo.body2">No hay ubicaciones registradas.</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
+
+<MudDialog @bind-Visible="dialogVisible" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Map" Class="mr-2" /> @(ubicacionActual.iIdUbicacion <= 0 ? "Nueva Ubicación" : "Editar Ubicación")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="ubicacionActual.vchAlias" Label="Alias (Ej. Matriz, Sucursal Norte)" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSwitch @bind-Value="ubicacionActual.bActivo" Label="Activo" Color="Color.Success" Class="mt-4" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="ubicacionActual.vchDireccion" Label="Dirección Completa" Variant="Variant.Outlined" Lines="2" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudNumericField @bind-Value="ubicacionActual.flLatitud" Label="Latitud" Variant="Variant.Outlined" HideSpinButtons="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudNumericField @bind-Value="ubicacionActual.flLongitud" Label="Longitud" Variant="Variant.Outlined" HideSpinButtons="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info">
+                    El mapa interactivo de Google Maps se integrará aquí en un paso posterior mediante JSInterop, para ahora puedes introducir las coordenadas manualmente.
+                </MudAlert>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CerrarDialogo">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GuardarUbicacion">Guardar</MudButton>
+    </DialogActions>
+</MudDialog>

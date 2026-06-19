@@ -57,7 +57,6 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
                 onSuccess: data => 
                 {
                     RegistroSeleccionado = data;
-                    _ = PostGetRegistros();
                 });
             return validation;
         }
@@ -81,7 +80,7 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             var APIUrl = url + "/PostSaveEmpresaUbicacion";
             var request = new PostSaveEmpresaUbicacion { EmpresaUbicacion = item };
             var response = await _httpService.Post<PostSaveEmpresaUbicacion, Response<EmpresaUbicacion>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => { _ = PostGetUbicaciones(); });
+            return _validaServicioService.ValidadionServicio(response);
         }
 
         public async Task<SeverityMessage> PostGetRedesSociales()
@@ -96,7 +95,7 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             var APIUrl = url + "/PostSaveEmpresaRedSocial";
             var request = new PostSaveEmpresaRedSocial { EmpresaRedSocial = item };
             var response = await _httpService.Post<PostSaveEmpresaRedSocial, Response<EmpresaRedSocial>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => { _ = PostGetRedesSociales(); });
+            return _validaServicioService.ValidadionServicio(response);
         }
 
         public async Task<SeverityMessage> PostGetCategorias()
@@ -111,7 +110,7 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             var APIUrl = url + "/PostSaveCategoriaCatalogo";
             var request = new PostSaveCategoriaCatalogo { CategoriaCatalogo = item };
             var response = await _httpService.Post<PostSaveCategoriaCatalogo, Response<CategoriaCatalogo>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => { _ = PostGetCategorias(); });
+            return _validaServicioService.ValidadionServicio(response);
         }
 
         public async Task<SeverityMessage> PostGetProductos(int iIdCategoria)
@@ -126,7 +125,7 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             var APIUrl = url + "/PostSaveProductoServicio";
             var request = new PostSaveProductoServicio { ProductoServicio = item };
             var response = await _httpService.Post<PostSaveProductoServicio, Response<ProductoServicio>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => { _ = PostGetProductos(iIdCategoria); });
+            return _validaServicioService.ValidadionServicio(response);
         }
     }
 }

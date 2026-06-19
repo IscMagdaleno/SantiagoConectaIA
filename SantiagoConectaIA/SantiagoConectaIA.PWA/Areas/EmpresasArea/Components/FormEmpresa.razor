@@ -94,9 +94,8 @@
     <MudTabPanel Text="Ubicaciones" Icon="@Icons.Material.Filled.Map" Disabled="@(Data.RegistroSeleccionado.iIdEmpresa <= 0)">
         <MudCard Elevation="0">
             <MudCardContent>
-                <MudText Typo="Typo.h6">Ubicaciones de la Empresa</MudText>
-                <!-- Aquí implementaremos el mapa interactivo y la lista -->
-                <MudAlert Severity="Severity.Info">Guarda la empresa primero para gestionar sus ubicaciones.</MudAlert>
+                <MudText Typo="Typo.h6" Class="mb-4">Ubicaciones de la Empresa</MudText>
+                <TabUbicaciones />
             </MudCardContent>
         </MudCard>
     </MudTabPanel>
@@ -104,8 +103,8 @@
     <MudTabPanel Text="Redes Sociales" Icon="@Icons.Material.Filled.Share" Disabled="@(Data.RegistroSeleccionado.iIdEmpresa <= 0)">
         <MudCard Elevation="0">
             <MudCardContent>
-                <MudText Typo="Typo.h6">Redes Sociales</MudText>
-                <MudAlert Severity="Severity.Info">Guarda la empresa primero para gestionar sus redes sociales.</MudAlert>
+                <MudText Typo="Typo.h6" Class="mb-4">Redes Sociales</MudText>
+                <TabRedesSociales />
             </MudCardContent>
         </MudCard>
     </MudTabPanel>
@@ -113,8 +112,8 @@
     <MudTabPanel Text="Servicios" Icon="@Icons.Material.Filled.Storefront" Disabled="@(Data.RegistroSeleccionado.iIdEmpresa <= 0)">
         <MudCard Elevation="0">
             <MudCardContent>
-                <MudText Typo="Typo.h6">Servicios y Categorías</MudText>
-                <MudAlert Severity="Severity.Info">Guarda la empresa primero para configurar los servicios.</MudAlert>
+                <MudText Typo="Typo.h6" Class="mb-4">Servicios y Categorías</MudText>
+                <TabServicios />
             </MudCardContent>
         </MudCard>
     </MudTabPanel>

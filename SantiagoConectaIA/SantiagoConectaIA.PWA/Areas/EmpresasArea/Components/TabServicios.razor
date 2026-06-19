@@ -1,0 +1,149 @@
+@using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
+@using SantiagoConectaIA.Share.Objetos.EmpresasModulo
+
+<MudGrid>
+    <!-- Columna Izquierda: Maestro (Categorías) -->
+    <MudItem xs="12" md="4">
+        <MudCard Elevation="2" Class="pa-4 h-100">
+            <MudText Typo="Typo.h6" Class="mb-4">Categorías de Servicio</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirDialogoNuevaCategoria" Class="mb-4" FullWidth="true">
+                Nueva Categoría
+            </MudButton>
+
+            <MudList T="CategoriaCatalogo" Clickable="true">
+                @foreach (var cat in Data.LstCategorias.OrderBy(x => x.iOrdenAparicion))
+                {
+                    <MudListItem OnClick="@(() => SeleccionarCategoria(cat))" Class="@(categoriaSeleccionada?.iIdCategoriaCat == cat.iIdCategoriaCat ? "mud-theme-primary mud-elevation-1" : "")">
+                        <div class="d-flex justify-space-between align-center">
+                            <MudText Typo="Typo.body1">@cat.vchNombre</MudText>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditarCategoria(cat))" />
+                        </div>
+                    </MudListItem>
+                }
+                @if (Data.LstCategorias.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Surface" Class="mt-2 text-center">No hay categorías configuradas.</MudText>
+                }
+            </MudList>
+        </MudCard>
+    </MudItem>
+
+    <!-- Columna Derecha: Detalle (Productos/Servicios) -->
+    <MudItem xs="12" md="8">
+        <MudCard Elevation="2" Class="pa-4 h-100">
+            @if (categoriaSeleccionada == null || categoriaSeleccionada.iIdCategoriaCat <= 0)
+            {
+                <div class="d-flex align-center justify-center h-100">
+                    <MudText Typo="Typo.h6" Color="Color.Surface">Selecciona una categoría para ver sus servicios</MudText>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <MudText Typo="Typo.h6">Servicios en "@categoriaSeleccionada.vchNombre"</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirDialogoNuevoProducto">
+                        Agregar Servicio
+                    </MudButton>
+                </div>
+
+                <MudTable Items="@Data.LstProductos" Hover="true" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>Nombre</MudTh>
+                        <MudTh>Precio</MudTh>
+                        <MudTh Style="width: 120px;">Estatus</MudTh>
+                        <MudTh Style="width: 100px;">Acciones</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Nombre">
+                            <MudText Typo="Typo.body2"><b>@context.vchNombre</b></MudText>
+                            <MudText Typo="Typo.caption">@context.nvchDescripcionCorta</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Precio">
+                            @if (context.bAplicaDescuento)
+                            {
+                                <div><strike>@context.mPrecio.ToString("C")</strike></div>
+                                <div class="mud-success-text">@context.mPrecioDescuento.ToString("C")</div>
+                            }
+                            else
+                            {
+                                @context.mPrecio.ToString("C")
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Estatus">
+                            <MudChip T="string" Color="@(context.bEstatus ? Color.Success : Color.Error)" Size="Size.Small">
+                                @(context.bEstatus ? "Activo" : "Inactivo")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Acciones">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditarProducto(context))" />
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Typo="Typo.body2">No hay servicios en esta categoría.</MudText>
+                    </NoRecordsContent>
+                </MudTable>
+            }
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<!-- Dialogo Categoría -->
+<MudDialog @bind-Visible="dialogCategoriaVisible" Options="dialogOptionsSmall">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Category" Class="mr-2" /> @(categoriaActual.iIdCategoriaCat <= 0 ? "Nueva Categoría" : "Editar Categoría")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="categoriaActual.vchNombre" Label="Nombre de Categoría" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudNumericField @bind-Value="categoriaActual.iOrdenAparicion" Label="Orden de Aparición" Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => dialogCategoriaVisible = false">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GuardarCategoria">Guardar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<!-- Dialogo Producto/Servicio -->
+<MudDialog @bind-Visible="dialogProductoVisible" Options="dialogOptionsMedium">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Storefront" Class="mr-2" /> @(productoActual.iIdProducto <= 0 ? "Nuevo Servicio" : "Editar Servicio")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="productoActual.vchNombre" Label="Nombre del Servicio/Producto" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="productoActual.nvchDescripcionCorta" Label="Descripción Corta" Variant="Variant.Outlined" Lines="2" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudNumericField @bind-Value="productoActual.mPrecio" Label="Precio Base" Variant="Variant.Outlined" Format="C2" HideSpinButtons="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSwitch @bind-Value="productoActual.bAplicaDescuento" Label="Aplica Descuento" Color="Color.Primary" Class="mt-4" />
+            </MudItem>
+            @if (productoActual.bAplicaDescuento)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudNumericField @bind-Value="productoActual.mPrecioDescuento" Label="Precio Final (Descuento)" Variant="Variant.Outlined" Format="C2" HideSpinButtons="true" />
+                </MudItem>
+            }
+            <MudItem xs="12" sm="6">
+                <MudSwitch @bind-Value="productoActual.bEstatus" Label="Activo" Color="Color.Success" Class="mt-4" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => dialogProductoVisible = false">Cancelar</MudButton>
+        <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="GuardarProducto">Guardar</MudButton>
+    </DialogActions>
+</MudDialog>

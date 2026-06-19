@@ -84,7 +84,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
         {
             try
             {
-                var request = _mapperHelper.Get<PostSaveEmpresaUbicacion, spSaveEmpresaUbicacion.Request>(postModel);
+                var request = _mapperHelper.Get<EmpresaUbicacion, spSaveEmpresaUbicacion.Request>(postModel.EmpresaUbicacion);
                 var result = await _empresasRepository.spSaveEmpresaUbicacion(request);
                 var validation = _responseHelper.Validacion<spSaveEmpresaUbicacion.Result, EmpresaUbicacion>(result);
                 if (validation.IsSuccess)
@@ -112,7 +112,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
         {
             try
             {
-                var request = _mapperHelper.Get<PostSaveEmpresaRedSocial, spSaveEmpresaRedSocial.Request>(postModel);
+                var request = _mapperHelper.Get<EmpresaRedSocial, spSaveEmpresaRedSocial.Request>(postModel.EmpresaRedSocial);
                 var result = await _empresasRepository.spSaveEmpresaRedSocial(request);
                 var validation = _responseHelper.Validacion<spSaveEmpresaRedSocial.Result, EmpresaRedSocial>(result);
                 if (validation.IsSuccess)
@@ -140,7 +140,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
         {
             try
             {
-                var request = _mapperHelper.Get<PostSaveCategoriaCatalogo, spSaveCategoriaCatalogo.Request>(postModel);
+                var request = _mapperHelper.Get<CategoriaCatalogo, spSaveCategoriaCatalogo.Request>(postModel.CategoriaCatalogo);
                 var result = await _empresasRepository.spSaveCategoriaCatalogo(request);
                 var validation = _responseHelper.Validacion<spSaveCategoriaCatalogo.Result, CategoriaCatalogo>(result);
                 if (validation.IsSuccess)
@@ -168,7 +168,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
         {
             try
             {
-                var request = _mapperHelper.Get<PostSaveProductoServicio, spSaveProductoServicio.Request>(postModel);
+                var request = _mapperHelper.Get<ProductoServicio, spSaveProductoServicio.Request>(postModel.ProductoServicio);
                 var result = await _empresasRepository.spSaveProductoServicio(request);
                 var validation = _responseHelper.Validacion<spSaveProductoServicio.Result, ProductoServicio>(result);
                 if (validation.IsSuccess)

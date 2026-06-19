@@ -1,0 +1,72 @@
+@using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
+@using SantiagoConectaIA.Share.Objetos.EmpresasModulo
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirDialogoNuevaRed">
+            Agregar Red Social
+        </MudButton>
+    </MudItem>
+    <MudItem xs="12">
+        <MudTable Items="@Data.LstRedesSociales" Hover="true" Elevation="0">
+            <HeaderContent>
+                <MudTh>Plataforma</MudTh>
+                <MudTh>Enlace / URL</MudTh>
+                <MudTh Style="width: 120px;">Estatus</MudTh>
+                <MudTh Style="width: 100px;">Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Plataforma">@context.vchPlataforma</MudTd>
+                <MudTd DataLabel="Enlace">
+                    <MudLink Href="@context.vchUrl" Target="_blank">@context.vchUrl</MudLink>
+                </MudTd>
+                <MudTd DataLabel="Estatus">
+                    <MudChip T="string" Color="@(context.bActivo ? Color.Success : Color.Error)" Size="Size.Small">
+                        @(context.bActivo ? "Activo" : "Inactivo")
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Acciones">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditarRed(context))" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Typo="Typo.body2">No hay redes sociales registradas.</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
+
+<MudDialog @bind-Visible="dialogVisible" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Share" Class="mr-2" /> @(redActual.iIdRedSocial <= 0 ? "Nueva Red Social" : "Editar Red Social")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudSelect T="string" @bind-Value="redActual.vchPlataforma" Label="Plataforma" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Facebook")">Facebook</MudSelectItem>
+                    <MudSelectItem Value="@("Instagram")">Instagram</MudSelectItem>
+                    <MudSelectItem Value="@("X (Twitter)")">X (Twitter)</MudSelectItem>
+                    <MudSelectItem Value="@("LinkedIn")">LinkedIn</MudSelectItem>
+                    <MudSelectItem Value="@("YouTube")">YouTube</MudSelectItem>
+                    <MudSelectItem Value="@("TikTok")">TikTok</MudSelectItem>
+                    <MudSelectItem Value="@("WhatsApp")">WhatsApp</MudSelectItem>
+                    <MudSelectItem Value="@("Sitio Web")">Sitio Web</MudSelectItem>
+                    <MudSelectItem Value="@("Otro")">Otro</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="redActual.vchUrl" Label="URL / Enlace" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudSwitch @bind-Value="redActual.bActivo" Label="Activo" Color="Color.Success" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CerrarDialogo">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GuardarRed">Guardar</MudButton>
+    </DialogActions>
+</MudDialog>
