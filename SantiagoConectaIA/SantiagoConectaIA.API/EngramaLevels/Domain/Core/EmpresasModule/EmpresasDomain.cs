@@ -180,5 +180,33 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
             }
             catch (Exception ex) { return Response<ProductoServicio>.BadResult(ex.Message, new ProductoServicio()); }
         }
+
+        public async Task<Response<ConfiguracionVisual>> GetConfiguracionVisual(PostGetConfiguracionVisual postModel)
+        {
+            try
+            {
+                var request = _mapperHelper.Get<PostGetConfiguracionVisual, spGetConfiguracionVisual.Request>(postModel);
+                var result = await _empresasRepository.spGetConfiguracionVisual(request);
+                return _responseHelper.Validacion<spGetConfiguracionVisual.Result, ConfiguracionVisual>(result);
+            }
+            catch (Exception ex) { return Response<ConfiguracionVisual>.BadResult(ex.Message, new ConfiguracionVisual()); }
+        }
+
+        public async Task<Response<ConfiguracionVisual>> SaveConfiguracionVisual(PostSaveConfiguracionVisual postModel)
+        {
+            try
+            {
+                var request = _mapperHelper.Get<ConfiguracionVisual, spSaveConfiguracionVisual.Request>(postModel.ConfiguracionVisual);
+                var result = await _empresasRepository.spSaveConfiguracionVisual(request);
+                var validation = _responseHelper.Validacion<spSaveConfiguracionVisual.Result, ConfiguracionVisual>(result);
+                if (validation.IsSuccess)
+                {
+                    postModel.ConfiguracionVisual.iIdConfiguracion = validation.Data.iIdConfiguracion;
+                    validation.Data = postModel.ConfiguracionVisual;
+                }
+                return validation;
+            }
+            catch (Exception ex) { return Response<ConfiguracionVisual>.BadResult(ex.Message, new ConfiguracionVisual()); }
+        }
     }
 }

@@ -3,6 +3,7 @@ using SantiagoConectaIA.PWA.Shared.Workspace;
 using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
 {
@@ -26,6 +27,22 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
                 await Data.PostGetUbicaciones();
                 await Data.PostGetRedesSociales();
                 await Data.PostGetCategorias();
+            }
+        }
+
+        private async Task UploadLogo(IBrowserFile file)
+        {
+            if (file == null) return;
+            var result = await Data.PostUploadLogo(file);
+            if (result.IsSuccess && result.Data != null)
+            {
+                Data.RegistroSeleccionado.vchLogoUrl = result.Data.URL;
+                StateHasChanged();
+                ShowSnake(new EngramaCoreStandar.Dapper.Results.SeverityMessage(true, "Logo subido exitosamente"));
+            }
+            else
+            {
+                ShowSnake(new EngramaCoreStandar.Dapper.Results.SeverityMessage(false, result.Message ?? "Error al subir el logo"));
             }
         }
 

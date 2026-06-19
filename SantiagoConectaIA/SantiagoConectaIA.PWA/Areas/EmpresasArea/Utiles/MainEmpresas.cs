@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using EngramaCoreStandar.Dapper.Results;
 using EngramaCoreStandar.Mapper;
+using SantiagoConectaIA.Share.Objects.Common;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
 {
@@ -22,8 +24,9 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
         private readonly IValidaServicioService _validaServicioService;
 
         // Propiedades de Estado Generales
-        public List<Empresa> LstRegistros { get; set; } = new();
-        public Empresa RegistroSeleccionado { get; set; } = new();
+        public List<Empresa> LstRegistros { get; set; } = new List<Empresa>();
+        public Empresa RegistroSeleccionado { get; set; } = new Empresa();
+        public ConfiguracionVisual ConfiguracionSeleccionada { get; set; } = new ConfiguracionVisual();
         public List<CatalogoEmpresa> LstCatalogos { get; set; } = new();
 
         // Propiedades de Estado para Pestañas
@@ -126,6 +129,36 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             var request = new PostSaveProductoServicio { ProductoServicio = item };
             var response = await _httpService.Post<PostSaveProductoServicio, Response<ProductoServicio>>(APIUrl, request);
             return _validaServicioService.ValidadionServicio(response);
+        }
+
+        public async Task<Response<BlobSaved>> PostUploadLogo(IBrowserFile file)
+        {
+            // Apuntar al endpoint específico de UploadImage que creamos en AzureBlobController
+            var urlAzure = "api/AzureBlob/UploadImage"; 
+            
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream(1024 * 1024 * 10).CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+            StreamContent imgContent = new StreamContent(memoryStream);
+
+            var response = await _httpService.PostWithFile<Response<BlobSaved>>(urlAzure, imgContent);
+            return response.Response;
+        }
+
+        public async Task<SeverityMessage> PostGetConfiguracionVisual()
+        {
+            var APIUrl = url + "/PostGetConfiguracionVisual";
+            var response = await _httpService.Post<PostGetConfiguracionVisual, Response<ConfiguracionVisual>>(APIUrl, new PostGetConfiguracionVisual { iIdEmpresa = RegistroSeleccionado.iIdEmpresa });
+            return _validaServicioService.ValidadionServicio(response, onSuccess: data => ConfiguracionSeleccionada = data ?? new ConfiguracionVisual { iIdEmpresa = RegistroSeleccionado.iIdEmpresa });
+        }
+
+        public async Task<SeverityMessage> PostSaveConfiguracionVisual()
+        {
+            var APIUrl = url + "/PostSaveConfiguracionVisual";
+            ConfiguracionSeleccionada.iIdEmpresa = RegistroSeleccionado.iIdEmpresa;
+            var request = new PostSaveConfiguracionVisual { ConfiguracionVisual = ConfiguracionSeleccionada };
+            var response = await _httpService.Post<PostSaveConfiguracionVisual, Response<ConfiguracionVisual>>(APIUrl, request);
+            return _validaServicioService.ValidadionServicio(response, onSuccess: data => ConfiguracionSeleccionada = data);
         }
     }
 }

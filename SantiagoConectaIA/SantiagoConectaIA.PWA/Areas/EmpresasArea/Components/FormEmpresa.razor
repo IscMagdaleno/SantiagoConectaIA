@@ -58,6 +58,20 @@
                                           Variant="Variant.Outlined" 
                                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            @if (!string.IsNullOrEmpty(Data.RegistroSeleccionado.vchLogoUrl))
+                            {
+                                <MudImage Src="@Data.RegistroSeleccionado.vchLogoUrl" Height="80" Class="rounded-lg mb-2" ObjectFit="ObjectFit.Contain" />
+                            }
+                            <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg" FilesChanged="UploadLogo" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">
+                                <ActivatorContent>
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">
+                                        Subir Logo
+                                    </MudButton>
+                                </ActivatorContent>
+                            </MudFileUpload>
+                        </MudItem>
                     </MudGrid>
                 }
             </MudCardContent>
@@ -114,6 +128,15 @@
             <MudCardContent>
                 <MudText Typo="Typo.h6" Class="mb-4">Servicios y Categorías</MudText>
                 <TabServicios />
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Personalización" Icon="@Icons.Material.Filled.Palette" Disabled="@(Data.RegistroSeleccionado.iIdEmpresa <= 0)">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-4">Configuración Visual (Branding)</MudText>
+                <TabConfiguracionVisual EstadoControl="@EstadoControl" />
             </MudCardContent>
         </MudCard>
     </MudTabPanel>

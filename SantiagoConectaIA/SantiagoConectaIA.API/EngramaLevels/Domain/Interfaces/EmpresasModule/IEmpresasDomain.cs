@@ -18,5 +18,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule
         Task<Response<CategoriaCatalogo>> SaveCategoriaCatalogo(PostSaveCategoriaCatalogo postModel);
         Task<Response<IEnumerable<ProductoServicio>>> GetProductosPorCategoria(PostGetProductosPorCategoria postModel);
         Task<Response<ProductoServicio>> SaveProductoServicio(PostSaveProductoServicio postModel);
+        Task<Response<ConfiguracionVisual>> GetConfiguracionVisual(PostGetConfiguracionVisual postModel);
+        Task<Response<ConfiguracionVisual>> SaveConfiguracionVisual(PostSaveConfiguracionVisual postModel);
     }
 }

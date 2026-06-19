@@ -95,5 +95,19 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
             if (respuesta.Ok) return respuesta.Data;
             return new spSaveProductoServicio.Result { bResult = false, vchMessage = respuesta.Msg };
         }
+
+        public async Task<spGetConfiguracionVisual.Result> spGetConfiguracionVisual(spGetConfiguracionVisual.Request request)
+        {
+            var respuesta = await _managerHelper.GetAsync<spGetConfiguracionVisual.Result, spGetConfiguracionVisual.Request>(request, "", "SCIA");
+            if (respuesta.Ok) return respuesta.Data;
+            return new spGetConfiguracionVisual.Result { bResult = false, vchMessage = respuesta.Msg };
+        }
+
+        public async Task<spSaveConfiguracionVisual.Result> spSaveConfiguracionVisual(spSaveConfiguracionVisual.Request request)
+        {
+            var respuesta = await _managerHelper.GetAsync<spSaveConfiguracionVisual.Result, spSaveConfiguracionVisual.Request>(request, "", "SCIA");
+            if (respuesta.Ok) return respuesta.Data;
+            return new spSaveConfiguracionVisual.Result { bResult = false, vchMessage = respuesta.Msg };
+        }
     }
 }

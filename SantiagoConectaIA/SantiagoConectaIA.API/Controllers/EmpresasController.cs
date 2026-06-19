@@ -119,5 +119,21 @@ namespace SantiagoConectaIA.API.Controllers
             if (result.IsSuccess) return Ok(result);
             return BadRequest(result);
         }
+
+        [HttpPost("PostGetConfiguracionVisual")]
+        public async Task<IActionResult> PostGetConfiguracionVisual([FromBody] PostGetConfiguracionVisual postModel)
+        {
+            var result = await _empresasDomain.GetConfiguracionVisual(postModel);
+            if (result.IsSuccess) return Ok(result);
+            return BadRequest(result);
+        }
+
+        [HttpPost("PostSaveConfiguracionVisual")]
+        public async Task<IActionResult> PostSaveConfiguracionVisual([FromBody] PostSaveConfiguracionVisual postModel)
+        {
+            var result = await _empresasDomain.SaveConfiguracionVisual(postModel);
+            if (result.IsSuccess) return Ok(result);
+            return BadRequest(result);
+        }
     }
 }

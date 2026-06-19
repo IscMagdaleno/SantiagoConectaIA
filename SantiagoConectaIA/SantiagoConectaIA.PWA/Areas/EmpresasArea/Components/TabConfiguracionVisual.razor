@@ -1,0 +1,96 @@
+@using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits ComponentBase
+
+@if (Data != null && Data.ConfiguracionSeleccionada != null)
+{
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudColorPicker Label="Color de Fondo del Body"
+                            @bind-Text="Data.ConfiguracionSeleccionada.vchColorFondoBody"
+                            Style="Variant.Outlined"
+                            ColorPickerView="ColorPickerView.Spectrum"
+                            Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudColorPicker Label="Color de Texto Principal"
+                            @bind-Text="Data.ConfiguracionSeleccionada.vchColorTextoPrincipal"
+                            Style="Variant.Outlined"
+                            ColorPickerView="ColorPickerView.Spectrum"
+                            Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudColorPicker Label="Color de Títulos"
+                            @bind-Text="Data.ConfiguracionSeleccionada.vchColorTitulos"
+                            Style="Variant.Outlined"
+                            ColorPickerView="ColorPickerView.Spectrum"
+                            Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudColorPicker Label="Color de Botones"
+                            @bind-Text="Data.ConfiguracionSeleccionada.vchColorBotones"
+                            Style="Variant.Outlined"
+                            ColorPickerView="ColorPickerView.Spectrum"
+                            Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudColorPicker Label="Color de Margen de Fotos"
+                            @bind-Text="Data.ConfiguracionSeleccionada.vchColorMargenFotos"
+                            Style="Variant.Outlined"
+                            ColorPickerView="ColorPickerView.Spectrum"
+                            Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudSelect T="string" @bind-Value="Data.ConfiguracionSeleccionada.vchTipografiaTitulos"
+                       Label="Tipografía para Títulos"
+                       Variant="Variant.Outlined"
+                       Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
+                       AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem T="string" Value="@("Roboto")">Roboto</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Open Sans")">Open Sans</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Montserrat")">Montserrat</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Lato")">Lato</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Poppins")">Poppins</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudSelect T="string" @bind-Value="Data.ConfiguracionSeleccionada.vchTipografiaCuerpo"
+                       Label="Tipografía para Cuerpo"
+                       Variant="Variant.Outlined"
+                       Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
+                       AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem T="string" Value="@("Roboto")">Roboto</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Open Sans")">Open Sans</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Arial")">Arial</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Helvetica")">Helvetica</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudSelect T="string" @bind-Value="Data.ConfiguracionSeleccionada.vchEstiloBordes"
+                       Label="Estilo de Bordes"
+                       Variant="Variant.Outlined"
+                       Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
+                       AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem T="string" Value="@("0px")">Cuadrado (0px)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("4px")">Redondeado Ligero (4px)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("8px")">Redondeado Medio (8px)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("16px")">Redondeado Alto (16px)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("50px")">Píldora (50px)</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex justify-end mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="GuardarConfiguracion" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">
+                Guardar Configuración
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+}

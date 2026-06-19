@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.Share.Objects.Common;
@@ -37,6 +37,33 @@ namespace SantiagoConectaIA.API.Controllers
 			using (var stream = file.OpenReadStream())
 			{
 				var result = await _azureBlobDomain.UploadDocument(stream, uniqueFileName, "tramitedocs");
+
+				if (result.IsSuccess)
+				{
+					return Ok(result);
+				}
+				return BadRequest(result);
+			}
+		}
+
+		/// <summary>
+		/// Sube un archivo de imagen (Logo) al Azure Blob Storage y retorna su URL.
+		/// </summary>
+		/// <param name="file">El archivo de imagen subido.</param>
+		[HttpPost("UploadImage")]
+		public async Task<IActionResult> UploadImage(IFormFile file)
+		{
+			if (file == null || file.Length == 0)
+			{
+				return BadRequest(EngramaCoreStandar.Results.Response<BlobSaved>.BadResult("No se proporcionó ninguna imagen.", new BlobSaved()));
+			}
+
+			var extension = Path.GetExtension(file.FileName);
+			var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+
+			using (var stream = file.OpenReadStream())
+			{
+				var result = await _azureBlobDomain.UploadDocument(stream, uniqueFileName, "empresas-logos");
 
 				if (result.IsSuccess)
 				{
