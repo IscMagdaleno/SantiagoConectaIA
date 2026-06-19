@@ -66,31 +66,46 @@
                 <MudTextField @bind-Value="currentMessage" Placeholder="Escribe un mensaje..." DisableUnderLine="true" 
                                Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1"
                                OnKeyDown="HandleKeyDown" Disabled="isLoading" Style="border-radius: 20px; background-color: #f5f5f5;" />
-                <MudIconButton Icon="@Icons.Material.Filled.Send" Color="Color.Primary" Disabled="@(string.IsNullOrWhiteSpace(currentMessage) || isLoading)" OnClick="SendMessage" Class="ml-1" />
+                <MudIconButton Icon="@Icons.Material.Filled.Send" Color="Color.Primary" Disabled="@(isLoading)" OnClick="SendMessage" Class="ml-1" />
             </div>
         </MudPaper>
     }
     else
     {
-        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Chat" Size="Size.Large" OnClick="ToggleChat" Class="pulse-animation" Style="background: linear-gradient(135deg, #d81b60, #880e4f);" />
+        <div class="chatbot-fab">
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Chat" Size="Size.Large" OnClick="ToggleChat" Class="pulse-animation" Style="background: linear-gradient(135deg, #d81b60, #880e4f);" />
+        </div>
     }
 </div>
 
 <style>
     .chatbot-container {
         position: fixed;
-        bottom: 24px;
-        right: 24px;
+        top: 0;
+        right: 0;
+        bottom: 0;
         z-index: 9999;
         font-family: 'Inter', 'Roboto', sans-serif;
     }
     
     .chatbot-window {
-        width: 350px;
-        height: 500px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 33.33vw;
+        min-width: 400px;
+        height: 100vh;
+        box-shadow: -5px 0 40px rgba(0,0,0,0.15) !important;
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        animation: slideUp 0.3s ease-out;
+        animation: slideInRight 0.3s ease-out;
+        border-radius: 0 !important;
+    }
+
+    .chatbot-fab {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
     }
     
     .pulse-animation {
@@ -104,9 +119,9 @@
         100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(216, 27, 96, 0); }
     }
 
-    @@keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+    @@keyframes slideInRight {
+        from { opacity: 0; transform: translateX(100%); }
+        to { opacity: 1; transform: translateX(0); }
     }
     
     .typing-indicator {
@@ -138,8 +153,8 @@
         background: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 12px;
-        padding: 8px 12px;
-        font-size: 0.85rem;
+        padding: 10px 14px;
+        font-size: 0.9rem;
         color: #d81b60;
         text-align: left;
         cursor: pointer;
@@ -152,6 +167,13 @@
         border-color: #f8bbd0;
         transform: translateY(-1px);
         box-shadow: 0 4px 10px rgba(216, 27, 96, 0.08);
+    }
+
+    @@media (max-width: 768px) {
+        .chatbot-window {
+            width: 100vw;
+            min-width: unset;
+        }
     }
 </style>
 
