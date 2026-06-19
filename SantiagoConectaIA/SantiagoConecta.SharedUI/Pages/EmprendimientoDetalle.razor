@@ -1,0 +1,315 @@
+@page "/emprendimientos/{iIdEmpresa:int}"
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.Objetos.EmpresasModulo
+@using SantiagoConectaIA.Share.PostModels.EmpresasModulo
+@using SantiagoConectaIA.Share.PostClass.EmpresasModulo
+@inject Data_Emprendimientos dataEmprendimientos
+@inject NavigationManager NavManager
+
+<PageTitle>Emprendimiento - @(empresa?.vchNombreComercial ?? "Cargando...")</PageTitle>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-center align-center" style="min-height: 80vh;">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+else if (empresa == null)
+{
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-16 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 80px; color: #cbd5e1;" />
+        <MudText Typo="Typo.h4" Class="mt-6 mb-2">Emprendimiento no encontrado</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Surface" Class="mb-8">No pudimos cargar la información de esta empresa.</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavManager.NavigateTo("/emprendimientos"))">Volver al Catálogo</MudButton>
+    </MudContainer>
+}
+else
+{
+    <!-- Hero Section (Igual al Catálogo) -->
+    <div class="custom-hero-header">
+        <div class="container relative z-10 mx-auto px-4 text-center">
+            <div class="d-flex flex-column align-center justify-center">
+                @if (!string.IsNullOrEmpty(empresa.vchLogoUrl))
+                {
+                    <MudAvatar Style="width: 140px; height: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 4px solid white; background-color: white;" Class="mb-4">
+                        <MudImage Src="@($"data:image/png;base64,{empresa.vchLogoUrl}")" ObjectFit="ObjectFit.Contain" />
+                    </MudAvatar>
+                }
+                else
+                {
+                    <MudAvatar Style="width: 140px; height: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 4px solid white; background-color: white;" Class="mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Store" Style="font-size: 64px; color: #cbd5e1;" />
+                    </MudAvatar>
+                }
+                <h1 class="header-title mt-2">@empresa.vchNombreComercial</h1>
+                @if (!string.IsNullOrEmpty(empresa.vchSlogan))
+                {
+                    <p class="header-subtitle mt-2" style="font-style: italic; font-weight: 500;">
+                        "@empresa.vchSlogan"
+                    </p>
+                }
+                
+                <!-- Redes Sociales Directas en el Header -->
+                @if (redesSociales != null && redesSociales.Any())
+                {
+                    <div class="d-flex flex-wrap justify-center gap-4 mt-6">
+                        @foreach (var red in redesSociales)
+                        {
+                            <MudButton Href="@red.vchUrl" Target="_blank" 
+                                       Variant="Variant.Filled" 
+                                       Style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: white; border-radius: 50px; text-transform: none; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); padding: 8px 24px;">
+                                <MudIcon Icon="@GetIconForSocial(red.vchPlataforma)" Size="Size.Small" Class="mr-2" /> 
+                                @red.vchPlataforma
+                            </MudButton>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Animated waves at bottom -->
+        <div class="waves-wrapper" style="margin-bottom: -1px;">
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                 viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto" style="display: block;">
+                <defs>
+                    <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <!-- CUERPO PRINCIPAL (Fondo Blanco) -->
+    <div style="background-color: #ffffff; min-height: 50vh; padding-bottom: 4rem;">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="pt-8">
+            <MudGrid>
+                <!-- COLUMNA IZQUIERDA: Información -->
+                <MudItem xs="12" md="4">
+                    
+                    <!-- Tarjeta: Sobre Nosotros -->
+                    <MudPaper Elevation="4" Class="pa-6 mb-8" Style="border-radius: 16px; border: 1px solid #f1f5f9;">
+                        <div class="d-flex align-center mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Large" Class="mr-3" />
+                            <MudText Typo="Typo.h5" Style="font-weight: 800; color: #1e293b;">Sobre Nosotros</MudText>
+                        </div>
+                        
+                        <MudText Typo="Typo.body1" Class="mb-4" Style="color: #475569; line-height: 1.6;">
+                            @(string.IsNullOrEmpty(empresa.nvchDescripcion) ? "No hay descripción disponible." : empresa.nvchDescripcion)
+                        </MudText>
+
+                        @if (!string.IsNullOrEmpty(empresa.nvchMision))
+                        {
+                            <div class="mt-6 p-4" style="background-color: #f8fafc; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 12px 16px;">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 800; color: #0f172a;" Class="mb-1">Nuestra Misión</MudText>
+                                <MudText Typo="Typo.body2" Style="color: #334155;">@empresa.nvchMision</MudText>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(empresa.nvchVision))
+                        {
+                            <div class="mt-4 p-4" style="background-color: #f8fafc; border-left: 4px solid #10b981; border-radius: 4px; padding: 12px 16px;">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 800; color: #0f172a;" Class="mb-1">Nuestra Visión</MudText>
+                                <MudText Typo="Typo.body2" Style="color: #334155;">@empresa.nvchVision</MudText>
+                            </div>
+                        }
+                    </MudPaper>
+
+                    <!-- Tarjeta: Ubicaciones -->
+                    <MudPaper Elevation="4" Class="pa-6" Style="border-radius: 16px; border: 1px solid #f1f5f9;">
+                        <div class="d-flex align-center mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Map" Color="Color.Secondary" Size="Size.Large" Class="mr-3" />
+                            <MudText Typo="Typo.h5" Style="font-weight: 800; color: #1e293b;">Ubicaciones</MudText>
+                        </div>
+                        
+                        @if (ubicaciones == null || !ubicaciones.Any())
+                        {
+                            <MudText Typo="Typo.body2" Style="color: #64748b; font-style: italic;">No hay ubicaciones registradas.</MudText>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column gap-6">
+                                @foreach (var ubi in ubicaciones)
+                                {
+                                    <div class="location-card">
+                                        <div class="d-flex align-center mb-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Error" Size="Size.Small" Class="mr-2" />
+                                            <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #0f172a;">@ubi.vchAlias</MudText>
+                                        </div>
+                                        <MudText Typo="Typo.body2" Class="mb-3 pl-6" Style="color: #475569;">@ubi.vchDireccion</MudText>
+                                        
+                                        @if (ubi.flLatitud != 0 && ubi.flLongitud != 0)
+                                        {
+                                            <div style="width: 100%; height: 180px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
+                                                <iframe width="100%"
+                                                        height="100%"
+                                                        frameborder="0"
+                                                        style="border:0"
+                                                        src="@($"https://maps.google.com/maps?q={ubi.flLatitud.ToString(System.Globalization.CultureInfo.InvariantCulture)},{ubi.flLongitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}&z=15&output=embed")"
+                                                        allowfullscreen>
+                                                </iframe>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </MudPaper>
+
+                </MudItem>
+
+                <!-- COLUMNA DERECHA: Productos y Servicios -->
+                <MudItem xs="12" md="8">
+                    <MudPaper Elevation="4" Class="pa-6" Style="border-radius: 16px; border: 1px solid #f1f5f9; min-height: 100%;">
+                        <div class="d-flex align-center mb-6">
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory" Color="Color.Warning" Size="Size.Large" Class="mr-3" />
+                            <MudText Typo="Typo.h4" Style="font-weight: 800; color: #1e293b;">Catálogo de Productos y Servicios</MudText>
+                        </div>
+                        
+                        @if (categorias == null || !categorias.Any())
+                        {
+                            <div class="d-flex flex-column align-center justify-center py-16" style="opacity: 0.6;">
+                                <MudIcon Icon="@Icons.Material.Filled.ProductionQuantityLimits" Style="font-size: 64px; color: #94a3b8;" Class="mb-4" />
+                                <MudText Typo="Typo.h6" Style="color: #475569;">No hay productos o servicios registrados aún.</MudText>
+                            </div>
+                        }
+                        else
+                        {
+                            <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-6" Color="Color.Primary" SliderColor="Color.Secondary">
+                                @foreach (var cat in categorias)
+                                {
+                                    <MudTabPanel Text="@cat.vchNombre">
+                                        @if (productos.ContainsKey(cat.iIdCategoriaCat) && productos[cat.iIdCategoriaCat].Any())
+                                        {
+                                            <MudGrid>
+                                                @foreach (var prod in productos[cat.iIdCategoriaCat])
+                                                {
+                                                    <MudItem xs="12" sm="6" lg="4">
+                                                        <MudCard Elevation="2" Style="border-radius: 12px; height: 100%; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;" Class="hover-card">
+                                                            @if (!string.IsNullOrEmpty(prod.vchImagenUrl))
+                                                            {
+                                                                <MudCardMedia Image="@($"data:image/png;base64,{prod.vchImagenUrl}")" Height="200" Style="border-top-left-radius: 12px; border-top-right-radius: 12px;" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <div style="height: 200px; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                                                                    <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported" Style="font-size: 48px; color: #cbd5e1;" />
+                                                                </div>
+                                                            }
+                                                            <MudCardContent Style="flex-grow: 1;">
+                                                                <MudText Typo="Typo.h6" Style="font-weight: 700; color: #0f172a; line-height: 1.3;" Class="mb-2">@prod.vchNombre</MudText>
+                                                                <MudText Typo="Typo.body2" Style="color: #475569;">
+                                                                    @(string.IsNullOrEmpty(prod.nvchDescripcionCorta) ? "Sin descripción" : prod.nvchDescripcionCorta)
+                                                                </MudText>
+                                                            </MudCardContent>
+                                                            <MudCardActions Class="px-4 pb-4">
+                                                                @if (prod.mPrecio > 0)
+                                                                {
+                                                                    <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Size="Size.Medium" Style="font-weight: bold; font-size: 1.1rem;">
+                                                                        @prod.mPrecio.ToString("C")
+                                                                    </MudChip>
+                                                                }
+                                                                <MudSpacer />
+                                                                @if (redesSociales != null && redesSociales.Any(x => x.vchPlataforma.ToLower().Contains("whatsapp")))
+                                                                {
+                                                                    var wa = redesSociales.First(x => x.vchPlataforma.ToLower().Contains("whatsapp"));
+                                                                    <MudIconButton Icon="@Icons.Custom.Brands.WhatsApp" Color="Color.Success" Href="@wa.vchUrl" Target="_blank" Size="Size.Medium" Title="Preguntar por WhatsApp" />
+                                                                }
+                                                            </MudCardActions>
+                                                        </MudCard>
+                                                    </MudItem>
+                                                }
+                                            </MudGrid>
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex flex-column align-center justify-center py-8" style="opacity: 0.6;">
+                                                <MudText Typo="Typo.body1" Style="color: #64748b;">No hay elementos en esta categoría.</MudText>
+                                            </div>
+                                        }
+                                    </MudTabPanel>
+                                }
+                            </MudTabs>
+                        }
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </div>
+    
+    <style>
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
+        }
+    </style>
+}
+
+@code {
+    [Parameter]
+    public int iIdEmpresa { get; set; }
+
+    private Empresa? empresa;
+    private List<EmpresaRedSocial>? redesSociales;
+    private List<EmpresaUbicacion>? ubicaciones;
+    private List<CategoriaCatalogo>? categorias;
+    private Dictionary<int, List<ProductoServicio>> productos = new();
+
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+
+        var resEmpresa = await dataEmprendimientos.PostGetEmpresas(new PostGetEmpresas { iIdEmpresa = iIdEmpresa });
+        if (resEmpresa != null && resEmpresa.IsSuccess && resEmpresa.Data != null)
+        {
+            empresa = resEmpresa.Data.FirstOrDefault();
+        }
+
+        if (empresa != null)
+        {
+            // Redes y Ubicaciones
+            var resRedes = await dataEmprendimientos.PostGetEmpresaRedesSociales(new PostGetEmpresaRedesSociales { iIdEmpresa = iIdEmpresa });
+            if (resRedes != null && resRedes.IsSuccess) redesSociales = resRedes.Data;
+
+            var resUbicaciones = await dataEmprendimientos.PostGetEmpresaUbicaciones(new PostGetEmpresaUbicaciones { iIdEmpresa = iIdEmpresa });
+            if (resUbicaciones != null && resUbicaciones.IsSuccess) ubicaciones = resUbicaciones.Data;
+
+            // Categorías y Productos
+            var resCats = await dataEmprendimientos.PostGetCategoriasPorEmpresa(new PostGetCategoriasPorEmpresa { iIdEmpresa = iIdEmpresa });
+            if (resCats != null && resCats.IsSuccess && resCats.Data != null)
+            {
+                categorias = resCats.Data;
+                foreach (var cat in categorias)
+                {
+                    var resProd = await dataEmprendimientos.PostGetProductosPorCategoria(new PostGetProductosPorCategoria { iIdCategoriaCat = cat.iIdCategoriaCat });
+                    if (resProd != null && resProd.IsSuccess && resProd.Data != null)
+                    {
+                        productos[cat.iIdCategoriaCat] = resProd.Data;
+                    }
+                }
+            }
+        }
+
+        isLoading = false;
+    }
+
+    private string GetIconForSocial(string? plataforma)
+    {
+        var plat = plataforma?.ToLower() ?? "";
+        if (plat.Contains("facebook")) return Icons.Custom.Brands.Facebook;
+        if (plat.Contains("instagram")) return Icons.Custom.Brands.Instagram;
+        if (plat.Contains("twitter") || plat.Contains("x")) return Icons.Custom.Brands.Twitter;
+        if (plat.Contains("whatsapp")) return Icons.Custom.Brands.WhatsApp;
+        if (plat.Contains("tiktok")) return Icons.Custom.Brands.TikTok;
+        if (plat.Contains("web")) return Icons.Material.Filled.Language;
+        if (plat.Contains("youtube")) return Icons.Custom.Brands.YouTube;
+        if (plat.Contains("linkedin")) return Icons.Custom.Brands.LinkedIn;
+        return Icons.Material.Filled.Link;
+    }
+}

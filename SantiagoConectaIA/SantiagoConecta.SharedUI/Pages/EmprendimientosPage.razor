@@ -1,0 +1,217 @@
+@page "/emprendimientos"
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.Objetos.EmpresasModulo
+@using SantiagoConectaIA.Share.PostModels.EmpresasModulo
+@using SantiagoConectaIA.Share.PostClass.EmpresasModulo
+@inject Data_Emprendimientos dataEmprendimientos
+@inject NavigationManager NavManager
+
+<PageTitle>Santiaguero Conecta - Emprendimientos Locales</PageTitle>
+
+<!-- Hero Section -->
+<div class="custom-hero-header">
+    <div class="container relative z-10 mx-auto px-4 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 64px; color: #fbbf24; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));" />
+        <h1 class="header-title mt-3">Emprendimientos Locales</h1>
+        <p class="header-subtitle">
+            Descubre los mejores negocios, productos y servicios de Santiago Papasquiaro. Apoya la economía local.
+        </p>
+    </div>
+    
+    <!-- Animated waves at bottom -->
+    <div class="waves-wrapper">
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+             viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </div>
+</div>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <!-- Buscador y Filtros -->
+    <MudPaper Elevation="0" Class="pa-4 mb-8" Style="background-color: transparent;">
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="searchQuery" Placeholder="Buscar emprendimiento..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" OnClearButtonClick="() => { searchQuery = string.Empty; StateHasChanged(); }" TextChanged="OnSearchChanged" Immediate="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" Label="Filtrar por Categoría" @bind-Value="selectedCategoriaId" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" SelectedValuesChanged="OnCategoriaChanged">
+                    <MudSelectItem T="int?" Value="null">Todas las categorías</MudSelectItem>
+                    @if (lstCategorias != null)
+                    {
+                        @foreach (var cat in lstCategorias)
+                        {
+                            <MudSelectItem T="int?" Value="@cat.iIdCatalogoEmpresa">@cat.vchNombre</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Grid de Emprendimientos -->
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 300px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else if (empresasFiltradas == null || !empresasFiltradas.Any())
+    {
+        <div class="text-center pa-10">
+            <MudIcon Icon="@Icons.Material.Filled.SearchOff" Style="font-size: 64px; color: #cbd5e1;" />
+            <MudText Typo="Typo.h5" Class="mt-4" Style="color: #64748b;">No encontramos emprendimientos</MudText>
+            <MudText Typo="Typo.body1" Style="color: #94a3b8;">Intenta con otra búsqueda o filtro.</MudText>
+        </div>
+    }
+    else
+    {
+        <MudGrid Spacing="4">
+            @foreach (var empresa in empresasFiltradas)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudCard Elevation="4" Class="empresa-card" Style="height: 100%; display: flex; flex-direction: column; border-radius: 16px; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                        <div class="card-img-container" style="height: 180px; background-color: #f8fafc; display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid #e2e8f0; padding: 1rem;">
+                            @if (!string.IsNullOrEmpty(empresa.vchLogoUrl))
+                            {
+                                <img src="@empresa.vchLogoUrl" alt="Logo @empresa.vchNombreComercial" style="max-height: 100%; max-width: 100%; object-fit: contain; transition: transform 0.5s ease;" class="empresa-logo-img" />
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Store" Style="font-size: 80px; color: #cbd5e1;" />
+                            }
+                        </div>
+                        <MudCardContent Style="flex-grow: 1;">
+                            <MudText Typo="Typo.h6" Style="font-weight: 700; color: #1e293b; line-height: 1.2;" Class="mb-2">@empresa.vchNombreComercial</MudText>
+                            
+                            @if (lstCategorias != null && empresa.iIdCatalogoEmpresa.HasValue)
+                            {
+                                var cat = lstCategorias.FirstOrDefault(c => c.iIdCatalogoEmpresa == empresa.iIdCatalogoEmpresa.Value);
+                                if (cat != null && !string.IsNullOrEmpty(cat.vchNombre))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Class="mb-3 px-3" Style="font-weight: 600;">@cat.vchNombre</MudChip>
+                                }
+                            }
+                            
+                            @if (!string.IsNullOrEmpty(empresa.vchSlogan))
+                            {
+                                <MudText Typo="Typo.body2" Style="color: #64748b; font-style: italic;">"@empresa.vchSlogan"</MudText>
+                            }
+                        </MudCardContent>
+                        <MudCardActions Class="pa-4 pt-0" Style="justify-content: center;">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Style="border-radius: 8px; font-weight: 600; text-transform: none; letter-spacing: 0.5px;" OnClick="@(() => VerDetalle(empresa.iIdEmpresa))" EndIcon="@Icons.Material.Filled.ArrowForward">
+                                Visitar
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+<style>
+    @@keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .empresa-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    }
+    
+    .empresa-card:hover .empresa-logo-img {
+        transform: scale(1.05);
+    }
+</style>
+
+@code {
+    private List<Empresa>? lstEmpresas;
+    private List<Empresa>? empresasFiltradas;
+    private List<CatalogoEmpresa>? lstCategorias;
+    
+    private string searchQuery = string.Empty;
+    private int? selectedCategoriaId = null;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        await CargarCatalogos();
+        await CargarEmpresas();
+        isLoading = false;
+    }
+
+    private async Task CargarCatalogos()
+    {
+        var request = new PostGetCatalogoEmpresa { }; // 0 para traer todos
+        var response = await dataEmprendimientos.PostGetCatalogoEmpresa(request);
+        if (response != null && response.IsSuccess && response.Data != null)
+        {
+            lstCategorias = response.Data;
+        }
+    }
+
+    private async Task CargarEmpresas()
+    {
+        var request = new PostGetEmpresas { iIdEmpresa = -1 }; // 0 para traer todas
+        var response = await dataEmprendimientos.PostGetEmpresas(request);
+        if (response != null && response.IsSuccess && response.Data != null)
+        {
+            // Filtrar solo las activas, si aplica. Por ahora mostramos todas las retornadas.
+            lstEmpresas = response.Data.Where(e => e.bEstatus).ToList();
+            AplicarFiltros();
+        }
+    }
+
+    private void OnSearchChanged(string text)
+    {
+        searchQuery = text;
+        AplicarFiltros();
+    }
+
+    private void OnCategoriaChanged(IEnumerable<int?> values)
+    {
+        selectedCategoriaId = values.FirstOrDefault();
+        AplicarFiltros();
+    }
+
+    private void AplicarFiltros()
+    {
+        if (lstEmpresas == null) return;
+
+        var query = lstEmpresas.AsQueryable();
+
+        if (selectedCategoriaId.HasValue)
+        {
+            query = query.Where(e => e.iIdCatalogoEmpresa == selectedCategoriaId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var lowerQuery = searchQuery.ToLower();
+            query = query.Where(e => 
+                (e.vchNombreComercial != null && e.vchNombreComercial.ToLower().Contains(lowerQuery)) ||
+                (e.nvchDescripcion != null && e.nvchDescripcion.ToLower().Contains(lowerQuery)) ||
+                (e.vchSlogan != null && e.vchSlogan.ToLower().Contains(lowerQuery))
+            );
+        }
+
+        empresasFiltradas = query.ToList();
+    }
+
+    private void VerDetalle(int idEmpresa)
+    {
+        NavManager.NavigateTo($"/emprendimientos/{idEmpresa}");
+    }
+}

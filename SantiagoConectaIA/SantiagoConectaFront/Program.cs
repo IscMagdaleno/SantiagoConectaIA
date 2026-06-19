@@ -27,6 +27,7 @@ else
 builder.Services.AddScoped<Data_Tramites>();
 builder.Services.AddScoped<Data_Noticias>();
 builder.Services.AddScoped<Data_BuzonCiudadano>();
+builder.Services.AddScoped<Data_Emprendimientos>();
 builder.Services.AddMudServices();
 
 
