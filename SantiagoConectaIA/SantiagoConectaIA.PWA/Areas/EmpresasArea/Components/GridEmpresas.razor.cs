@@ -48,7 +48,7 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
             var type = typeof(FormEmpresa);
             var tab = new WorkspaceTab
             {
-                Icono = Icons.Material.Filled.AddBox,
+                Icono = Icons.Material.Filled.AdSCIAx,
                 Text = "Nueva Empresa",
                 TipoControl = type,
                 Repetir = false,

@@ -18,6 +18,19 @@
                         </MudItem>
                         
                         <MudItem xs="12" sm="6">
+                            <MudSelect T="int?" @bind-Value="Data.RegistroSeleccionado.iIdCatalogoEmpresa"
+                                       Label="Categoría (Giro)" 
+                                       Variant="Variant.Outlined" 
+                                       Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
+                                       AnchorOrigin="Origin.BottomCenter">
+                                @foreach (var cat in Data.LstCatalogos)
+                                {
+                                    <MudSelectItem T="int?" Value="@((int?)cat.iIdCatalogoEmpresa)">@cat.vchNombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6">
                             <MudTextField @bind-Value="Data.RegistroSeleccionado.vchSlogan"
                                           Label="Eslogan" 
                                           Variant="Variant.Outlined" 
@@ -74,6 +87,34 @@
                         </MudItem>
                     </MudGrid>
                 }
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Ubicaciones" Icon="@Icons.Material.Filled.Map" Disabled="@(Data.RegistroSeleccionado.iIdEmpresa <= 0)">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Ubicaciones de la Empresa</MudText>
+                <!-- Aquí implementaremos el mapa interactivo y la lista -->
+                <MudAlert Severity="Severity.Info">Guarda la empresa primero para gestionar sus ubicaciones.</MudAlert>
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Redes Sociales" Icon="@Icons.Material.Filled.Share" Disabled="@(Data.RegistroSeleccionado.iIdEmpresa <= 0)">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Redes Sociales</MudText>
+                <MudAlert Severity="Severity.Info">Guarda la empresa primero para gestionar sus redes sociales.</MudAlert>
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Servicios" Icon="@Icons.Material.Filled.Storefront" Disabled="@(Data.RegistroSeleccionado.iIdEmpresa <= 0)">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Servicios y Categorías</MudText>
+                <MudAlert Severity="Severity.Info">Guarda la empresa primero para configurar los servicios.</MudAlert>
             </MudCardContent>
         </MudCard>
     </MudTabPanel>

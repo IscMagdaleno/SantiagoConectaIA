@@ -1,6 +1,7 @@
 using EngramaCoreStandar.Results;
 using SantiagoConectaIA.Share.Objetos.EmpresasModulo;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
+using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule
 {
@@ -8,5 +9,14 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule
     {
         Task<Response<IEnumerable<Empresa>>> GetEmpresas(PostGetEmpresas postModel);
         Task<Response<Empresa>> SaveEmpresa(PostSaveEmpresa postModel);
+        Task<Response<IEnumerable<CatalogoEmpresa>>> GetCatalogoEmpresas(PostGetCatalogoEmpresa postModel);
+        Task<Response<IEnumerable<EmpresaUbicacion>>> GetEmpresaUbicaciones(PostGetEmpresaUbicaciones postModel);
+        Task<Response<EmpresaUbicacion>> SaveEmpresaUbicacion(PostSaveEmpresaUbicacion postModel);
+        Task<Response<IEnumerable<EmpresaRedSocial>>> GetEmpresaRedesSociales(PostGetEmpresaRedesSociales postModel);
+        Task<Response<EmpresaRedSocial>> SaveEmpresaRedSocial(PostSaveEmpresaRedSocial postModel);
+        Task<Response<IEnumerable<CategoriaCatalogo>>> GetCategoriasPorEmpresa(PostGetCategoriasPorEmpresa postModel);
+        Task<Response<CategoriaCatalogo>> SaveCategoriaCatalogo(PostSaveCategoriaCatalogo postModel);
+        Task<Response<IEnumerable<ProductoServicio>>> GetProductosPorCategoria(PostGetProductosPorCategoria postModel);
+        Task<Response<ProductoServicio>> SaveProductoServicio(PostSaveProductoServicio postModel);
     }
 }

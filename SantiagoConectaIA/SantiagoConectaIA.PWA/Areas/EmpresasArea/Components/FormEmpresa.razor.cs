@@ -13,6 +13,22 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
         // Evento para notificar al GridEmpresas que se guardó algo
         [Parameter] public EventCallback OnSuccess { get; set; }
 
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+            if (Data.LstCatalogos.Count == 0)
+            {
+                await Data.PostGetCatalogos();
+            }
+            if (Data.RegistroSeleccionado != null && Data.RegistroSeleccionado.iIdEmpresa > 0)
+            {
+                // Cargar datos dependientes al abrir una empresa existente
+                await Data.PostGetUbicaciones();
+                await Data.PostGetRedesSociales();
+                await Data.PostGetCategorias();
+            }
+        }
+
         private async Task Submit()
         {
             var result = await Data.PostSaveRegistro();
