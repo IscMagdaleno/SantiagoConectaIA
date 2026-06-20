@@ -138,6 +138,7 @@
         border: 1px solid rgba(255,255,255,0.2);
         overflow: hidden;
         box-sizing: border-box; /* Previene desbordamiento por padding */
+        overscroll-behavior: none; /* Previene el scroll encadenado con el body */
     }
 
     /* EFECTO FONDO ANIMADO Y SUPER DESENFOCADO */
@@ -222,6 +223,7 @@
         scroll-behavior: smooth;
         width: 100%;
         box-sizing: border-box;
+        overscroll-behavior: contain; /* Encapsula el scroll dentro de este contenedor */
     }
     
     .chatbot-messages::-webkit-scrollbar { width: 6px; }
