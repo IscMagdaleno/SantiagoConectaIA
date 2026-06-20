@@ -129,5 +129,28 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
                 Snackbar.Add(result.vchMessage, Severity.Error);
             }
         }
+
+        private async Task UploadImagenProducto(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
+        {
+            if (file == null) return;
+
+            try
+            {
+                var result = await Data.PostUploadLogo(file);
+                if (result != null && result.IsSuccess && result.Data != null && !string.IsNullOrEmpty(result.Data.URL))
+                {
+                    productoActual.vchImagenUrl = result.Data.URL;
+                    Snackbar.Add("Imagen del producto subida exitosamente.", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add(result?.Message ?? "Error al subir la imagen.", Severity.Error);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Snackbar.Add($"Ocurrió un error al subir la imagen: {ex.Message}", Severity.Error);
+            }
+        }
     }
 }

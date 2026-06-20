@@ -32,7 +32,7 @@ else
                 @if (!string.IsNullOrEmpty(empresa.vchLogoUrl))
                 {
                     <MudAvatar Style="width: 140px; height: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 4px solid white; background-color: white;" Class="mb-4">
-                        <MudImage Src="@($"data:image/png;base64,{empresa.vchLogoUrl}")" ObjectFit="ObjectFit.Contain" />
+                        <MudImage Src="@(empresa.vchLogoUrl.StartsWith("http") ? empresa.vchLogoUrl : $"data:image/png;base64,{empresa.vchLogoUrl}")" ObjectFit="ObjectFit.Contain" />
                     </MudAvatar>
                 }
                 else
@@ -192,7 +192,7 @@ else
                                                         <MudCard Elevation="2" Style="border-radius: 12px; height: 100%; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;" Class="hover-card">
                                                             @if (!string.IsNullOrEmpty(prod.vchImagenUrl))
                                                             {
-                                                                <MudCardMedia Image="@($"data:image/png;base64,{prod.vchImagenUrl}")" Height="200" Style="border-top-left-radius: 12px; border-top-right-radius: 12px;" />
+                                                                <MudCardMedia Image="@(prod.vchImagenUrl.StartsWith("http") ? prod.vchImagenUrl : $"data:image/png;base64,{prod.vchImagenUrl}")" Height="200" Style="border-top-left-radius: 12px; border-top-right-radius: 12px;" />
                                                             }
                                                             else
                                                             {

@@ -140,6 +140,24 @@
             <MudItem xs="12" sm="6">
                 <MudSwitch @bind-Value="productoActual.bEstatus" Label="Activo" Color="Color.Success" Class="mt-4" />
             </MudItem>
+            <MudItem xs="12">
+                <MudFileUpload T="IBrowserFile" FilesChanged="UploadImagenProducto">
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" FullWidth="true">
+                            Subir Imagen del Producto
+                        </MudButton>
+                    </ActivatorContent>
+                </MudFileUpload>
+                @if (!string.IsNullOrEmpty(productoActual.vchImagenUrl))
+                {
+                    <div class="mt-2 d-flex align-center p-2 rounded" style="background-color: #f1f5f9;">
+                        <MudAvatar Size="Size.Large" Class="mr-3" Style="border: 1px solid #e2e8f0;">
+                            <MudImage Src="@productoActual.vchImagenUrl" ObjectFit="ObjectFit.Cover" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.caption" Color="Color.Success" Style="font-weight: bold;">Imagen cargada exitosamente y lista para guardarse.</MudText>
+                    </div>
+                }
+            </MudItem>
         </MudGrid>
     </DialogContent>
     <DialogActions>
