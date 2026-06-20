@@ -5,75 +5,102 @@
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
 
-<div class="chatbot-container">
+<div class="chatbot-container @(isOpen ? "open" : "")">
     @if (isOpen)
     {
-        <MudPaper Elevation="8" Class="chatbot-window d-flex flex-column" Style="border-radius: 16px; overflow: hidden; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
-            <div class="chatbot-header d-flex justify-space-between align-center px-4 py-3" style="background: linear-gradient(135deg, #d81b60, #880e4f); color: white;">
+        <MudPaper Elevation="0" Class="chatbot-window">
+            <!-- Fondo animado con gradiente super desenfocado -->
+            <div class="chatbot-bg-layer"></div>
+            <div class="chatbot-glass"></div>
+
+            <!-- Sistema interactivo de partículas en Canvas desenfocado -->
+            <canvas id="chat-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.8; filter: blur(2px);"></canvas>
+
+            <div class="chatbot-header d-flex justify-space-between align-center px-4 py-3">
                 <div class="d-flex align-center">
-                    <MudAvatar Color="Color.Transparent" Size="Size.Small" Class="mr-2">
-                        <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Inherit" />
-                    </MudAvatar>
-                    <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">Santiago Conecta IA</MudText>
+                    <div class="ia-avatar-wrapper mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="color: #fff; font-size: 20px;" />
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Style="font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">Santiago Conecta IA</MudText>
+                        <MudText Typo="Typo.caption" Style="color: #a5d6a7; font-weight: 500; display: flex; align-items: center; gap: 4px;">
+                            <span class="online-dot"></span> En línea
+                        </MudText>
+                    </div>
                 </div>
-                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="ToggleChat" />
+                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Medium" OnClick="ToggleChat" Class="close-btn" />
             </div>
 
-            <div class="chatbot-messages flex-grow-1 p-3" style="overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background-color: #f8f9fa;">
+            <div class="chatbot-messages flex-grow-1 p-3">
                 @if (messages.Count == 0)
                 {
-                    <div class="text-center mt-3 text-muted">
-                        <MudIcon Icon="@Icons.Material.Filled.ChatBubbleOutline" Size="Size.Large" Style="opacity: 0.5;" />
-                        <MudText Typo="Typo.body2" Class="mt-2">¡Hola! Soy tu asistente virtual. ¿En qué te puedo ayudar hoy?</MudText>
+                    <div class="welcome-message text-center mt-5 mb-4">
+                        <div class="welcome-icon-wrapper mb-3 d-flex justify-center">
+                            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="font-size: 32px; color: #ffffff;" />
+                        </div>
+                        <MudText Typo="Typo.h6" Style="font-weight: 700; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">¡Hola!</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9); margin-top: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">Soy tu asistente virtual inteligente. ¿Cómo puedo ayudarte hoy?</MudText>
                     </div>
 
-                    <div class="d-flex flex-column gap-2 mt-4 px-2">
-                        <button class="suggestion-btn" @onclick='() => SendQuickMessage("¿Cómo pago el impuesto predial?")'>
-                            🏠 Pago de Impuesto Predial
+                    <div class="suggestions-container mt-4 px-2">
+                        <button class="suggestion-btn glass-btn" @onclick='() => SendQuickMessage("¿Cómo pago el impuesto predial?")'>
+                            <span class="emoji">💳</span> Pago de Impuesto Predial
                         </button>
-                        <button class="suggestion-btn" @onclick='() => SendQuickMessage("Requisitos para copia de Acta de Nacimiento")'>
-                            📄 Acta de Nacimiento
+                        <button class="suggestion-btn glass-btn" @onclick='() => SendQuickMessage("Requisitos para copia de Acta de Nacimiento")'>
+                            <span class="emoji">📄</span> Acta de Nacimiento
                         </button>
-                        <button class="suggestion-btn" @onclick='() => SendQuickMessage("¿Cuáles son los horarios de atención y oficinas?")'>
-                            ⏰ Oficinas y Horarios
+                        <button class="suggestion-btn glass-btn" @onclick='() => SendQuickMessage("¿Cuáles son los horarios de atención y oficinas?")'>
+                            <span class="emoji">⏰</span> Oficinas y Horarios
                         </button>
                     </div>
                 }
                 
                 @foreach (var msg in messages)
                 {
-                    <div class="d-flex @(msg.IsUser ? "justify-end" : "justify-start")">
-                        <MudPaper Elevation="1" Class="@($"{(msg.IsUser ? "user-msg" : "bot-msg")} px-3 py-2")" 
-                                  Style="@(msg.IsUser ? "background: linear-gradient(135deg, #e91e63, #c2185b); color: white; border-radius: 16px 16px 0 16px; max-width: 85%; word-break: break-word;" : "background: #ffffff; color: #333; border-radius: 16px 16px 16px 0; max-width: 85%; word-break: break-word; border: 1px solid #e0e0e0;")">
+                    <div class="message-wrapper d-flex @(msg.IsUser ? "justify-end" : "justify-start")">
+                        @if (!msg.IsUser)
+                        {
+                            <div class="bot-avatar mr-2 mt-auto">
+                                <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="font-size: 16px; color: #d81b60;" />
+                            </div>
+                        }
+                        <div class="@($"{(msg.IsUser ? "user-msg" : "bot-msg")}")">
                             <MudText Typo="Typo.body2">@FormatMessage(msg.Content)</MudText>
-                        </MudPaper>
+                        </div>
                     </div>
                 }
                 
                 @if (isLoading)
                 {
-                    <div class="d-flex justify-start">
-                        <MudPaper Elevation="0" Class="px-3 py-2" Style="background: transparent;">
+                    <div class="message-wrapper d-flex justify-start">
+                        <div class="bot-avatar mr-2 mt-auto">
+                            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="font-size: 16px; color: #d81b60;" />
+                        </div>
+                        <div class="bot-msg typing-msg">
                             <div class="typing-indicator">
                                 <span></span><span></span><span></span>
                             </div>
-                        </MudPaper>
+                        </div>
                     </div>
                 }
             </div>
 
-            <div class="chatbot-input p-2 d-flex align-center" style="border-top: 1px solid #eeeeee; background: white;">
-                <MudTextField @bind-Value="currentMessage" Placeholder="Escribe un mensaje..." DisableUnderLine="true" 
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1"
-                               OnKeyDown="HandleKeyDown" Disabled="isLoading" Style="border-radius: 20px; background-color: #f5f5f5;" />
-                <MudIconButton Icon="@Icons.Material.Filled.Send" Color="Color.Primary" Disabled="@(isLoading)" OnClick="SendMessage" Class="ml-1" />
+            <div class="chatbot-input-container">
+                <div class="chatbot-input-wrapper">
+                    <MudTextField @bind-Value="currentMessage" Placeholder="Pregúntale a la IA..." DisableUnderLine="true" 
+                                   Variant="Variant.Text" Margin="Margin.Dense" Class="flex-grow-1 custom-input"
+                                   OnKeyDown="HandleKeyDown" Disabled="isLoading" Immediate="true" />
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Inherit" 
+                                   Disabled="@(isLoading || string.IsNullOrWhiteSpace(currentMessage))" 
+                                   OnClick="SendMessage" Class="send-btn" Size="Size.Small" />
+                </div>
             </div>
         </MudPaper>
     }
     else
     {
         <div class="chatbot-fab">
-            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Chat" Size="Size.Large" OnClick="ToggleChat" Class="pulse-animation" Style="background: linear-gradient(135deg, #d81b60, #880e4f);" />
+            <MudFab Color="Color.Primary" Size="Size.Large" OnClick="ToggleChat" Class="pulse-animation custom-fab" StartIcon="@Icons.Material.Filled.AutoAwesome" />
         </div>
     }
 </div>
@@ -81,24 +108,221 @@
 <style>
     .chatbot-container {
         position: fixed;
-        top: 0;
-        right: 0;
         bottom: 0;
+        right: 0;
         z-index: 9999;
         font-family: 'Inter', 'Roboto', sans-serif;
+        pointer-events: none;
+    }
+    
+    .chatbot-container.open {
+        top: 0;
+        left: 0;
+        pointer-events: auto;
     }
     
     .chatbot-window {
         position: absolute;
-        top: 0;
-        right: 0;
-        width: 33.33vw;
-        min-width: 400px;
-        height: 100vh;
-        box-shadow: -5px 0 40px rgba(0,0,0,0.15) !important;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        animation: slideInRight 0.3s ease-out;
-        border-radius: 0 !important;
+        top: 16px;
+        right: 16px;
+        bottom: 16px;
+        width: 420px;
+        max-width: calc(100vw - 32px); /* Never overflow the screen */
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.2) !important;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+        animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        border-radius: 24px !important;
+        background: transparent !important;
+        border: 1px solid rgba(255,255,255,0.2);
+        overflow: hidden;
+        box-sizing: border-box; /* Previene desbordamiento por padding */
+    }
+
+    /* EFECTO FONDO ANIMADO Y SUPER DESENFOCADO */
+    .chatbot-bg-layer {
+        position: absolute;
+        top: -50%; left: -50%; right: -50%; bottom: -50%;
+        background: linear-gradient(-45deg, #880e4f, #d81b60, #4a148c, #c2185b);
+        background-size: 400% 400%;
+        animation: gradientChat 15s ease infinite;
+        filter: blur(60px); 
+        z-index: 0;
+    }
+
+    .chatbot-glass {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255, 255, 255, 0.05); 
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        z-index: 1;
+    }
+
+    @@keyframes gradientChat {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Asegurar que el contenido del chat flote por encima del fondo */
+    .chatbot-header, .chatbot-messages, .chatbot-input-container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .chatbot-header {
+        background: rgba(255,255,255,0.05);
+        border-bottom: 1px solid rgba(255,255,255,0.15);
+        padding-top: 20px !important;
+        padding-bottom: 16px !important;
+    }
+
+    .ia-avatar-wrapper {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .online-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #69f0ae;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 2px rgba(105, 240, 174, 0.2);
+    }
+
+    .close-btn {
+        background: rgba(255,255,255,0.2) !important;
+        color: #ffffff !important;
+        transition: background 0.2s ease, transform 0.2s ease;
+        border-radius: 50% !important;
+    }
+    .close-btn:hover {
+        background: rgba(255,255,255,0.35) !important;
+        transform: scale(1.05);
+    }
+
+    .chatbot-messages {
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        background: transparent;
+        scroll-behavior: smooth;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .chatbot-messages::-webkit-scrollbar { width: 6px; }
+    .chatbot-messages::-webkit-scrollbar-track { background: transparent; }
+    .chatbot-messages::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 10px; }
+
+    .message-wrapper {
+        margin-bottom: 8px;
+    }
+
+    .user-msg {
+        background: rgba(255, 255, 255, 0.9);
+        color: #1a1a1a;
+        border-radius: 20px 20px 4px 20px;
+        padding: 12px 16px;
+        max-width: 80%;
+        word-break: break-word;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .bot-msg {
+        background: rgba(255, 255, 255, 0.85);
+        color: #1a1a1a;
+        border-radius: 20px 20px 20px 4px;
+        padding: 12px 16px;
+        max-width: 85%;
+        word-break: break-word;
+        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        backdrop-filter: blur(10px);
+    }
+    
+    .typing-msg {
+        padding: 16px;
+    }
+
+    .bot-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #fce4ec;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .chatbot-input-container {
+        padding: 16px;
+        background: linear-gradient(to top, rgba(0,0,0,0.3) 10%, rgba(0,0,0,0));
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .chatbot-input-wrapper {
+        display: flex;
+        align-items: flex-end;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        padding: 6px 6px 6px 16px;
+        border: 1px solid rgba(255,255,255,0.5);
+        transition: border-color 0.3s ease, background 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .chatbot-input-wrapper:focus-within {
+        background: #ffffff;
+        border-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-input { margin-top: 0 !important; }
+    
+    .custom-input input {
+        padding: 10px 0 !important;
+        font-size: 0.95rem !important;
+        color: #1a1a1a !important;
+    }
+
+    .send-btn {
+        background: #d81b60 !important;
+        color: white !important;
+        border-radius: 50% !important;
+        width: 36px;
+        height: 36px;
+        margin-left: 8px;
+        transition: transform 0.2s ease;
+    }
+    .send-btn:disabled {
+        background: rgba(0,0,0,0.1) !important;
+        color: rgba(0,0,0,0.3) !important;
+    }
+    .send-btn:not(:disabled):hover {
+        transform: scale(1.05);
+        background: #c2185b !important;
     }
 
     .chatbot-fab {
@@ -106,39 +330,48 @@
         bottom: 24px;
         right: 24px;
         z-index: 9999;
+        pointer-events: auto;
+    }
+    
+    .custom-fab {
+        background: linear-gradient(135deg, #d81b60, #880e4f) !important;
+        width: 64px !important;
+        height: 64px !important;
+        box-shadow: 0 8px 24px rgba(216, 27, 96, 0.3) !important;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    }
+    
+    .custom-fab:hover {
+        transform: scale(1.08) !important;
     }
     
     .pulse-animation {
-        box-shadow: 0 0 0 0 rgba(216, 27, 96, 0.7);
-        animation: pulse 2s infinite;
+        animation: pulse 2.5s infinite;
     }
     
     @@keyframes pulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(216, 27, 96, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(216, 27, 96, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(216, 27, 96, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(216, 27, 96, 0.5); }
+        70% { box-shadow: 0 0 0 20px rgba(216, 27, 96, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(216, 27, 96, 0); }
     }
 
-    @@keyframes slideInRight {
-        from { opacity: 0; transform: translateX(100%); }
-        to { opacity: 1; transform: translateX(0); }
+    @@keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(20px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
     }
     
     .typing-indicator {
         display: flex;
         align-items: center;
-        gap: 4px;
-        padding: 8px 12px;
-        background: #f0f0f0;
-        border-radius: 12px;
-        width: fit-content;
+        gap: 6px;
     }
     .typing-indicator span {
         width: 6px;
         height: 6px;
-        background-color: #90a4ae;
+        background-color: #d81b60;
         border-radius: 50%;
         animation: typing 1.4s infinite both;
+        opacity: 0.6;
     }
     .typing-indicator span:nth-child(1) { animation-delay: 0s; }
     .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
@@ -146,34 +379,63 @@
     
     @@keyframes typing {
         0%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-5px); }
+        40% { transform: translateY(-4px); }
     }
 
-    .suggestion-btn {
-        background: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 10px 14px;
-        font-size: 0.9rem;
-        color: #d81b60;
-        text-align: left;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-weight: 500;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    .suggestions-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
-    .suggestion-btn:hover {
-        background: #fce4ec;
-        border-color: #f8bbd0;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(216, 27, 96, 0.08);
+
+    .glass-btn {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        backdrop-filter: blur(5px);
+        border-radius: 24px !important;
+        padding: 10px 16px !important;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    .glass-btn:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+        transform: translateY(-2px);
     }
 
     @@media (max-width: 768px) {
-        .chatbot-window {
-            width: 100vw;
-            min-width: unset;
+        .chatbot-container.open {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
+        
+        .chatbot-window {
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            border-radius: 0 !important;
+            border: none;
+            box-shadow: none !important;
+            animation: slideUpMobile 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .chatbot-input-container {
+            padding: 12px 16px env(safe-area-inset-bottom, 16px);
+            background: linear-gradient(to top, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0));
+            border-top: none;
+        }
+    }
+    
+    @@keyframes slideUpMobile {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
     }
 </style>
 
@@ -211,7 +473,85 @@
         if (isOpen)
         {
             await ScrollToBottom();
+            _ = InitParticlesAsync();
         }
+    }
+
+    private async Task InitParticlesAsync()
+    {
+        try
+        {
+            await Task.Delay(100);
+            var script = @"
+                const canvas = document.getElementById('chat-canvas');
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    let width = canvas.parentElement.clientWidth;
+                    let height = canvas.parentElement.clientHeight;
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    window.addEventListener('resize', () => {
+                        width = canvas.parentElement.clientWidth;
+                        height = canvas.parentElement.clientHeight;
+                        canvas.width = width;
+                        canvas.height = height;
+                    });
+
+                    let particles = [];
+                    class Particle {
+                        constructor() {
+                            this.x = Math.random() * width;
+                            this.y = Math.random() * height;
+                            this.vx = (Math.random() - 0.5) * 1.5;
+                            this.vy = (Math.random() - 0.5) * 1.5;
+                            this.radius = Math.random() * 2 + 1;
+                        }
+                        update() {
+                            this.x += this.vx;
+                            this.y += this.vy;
+                            if (this.x < 0 || this.x > width) this.vx *= -1;
+                            if (this.y < 0 || this.y > height) this.vy *= -1;
+                        }
+                        draw() {
+                            ctx.beginPath();
+                            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                            ctx.fill();
+                        }
+                    }
+
+                    for (let i = 0; i < 40; i++) particles.push(new Particle());
+
+                    function animate() {
+                        if (!document.getElementById('chat-canvas')) return;
+                        ctx.clearRect(0, 0, width, height);
+                        
+                        for(let i=0; i<particles.length; i++){
+                            particles[i].update();
+                            particles[i].draw();
+                            for(let j=i; j<particles.length; j++){
+                                let dx = particles[i].x - particles[j].x;
+                                let dy = particles[i].y - particles[j].y;
+                                let dist = Math.sqrt(dx*dx + dy*dy);
+                                if(dist < 100){
+                                    ctx.beginPath();
+                                    ctx.strokeStyle = `rgba(255,255,255,${0.3 - dist/333})`;
+                                    ctx.lineWidth = 1;
+                                    ctx.moveTo(particles[i].x, particles[i].y);
+                                    ctx.lineTo(particles[j].x, particles[j].y);
+                                    ctx.stroke();
+                                }
+                            }
+                        }
+                        requestAnimationFrame(animate);
+                    }
+                    animate();
+                }
+            ";
+            await JS.InvokeVoidAsync("eval", script);
+        }
+        catch { }
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
