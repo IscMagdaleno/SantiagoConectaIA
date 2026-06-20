@@ -1,11 +1,14 @@
 @page "/"
 @using SantiagoConecta.SharedUI.Data
 @using SantiagoConectaIA.Share.PostModels.BuzonCiudadanoModule
+@using SantiagoConectaIA.Share.Objects.NoticiasModule
+@using SantiagoConectaIA.Share.PostModels.NoticiasModule
 @using Microsoft.Extensions.Localization
 @inject NavigationManager NavManager
 @inject IStringLocalizer<App> Localizer
 @inject IJSRuntime JS
 @inject Data_BuzonCiudadano _dataBuzon
+@inject Data_Noticias dataNoticias
 
 <PageTitle>Santiaguero Conecta - Inicio</PageTitle>
 
@@ -21,7 +24,20 @@
     <div class="header-text" style="width: 100%; position: relative; z-index: 5; padding-bottom: 8vh;">
         <div class="container">
             <div class="row">
-                <div class="col-xl-8 col-lg-10 col-md-12 col-sm-12 mx-auto text-center">
+                <div class="col-xl-8 col-lg-10 col-md-12 col-sm-12 mx-auto text-center" style="display: flex; flex-direction: column; align-items: center;">
+                    
+                    <!-- Última Noticia Glass Card -->
+                    @if (latestNoticia != null)
+                    {
+                        <div class="news-card-glass mb-4" @onclick='() => NavManager.NavigateTo($"/noticias/{latestNoticia.iIdNoticia}")' style="max-width: 90%; padding: 12px 24px; border-radius: 50px; display: inline-flex; align-items: center; gap: 14px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); animation: slideDownFade 0.8s ease-out;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.2)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 32px rgba(0, 0, 0, 0.15)';">
+                            <div class="badge-new" style="background: linear-gradient(135deg, #ffb4a2, #ff8a65); color: #880e4f; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(255, 180, 162, 0.4); white-space: nowrap;">
+                                @(latestNoticia.Categoria?.vchNombre ?? "Noticia")
+                            </div>
+                            <MudText Typo="Typo.body2" Style="color: white; font-weight: 500; font-size: 1.1rem; margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 450px;">@latestNoticia.vchTitulo</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Style="color: rgba(255,255,255,0.7); font-size: 18px; margin-left: 6px; flex-shrink: 0;" />
+                        </div>
+                    }
+
                     <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="font-size: 60px; color: #ffb4a2; margin-bottom: 20px; animation: float 3s ease-in-out infinite;" />
                     <h1 style="color: white; font-weight: 800; font-size: 3.5rem; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -1px;">
                         Bienvenido a <span style="color: #ffb4a2;">Santiaguero Conecta</span>
@@ -312,6 +328,23 @@
     private bool _isSubmitting = false;
     private string _successMessage = string.Empty;
     private string _errorMessage = string.Empty;
+    private Noticia latestNoticia;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await dataNoticias.PostGetAllNoticias(new PostGetNoticias { bActivo = true });
+            if (response != null && response.IsSuccess && response.Data != null)
+            {
+                latestNoticia = response.Data.OrderByDescending(x => x.dtFechaPublicacion).FirstOrDefault();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando última noticia: {ex.Message}");
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

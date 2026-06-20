@@ -1,4 +1,5 @@
 @page "/noticias"
+@page "/noticias/{Id:int?}"
 @using SantiagoConecta.SharedUI.Data
 @using SantiagoConectaIA.Share.Objects.NoticiasModule
 @using SantiagoConectaIA.Share.PostModels.NoticiasModule
@@ -428,9 +429,24 @@ else
     private int? selectedCategory = null;
     private Noticia selectedNoticia = null;
 
+    [Parameter]
+    public int? Id { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await CargarNoticias();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Id.HasValue && noticiasList.Any())
+        {
+            selectedNoticia = noticiasList.FirstOrDefault(x => x.iIdNoticia == Id.Value);
+        }
+        else if (!Id.HasValue)
+        {
+            selectedNoticia = null;
+        }
     }
 
     private async Task CargarNoticias()
@@ -507,6 +523,7 @@ else
     private void VolverAlListado()
     {
         selectedNoticia = null;
+        NavManager.NavigateTo("/noticias", false);
     }
 
     private string GetExcerpt(Noticia noticia)
