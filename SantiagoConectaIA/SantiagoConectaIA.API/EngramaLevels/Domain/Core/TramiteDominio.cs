@@ -102,8 +102,9 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 					validation.Data.nvchDescripcionEn = PostModel.nvchDescripcionEn;
 					validation.Data.iIdCategoria = PostModel.iIdCategoria;
 					validation.Data.bModalidadEnLinea = PostModel.bModalidadEnLinea;
-					validation.Data.mCosto = PostModel.mCosto;
-					validation.Data.iIdOficina = PostModel.iIdOficina;
+				validation.Data.mCosto = PostModel.mCosto;
+				validation.Data.bPrecioCalculado = PostModel.bPrecioCalculado;
+				validation.Data.iIdOficina = PostModel.iIdOficina;
 					validation.Data.bActivo = PostModel.bActivo;
 				}
 				return validation;
@@ -178,6 +179,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 					nvchDescripcionEn = r.vchDescripcionTramiteEn,
 					bModalidadEnLinea = r.bModalidadEnLinea,
 					mCosto = r.dCosto,
+					bPrecioCalculado = r.bPrecioCalculado,
 					iIdOficina = r.iIdOficina,
 					bActivo = true, // Asumimos true si viene del SP o agregar campo bActivo en Result
 					

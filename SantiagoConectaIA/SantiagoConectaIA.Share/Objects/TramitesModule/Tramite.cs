@@ -21,6 +21,7 @@ namespace SantiagoConectaIA.Share.Objects.TramitesModule
 		public int iIdCategoria { get; set; }
 		public bool bModalidadEnLinea { get; set; }
 		public decimal mCosto { get; set; }
+		public bool bPrecioCalculado { get; set; }
 		public int iIdOficina { get; set; }
 		public DateTime? dtFechaCreacion { get; set; }
 		public DateTime? dtFechaActualizacion { get; set; }

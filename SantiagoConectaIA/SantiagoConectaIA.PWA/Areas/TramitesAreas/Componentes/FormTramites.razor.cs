@@ -38,6 +38,11 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 
 		private async Task OnSubmit()
 		{
+			if (TramiteModel.bPrecioCalculado)
+			{
+				TramiteModel.mCosto = 0;
+			}
+
 			Loading.Show();
 			var result = await Data.PostSaveTramite(TramiteModel);
 			ShowSnake(result);

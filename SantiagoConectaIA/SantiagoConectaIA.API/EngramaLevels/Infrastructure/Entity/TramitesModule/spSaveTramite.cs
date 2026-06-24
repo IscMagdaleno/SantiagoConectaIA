@@ -15,6 +15,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModu
 			public int iIdCategoria { get; set; } = 0;
 			public bool bModalidadEnLinea { get; set; } = false;
 			public decimal mCosto { get; set; } = 0;
+			public bool bPrecioCalculado { get; set; } = false;
 			public int? iIdOficina { get; set; } = null;
 			public bool bActivo { get; set; } = true;
 			public string jsonRequisitos { get; set; }

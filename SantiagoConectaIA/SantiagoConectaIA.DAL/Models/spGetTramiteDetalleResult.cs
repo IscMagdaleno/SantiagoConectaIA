@@ -20,6 +20,7 @@ namespace SantiagoConectaIA.DAL.Models
         public bool? bModalidadEnLinea { get; set; }
         [Column("mCosto", TypeName = "money")]
         public decimal? mCosto { get; set; }
+        public bool? bPrecioCalculado { get; set; }
         public int? iIdOficina { get; set; }
         [StringLength(250)]
         public string vchNombreOficina { get; set; }

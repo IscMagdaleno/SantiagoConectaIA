@@ -989,6 +989,9 @@ public partial class EngramaContext : DbContext
             entity.Property(e => e.MCosto)
                 .HasColumnType("money")
                 .HasColumnName("mCosto");
+            entity.Property(e => e.BPrecioCalculado)
+                .HasDefaultValue(false)
+                .HasColumnName("bPrecioCalculado");
             entity.Property(e => e.NvchDescripcion)
                 .IsRequired()
                 .HasColumnName("nvchDescripcion");

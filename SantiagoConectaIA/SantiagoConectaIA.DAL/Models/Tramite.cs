@@ -27,6 +27,8 @@ public partial class Tramite
 
     public bool BActivo { get; set; }
 
+    public bool BPrecioCalculado { get; set; }
+
     public string VchNombreEn { get; set; }
 
     public string NvchDescripcionEn { get; set; }

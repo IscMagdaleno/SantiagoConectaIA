@@ -104,6 +104,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 				mCosto = tramite.mCosto,
 				iIdOficina = tramite.iIdOficina,
 				bActivo = tramite.bActivo,
+				bPrecioCalculado = tramite.bPrecioCalculado,
 				
 				Requisitos = tramite.Requisitos?.Select(r => new PostSaveRequisito 
 				{ 
