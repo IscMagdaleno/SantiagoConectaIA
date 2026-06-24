@@ -45,6 +45,7 @@ builder.Services.AddScoped<INoticiasDomain, NoticiasDomain>();
 builder.Services.AddScoped<IBuzonCiudadanoDomain, BuzonCiudadanoDomain>();
 builder.Services.AddScoped<ICatalogosDomain, CatalogosDomain>();
 builder.Services.AddScoped<IEmpresasDomain, EmpresasDomain>();
+builder.Services.AddScoped<IAnalyticsDomain, AnalyticsDomain>();
 
 builder.Services.AddScoped<ITramitesRepository, TramitesRepository>();
 builder.Services.AddScoped<IOficinasRepository, OficinasRepository>();
@@ -56,6 +57,7 @@ builder.Services.AddScoped<IBuzonCiudadanoRepository, BuzonCiudadanoRepository>(
 builder.Services.AddScoped<ICatalogosRepository, CatalogosRepository>();
 builder.Services.AddScoped<ICatalogosProvider, CatalogosProvider>();
 builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
+builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 
 builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
 builder.Services.AddScoped<INoticiasScraperService, NoticiasScraperService>();

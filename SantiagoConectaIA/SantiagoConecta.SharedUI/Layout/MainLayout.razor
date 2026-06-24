@@ -2,8 +2,12 @@
 @inherits LayoutComponentBase
 @using Microsoft.Extensions.Localization
 @using SantiagoConecta.SharedUI.Shared
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.PostModels.AnalyticsModule
 @inject IStringLocalizer<App> Localizer
 @inject NavigationManager NavManager
+@inject Data_Analytics AnalyticsService
+@inject IJSRuntime JS
 
 <MudThemeProvider Theme="@MyCustomTheme" />
 <MudDialogProvider />
@@ -89,10 +93,65 @@
         NavManager.LocationChanged += OnLocationChanged;
     }
 
-    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         IsMenuOpen = false;
         StateHasChanged();
+
+        try
+        {
+            var relativePath = NavManager.ToBaseRelativePath(NavManager.Uri);
+            var pageName = string.IsNullOrEmpty(relativePath) ? "Index" : relativePath.Split('/')[0];
+
+            var userAgent = await JS.InvokeAsync<string>("eval", "navigator.userAgent");
+            var referrer = await JS.InvokeAsync<string>("eval", "document.referrer");
+
+            var model = new PostSavePageVisit
+            {
+                vchPageUrl = NavManager.Uri,
+                vchPageName = pageName,
+                vchUserAgent = userAgent ?? string.Empty,
+                vchReferrer = referrer ?? string.Empty,
+                vchBrowser = ParseBrowser(userAgent),
+                vchOperatingSystem = ParseOS(userAgent),
+                vchDeviceType = ParseDevice(userAgent)
+            };
+
+            await AnalyticsService.PostSavePageVisit(model);
+        }
+        catch (Exception)
+        {
+            // Silently fail - analytics should not break the app
+        }
+    }
+
+    private string ParseBrowser(string? userAgent)
+    {
+        if (string.IsNullOrEmpty(userAgent)) return "Unknown";
+        if (userAgent.Contains("Edg/")) return "Edge";
+        if (userAgent.Contains("Chrome/")) return "Chrome";
+        if (userAgent.Contains("Firefox/")) return "Firefox";
+        if (userAgent.Contains("Safari/")) return "Safari";
+        return "Other";
+    }
+
+    private string ParseOS(string? userAgent)
+    {
+        if (string.IsNullOrEmpty(userAgent)) return "Unknown";
+        if (userAgent.Contains("Windows")) return "Windows";
+        if (userAgent.Contains("Mac OS")) return "macOS";
+        if (userAgent.Contains("Linux")) return "Linux";
+        if (userAgent.Contains("Android")) return "Android";
+        if (userAgent.Contains("iPhone") || userAgent.Contains("iPad")) return "iOS";
+        return "Other";
+    }
+
+    private string ParseDevice(string? userAgent)
+    {
+        if (string.IsNullOrEmpty(userAgent)) return "Unknown";
+        if (userAgent.Contains("Mobile") || userAgent.Contains("Android")) return "Mobile";
+        if (userAgent.Contains("iPad") || userAgent.Contains("Tablet")) return "Tablet";
+        return "Desktop";
     }
 
     public void Dispose()
