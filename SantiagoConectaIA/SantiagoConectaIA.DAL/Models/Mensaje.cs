@@ -11,8 +11,6 @@ public partial class Mensaje
 
     public int IIdChat { get; set; }
 
-    public int IIdFase { get; set; }
-
     public int IOrden { get; set; }
 
     public string NvchRol { get; set; }
@@ -22,6 +20,4 @@ public partial class Mensaje
     public DateTime DtFecha { get; set; }
 
     public virtual Chat IIdChatNavigation { get; set; }
-
-    public virtual Fase IIdFaseNavigation { get; set; }
 }

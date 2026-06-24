@@ -37,25 +37,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 
 			using var scope = _scopeFactory.CreateScope();
 			var _conversationalDominio = scope.ServiceProvider.GetRequiredService<IConversationalDominio>();
-			var context = scope.ServiceProvider.GetRequiredService<EngramaContext>();
-
-			// Asegurar que exista al menos una fase válida para este proyecto (iIdProyecto = 1) para evitar fallas FK_Mensaje_Fase
-			var targetFase = await context.Fases.FirstOrDefaultAsync(f => f.IIdProyecto == 1);
-			if (targetFase == null)
-			{
-				targetFase = new Fase
-				{
-					IIdProyecto = 1,
-					SmNumeroSecuencia = 1,
-					NvchTitulo = "Conversación General",
-					NvchDescripcion = "Fase general de interacción con el asistente de trámites",
-					DtCreadoEn = DateTime.Now,
-					DtActualizadoEn = DateTime.Now
-				};
-				context.Fases.Add(targetFase);
-				await context.SaveChangesAsync();
-			}
-			int activeFaseId = targetFase.IIdFase;
 
 			int activeChatId = 0;
 			int dbMessageCount = 0;
@@ -116,7 +97,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 					{
 						iIdChat = activeChatId,
 						iOrden = dbMessageCount + 1,
-						iIdFase = activeFaseId,
 						nvchRol = "user",
 						nvchContenido = userQuery,
 						dtFecha = DateTime.Now
@@ -126,7 +106,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 					{
 						iIdChat = activeChatId,
 						iOrden = dbMessageCount + 2,
-						iIdFase = activeFaseId,
 						nvchRol = "assistant",
 						nvchContenido = agentResponse,
 						dtFecha = DateTime.Now

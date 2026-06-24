@@ -21,7 +21,5 @@ public partial class Proyecto
 
     public virtual ICollection<Chat> Chats { get; set; } = new List<Chat>();
 
-    public virtual ICollection<Fase> Fases { get; set; } = new List<Fase>();
-
     public virtual PlanTrabajo IIdPlanTrabajoNavigation { get; set; }
 }

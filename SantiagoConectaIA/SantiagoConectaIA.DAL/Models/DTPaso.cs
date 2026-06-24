@@ -9,7 +9,6 @@ namespace SantiagoConectaIA.DAL.Models
     public partial class DTPaso
     {
         public int? iIdPaso { get; set; }
-        public int? iIdFase { get; set; }
         public short? smNumeroSecuencia { get; set; }
         public string nvchDescripcion { get; set; }
         public string nvchProposito { get; set; }

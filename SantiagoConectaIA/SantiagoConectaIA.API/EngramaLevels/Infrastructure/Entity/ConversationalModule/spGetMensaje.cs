@@ -18,7 +18,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.Conversation
 			public int? iIdMensaje { get; set; }
 			public int? iIdChat { get; set; }
 			public int? iOrden { get; set; }
-			public int? iIdFase { get; set; }
 			public string nvchRol { get; set; }
 			public string nvchContenido { get; set; }
 			public DateTime? dtFecha { get; set; }

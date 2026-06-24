@@ -33,8 +33,6 @@ public partial class EngramaContext : DbContext
 
     public virtual DbSet<Documento> Documentos { get; set; }
 
-    public virtual DbSet<Fase> Fases { get; set; }
-
     public virtual DbSet<Funcionalidad> Funcionalidads { get; set; }
 
     public virtual DbSet<Grupo> Grupos { get; set; }
@@ -359,37 +357,6 @@ public partial class EngramaContext : DbContext
                 .HasConstraintName("FK_Documento_Tramite");
         });
 
-        modelBuilder.Entity<Fase>(entity =>
-        {
-            entity.HasKey(e => e.IIdFase).HasName("PK__Fase__C4448E757BA895AA");
-
-            entity.ToTable("Fase");
-
-            entity.Property(e => e.IIdFase).HasColumnName("iIdFase");
-            entity.Property(e => e.DtActualizadoEn)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime")
-                .HasColumnName("dtActualizadoEn");
-            entity.Property(e => e.DtCreadoEn)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime")
-                .HasColumnName("dtCreadoEn");
-            entity.Property(e => e.IIdProyecto).HasColumnName("iIdProyecto");
-            entity.Property(e => e.NvchDescripcion)
-                .IsRequired()
-                .HasColumnName("nvchDescripcion");
-            entity.Property(e => e.NvchTitulo)
-                .IsRequired()
-                .HasMaxLength(255)
-                .HasColumnName("nvchTitulo");
-            entity.Property(e => e.SmNumeroSecuencia).HasColumnName("smNumeroSecuencia");
-
-            entity.HasOne(d => d.IIdProyectoNavigation).WithMany(p => p.Fases)
-                .HasForeignKey(d => d.IIdProyecto)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Fase_Proyecto");
-        });
-
         modelBuilder.Entity<Funcionalidad>(entity =>
         {
             entity.HasKey(e => e.IIdFuncionalidad);
@@ -501,7 +468,6 @@ public partial class EngramaContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("dtFecha");
             entity.Property(e => e.IIdChat).HasColumnName("iIdChat");
-            entity.Property(e => e.IIdFase).HasColumnName("iIdFase");
             entity.Property(e => e.IOrden).HasColumnName("iOrden");
             entity.Property(e => e.NvchContenido)
                 .IsRequired()
@@ -516,11 +482,6 @@ public partial class EngramaContext : DbContext
                 .HasForeignKey(d => d.IIdChat)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Mensaje_Chat");
-
-            entity.HasOne(d => d.IIdFaseNavigation).WithMany(p => p.Mensajes)
-                .HasForeignKey(d => d.IIdFase)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Mensaje_Fase");
         });
 
         modelBuilder.Entity<Modulo>(entity =>
@@ -795,7 +756,6 @@ public partial class EngramaContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("dtCreadoEn");
-            entity.Property(e => e.IIdFase).HasColumnName("iIdFase");
             entity.Property(e => e.NvchCaracteristicas)
                 .IsRequired()
                 .HasColumnName("nvchCaracteristicas");
@@ -809,11 +769,6 @@ public partial class EngramaContext : DbContext
                 .IsRequired()
                 .HasColumnName("nvchProposito");
             entity.Property(e => e.SmNumeroSecuencia).HasColumnName("smNumeroSecuencia");
-
-            entity.HasOne(d => d.IIdFaseNavigation).WithMany(p => p.Pasos)
-                .HasForeignKey(d => d.IIdFase)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Paso_Fase");
         });
 
         modelBuilder.Entity<Pedido>(entity =>

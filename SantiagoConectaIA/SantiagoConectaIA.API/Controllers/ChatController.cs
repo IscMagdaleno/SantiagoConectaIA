@@ -143,24 +143,6 @@ namespace SantiagoConectaIA.API.Controllers
 					}
 				}
 
-				// Asegurar que exista al menos una fase válida para este proyecto (iIdProyecto = 1) para evitar fallas FK_Mensaje_Fase
-				var targetFase = await _context.Fases.FirstOrDefaultAsync(f => f.IIdProyecto == 1);
-				if (targetFase == null)
-				{
-					targetFase = new Fase
-					{
-						IIdProyecto = 1,
-						SmNumeroSecuencia = 1,
-						NvchTitulo = "Conversación General",
-						NvchDescripcion = "Fase general de interacción con el asistente de trámites",
-						DtCreadoEn = DateTime.Now,
-						DtActualizadoEn = DateTime.Now
-					};
-					_context.Fases.Add(targetFase);
-					await _context.SaveChangesAsync();
-				}
-				int activeFaseId = targetFase.IIdFase;
-
 				// Chat 1: Juan Pérez (Trámite de Acta de Nacimiento)
 				var chat1 = new PostSaveChat
 				{
@@ -178,7 +160,6 @@ namespace SantiagoConectaIA.API.Controllers
 					{
 						iIdChat = chatId,
 						iOrden = 1,
-						iIdFase = activeFaseId,
 						nvchRol = "user",
 						nvchContenido = "Hola, ¿cuánto cuesta el acta de nacimiento en el municipio y qué requisitos piden?",
 						dtFecha = DateTime.Now.AddHours(-3).AddMinutes(2)
@@ -187,7 +168,6 @@ namespace SantiagoConectaIA.API.Controllers
 					{
 						iIdChat = chatId,
 						iOrden = 2,
-						iIdFase = activeFaseId,
 						nvchRol = "assistant",
 						nvchContenido = "¡Hola! Con gusto te apoyo. El costo de la copia certificada de Acta de Nacimiento en Santiago Papasquiaro es de $180 MXN. Para obtenerla necesitas presentar:\n\n1. Nombre completo de la persona registrada.\n2. Fecha y lugar de nacimiento.\n3. Clave Única de Registro de Población (CURP) opcional para agilizar la búsqueda.\n\nPuedes acudir a las ventanillas del Registro Civil de Lunes a Viernes de 8:00 AM a 4:00 PM.",
 						dtFecha = DateTime.Now.AddHours(-3).AddMinutes(3)
@@ -196,7 +176,6 @@ namespace SantiagoConectaIA.API.Controllers
 					{
 						iIdChat = chatId,
 						iOrden = 3,
-						iIdFase = activeFaseId,
 						nvchRol = "user",
 						nvchContenido = "Perfecto, ¿y se puede pagar con tarjeta de crédito en ventanilla o solo efectivo?",
 						dtFecha = DateTime.Now.AddHours(-3).AddMinutes(10)
@@ -205,7 +184,6 @@ namespace SantiagoConectaIA.API.Controllers
 					{
 						iIdChat = chatId,
 						iOrden = 4,
-						iIdFase = activeFaseId,
 						nvchRol = "assistant",
 						nvchContenido = "Sí, en la ventanilla de Tesorería Municipal de Santiago Papasquiaro aceptamos tanto pagos en efectivo como con tarjeta de débito y crédito (Visa y MasterCard). ¡Te esperamos!",
 						dtFecha = DateTime.Now.AddHours(-3).AddMinutes(11)
@@ -229,7 +207,6 @@ namespace SantiagoConectaIA.API.Controllers
 					{
 						iIdChat = chatId,
 						iOrden = 1,
-						iIdFase = activeFaseId,
 						nvchRol = "user",
 						nvchContenido = "Buenas tardes, disculpe, ¿saben si hay algún descuento para el pago de predial?",
 						dtFecha = DateTime.Now.AddHours(-1).AddMinutes(1)
@@ -238,7 +215,6 @@ namespace SantiagoConectaIA.API.Controllers
 					{
 						iIdChat = chatId,
 						iOrden = 2,
-						iIdFase = activeFaseId,
 						nvchRol = "assistant",
 						nvchContenido = "¡Buenas tardes, María! Sí, contamos con atractivos descuentos para el Impuesto Predial de este año:\n\n• 15% de descuento por pronto pago durante todo el mes de Enero.\n• 10% de descuento durante el mes de Febrero.\n• 50% de descuento permanente para pensionados, jubilados, viudas y personas de la tercera edad (presentando credencial INAPAM/INSEN).\n\n¿Deseas que te ayude a calcular tu adeudo o conocer los puntos de recaudación?",
 						dtFecha = DateTime.Now.AddHours(-1).AddMinutes(2)
@@ -262,7 +238,6 @@ namespace SantiagoConectaIA.API.Controllers
 					{
 						iIdChat = chatId,
 						iOrden = 1,
-						iIdFase = activeFaseId,
 						nvchRol = "user",
 						nvchContenido = "Hola, ¿qué necesito para renovar mi licencia de conducir de chofer?",
 						dtFecha = DateTime.Now.AddMinutes(-29)
@@ -271,7 +246,6 @@ namespace SantiagoConectaIA.API.Controllers
 					{
 						iIdChat = chatId,
 						iOrden = 2,
-						iIdFase = activeFaseId,
 						nvchRol = "assistant",
 						nvchContenido = "¡Hola! Para renovar tu licencia de Conducir de Chofer en Santiago Papasquiaro, necesitas presentar los siguientes documentos en original y copia:\n\n1. Licencia anterior vencida.\n2. Identificación oficial vigente (INE o Pasaporte).\n3. Comprobante de domicilio reciente (no mayor a 3 meses).\n4. Examen médico de aptitud física y mental vigente.\n5. Comprobante de pago de derechos.\n\nEl trámite se realiza en la Dirección de Seguridad Pública y Vialidad Municipal.",
 						dtFecha = DateTime.Now.AddMinutes(-28)

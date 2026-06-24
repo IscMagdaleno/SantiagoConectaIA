@@ -9,8 +9,6 @@ public partial class Paso
 {
     public int IIdPaso { get; set; }
 
-    public int IIdFase { get; set; }
-
     public short SmNumeroSecuencia { get; set; }
 
     public string NvchDescripcion { get; set; }
@@ -24,6 +22,4 @@ public partial class Paso
     public DateTime DtCreadoEn { get; set; }
 
     public DateTime DtActualizadoEn { get; set; }
-
-    public virtual Fase IIdFaseNavigation { get; set; }
 }
