@@ -1,4 +1,4 @@
-﻿
+
 using EngramaCoreStandar.Dapper.Interfaces;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.ConversationalModule
@@ -25,6 +25,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.Conversation
 			public int iIdCategoria { get; set; }
 			public bool bModalidadEnLinea { get; set; }
 			public decimal mCosto { get; set; }
+			public bool bPrecioCalculado { get; set; }
 			public int? iIdOficina { get; set; } // Usamos int? ya que es NULLable en la base de datos
 			public DateTime dtFechaCreacion { get; set; }
 			public DateTime? dtFechaActualizacion { get; set; } // Usamos DateTime? ya que es NULLable en la base de datos

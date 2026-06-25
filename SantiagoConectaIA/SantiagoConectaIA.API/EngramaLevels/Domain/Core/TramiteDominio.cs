@@ -102,9 +102,9 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 					validation.Data.nvchDescripcionEn = PostModel.nvchDescripcionEn;
 					validation.Data.iIdCategoria = PostModel.iIdCategoria;
 					validation.Data.bModalidadEnLinea = PostModel.bModalidadEnLinea;
-				validation.Data.mCosto = PostModel.mCosto;
-				validation.Data.bPrecioCalculado = PostModel.bPrecioCalculado;
-				validation.Data.iIdOficina = PostModel.iIdOficina;
+					validation.Data.mCosto = PostModel.mCosto;
+					validation.Data.bPrecioCalculado = PostModel.bPrecioCalculado;
+					validation.Data.iIdOficina = PostModel.iIdOficina;
 					validation.Data.bActivo = PostModel.bActivo;
 				}
 				return validation;

@@ -88,7 +88,8 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 				t.vchNombre,
 				t.nvchDescripcion,
 				t.bModalidadEnLinea,
-				t.mCosto
+				t.mCosto,
+				t.bPrecioCalculado
 			});
 
 			return JsonSerializer.Serialize(resultado);
@@ -153,6 +154,7 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			var resultado = CostoEncontrado.Data.Select(c => new
 			{
 				c.mCosto,
+				c.bPrecioCalculado,
 				c.bModalidadEnLinea
 			});
 

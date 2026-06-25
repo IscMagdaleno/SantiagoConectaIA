@@ -1,4 +1,4 @@
-﻿using EngramaCoreStandar.Dapper.Interfaces;
+using EngramaCoreStandar.Dapper.Interfaces;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.TramitesModule
 {

@@ -1,4 +1,4 @@
-@inherits EngramaWorkspaceComponent
+﻿@inherits EngramaWorkspaceComponent
 @using SantiagoConectaIA.PWA.Shared.Workspace
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @using SantiagoConectaIA.Share.Objects.OficinasModule
@@ -27,11 +27,8 @@
                         <MudItem xs="12" sm="6">
                             <MudGrid>
                                 <MudItem xs="12" sm="6">
-                                    <MudNumericField @bind-Value="TramiteModel.mCosto" Label="Costo" Variant="Variant.Outlined" Format="C2" Min="0" Class="mb-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura || TramiteModel.bPrecioCalculado)" />
-                                </MudItem>
-
-                                <MudItem xs="12" sm="6">
-                                    <MudSwitch @bind-Value="TramiteModel.bPrecioCalculado" Color="Color.Warning" Label="Precio Calculado" Class="mt-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                                    <MudNumericField @bind-Value="TramiteModel.mCosto" Label="Costo" Variant="Variant.Outlined" Format="C2" Min="0" Class="mb-4" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                                    <MudCheckBox @bind-Value="TramiteModel.bPrecioCalculado" Label="¿Precio Variable/Calculado?" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" Color="Color.Primary" />
                                 </MudItem>
 
                                 <MudItem xs="12">

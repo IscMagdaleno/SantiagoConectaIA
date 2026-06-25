@@ -1,4 +1,4 @@
-﻿using SantiagoConectaIA.Share.Objects.OficinasModule;
+using SantiagoConectaIA.Share.Objects.OficinasModule;
 
 using System.ComponentModel.DataAnnotations;
 

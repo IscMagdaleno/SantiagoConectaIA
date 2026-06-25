@@ -1,4 +1,4 @@
-﻿
+
 using EngramaCoreStandar.Dapper.Interfaces;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.ConversationalModule
@@ -19,6 +19,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.Conversation
 
 			// Propiedades de salida del SP
 			public decimal mCosto { get; set; }
+			public bool bPrecioCalculado { get; set; }
 			public bool bModalidadEnLinea { get; set; }
 		}
 	}

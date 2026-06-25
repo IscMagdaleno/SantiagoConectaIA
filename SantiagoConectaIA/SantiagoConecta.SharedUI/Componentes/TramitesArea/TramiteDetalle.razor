@@ -1,4 +1,4 @@
-﻿@page "/tramites/{Id:int}"
+@page "/tramites/{Id:int}"
 @inject NavigationManager NavManager
 @inject Data_Tramites data_Tramites;
 @using SantiagoConecta.SharedUI.Data
@@ -79,7 +79,7 @@
                                     <div>
                                         <p class="text-sm text-rose-200">Costo</p>
                                         <p class="font-semibold">
-                                            @(Tramite.mCosto > 0 ? $"${Tramite.mCosto:N2} MXN" : "Gratuito")
+                                            @(Tramite.bPrecioCalculado ? "Precio: Variable" : (Tramite.mCosto > 0 ? $"${Tramite.mCosto:N2} MXN" : "Gratuito"))
                                         </p>
                                     </div>
                                 </div>
