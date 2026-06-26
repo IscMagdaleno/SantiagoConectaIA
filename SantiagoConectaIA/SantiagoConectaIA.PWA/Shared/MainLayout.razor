@@ -67,6 +67,11 @@
                                Class="nav-button mx-2">
                         Empresas
                     </MudButton>
+                    <MudButton OnClick="WorkspaceService.RequestPageVisits"
+                               Color="Color.Inherit"
+                               Class="nav-button mx-2">
+                        Estadísticas
+                    </MudButton>
                 </div>
 
                 <!-- Menú hamburguesa para móviles -->
@@ -133,6 +138,13 @@
                            Style="color: white; justify-content: flex-start;">
                     <MudIcon Icon="Icons.Material.Filled.Storefront" Class="mr-3" />
                     Empresas
+                </MudButton>
+                <MudButton OnClick="WorkspaceService.RequestPageVisits"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;">
+                    <MudIcon Icon="Icons.Material.Filled.BarChart" Class="mr-3" />
+                    Estadísticas
                 </MudButton>
             </MudStack>
         </MudContainer>
@@ -214,6 +226,7 @@
         WorkspaceService.OnOficinasRequest += AbrirOficinasEnTab;
         WorkspaceService.OnMockupRequest += AbrirMockupEnTab; // Evento del Mockup
         WorkspaceService.OnEmpresasRequest += AbrirEmpresasEnTab;
+        WorkspaceService.OnPageVisitsRequest += AbrirPageVisitsEnTab;
     }
 
     public void Dispose()
@@ -225,6 +238,7 @@
         WorkspaceService.OnOficinasRequest -= AbrirOficinasEnTab;
         WorkspaceService.OnMockupRequest -= AbrirMockupEnTab; // Evento del Mockup
         WorkspaceService.OnEmpresasRequest -= AbrirEmpresasEnTab;
+        WorkspaceService.OnPageVisitsRequest -= AbrirPageVisitsEnTab;
     }
 
     private void RenameCurrentTab(string tabName, string iconText)
@@ -541,6 +555,39 @@
         {
             Icono = Icons.Material.Filled.Storefront,
             Text = "Empresas",
+            TipoControl = type,
+            Repetir = false
+        };
+
+        tab.Componente = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddComponentReferenceCapture(1, instance =>
+            {
+                if (instance is EngramaWorkspaceComponent baseComponent)
+                {
+                    tab.InstanciaComponente = baseComponent;
+                    baseComponent.IconoBase = tab.Icono ?? "";
+                    if (tabsList.Count > 0 && tabsList[tabsSelectedIndex].Id == tab.Id)
+                    {
+                        baseComponent.TriggerMenuUpdate();
+                    }
+                }
+            });
+            builder.CloseComponent();
+        };
+
+        WorkspaceService.AddComponenteTab(tab);
+    }
+
+    private void AbrirPageVisitsEnTab()
+    {
+        CloseMobileMenu();
+        var type = typeof(SantiagoConectaIA.PWA.Areas.PageVisitsArea.Componentes.DashboardVisits);
+        var tab = new WorkspaceTab
+        {
+            Icono = Icons.Material.Filled.BarChart,
+            Text = "Estadísticas",
             TipoControl = type,
             Repetir = false
         };

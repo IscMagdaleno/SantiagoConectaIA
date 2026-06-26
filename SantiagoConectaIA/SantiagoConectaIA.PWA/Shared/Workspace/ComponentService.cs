@@ -62,5 +62,9 @@ namespace SantiagoConectaIA.PWA.Shared.Workspace
         // Evento para Empresas
         public event Action OnEmpresasRequest;
         public void RequestEmpresas() => OnEmpresasRequest?.Invoke();
+
+        // Evento para Estadísticas de Visitas
+        public event Action OnPageVisitsRequest;
+        public void RequestPageVisits() => OnPageVisitsRequest?.Invoke();
 	}
 }

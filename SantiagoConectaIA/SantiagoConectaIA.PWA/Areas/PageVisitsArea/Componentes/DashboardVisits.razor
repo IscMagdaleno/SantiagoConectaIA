@@ -1,0 +1,255 @@
+@using SantiagoConectaIA.Share.Objects.PageVisitsModule
+@using SantiagoConectaIA.Share.PostModels.PageVisitsModule
+@using SantiagoConectaIA.PWA.Areas.PageVisitsArea.Utiles
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
+@inject MainPageVisits PageVisitsService
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 pa-0">
+    <style>
+        /* Forzar que el texto del tooltip en la gráfica sea blanco */
+        .mud-chart-tooltip text, .mud-chart-tooltip tspan, .mud-chart-line text {
+            fill: #ffffff !important;
+        }
+        /* Mantener los textos de los ejes de un color gris para que no se pierdan */
+        .mud-charts-xaxis text, .mud-charts-yaxis text {
+            fill: #64748b !important;
+        }
+    </style>
+
+    <!-- Header Minimalista y Limpio -->
+    <div class="d-flex align-center justify-space-between mb-8 px-4">
+        <div>
+            <MudText Typo="Typo.h4" Class="font-bold text-gray-800 d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Large" Class="mr-3 text-primary" />
+                Analítica Web
+            </MudText>
+            <MudText Typo="Typo.body1" Class="text-gray-500 mt-1">Supervisa en tiempo real el tráfico y comportamiento de los ciudadanos.</MudText>
+        </div>
+        <div class="d-flex align-center">
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.Refresh" OnClick="CargarDatos" Class="rounded-pill px-4">Refrescar</MudButton>
+        </div>
+    </div>
+
+    <!-- Panel de Filtros Flotante -->
+    <MudPaper Class="pa-6 mb-8 mx-4 rounded-xl" Elevation="4" Style="background-color: #ffffff; border: 1px solid #f1f5f9;">
+        <MudGrid Spacing="3" Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <MudItem xs="12" sm="4">
+                <MudSelect @bind-Value="Filtro.vchPageName" Label="Página a filtrar" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Value="@string.Empty">Todas (Consolidado)</MudSelectItem>
+                    <MudSelectItem Value="@("Index")">Index (Inicio)</MudSelectItem>
+                    <MudSelectItem Value="@("tramites")">trámites</MudSelectItem>
+                    <MudSelectItem Value="@("noticias")">noticias</MudSelectItem>
+                    <MudSelectItem Value="@("emprendimientos")">emprendimientos</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudDatePicker @bind-Date="StartDate" Label="Desde" Variant="Variant.Outlined" Margin="Margin.Dense" IconSize="Size.Small" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudDatePicker @bind-Date="EndDate" Label="Hasta" Variant="Variant.Outlined" Margin="Margin.Dense" IconSize="Size.Small" />
+            </MudItem>
+            <MudItem xs="12" sm="2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CargarDatos" FullWidth="true" Class="rounded-lg py-2" DisableElevation="true">Aplicar Filtros</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (Cargando)
+    {
+        <div class="d-flex flex-column align-center justify-center py-16">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            <MudText Typo="Typo.body2" Class="mt-4 text-gray-500 font-medium">Recopilando estadísticas...</MudText>
+        </div>
+    }
+    else if (Stats == null || !Stats.Any())
+    {
+        <div class="d-flex justify-center mx-4">
+            <MudPaper Class="pa-10 text-center rounded-xl w-100" Elevation="0" Style="background-color: #f8fafc; border: 2px dashed #cbd5e1;">
+                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Class="text-gray-400 mb-4" Style="font-size: 64px;" />
+                <MudText Typo="Typo.h6" Class="text-gray-700 font-bold">No hay actividad registrada</MudText>
+                <MudText Typo="Typo.body2" Class="text-gray-500 mt-2">Intenta ajustar el rango de fechas o limpiar los filtros para ver el tráfico general.</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-4" OnClick="LimpiarFiltros">Limpiar Filtros</MudButton>
+            </MudPaper>
+        </div>
+    }
+    else
+    {
+        <!-- Indicadores Clave de Rendimiento (KPIs) -->
+        <MudGrid Class="mb-8 px-4" Spacing="4">
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="pa-6 rounded-xl h-100 d-flex align-center justify-start relative overflow-hidden" Elevation="2" Style="border-left: 6px solid #3B82F6;">
+                    <div class="absolute" style="right: -20px; top: -10px; opacity: 0.05;">
+                        <MudIcon Icon="@Icons.Material.Filled.AdsClick" Style="font-size: 140px;" />
+                    </div>
+                    <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="mr-4 z-10">
+                        <MudIcon Icon="@Icons.Material.Filled.AdsClick" />
+                    </MudAvatar>
+                    <div class="z-10">
+                        <MudText Typo="Typo.body2" Class="text-gray-500 font-bold text-uppercase tracking-wider">Total de Visitas</MudText>
+                        <MudText Typo="Typo.h3" Class="font-bold text-gray-800">@TotalVisitas</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="pa-6 rounded-xl h-100 d-flex align-center justify-start relative overflow-hidden" Elevation="2" Style="border-left: 6px solid #10B981;">
+                    <div class="absolute" style="right: -20px; top: -10px; opacity: 0.05;">
+                        <MudIcon Icon="@Icons.Material.Filled.Group" Style="font-size: 140px;" />
+                    </div>
+                    <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Large" Class="mr-4 z-10">
+                        <MudIcon Icon="@Icons.Material.Filled.Group" />
+                    </MudAvatar>
+                    <div class="z-10">
+                        <MudText Typo="Typo.body2" Class="text-gray-500 font-bold text-uppercase tracking-wider">Visitantes Únicos</MudText>
+                        <MudText Typo="Typo.h3" Class="font-bold text-gray-800">@VisitantesUnicos</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="pa-6 rounded-xl h-100 d-flex align-center justify-start relative overflow-hidden" Elevation="2" Style="border-left: 6px solid #8B5CF6;">
+                    <div class="absolute" style="right: -20px; top: -10px; opacity: 0.05;">
+                        <MudIcon Icon="@Icons.Material.Filled.AccessTimeFilled" Style="font-size: 140px;" />
+                    </div>
+                    <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Large" Class="mr-4 z-10">
+                        <MudIcon Icon="@Icons.Material.Filled.AccessTimeFilled" />
+                    </MudAvatar>
+                    <div class="z-10">
+                        <MudText Typo="Typo.body2" Class="text-gray-500 font-bold text-uppercase tracking-wider">Hora de Tráfico</MudText>
+                        <div class="d-flex align-end">
+                            <MudText Typo="Typo.h3" Class="font-bold text-gray-800">@HoraPico:00</MudText>
+                            <MudText Typo="Typo.subtitle1" Class="text-gray-500 ml-1 mb-1 font-medium">hrs</MudText>
+                        </div>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Gráfico de Tendencias -->
+        <div class="px-4 pb-8">
+            <MudPaper Class="pa-6 rounded-xl" Elevation="4" Style="background-color: #ffffff;">
+                <div class="d-flex align-center justify-space-between mb-8">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="font-bold text-gray-800">Tendencia de Tráfico por Hora</MudText>
+                        <MudText Typo="Typo.body2" Class="text-gray-500">Métricas consolidadas de visitas a través del día.</MudText>
+                    </div>
+                </div>
+                <div style="height: 450px;">
+                    <MudChart ChartType="ChartType.Line" ChartSeries="@Series" XAxisLabels="@XAxisLabels" Width="100%" Height="100%" ChartOptions="@options" />
+                </div>
+            </MudPaper>
+        </div>
+    }
+</MudContainer>
+
+@code {
+    private bool Cargando = false;
+    private PostGetPageVisitsStats Filtro = new();
+    private DateTime? StartDate = DateTime.Today.AddDays(-7);
+    private DateTime? EndDate = DateTime.Today;
+
+    private List<PageVisitsStat> Stats = new();
+    
+    // Resumen
+    private int TotalVisitas => Stats?.Sum(s => s.iTotalVisits) ?? 0;
+    private int VisitantesUnicos => Stats?.Sum(s => s.iUniqueVisits) ?? 0;
+    private int HoraPico => Stats?.OrderByDescending(s => s.iTotalVisits).FirstOrDefault()?.iHour ?? 0;
+
+    // Gráfica
+    public List<ChartSeries> Series = new();
+    public string[] XAxisLabels = new string[24];
+    private ChartOptions options = new ChartOptions
+    {
+        ChartPalette = new[] { "#1E293B", "#3B82F6", "#10B981", "#8B5CF6", "#F59E0B", "#EF4444", "#EC4899", "#14B8A6" },
+        InterpolationOption = InterpolationOption.NaturalSpline,
+        LineStrokeWidth = 3,
+        YAxisLines = true,
+        XAxisLines = false,
+        YAxisTicks = 5
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        for (int i = 0; i < 24; i++)
+        {
+            // Etiquetas cortas para el eje X (e.g., "00h", "01h")
+            XAxisLabels[i] = $"{i:00}h";
+        }
+        await CargarDatos();
+    }
+
+    private void LimpiarFiltros()
+    {
+        Filtro.vchPageName = string.Empty;
+        StartDate = DateTime.Today.AddDays(-7);
+        EndDate = DateTime.Today;
+        _ = CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        Cargando = true;
+        StateHasChanged();
+
+        Filtro.dtStartDate = StartDate;
+        Filtro.dtEndDate = EndDate?.Date.AddDays(1).AddTicks(-1);
+
+        var respuesta = await PageVisitsService.GetPageVisitsStats(Filtro);
+        
+        if (respuesta.IsSuccess && respuesta.Data != null)
+        {
+            Stats = respuesta.Data.ToList();
+            ActualizarGrafica();
+        }
+        else
+        {
+            Stats = new List<PageVisitsStat>();
+        }
+
+        Cargando = false;
+        StateHasChanged();
+    }
+
+    private void ActualizarGrafica()
+    {
+        var grouped = Stats.GroupBy(s => string.IsNullOrWhiteSpace(s.vchPageName) ? "Index" : s.vchPageName).ToList();
+        Series.Clear();
+
+        if (string.IsNullOrWhiteSpace(Filtro.vchPageName))
+        {
+            // Sumamos todas las visitas por hora (Consolidado Total)
+            var totalData = new double[24];
+            for (int i = 0; i < 24; i++)
+            {
+                totalData[i] = Stats.Where(s => s.iHour == i).Sum(s => s.iTotalVisits);
+            }
+            // Agregamos primero la línea de Todos, en color negro/oscuro (el primer color de la paleta)
+            Series.Add(new ChartSeries { Name = "Todas (Consolidado)", Data = totalData });
+
+            // Luego añadimos una línea por cada página individual para poder compararlas visualmente
+            foreach (var group in grouped)
+            {
+                var data = new double[24];
+                for (int i = 0; i < 24; i++)
+                {
+                    var stat = group.FirstOrDefault(s => s.iHour == i);
+                    data[i] = stat?.iTotalVisits ?? 0;
+                }
+                Series.Add(new ChartSeries { Name = group.Key, Data = data });
+            }
+        }
+        else
+        {
+            // Solo se muestra la página seleccionada en el filtro
+            foreach (var group in grouped)
+            {
+                var data = new double[24];
+                for (int i = 0; i < 24; i++)
+                {
+                    var stat = group.FirstOrDefault(s => s.iHour == i);
+                    data[i] = stat?.iTotalVisits ?? 0;
+                }
+                Series.Add(new ChartSeries { Name = group.Key, Data = data });
+            }
+        }
+    }
+}
