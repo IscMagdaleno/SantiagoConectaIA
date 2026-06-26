@@ -15,6 +15,8 @@ using Microsoft.EntityFrameworkCore;
 using SantiagoConectaIA.DAL.Models;
 using SantiagoConectaIA.DAL.Provider;
 using SantiagoConectaIA.API.BackgroundServices;
+using SantiagoConectaIA.API.Services;
+using SantiagoConectaIA.Share.PostModels.WhatsAppModule;
 
 using System.Reflection;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule;
@@ -47,6 +49,14 @@ builder.Services.AddScoped<ICatalogosDomain, CatalogosDomain>();
 builder.Services.AddScoped<IEmpresasDomain, EmpresasDomain>();
 builder.Services.AddScoped<IAnalyticsDomain, AnalyticsDomain>();
 builder.Services.AddScoped<IPageVisitsDomain, PageVisitsDomain>();
+
+// WhatsApp Cloud API services
+var whatsappConfig = new WhatsAppConfig();
+builder.Configuration.GetSection("WhatsApp").Bind(whatsappConfig);
+builder.Services.AddSingleton(whatsappConfig);
+builder.Services.AddSingleton<WhatsAppMessageQueue>();
+builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
+builder.Services.AddHostedService<WhatsAppWorker>();
 
 builder.Services.AddScoped<ITramitesRepository, TramitesRepository>();
 builder.Services.AddScoped<IOficinasRepository, OficinasRepository>();
