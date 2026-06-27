@@ -51,9 +51,35 @@ builder.Services.AddScoped<IAnalyticsDomain, AnalyticsDomain>();
 builder.Services.AddScoped<IPageVisitsDomain, PageVisitsDomain>();
 
 // WhatsApp Cloud API services
-var whatsappConfig = new WhatsAppConfig();
-builder.Configuration.GetSection("WhatsApp").Bind(whatsappConfig);
-builder.Services.AddSingleton(whatsappConfig);
+builder.Services.AddSingleton(sp =>
+{
+    using var scope = sp.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<EngramaContext>();
+    var config = new WhatsAppConfig();
+    
+    var param1 = context.Parametros.FirstOrDefault(x => x.NvchAlias == "WHATSAPP_CONFIG_1");
+    if (param1 != null)
+    {
+        config.VerifyToken = param1.NvchValor1 ?? string.Empty;
+        config.AppSecret = param1.NvchValor2 ?? string.Empty;
+    }
+    
+    var param2 = context.Parametros.FirstOrDefault(x => x.NvchAlias == "WHATSAPP_CONFIG_2");
+    if (param2 != null)
+    {
+        config.AccessToken = param2.NvchValor1 ?? string.Empty;
+        config.PhoneNumberId = param2.NvchValor2 ?? string.Empty;
+    }
+
+    var param3 = context.Parametros.FirstOrDefault(x => x.NvchAlias == "WHATSAPP_CONFIG_3");
+    if (param3 != null)
+    {
+        config.ApiVersion = param3.NvchValor1 ?? "v25.0";
+        config.BaseUrl = param3.NvchValor2 ?? "https://graph.facebook.com";
+    }
+
+    return config;
+});
 builder.Services.AddSingleton<WhatsAppMessageQueue>();
 builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
 builder.Services.AddHostedService<WhatsAppWorker>();
