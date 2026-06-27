@@ -4,5 +4,6 @@ namespace SantiagoConectaIA.API.Services
     {
         Task<bool> SendTextMessageAsync(string to, string message);
         bool ValidateSignature(string body, string signatureHeader);
+        bool VerifyWebhookToken(string token);
     }
 }

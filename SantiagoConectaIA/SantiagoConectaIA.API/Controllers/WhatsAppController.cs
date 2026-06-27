@@ -12,17 +12,17 @@ namespace SantiagoConectaIA.API.Controllers
 	[Route("api/[controller]")]
 	public class WhatsAppController : ControllerBase
 	{
-		private readonly WhatsAppConfig _config;
+		private readonly IWhatsAppService _whatsappService;
 		private readonly WhatsAppMessageQueue _queue;
 		private readonly ILogger<WhatsAppController> _logger;
 
 
 		public WhatsAppController(
-		WhatsAppConfig config,
+		IWhatsAppService whatsappService,
 		WhatsAppMessageQueue queue,
 		ILogger<WhatsAppController> logger)
 		{
-			_config = config;
+			_whatsappService = whatsappService;
 			_queue = queue;
 			_logger = logger;
 		}
@@ -38,7 +38,7 @@ namespace SantiagoConectaIA.API.Controllers
 		{
 			_logger.LogInformation("Webhook verification requested: mode={Mode}, token={Token}", mode, token);
 
-			if (mode == "subscribe" && token == _config.VerifyToken)
+			if (mode == "subscribe" && _whatsappService.VerifyWebhookToken(token))
 			{
 				_logger.LogInformation("Webhook verified successfully.");
 				return Content(challenge, "text/plain");

@@ -1,3 +1,5 @@
+using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.Share.PostModels.CatalogosModule;
 using SantiagoConectaIA.Share.PostModels.WhatsAppModule;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,24 +10,61 @@ namespace SantiagoConectaIA.API.Services
     public class WhatsAppService : IWhatsAppService
     {
         private readonly HttpClient _httpClient;
-        private readonly WhatsAppConfig _config;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<WhatsAppService> _logger;
+        private WhatsAppConfig? _configCache;
 
         public WhatsAppService(
             HttpClient httpClient,
-            WhatsAppConfig config,
+            IServiceScopeFactory scopeFactory,
             ILogger<WhatsAppService> logger)
         {
             _httpClient = httpClient;
-            _config = config;
+            _scopeFactory = scopeFactory;
             _logger = logger;
+        }
+
+        private WhatsAppConfig GetConfig()
+        {
+            if (_configCache != null) return _configCache;
+
+            var config = new WhatsAppConfig();
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var catalogosDomain = scope.ServiceProvider.GetRequiredService<ICatalogosDomain>();
+                
+                var param1 = catalogosDomain.GetParametroByAlias(new PostGetParametro { vchAlias = "WHATSAPP_CONFIG_1" }).GetAwaiter().GetResult();
+                if (param1 != null && param1.IsSuccess && param1.Data != null)
+                {
+                    config.VerifyToken = param1.Data.NvchValor1 ?? "";
+                    config.AppSecret = param1.Data.NvchValor2 ?? "";
+                }
+
+                var param2 = catalogosDomain.GetParametroByAlias(new PostGetParametro { vchAlias = "WHATSAPP_CONFIG_2" }).GetAwaiter().GetResult();
+                if (param2 != null && param2.IsSuccess && param2.Data != null)
+                {
+                    config.AccessToken = param2.Data.NvchValor1 ?? "";
+                    config.PhoneNumberId = param2.Data.NvchValor2 ?? "";
+                }
+
+                var param3 = catalogosDomain.GetParametroByAlias(new PostGetParametro { vchAlias = "WHATSAPP_CONFIG_3" }).GetAwaiter().GetResult();
+                if (param3 != null && param3.IsSuccess && param3.Data != null)
+                {
+                    config.ApiVersion = param3.Data.NvchValor1 ?? "v25.0";
+                    config.BaseUrl = param3.Data.NvchValor2 ?? "https://graph.facebook.com";
+                }
+            }
+
+            _configCache = config;
+            return _configCache;
         }
 
         public async Task<bool> SendTextMessageAsync(string to, string message)
         {
             try
             {
-                var url = $"{_config.BaseUrl}/{_config.ApiVersion}/{_config.PhoneNumberId}/messages";
+                var config = GetConfig();
+                var url = $"{config.BaseUrl}/{config.ApiVersion}/{config.PhoneNumberId}/messages";
 
                 var payload = new
                 {
@@ -40,7 +79,7 @@ namespace SantiagoConectaIA.API.Services
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 _httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _config.AccessToken);
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.AccessToken);
 
                 var response = await _httpClient.PostAsync(url, content);
                 var responseText = await response.Content.ReadAsStringAsync();
@@ -63,7 +102,8 @@ namespace SantiagoConectaIA.API.Services
 
         public bool ValidateSignature(string body, string signatureHeader)
         {
-            if (string.IsNullOrEmpty(signatureHeader) || string.IsNullOrEmpty(_config.AppSecret))
+            var config = GetConfig();
+            if (string.IsNullOrEmpty(signatureHeader) || string.IsNullOrEmpty(config.AppSecret))
                 return false;
 
             try
@@ -71,7 +111,7 @@ namespace SantiagoConectaIA.API.Services
                 // signatureHeader format: "sha256=<hex-digest>"
                 var receivedHash = signatureHeader.Replace("sha256=", "");
 
-                using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_config.AppSecret));
+                using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(config.AppSecret));
                 var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(body));
                 var computedHex = BitConverter.ToString(computedHash).Replace("-", "").ToLower();
 
@@ -82,6 +122,12 @@ namespace SantiagoConectaIA.API.Services
                 _logger.LogError(ex, "Error validating WhatsApp signature");
                 return false;
             }
+        }
+
+        public bool VerifyWebhookToken(string token)
+        {
+            var config = GetConfig();
+            return token == config.VerifyToken;
         }
     }
 }
