@@ -19,11 +19,9 @@
 					"sslTrustServerCertificate": "false"
 				},
 				"auth-model": "sqlserver_database"
-			},
-			"filters": []
+			}
 		}
 	},
-	"saved-filters": [],
 	"connection-types": {
 		"dev": {
 			"name": "Development",

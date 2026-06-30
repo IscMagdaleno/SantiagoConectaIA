@@ -53,7 +53,7 @@ namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 				await blobClient.UploadAsync(fileStream, overwrite: true);
 
 				// 5. Generar la URL con token SAS (para visualización segura)
-				// Usaremos un token que es válido por un tiempo limitado (ej. 1 hora)
+				// Usaremos un token que es válido por un tiempo limitado (ej. Expira en 10  años)
 				if (blobClient.CanGenerateSasUri)
 				{
 					var sasBuilder = new BlobSasBuilder()
@@ -63,8 +63,9 @@ namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 						Resource = "b" // "b" para Blob
 					};
 
+
 					// Definir los permisos y el tiempo de expiración
-					sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(1); // Expira en 1 hora
+					sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddYears(10); // Expira en 10  años
 					sasBuilder.SetPermissions(BlobSasPermissions.Read); // Solo permiso de lectura
 
 					// Generar la URI con el token SAS
