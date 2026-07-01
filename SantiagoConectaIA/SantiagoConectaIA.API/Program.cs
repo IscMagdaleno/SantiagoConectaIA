@@ -1,5 +1,13 @@
 using EngramaCoreStandar.Extensions;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.AuthModule;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Core.AuthModule;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.AuthModule;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository.AuthModule;
+
 using SantiagoConectaIA.API.EngramaLevels.Domain.Core;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule;
@@ -37,6 +45,29 @@ builder.Services.AddEndpointsApiExplorer();
 
 // Ensure the AddEngramaDependenciesAPI method is defined in the above namespace
 builder.Services.AddEngramaDependenciesAPI();
+
+// JWT Config
+var jwtSecret = builder.Configuration["JwtConfig:Secret"] ?? "SuperSecretKeyForSantiagoConectaIA123!@#";
+var key = Encoding.ASCII.GetBytes(jwtSecret);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["JwtConfig:Issuer"] ?? "SantiagoConectaIA",
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["JwtConfig:Audience"] ?? "SantiagoConectaIA",
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddScoped<IAuthDomain, AuthDomain>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
 builder.Services.AddScoped<ITramiteDominio, TramiteDominio>();
 builder.Services.AddScoped<IOficinasDomain, OficinasDomain>();
@@ -122,6 +153,7 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<ApiLoggingMiddleware>();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

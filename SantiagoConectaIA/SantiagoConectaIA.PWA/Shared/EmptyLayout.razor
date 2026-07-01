@@ -1,0 +1,38 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="@_customTheme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<div class="mesh-bg"></div>
+
+<MudLayout>
+    <MudMainContent Class="d-flex align-center justify-center" Style="min-height: 100vh; background-color: transparent;">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private MudTheme _customTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#A50A3A",
+            Secondary = "#2b2b2b",
+            AppbarBackground = "#A50A3A",
+            Background = "#F8FAFC",
+            Surface = "#FFFFFF",
+            DrawerBackground = "#FFFFFF",
+            DrawerText = "#1E293B",
+            TextPrimary = "#1E293B",
+            TextSecondary = "#64748B",
+            ActionDefault = "#0f172a",
+            PrimaryContrastText = "#FFFFFF",
+            Success = "#10B981",
+            Warning = "#F59E0B",
+            Error = "#EF4444",
+            Info = "#3B82F6"
+        }
+    };
+}

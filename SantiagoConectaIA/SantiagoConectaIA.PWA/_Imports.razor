@@ -1,4 +1,4 @@
-﻿@using System.Net.Http
+@using System.Net.Http
 @using System.Net.Http.Json
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
@@ -13,3 +13,5 @@
 @using EngramaCoreStandar.Extensions;
 @using EngramaCoreStandar.Results;
 @using SantiagoConectaIA.PWA.Shared.Common
+
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]

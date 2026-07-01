@@ -4,6 +4,7 @@ using EngramaCoreStandar.Servicios;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 using SantiagoConectaIA.PWA;
 using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles;
 using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
@@ -43,5 +44,8 @@ builder.Services.AddScoped<MainEmpresas>();
 builder.Services.AddScoped<MainPageVisits>();
 
 builder.Services.AddEngramaDependenciesBlazor();
+
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
 await builder.Build().RunAsync();
