@@ -66,5 +66,55 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 
 			return JsonSerializer.Serialize(resultadoNoticias, options);
 		}
+
+		[KernelFunction]
+		[Description("Obtiene el detalle completo de una noticia específica, incluyendo contenido, imágenes y galería. Requiere el ID de la noticia obtenido de BuscarNoticias.")]
+		public async Task<string> GetNoticiaDetalle(
+			[Description("El ID de la noticia a consultar.")]
+			int idNoticia)
+		{
+			using var scope = _scopeFactory.CreateScope();
+			var noticiasDomain = scope.ServiceProvider.GetRequiredService<INoticiasDomain>();
+
+			var respuesta = await noticiasDomain.GetNoticias(new PostGetNoticias { bActivo = true });
+
+			var options = new JsonSerializerOptions { WriteIndented = true };
+
+			if (!respuesta.IsSuccess || respuesta.Data == null)
+			{
+				return "No se pudieron obtener las noticias en este momento.";
+			}
+
+			var noticia = respuesta.Data.FirstOrDefault(n => n.iIdNoticia == idNoticia);
+
+			if (noticia == null)
+			{
+				return $"No se encontró la noticia con ID {idNoticia}.";
+			}
+
+			var resultado = new
+			{
+				noticia.iIdNoticia,
+				noticia.vchTitulo,
+				noticia.nvchContenido,
+				FechaPublicacion = noticia.dtFechaPublicacion.ToString("dd/MM/yyyy"),
+				noticia.vchImagenPortada,
+				Imagenes = noticia.Imagenes?.Select(img => new
+				{
+					img.vchUrlImagen,
+				}),
+				Filas = noticia.Filas?.Select(f => new
+				{
+					f.iOrden,
+					Metadatos = f.Metadatos?.Select(m => new
+					{
+						m.vchTitulo,
+						m.nvchValor
+					})
+				})
+			};
+
+			return JsonSerializer.Serialize(resultado, options);
+		}
 	}
 }
