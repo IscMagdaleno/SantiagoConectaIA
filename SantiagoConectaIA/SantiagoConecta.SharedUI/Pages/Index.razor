@@ -13,7 +13,7 @@
 <PageTitle>Santiaguero Conecta - Inicio</PageTitle>
 
 <!-- ***** Hero Section (Bienvenida) ***** -->
-<div class="welcome-area hero-animated-bg" id="welcome" style="min-height: 85vh; display: flex; align-items: center; position: relative; overflow: hidden;">
+<div class="welcome-area hero-animated-bg" id="welcome" style="min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; padding-top: 80px;">
     
     <!-- Efecto Glow que sigue al cursor -->
     <div class="hero-glow" id="hero-glow"></div>
@@ -21,29 +21,50 @@
     <!-- Sistema interactivo de partículas en Canvas -->
     <canvas id="hero-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.8;"></canvas>
 
-    <div class="header-text" style="width: 100%; position: relative; z-index: 5; padding-bottom: 8vh;">
+    <div class="header-text" style="width: 100%; position: relative !important; top: auto !important; transform: none !important; z-index: 5; padding-bottom: 12vh;">
         <div class="container">
             <div class="row">
                 <div class="col-xl-8 col-lg-10 col-md-12 col-sm-12 mx-auto text-center" style="display: flex; flex-direction: column; align-items: center;">
                     
-                    <!-- Última Noticia Glass Card -->
-                    @if (latestNoticia != null)
-                    {
-                        <div class="news-card-glass" @onclick='() => NavManager.NavigateTo($"/noticias/{latestNoticia.iIdNoticia}")' style="width: 96%; max-width: 600px; padding: 16px 24px; margin-top: -60px; margin-bottom: 40px; border-radius: 28px; display: inline-flex; align-items: center; justify-content: space-between; gap: 16px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); animation: slideDownFade 0.8s ease-out;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.2)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 32px rgba(0, 0, 0, 0.15)';">
-                            <div class="badge-new" style="background: linear-gradient(135deg, #ffb4a2, #ff8a65); color: #880e4f; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(255, 180, 162, 0.4); white-space: nowrap; flex-shrink: 0; align-self: flex-start; margin-top: 2px;">
-                                @(latestNoticia.Categoria?.vchNombre ?? "Noticia")
+                    <!-- Slider Glass -->
+                    <MudCarousel Class="mud-width-full" Style="height:180px; max-width:600px; margin-top: clamp(20px, 4vh, 40px); margin-bottom:20px; border-radius:28px; box-shadow:0 8px 32px rgba(0,0,0,0.15); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25);" ShowArrows="false" ShowBullets="false" AutoCycle="true" EnableSwipeGesture="true" TData="object">
+                        
+                        <!-- Slide WhatsApp -->
+                        <MudCarouselItem Transition="Transition.Slide">
+                            <div style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 12px 24px; gap: 16px; cursor: pointer; text-align: left;" @onclick="OpenChatbot">
+                                <MudIcon Icon="@Icons.Material.Filled.Chat" Style="font-size: 50px; color: #ffb4a2; flex-shrink: 0;" />
+                                <div style="flex-grow: 1; overflow: hidden;">
+                                    <div style="background: linear-gradient(135deg, #ffb4a2, #ff8a65); color: #880e4f; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 6px;">
+                                        WhatsApp IA
+                                    </div>
+                                    <MudText Typo="Typo.body1" Style="color: white; font-weight: 600; font-size: 1rem; line-height: 1.3; text-shadow: 0 1px 2px rgba(0,0,0,0.2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">¡Resuelve tus dudas al instante con nuestro asistente virtual!</MudText>
+                                </div>
                             </div>
-                            <MudText Typo="Typo.body2" Style="color: white; font-weight: 500; font-size: 1.1rem; line-height: 1.4; margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.2); white-space: normal; flex-grow: 1; text-align: left;">@latestNoticia.vchTitulo</MudText>
-                            <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Style="color: rgba(255,255,255,0.7); font-size: 18px; margin-left: 6px; flex-shrink: 0;" />
-                        </div>
-                    }
+                        </MudCarouselItem>
 
-                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="font-size: 60px; color: #ffb4a2; margin-bottom: 20px; animation: float 3s ease-in-out infinite;" />
-                    <h1 style="color: white; font-weight: 800; font-size: 3.5rem; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -1px;">
+                        <!-- Slide Noticias -->
+                        @if (latestNoticia != null)
+                        {
+                            <MudCarouselItem Transition="Transition.Slide">
+                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 12px 24px; gap: 16px; cursor: pointer; text-align: left;" @onclick='() => NavManager.NavigateTo($"/noticias/{latestNoticia.iIdNoticia}")'>
+                                    <MudIcon Icon="@Icons.Material.Filled.Article" Style="font-size: 50px; color: #ffb4a2; flex-shrink: 0;" />
+                                    <div style="flex-grow: 1; overflow: hidden;">
+                                        <div style="background: linear-gradient(135deg, #ffb4a2, #ff8a65); color: #880e4f; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 6px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            @(latestNoticia.Categoria?.vchNombre ?? "Noticia")
+                                        </div>
+                                        <MudText Typo="Typo.body1" Style="color: white; font-weight: 600; font-size: 1rem; line-height: 1.3; text-shadow: 0 1px 2px rgba(0,0,0,0.2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">@latestNoticia.vchTitulo</MudText>
+                                    </div>
+                                </div>
+                            </MudCarouselItem>
+                        }
+                    </MudCarousel>
+
+                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="font-size: 50px; color: #ffb4a2; margin-bottom: 10px; animation: float 3s ease-in-out infinite;" />
+                    <h1 style="color: white; font-weight: 800; font-size: clamp(2rem, 8vw, 3.5rem); line-height: 1.2; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -1px;">
                         Bienvenido a <span style="color: #ffb4a2;">Santiaguero Conecta</span>
                     </h1>
-                    <p style="color: rgba(255, 255, 255, 0.95); font-size: 1.25rem; margin-bottom: 40px; font-weight: 300; line-height: 1.6; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
-                        Tu Asistente Virtual Inteligente 24/7. El H. Ayuntamiento de Santiago Papasquiaro pone a tu disposición esta herramienta de nueva generación para resolver tus dudas, consultar trámites y evitar filas.
+                    <p style="color: rgba(255, 255, 255, 0.95); font-size: clamp(1rem, 4vw, 1.25rem); margin-bottom: 40px; font-weight: 300; line-height: 1.6; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                        Tu Asistente Virtual Inteligente 24/7. Santiago Conecta pone a tu disposición esta herramienta de nueva generación para resolver tus dudas, consultar trámites y evitar filas.
                     </p>
                     <button class="main-button-slider hero-btn" @onclick="OpenChatbot">
                         <i class="fa fa-comments mr-2"></i> Conversar con la IA
@@ -75,7 +96,7 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="row">
+                <div class="row justify-content-center">
                     <!-- Trámites -->
                     <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/tramites", forceLoad: true)' style="cursor: pointer;">
                         <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
@@ -106,6 +127,26 @@
                             <p>Nuestro chatbot responde al instante a tus preguntas mediante lenguaje natural. ¡Pruébalo ahora mismo!</p>
                         </div>
                     </div>
+                    <!-- Emprendimientos -->
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/emprendimientos", forceLoad: true)' style="cursor: pointer;">
+                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Storefront" Color="Color.Primary" Size="Size.Large" />
+                            </div>
+                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Emprendimientos</h5>
+                            <p>Descubre y apoya a los negocios locales y emprendedores de nuestra comunidad en nuestro catálogo interactivo.</p>
+                        </div>
+                    </div>
+                    <!-- WhatsApp -->
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick="OpenWhatsAppInfo" style="cursor: pointer;">
+                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Chat" Color="Color.Primary" Size="Size.Large" />
+                            </div>
+                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">WhatsApp Bot</h5>
+                            <p>Comunícate con nuestro asistente virtual directamente desde WhatsApp de forma rápida, sencilla y segura.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,7 +170,7 @@
                     <h2 class="section-title" style="color: #880e4f;">Cero Filas, Cero Complicaciones</h2>
                 </div>
                 <div class="left-text">
-                    <p>En el H. Ayuntamiento de Santiago Papasquiaro estamos comprometidos con la modernización de la atención ciudadana. Con <strong>Santiaguero Conecta</strong>, la administración municipal está al alcance de tu mano.</p>
+                    <p>Santiago Papasquiaro está comprometido con la modernización de la atención ciudadana. Con <strong>Santiaguero Conecta</strong>, la administración municipal está al alcance de tu mano.</p>
                     <ul style="list-style: none; padding-left: 0; margin-top: 20px;">
                         <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Disponibilidad Total:</strong> Operativo 24 horas al día, 365 días al año.</li>
                         <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Respuestas Inmediatas:</strong> Olvídate de los tiempos de espera telefónicos.</li>
@@ -159,7 +200,7 @@
             </div>
             <div class="offset-lg-3 col-lg-6">
                 <div class="center-text">
-                    <p>Tu opinión es importante para nosotros. Utiliza este espacio para enviarnos tus comentarios, sugerencias o reportes directos al H. Ayuntamiento.</p>
+                    <p>Tu opinión es importante para nosotros. Utiliza este espacio para enviarnos tus comentarios, sugerencias o reportes directos.</p>
                 </div>
             </div>
         </div>
@@ -169,13 +210,12 @@
                 <h5 class="margin-bottom-30" style="color: #880e4f;">Información de Contacto</h5>
                 <div class="contact-text">
                     <p>
-                        <strong>Dirección:</strong><br>
-                        Calle Riva Palacio #19, Colonia Centro,<br>
-                        Santiago Papasquiaro, Durango.
+                        <strong>Dirección de correo:</strong><br>
+                        santiagoconecta01@gmail.com<br>
                     </p>
                     <p>
-                        <strong>Teléfono Oficial:</strong><br>
-                        674 86 2 18 46
+                        <strong>Teléfonos Oficiales:</strong><br>
+                        674 106 5612 y 332 834 0146
                     </p>
                     <p><strong>Atención Ciudadana:</strong> Lunes a Viernes de 8:00 a 15:00 hrs.</p>
                 </div>
@@ -512,6 +552,13 @@
     {
         try {
             await JS.InvokeVoidAsync("eval", "document.querySelector('.chatbot-container .pulse-animation')?.click()");
+        } catch { }
+    }
+
+    private async Task OpenWhatsAppInfo()
+    {
+        try {
+            await JS.InvokeVoidAsync("alert", "¡Próximamente! Podrás comunicarte con nuestro asistente virtual enviando un mensaje por WhatsApp al número oficial del Ayuntamiento. Te mantendremos informado.");
         } catch { }
     }
 

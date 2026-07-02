@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 
 Softy Pinko
 
@@ -110,14 +110,14 @@ body {
 }
 
 ::selection {
-    /* CAMBIO: Color de selección a Guinda */
-    background: #7d1a0c;
+    /* CAMBIO: Color de selecciÃ³n a Guinda */
+    background: #880e4f;
     color: #fff;
 }
 
 ::-moz-selection {
-    /* CAMBIO: Color de selección a Guinda */
-    background: #7d1a0c;
+    /* CAMBIO: Color de selecciÃ³n a Guinda */
+    background: #880e4f;
     color: #fff;
 }
 
@@ -128,8 +128,8 @@ body {
 }
 
     .section.colored {
-        /* CAMBIO: Fondo de sección coloreada a Beige claro */
-        background: #fcf6eb; /* Un beige muy claro, o puedes usar #e8c382 si quieres más saturado */
+        /* CAMBIO: Fondo de secciÃ³n coloreada a Beige claro */
+        background: #fcf6eb; /* Un beige muy claro, o puedes usar #e8c382 si quieres mÃ¡s saturado */
     }
 
 .hr {
@@ -317,8 +317,8 @@ a.main-button-slider {
     font-size: 13px;
     border-radius: 20px;
     padding: 12px 20px;
-    /* CAMBIO: Botón del slider (principal) a Guinda */
-    background-color: #7d1a0c;
+    /* CAMBIO: BotÃ³n del slider (principal) a Guinda */
+    background-color: #880e4f;
     text-transform: uppercase;
     color: #fff;
     letter-spacing: 0.25px;
@@ -329,17 +329,17 @@ a.main-button-slider {
 }
 
     a.main-button-slider:hover {
-        /* CAMBIO: Hover del botón del slider a Beige */
+        /* CAMBIO: Hover del botÃ³n del slider a Beige */
         background-color: #e8c382;
-        color: #7d1a0c; /* Se cambia el color del texto para el contraste */
+        color: #880e4f; /* Se cambia el color del texto para el contraste */
     }
 
 a.main-button {
     font-size: 13px;
     border-radius: 20px;
     padding: 12px 20px;
-    /* CAMBIO: Botón principal a Guinda */
-    background-color: #7d1a0c;
+    /* CAMBIO: BotÃ³n principal a Guinda */
+    background-color: #880e4f;
     text-transform: uppercase;
     color: #fff;
     letter-spacing: 0.25px;
@@ -350,9 +350,9 @@ a.main-button {
 }
 
     a.main-button:hover {
-        /* CAMBIO: Hover del botón principal a Beige */
+        /* CAMBIO: Hover del botÃ³n principal a Beige */
         background-color: #e8c382;
-        color: #7d1a0c; /* Se cambia el color del texto para el contraste */
+        color: #880e4f; /* Se cambia el color del texto para el contraste */
     }
 
 button.main-button {
@@ -362,8 +362,8 @@ button.main-button {
     font-size: 13px;
     border-radius: 20px;
     padding: 12px 20px;
-    /* CAMBIO: Botón principal (tipo button) a Guinda */
-    background-color: #7d1a0c;
+    /* CAMBIO: BotÃ³n principal (tipo button) a Guinda */
+    background-color: #880e4f;
     text-transform: uppercase;
     color: #fff;
     letter-spacing: 0.25px;
@@ -374,9 +374,9 @@ button.main-button {
 }
 
     button.main-button:hover {
-        /* CAMBIO: Hover del botón principal (tipo button) a Beige */
+        /* CAMBIO: Hover del botÃ³n principal (tipo button) a Beige */
         background-color: #e8c382;
-        color: #7d1a0c; /* Se cambia el color del texto para el contraste */
+        color: #880e4f; /* Se cambia el color del texto para el contraste */
     }
 
 
@@ -447,7 +447,7 @@ header
                     display: block;
                     font-weight: 500;
                     font-size: 13px;
-                    /* El color del texto del menú en el banner es blanco, se mantiene */
+                    /* El color del texto del menÃº en el banner es blanco, se mantiene */
                     color: #fff;
                     -webkit-transition: all 0.3s ease 0s;
                     -moz-transition: all 0.3s ease 0s;
@@ -460,7 +460,7 @@ header
                 }
 
                     .header-area .main-nav .nav li a:hover {
-                        /* CAMBIO: Hover del menú a Beige */
+                        /* CAMBIO: Hover del menÃº a Beige */
                         color: #e8c382;
                     }
 
@@ -574,7 +574,7 @@ header
 
                 .header-area.header-sticky .nav li a.active {
                     /* CAMBIO: En la barra pegajosa, el elemento activo se pone en Guinda */
-                    color: #7d1a0c;
+                    color: #880e4f;
                 }
 
 @media (max-width: 1200px) {
@@ -647,7 +647,7 @@ header
                     }
 
                         .header-area .main-nav .nav li a:hover {
-                            /* CAMBIO: Hover del menú móvil a Beige muy claro */
+                            /* CAMBIO: Hover del menÃº mÃ³vil a Beige muy claro */
                             background: #fcf6eb !important;
                         }
 }
@@ -675,13 +675,13 @@ welcome
     background-size: cover;
     height: 100vh;
 }
-    /* AÑADIDO: Capa de color Guinda (opcional) para tintar el banner si el CSS lo permite con un before o after.
+    /* AÃ‘ADIDO: Capa de color Guinda (opcional) para tintar el banner si el CSS lo permite con un before o after.
    Como el tema original usa una imagen de fondo (banner-bg.png), este cambio es clave: 
-   Necesitarías cambiar la imagen de fondo o añadir un overlay.
-   En este caso, confiaré en que la imagen de fondo es el morado que se ve en tu captura,
-   y esa imagen debe cambiarse manualmente o usar una técnica de overlay.
-   Si la imagen de fondo no se puede cambiar, usaremos el gradiente de preloader/footer como overlay si es posible, pero es más complejo.
-   Por ahora, solo mantendré la imagen original y asumiré que el guinda debe aplicarse a otras áreas.
+   NecesitarÃ­as cambiar la imagen de fondo o aÃ±adir un overlay.
+   En este caso, confiarÃ© en que la imagen de fondo es el morado que se ve en tu captura,
+   y esa imagen debe cambiarse manualmente o usar una tÃ©cnica de overlay.
+   Si la imagen de fondo no se puede cambiar, usaremos el gradiente de preloader/footer como overlay si es posible, pero es mÃ¡s complejo.
+   Por ahora, solo mantendrÃ© la imagen original y asumirÃ© que el guinda debe aplicarse a otras Ã¡reas.
    Si quieres que el banner sea guinda, debes modificar el archivo HTML para agregar un div overlay o cambiar la imagen de fondo.
 */
 
@@ -814,7 +814,7 @@ features
 
     .features-small-item:hover .icon {
         /* MANTENIDO: Hover del icono a Guinda */
-        background-color: #7d1a0c;
+        background-color: #880e4f;
     }
 
     .features-small-item .icon {
@@ -836,7 +836,7 @@ features
         justify-content: center;
         align-items: center;
     }
-        /* El resto de la sección de features se mantiene como lo pusiste, 
+        /* El resto de la secciÃ³n de features se mantiene como lo pusiste, 
    ya que es el ejemplo que me mostraste y ya tiene tus colores. */
 
         .features-small-item .icon i {
@@ -1009,8 +1009,8 @@ parallax & home seperator
                 display: block;
                 font-size: 20px;
                 margin-bottom: 15px;
-                /* CAMBIO: Color de ícono en mini-box a Guinda */
-                color: #7d1a0c;
+                /* CAMBIO: Color de Ã­cono en mini-box a Guinda */
+                color: #880e4f;
                 text-align: center;
             }
 
@@ -1200,8 +1200,8 @@ team
         margin-left: 25px;
         margin-top: 25px;
         font-size: 30px;
-        /* CAMBIO: Color de ícono de testimonios a Guinda */
-        color: #7d1a0c;
+        /* CAMBIO: Color de Ã­cono de testimonios a Guinda */
+        color: #880e4f;
         text-align: center;
     }
 
@@ -1248,8 +1248,8 @@ team
                 display: block;
                 font-weight: 400;
                 font-size: 15px;
-                /* CAMBIO: Título/rol del usuario a Guinda */
-                color: #7d1a0c;
+                /* CAMBIO: TÃ­tulo/rol del usuario a Guinda */
+                color: #880e4f;
                 letter-spacing: 0.25px;
             }
 
@@ -1288,7 +1288,7 @@ pricing
 
     .pricing-item.active .pricing-body .price-wrapper {
         /* CAMBIO: Fondo del plan activo a Guinda */
-        background-color: #7d1a0c;
+        background-color: #880e4f;
     }
 
         .pricing-item.active .pricing-body .price-wrapper .currency {
@@ -1332,7 +1332,7 @@ pricing
             padding-top: 20px;
             padding-bottom: 13px;
             /* CAMBIO: Fondo del precio a Guinda */
-            background: #7d1a0c;
+            background: #880e4f;
             width: 80%;
             margin: auto;
             margin-bottom: 40px;
@@ -1425,8 +1425,8 @@ blog
         }
 
             .blog-post-thumb h3 a:hover {
-                /* CAMBIO: Hover del título del blog a Guinda */
-                color: #7d1a0c;
+                /* CAMBIO: Hover del tÃ­tulo del blog a Guinda */
+                color: #880e4f;
             }
 
     .blog-post-thumb .text {
@@ -1515,8 +1515,8 @@ footer
 --------------------------------------------- 
 */
 footer {
-    /* CAMBIO: Gradiente del footer a Guinda. Usamos un tono más oscuro de Guinda para la transición. */
-    background-image: linear-gradient(127deg, #5c1409 0%, #7d1a0c 91%);
+    /* CAMBIO: Gradiente del footer a Guinda. Usamos un tono mÃ¡s oscuro de Guinda para la transiciÃ³n. */
+    background-image: linear-gradient(127deg, #880e4f 0%, #4a148c 91%);
     padding-top: 30px;
 }
 
@@ -1532,8 +1532,8 @@ footer {
         }
 
             footer .social li a {
-                /* CAMBIO: Color de íconos sociales a Guinda */
-                color: #7d1a0c;
+                /* CAMBIO: Color de Ã­conos sociales a Guinda */
+                color: #880e4f;
                 text-align: center;
                 background-color: #fff;
                 width: 36px;
@@ -1549,9 +1549,9 @@ footer {
             }
 
                 footer .social li a:hover {
-                    /* CAMBIO: Hover de íconos sociales a Beige */
+                    /* CAMBIO: Hover de Ã­conos sociales a Beige */
                     background-color: #e8c382;
-                    color: #7d1a0c; /* Se cambia el color del texto para el contraste */
+                    color: #880e4f; /* Se cambia el color del texto para el contraste */
                 }
 
     footer .copyright {
@@ -1587,8 +1587,8 @@ preloader
 */
 #preloader {
     overflow: hidden;
-    /* CAMBIO: Gradiente del preloader a Guinda. Usamos un tono más oscuro de Guinda para la transición. */
-    background-image: linear-gradient(135deg, #5c1409 0%, #7d1a0c 100%);
+    /* CAMBIO: Gradiente del preloader a Guinda. Usamos un tono mÃ¡s oscuro de Guinda para la transiciÃ³n. */
+    background-image: linear-gradient(135deg, #5c1409 0%, #880e4f 100%);
     left: 0;
     right: 0;
     top: 0;
@@ -1668,3 +1668,4 @@ preloader
         opacity: 0;
     }
 }
+

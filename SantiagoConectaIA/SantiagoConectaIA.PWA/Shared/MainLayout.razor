@@ -85,9 +85,9 @@
     </MudAppBar>
 
     <!-- Menú móvil desplegable -->
-    <MudCollapse Expanded="@_mobileMenuOpen" Class="mobile-menu">
+    <MudCollapse Expanded="@_mobileMenuOpen" Class="mobile-menu" Style="position: fixed; top: 64px; left: 0; width: 100%; z-index: 1090; max-height: calc(100vh - 64px); overflow-y: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
         <MudContainer MaxWidth="MaxWidth.ExtraLarge"
-                      Style="background-color: #A50A3A; padding: 1rem;">
+                      Style="background-color: #A50A3A; padding: 1rem; min-height: 100%;">
             <MudStack Spacing="2">
                 <MudButton Href="/"
                            Color="Color.Inherit"
@@ -384,6 +384,7 @@
 
     private void AbrirTramitesEnTab()
     {
+        CloseMobileMenu();
         var type = typeof(SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes.GridTramites);
         var tab = new WorkspaceTab
         {
