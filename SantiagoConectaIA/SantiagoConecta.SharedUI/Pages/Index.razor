@@ -10,7 +10,7 @@
 @inject Data_BuzonCiudadano _dataBuzon
 @inject Data_Noticias dataNoticias
 
-<PageTitle>Santiaguero Conecta - Inicio</PageTitle>
+<PageTitle>Santiago Conecta - Inicio</PageTitle>
 
 <!-- ***** Hero Section (Bienvenida) ***** -->
 <div class="welcome-area hero-animated-bg" id="welcome" style="min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; padding-top: 80px;">
@@ -31,7 +31,7 @@
                         
                         <!-- Slide WhatsApp -->
                         <MudCarouselItem Transition="Transition.Slide">
-                            <div style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 12px 24px; gap: 16px; cursor: pointer; text-align: left;" @onclick="OpenChatbot">
+                            <div style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 12px 24px; gap: 16px; cursor: pointer; text-align: left;" @onclick="OpenWhatsAppInfo">
                                 <MudIcon Icon="@Icons.Material.Filled.Chat" Style="font-size: 50px; color: #ffb4a2; flex-shrink: 0;" />
                                 <div style="flex-grow: 1; overflow: hidden;">
                                     <div style="background: linear-gradient(135deg, #ffb4a2, #ff8a65); color: #880e4f; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 6px;">
@@ -61,7 +61,7 @@
 
                     <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="font-size: 50px; color: #ffb4a2; margin-bottom: 10px; animation: float 3s ease-in-out infinite;" />
                     <h1 style="color: white; font-weight: 800; font-size: clamp(2rem, 8vw, 3.5rem); line-height: 1.2; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -1px;">
-                        Bienvenido a <span style="color: #ffb4a2;">Santiaguero Conecta</span>
+                        Bienvenido a <span style="color: #ffb4a2;">Santiago Conecta</span>
                     </h1>
                     <p style="color: rgba(255, 255, 255, 0.95); font-size: clamp(1rem, 4vw, 1.25rem); margin-bottom: 40px; font-weight: 300; line-height: 1.6; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
                         Tu Asistente Virtual Inteligente 24/7. Santiago Conecta pone a tu disposición esta herramienta de nueva generación para resolver tus dudas, consultar trámites y evitar filas.
@@ -91,8 +91,31 @@
 </div>
 <!-- ***** Hero Section End ***** -->
 
+<!-- ***** Banner Destacado WhatsApp ***** -->
+<section style="background: linear-gradient(135deg, #d81b60, #880e4f); padding: 30px 0; position: relative; overflow: hidden; margin-top: -60px; z-index: 15; box-shadow: 0 10px 30px rgba(136,14,79,0.3);">
+    <div style="position: absolute; top: -50%; left: -10%; width: 50%; height: 200%; background: rgba(255,255,255,0.1); transform: rotate(30deg); pointer-events: none;"></div>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 col-md-12 text-left" style="color: white; display: flex; align-items: center; gap: 20px;">
+                <div style="background: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: pulse 2s infinite; flex-shrink: 0;">
+                    <MudIcon Icon="@Icons.Material.Filled.Chat" Style="color: #d81b60; font-size: 35px;" />
+                </div>
+                <div>
+                    <h4 style="font-weight: 800; margin-bottom: 5px; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">¡NUEVO! Conecta por WhatsApp</h4>
+                    <p style="margin: 0; font-size: 1.1rem; opacity: 0.95;">Resuelve dudas y reporta incidentes directo desde tu celular, las 24 horas.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12 text-center" style="margin-top: 15px;">
+                <button @onclick="OpenWhatsAppInfo" style="background: white; color: #880e4f; font-weight: 800; padding: 12px 30px; border-radius: 30px; border: none; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; cursor: pointer;">
+                    Enviar Mensaje <i class="fa fa-whatsapp ml-2" style="color: #25D366; font-size: 1.2rem;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- ***** Módulos Principales ***** -->
-<section class="section home-feature" style="margin-top: -60px; position: relative; z-index: 10;">
+<section class="section home-feature" style="margin-top: 40px; position: relative; z-index: 10;">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
@@ -170,7 +193,7 @@
                     <h2 class="section-title" style="color: #880e4f;">Cero Filas, Cero Complicaciones</h2>
                 </div>
                 <div class="left-text">
-                    <p>Santiago Papasquiaro está comprometido con la modernización de la atención ciudadana. Con <strong>Santiaguero Conecta</strong>, la administración municipal está al alcance de tu mano.</p>
+                    <p>Santiago Papasquiaro está comprometido con la modernización de la atención ciudadana. Con <strong>Santiago Conecta</strong>, la administración municipal está al alcance de tu mano.</p>
                     <ul style="list-style: none; padding-left: 0; margin-top: 20px;">
                         <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Disponibilidad Total:</strong> Operativo 24 horas al día, 365 días al año.</li>
                         <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Respuestas Inmediatas:</strong> Olvídate de los tiempos de espera telefónicos.</li>
@@ -558,7 +581,7 @@
     private async Task OpenWhatsAppInfo()
     {
         try {
-            await JS.InvokeVoidAsync("alert", "¡Próximamente! Podrás comunicarte con nuestro asistente virtual enviando un mensaje por WhatsApp al número oficial del Ayuntamiento. Te mantendremos informado.");
+            await JS.InvokeVoidAsync("window.open", "https://wa.me/5212206490951", "_blank");
         } catch { }
     }
 
