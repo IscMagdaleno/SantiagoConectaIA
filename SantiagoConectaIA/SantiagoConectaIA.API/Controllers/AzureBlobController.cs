@@ -19,22 +19,22 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <summary>
 		/// Sube un archivo PDF al Azure Blob Storage y retorna su URL.
 		/// </summary>
-		/// <param name="file">El archivo subido.</param>
+		/// <param name="image">El archivo subido.</param>
 		[HttpPost("UploadDocument")]
-		public async Task<IActionResult> UploadDocument(IFormFile file)
+		public async Task<IActionResult> UploadDocument(IFormFile image)
 		{
-			if (file == null || file.Length == 0)
+			if (image == null || image.Length == 0)
 			{
 				return BadRequest(EngramaCoreStandar.Results.Response<BlobSaved>.BadResult("No se proporcionó ningún archivo.", new BlobSaved()));
 			}
 
 
 			// Generar un nombre único para el archivo
-			var extension = Path.GetExtension(file.FileName);
+			var extension = Path.GetExtension(image.FileName);
 			var uniqueFileName = $"{Guid.NewGuid()}{extension}";
 
 			// Usar 'using' para asegurar que el stream se cierra correctamente
-			using (var stream = file.OpenReadStream())
+			using (var stream = image.OpenReadStream())
 			{
 				var result = await _azureBlobDomain.UploadDocument(stream, uniqueFileName, "tramitedocs");
 
@@ -49,21 +49,50 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <summary>
 		/// Sube un archivo de imagen (Logo) al Azure Blob Storage y retorna su URL.
 		/// </summary>
-		/// <param name="file">El archivo de imagen subido.</param>
-		[HttpPost("UploadImage")]
-		public async Task<IActionResult> UploadImage(IFormFile file)
+		/// <param name="image">El archivo de imagen subido.</param>
+		[HttpPost("UploadImage-empresas")]
+		public async Task<IActionResult> UploadImageEmpresas(IFormFile image)
 		{
-			if (file == null || file.Length == 0)
+			if (image == null || image.Length == 0)
 			{
 				return BadRequest(EngramaCoreStandar.Results.Response<BlobSaved>.BadResult("No se proporcionó ninguna imagen.", new BlobSaved()));
 			}
 
-			var extension = Path.GetExtension(file.FileName);
+			var extension = Path.GetExtension(image.FileName);
 			var uniqueFileName = $"{Guid.NewGuid()}{extension}";
 
-			using (var stream = file.OpenReadStream())
+			using (var stream = image.OpenReadStream())
 			{
-				var result = await _azureBlobDomain.UploadDocument(stream, uniqueFileName, "empresas-logos");
+				var result = await _azureBlobDomain.UploadDocument(stream, uniqueFileName, "empresas");
+
+				if (result.IsSuccess)
+				{
+					return Ok(result);
+				}
+				return BadRequest(result);
+			}
+		}
+
+
+
+		/// <summary>
+		/// Sube un archivo de imagen (Logo) al Azure Blob Storage y retorna su URL.
+		/// </summary>
+		/// <param name="image">El archivo de imagen subido.</param>
+		[HttpPost("UploadImage-Eventos")]
+		public async Task<IActionResult> UploadImageEventos(IFormFile image)
+		{
+			if (image == null || image.Length == 0)
+			{
+				return BadRequest(EngramaCoreStandar.Results.Response<BlobSaved>.BadResult("No se proporcionó ninguna imagen.", new BlobSaved()));
+			}
+
+			var extension = Path.GetExtension(image.FileName);
+			var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+
+			using (var stream = image.OpenReadStream())
+			{
+				var result = await _azureBlobDomain.UploadDocument(stream,  uniqueFileName, "eventos");
 
 				if (result.IsSuccess)
 				{

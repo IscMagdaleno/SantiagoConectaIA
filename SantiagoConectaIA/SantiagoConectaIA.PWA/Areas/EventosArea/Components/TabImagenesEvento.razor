@@ -1,0 +1,52 @@
+@using SantiagoConectaIA.PWA.Areas.EventosArea.Utiles
+@using SantiagoConectaIA.Share.Objetos.EventosModulo
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg, .webp" FilesChanged="UploadNuevaImagen">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                    Agregar Imagen
+                </MudButton>
+            </ActivatorContent>
+        </MudFileUpload>
+    </MudItem>
+
+    <MudItem xs="12">
+        @if (Data.LstImagenes != null && Data.LstImagenes.Any())
+        {
+            <MudTable Items="@Data.LstImagenes" Hover="true" Elevation="0">
+                <HeaderContent>
+                    <MudTh>Orden</MudTh>
+                    <MudTh>Imagen</MudTh>
+                    <MudTh>Descripción</MudTh>
+                    <MudTh Style="width: 100px;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Orden">@context.iOrden</MudTd>
+                    <MudTd DataLabel="Imagen">
+                        <MudAvatar Size="Size.Large" Style="border: 1px solid #e2e8f0;">
+                            <MudImage Src="@context.vchUrlImagen" ObjectFit="ObjectFit.Cover" />
+                        </MudAvatar>
+                    </MudTd>
+                    <MudTd DataLabel="Descripción">@(string.IsNullOrEmpty(context.vchDescripcion) ? "Sin descripción" : context.vchDescripcion)</MudTd>
+                    <MudTd DataLabel="Acciones">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EliminarImagen(context))" />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body2">No hay imágenes registradas para este evento.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Color="Color.Surface" Class="mt-4 text-center">
+                No hay imágenes. Sube una imagen usando el botón de arriba.
+            </MudText>
+        }
+    </MudItem>
+</MudGrid>

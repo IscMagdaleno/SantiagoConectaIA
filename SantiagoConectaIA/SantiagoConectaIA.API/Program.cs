@@ -28,6 +28,9 @@ using SantiagoConectaIA.Share.PostModels.WhatsAppModule;
 
 using System.Reflection;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EventosModule;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Core.EventosModule;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.EventosModule;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,6 +81,7 @@ builder.Services.AddScoped<INoticiasDomain, NoticiasDomain>();
 builder.Services.AddScoped<IBuzonCiudadanoDomain, BuzonCiudadanoDomain>();
 builder.Services.AddScoped<ICatalogosDomain, CatalogosDomain>();
 builder.Services.AddScoped<IEmpresasDomain, EmpresasDomain>();
+builder.Services.AddScoped<IEventosDomain, EventosDomain>();
 builder.Services.AddScoped<IAnalyticsDomain, AnalyticsDomain>();
 builder.Services.AddScoped<IPageVisitsDomain, PageVisitsDomain>();
 
@@ -97,6 +101,7 @@ builder.Services.AddScoped<IBuzonCiudadanoRepository, BuzonCiudadanoRepository>(
 builder.Services.AddScoped<ICatalogosRepository, CatalogosRepository>();
 builder.Services.AddScoped<ICatalogosProvider, CatalogosProvider>();
 builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
+builder.Services.AddScoped<IEventosRepository, EventosRepository>();
 builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 builder.Services.AddScoped<IPageVisitsRepository, PageVisitsRepository>();
 
