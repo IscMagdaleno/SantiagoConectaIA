@@ -67,6 +67,11 @@
                                Class="nav-button mx-2">
                         Empresas
                     </MudButton>
+                    <MudButton OnClick="WorkspaceService.RequestEventos"
+                               Color="Color.Inherit"
+                               Class="nav-button mx-2">
+                        Eventos
+                    </MudButton>
                     <MudButton OnClick="WorkspaceService.RequestPageVisits"
                                Color="Color.Inherit"
                                Class="nav-button mx-2">
@@ -138,6 +143,13 @@
                            Style="color: white; justify-content: flex-start;">
                     <MudIcon Icon="Icons.Material.Filled.Storefront" Class="mr-3" />
                     Empresas
+                </MudButton>
+                <MudButton OnClick="WorkspaceService.RequestEventos"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;">
+                    <MudIcon Icon="Icons.Material.Filled.Event" Class="mr-3" />
+                    Eventos
                 </MudButton>
                 <MudButton OnClick="WorkspaceService.RequestPageVisits"
                            Color="Color.Inherit"
@@ -226,6 +238,7 @@
         WorkspaceService.OnOficinasRequest += AbrirOficinasEnTab;
         WorkspaceService.OnMockupRequest += AbrirMockupEnTab; // Evento del Mockup
         WorkspaceService.OnEmpresasRequest += AbrirEmpresasEnTab;
+        WorkspaceService.OnEventosRequest += AbrirEventosEnTab;
         WorkspaceService.OnPageVisitsRequest += AbrirPageVisitsEnTab;
     }
 
@@ -238,6 +251,7 @@
         WorkspaceService.OnOficinasRequest -= AbrirOficinasEnTab;
         WorkspaceService.OnMockupRequest -= AbrirMockupEnTab; // Evento del Mockup
         WorkspaceService.OnEmpresasRequest -= AbrirEmpresasEnTab;
+        WorkspaceService.OnEventosRequest -= AbrirEventosEnTab;
         WorkspaceService.OnPageVisitsRequest -= AbrirPageVisitsEnTab;
     }
 
@@ -555,6 +569,39 @@
         {
             Icono = Icons.Material.Filled.Storefront,
             Text = "Empresas",
+            TipoControl = type,
+            Repetir = false
+        };
+
+        tab.Componente = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddComponentReferenceCapture(1, instance =>
+            {
+                if (instance is EngramaWorkspaceComponent baseComponent)
+                {
+                    tab.InstanciaComponente = baseComponent;
+                    baseComponent.IconoBase = tab.Icono ?? "";
+                    if (tabsList.Count > 0 && tabsList[tabsSelectedIndex].Id == tab.Id)
+                    {
+                        baseComponent.TriggerMenuUpdate();
+                    }
+                }
+            });
+            builder.CloseComponent();
+        };
+
+        WorkspaceService.AddComponenteTab(tab);
+    }
+
+    private void AbrirEventosEnTab()
+    {
+        CloseMobileMenu();
+        var type = typeof(SantiagoConectaIA.PWA.Areas.EventosArea.Components.GridEventos);
+        var tab = new WorkspaceTab
+        {
+            Icono = Icons.Material.Filled.Event,
+            Text = "Eventos",
             TipoControl = type,
             Repetir = false
         };
