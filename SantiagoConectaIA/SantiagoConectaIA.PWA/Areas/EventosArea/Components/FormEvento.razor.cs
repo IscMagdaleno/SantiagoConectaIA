@@ -12,30 +12,56 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
 
         [Parameter] public EventCallback OnSuccess { get; set; }
 
-        private string fechaInicioStr
+        private DateTime? FechaInicioDate
         {
-            get => Data.RegistroSeleccionado.dtFechaInicio.ToString("yyyy-MM-ddTHH:mm");
+            get => Data.RegistroSeleccionado.dtFechaInicio.Date;
             set
             {
-                if (DateTime.TryParse(value, out var parsed))
+                if (value.HasValue)
                 {
-                    Data.RegistroSeleccionado.dtFechaInicio = parsed;
+                    Data.RegistroSeleccionado.dtFechaInicio = value.Value.Add(Data.RegistroSeleccionado.dtFechaInicio.TimeOfDay);
                 }
             }
         }
 
-        private string fechaFinStr
+        private TimeSpan? FechaInicioTime
         {
-            get => Data.RegistroSeleccionado.dtFechaFin?.ToString("yyyy-MM-ddTHH:mm") ?? "";
+            get => Data.RegistroSeleccionado.dtFechaInicio.TimeOfDay;
             set
             {
-                if (DateTime.TryParse(value, out var parsed))
+                if (value.HasValue)
                 {
-                    Data.RegistroSeleccionado.dtFechaFin = parsed;
+                    Data.RegistroSeleccionado.dtFechaInicio = Data.RegistroSeleccionado.dtFechaInicio.Date.Add(value.Value);
+                }
+            }
+        }
+
+        private DateTime? FechaFinDate
+        {
+            get => Data.RegistroSeleccionado.dtFechaFin?.Date;
+            set
+            {
+                if (value.HasValue)
+                {
+                    var time = Data.RegistroSeleccionado.dtFechaFin?.TimeOfDay ?? TimeSpan.Zero;
+                    Data.RegistroSeleccionado.dtFechaFin = value.Value.Add(time);
                 }
                 else
                 {
                     Data.RegistroSeleccionado.dtFechaFin = null;
+                }
+            }
+        }
+
+        private TimeSpan? FechaFinTime
+        {
+            get => Data.RegistroSeleccionado.dtFechaFin?.TimeOfDay;
+            set
+            {
+                if (value.HasValue)
+                {
+                    var date = Data.RegistroSeleccionado.dtFechaFin?.Date ?? DateTime.Today;
+                    Data.RegistroSeleccionado.dtFechaFin = date.Add(value.Value);
                 }
             }
         }
@@ -47,10 +73,17 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
             {
                 await Data.PostGetCategorias();
             }
-            if (Data.RegistroSeleccionado != null && Data.RegistroSeleccionado.iIdEvento > 0)
+            if (Data.RegistroSeleccionado != null)
             {
-                await Data.PostGetDetalle(Data.RegistroSeleccionado.iIdEvento);
-                await Data.PostGetSucursales(Data.RegistroSeleccionado.iIdEvento);
+                if (Data.RegistroSeleccionado.iIdEvento > 0)
+                {
+                    await Data.PostGetDetalle(Data.RegistroSeleccionado.iIdEvento);
+                    await Data.PostGetSucursales(Data.RegistroSeleccionado.iIdEvento);
+                }
+                else if (Data.RegistroSeleccionado.dtFechaInicio == DateTime.MinValue)
+                {
+                    Data.RegistroSeleccionado.dtFechaInicio = DateTime.Now;
+                }
             }
         }
 

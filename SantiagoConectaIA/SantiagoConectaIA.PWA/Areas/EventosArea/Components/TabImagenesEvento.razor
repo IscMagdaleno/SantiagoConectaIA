@@ -3,13 +3,27 @@
 
 <MudGrid>
     <MudItem xs="12">
-        <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg, .webp" FilesChanged="UploadNuevaImagen">
-            <ActivatorContent>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
-                    Agregar Imagen
-                </MudButton>
-            </ActivatorContent>
-        </MudFileUpload>
+        <div class="d-flex align-center gap-4 mb-4">
+            <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg, .webp" FilesChanged="UploadNuevaImagen">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                        Agregar Imagen
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+            
+            <MudSwitch @bind-Value="bEsPortada" Color="Color.Secondary" Label="Subir como Imagen de Portada" />
+        </div>
+
+        @if (!string.IsNullOrEmpty(Data.RegistroSeleccionado.vchImagenPortada))
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-4">
+                <strong>Portada Actual:</strong> El evento ya tiene una imagen de portada. Si subes una nueva con el switch activo, esta se reemplazará.
+            </MudAlert>
+            <div class="mb-4">
+                <MudImage Src="@Data.RegistroSeleccionado.vchImagenPortada" ObjectFit="ObjectFit.Cover" Height="150" Width="200" Elevation="2" Class="rounded-lg" />
+            </div>
+        }
     </MudItem>
 
     <MudItem xs="12">

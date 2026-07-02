@@ -40,19 +40,35 @@
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="fechaInicioStr"
-                                          Label="Fecha y Hora Inicio"
-                                          Variant="Variant.Outlined"
-                                          InputType="InputType.DateTimeLocal"
-                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                            <div class="d-flex gap-2 w-100">
+                                <MudDatePicker @bind-Date="FechaInicioDate"
+                                               Label="Fecha de Inicio"
+                                               Variant="Variant.Outlined"
+                                               Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
+                                               Required="true"
+                                               Class="flex-grow-1" />
+                                <MudTimePicker @bind-Time="FechaInicioTime"
+                                               Label="Hora Inicio"
+                                               Variant="Variant.Outlined"
+                                               Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
+                                               Required="true"
+                                               Class="flex-grow-1" />
+                            </div>
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="fechaFinStr"
-                                          Label="Fecha y Hora Fin (Opcional)"
-                                          Variant="Variant.Outlined"
-                                          InputType="InputType.DateTimeLocal"
-                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                            <div class="d-flex gap-2 w-100">
+                                <MudDatePicker @bind-Date="FechaFinDate"
+                                               Label="Fecha de Fin (Opcional)"
+                                               Variant="Variant.Outlined"
+                                               Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
+                                               Class="flex-grow-1" />
+                                <MudTimePicker @bind-Time="FechaFinTime"
+                                               Label="Hora Fin"
+                                               Variant="Variant.Outlined"
+                                               Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
+                                               Class="flex-grow-1" />
+                            </div>
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
