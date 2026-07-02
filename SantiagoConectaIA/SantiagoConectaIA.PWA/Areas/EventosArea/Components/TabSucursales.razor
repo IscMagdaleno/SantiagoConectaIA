@@ -1,0 +1,120 @@
+@using SantiagoConectaIA.PWA.Areas.EventosArea.Utiles
+@using SantiagoConectaIA.Share.Objetos.EventosModulo
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AgregarSucursal">
+            Agregar Sucursal
+        </MudButton>
+    </MudItem>
+
+    <MudItem xs="12">
+        @if (Data.LstSucursales != null && Data.LstSucursales.Any())
+        {
+            <MudTable Items="@Data.LstSucursales" Hover="true" Elevation="0">
+                <HeaderContent>
+                    <MudTh>Nombre</MudTh>
+                    <MudTh>Dirección</MudTh>
+                    <MudTh>Contacto</MudTh>
+                    <MudTh>Teléfono</MudTh>
+                    <MudTh>Horario</MudTh>
+                    <MudTh>Notas</MudTh>
+                    <MudTh>Activo</MudTh>
+                    <MudTh Style="width: 100px;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Nombre">
+                        @if (editingId == context.iIdSucursalEvento)
+                        {
+                            <MudTextField @bind-Value="editModel.vchNombre" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        }
+                        else
+                        {
+                            @context.vchNombre
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Dirección">
+                        @if (editingId == context.iIdSucursalEvento)
+                        {
+                            <MudTextField @bind-Value="editModel.vchDireccion" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        }
+                        else
+                        {
+                            @context.vchDireccion
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Contacto">
+                        @if (editingId == context.iIdSucursalEvento)
+                        {
+                            <MudTextField @bind-Value="editModel.vchContacto" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        }
+                        else
+                        {
+                            @context.vchContacto
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Teléfono">
+                        @if (editingId == context.iIdSucursalEvento)
+                        {
+                            <MudTextField @bind-Value="editModel.vchTelefono" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        }
+                        else
+                        {
+                            @context.vchTelefono
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Horario">
+                        @if (editingId == context.iIdSucursalEvento)
+                        {
+                            <MudTextField @bind-Value="editModel.vchHorario" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        }
+                        else
+                        {
+                            @context.vchHorario
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Notas">
+                        @if (editingId == context.iIdSucursalEvento)
+                        {
+                            <MudTextField @bind-Value="editModel.vchNotas" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        }
+                        else
+                        {
+                            @context.vchNotas
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Activo">
+                        @if (editingId == context.iIdSucursalEvento)
+                        {
+                            <MudSwitch @bind-Value="editModel.bActivo" Color="Color.Success" />
+                        }
+                        else
+                        {
+                            <MudSwitch Value="@context.bActivo" Color="Color.Success" Disabled="true" />
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Acciones">
+                        @if (editingId == context.iIdSucursalEvento)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Save" Color="Color.Success" Size="Size.Small" OnClick="GuardarEdicion" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Default" Size="Size.Small" OnClick="CancelarEdicion" />
+                        }
+                        else
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => IniciarEdicion(context))" />
+                        }
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body2">No hay sucursales registradas para este evento.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Color="Color.Surface" Class="mt-4 text-center">
+                No hay sucursales. Agrega una usando el botón de arriba.
+            </MudText>
+        }
+    </MudItem>
+</MudGrid>

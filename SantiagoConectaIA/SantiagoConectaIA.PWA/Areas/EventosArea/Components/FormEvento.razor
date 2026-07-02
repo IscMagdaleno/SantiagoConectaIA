@@ -1,0 +1,170 @@
+@using SantiagoConectaIA.PWA.Areas.EventosArea.Utiles
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@using SantiagoConectaIA.Share.Objetos.EventosModulo
+@inherits EngramaWorkspaceComponent
+
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+    <MudTabPanel Text="Datos del Evento" Icon="@Icons.Material.Filled.Info">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-4">Información del Evento</MudText>
+                @if (Data != null && Data.RegistroSeleccionado != null)
+                {
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchNombre"
+                                          Label="Nombre del Evento"
+                                          Variant="Variant.Outlined"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="int?" @bind-Value="Data.RegistroSeleccionado.iIdCategoriaEvento"
+                                       Label="Categoría"
+                                       Variant="Variant.Outlined"
+                                       Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
+                                       AnchorOrigin="Origin.BottomCenter">
+                                @foreach (var cat in Data.LstCategorias)
+                                {
+                                    <MudSelectItem T="int?" Value="@((int?)cat.iIdCategoriaEvento)">@cat.vchNombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.nvchDescripcion"
+                                          Label="Descripción"
+                                          Variant="Variant.Outlined"
+                                          Lines="4"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="fechaInicioStr"
+                                          Label="Fecha y Hora Inicio"
+                                          Variant="Variant.Outlined"
+                                          InputType="InputType.DateTimeLocal"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="fechaFinStr"
+                                          Label="Fecha y Hora Fin (Opcional)"
+                                          Variant="Variant.Outlined"
+                                          InputType="InputType.DateTimeLocal"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchLugar"
+                                          Label="Lugar / Sede"
+                                          Variant="Variant.Outlined"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchCostoTexto"
+                                          Label="Costo (ej. Gratis, $50, $100-$200)"
+                                          Variant="Variant.Outlined"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchDireccion"
+                                          Label="Dirección"
+                                          Variant="Variant.Outlined"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudNumericField @bind-Value="Data.RegistroSeleccionado.flLatitud"
+                                             Label="Latitud"
+                                             Variant="Variant.Outlined"
+                                             HideSpinButtons="true"
+                                             Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudNumericField @bind-Value="Data.RegistroSeleccionado.flLongitud"
+                                             Label="Longitud"
+                                             Variant="Variant.Outlined"
+                                             HideSpinButtons="true"
+                                             Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Organizador y Contacto" Icon="@Icons.Material.Filled.Person">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                @if (Data != null && Data.RegistroSeleccionado != null)
+                {
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchOrganizador"
+                                          Label="Organizador"
+                                          Variant="Variant.Outlined"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchTelefono"
+                                          Label="Teléfono de Contacto"
+                                          Variant="Variant.Outlined"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchCorreo"
+                                          Label="Correo Electrónico"
+                                          Variant="Variant.Outlined"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchUrlOficial"
+                                          Label="URL Oficial / Boletos"
+                                          Variant="Variant.Outlined"
+                                          Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudSwitch @bind-Value="Data.RegistroSeleccionado.bDestacado"
+                                       Label="Evento Destacado"
+                                       Color="Color.Warning"
+                                       Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudSwitch @bind-Value="Data.RegistroSeleccionado.bEstatus"
+                                       Label="Activo"
+                                       Color="Color.Success"
+                                       Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Imágenes" Icon="@Icons.Material.Filled.Image">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-4">Imágenes del Evento</MudText>
+                <TabImagenesEvento />
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Sucursales" Icon="@Icons.Material.Filled.Store">
+        <MudCard Elevation="0">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-4">Sucursales / Locales del Evento</MudText>
+                <TabSucursales />
+            </MudCardContent>
+        </MudCard>
+    </MudTabPanel>
+</MudTabs>

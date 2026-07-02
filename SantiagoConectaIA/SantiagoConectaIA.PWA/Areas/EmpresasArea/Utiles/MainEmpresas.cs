@@ -131,19 +131,19 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             return _validaServicioService.ValidadionServicio(response);
         }
 
-        public async Task<Response<BlobSaved>> PostUploadLogo(IBrowserFile file)
-        {
-            // Apuntar al endpoint específico de UploadImage que creamos en AzureBlobController
-            var urlAzure = "api/AzureBlob/UploadImage"; 
-            
-            using var memoryStream = new MemoryStream();
-            await file.OpenReadStream(1024 * 1024 * 10).CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-            StreamContent imgContent = new StreamContent(memoryStream);
+		public async Task<Response<BlobSaved>> PostUploadLogo(IBrowserFile file)
+		{
+			var urlAzure = "api/AzureBlob/UploadImage-empresas";
 
-            var response = await _httpService.PostWithFile<Response<BlobSaved>>(urlAzure, imgContent);
-            return response.Response;
-        }
+			var nombreUnico = $"{RegistroSeleccionado.vchNombreComercial}_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+			using var memoryStream = new MemoryStream();
+			await file.OpenReadStream(1024 * 1024 * 10).CopyToAsync(memoryStream);
+			memoryStream.Position = 0;
+			using var imgContent = new StreamContent(memoryStream);
+
+			var response = await _httpService.PostWithImage<Response<BlobSaved>>(urlAzure, imgContent, nombreUnico);
+			return response.Response ?? Response<BlobSaved>.BadResult("Error al subir la imagen al servidor.", new BlobSaved());
+		}
 
         public async Task<SeverityMessage> PostGetConfiguracionVisual()
         {
