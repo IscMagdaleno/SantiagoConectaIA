@@ -21,9 +21,9 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 
-var url = "https://localhost:7196/";
+var apiUrl = builder.Configuration["ApiBaseAddress"] ?? "https://localhost:7196/";
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(url) });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiUrl) });
 
 
 builder.Services.AddMudServices();
