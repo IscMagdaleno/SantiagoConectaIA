@@ -1,0 +1,190 @@
+@page "/eventos/{Id:int}"
+<PageTitle>Santiago Conecta - @(selectedEvento?.vchNombre ?? "Detalle del Evento")</PageTitle>
+
+@if (selectedEvento == null)
+{
+    <div class="text-center py-5">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        <p class="mt-4 text-muted">Cargando evento...</p>
+    </div>
+}
+else
+{
+    <!-- Hero Section Detalle -->
+    <div class="custom-hero-header">
+        <div class="container relative z-10 mx-auto px-4 text-center">
+            <MudIcon Icon="@Icons.Material.Filled.Event" Style="font-size: 56px; color: #ffffff; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
+            <div class="mt-3">
+                <span class="badge" style="background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 8px 16px; border-radius: 20px; font-weight: 600; letter-spacing: 1px;">
+                    @GetCategoryName(selectedEvento.iIdCategoriaEvento)
+                </span>
+            </div>
+            <h1 class="header-title mt-3">@selectedEvento.vchNombre</h1>
+        </div>
+        <!-- Animated waves at bottom -->
+        <div class="waves-wrapper">
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                 viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                <defs>
+                    <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#f8f9fa" /> <!-- matches bg of container perfectly! -->
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <div class="evento-detalle" style="background-color: #f8f9fa; min-height: 50vh;">
+        <div class="container py-5" style="max-width: 1200px; margin: 0 auto;">
+            <button class="btn back-btn mb-4 d-flex align-items-center gap-2" style="color: #880e4f; font-weight: 700; border: none; background: transparent; padding-left: 0; transition: transform 0.2s;" @onclick="VolverAlListado">
+                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Medium" />
+                <span>Volver al Catálogo de Eventos</span>
+            </button>
+
+            @if (!string.IsNullOrEmpty(selectedEvento.vchImagenPortada))
+            {
+                <div class="mb-5 shadow-sm" style="border-radius: 20px; overflow: hidden; width: 100%; max-height: 500px;">
+                    <img src="@selectedEvento.vchImagenPortada" style="width: 100%; height: 100%; object-fit: cover;" alt="Portada del evento" />
+                </div>
+            }
+
+            <div class="row" style="display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px;">
+                <div class="col-lg-8 mb-4" style="padding-right: 15px; padding-left: 15px; width: 100%; max-width: 100%; @( "flex: 0 0 66.666667%; max-width: 66.666667%;" )">
+                    <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: 20px; background: white;">
+                        <h3 class="mb-4" style="color: #880e4f; font-weight: 700; margin-top: 0;">Acerca del Evento</h3>
+                        <div style="font-size: 1.1rem; line-height: 1.8; color: #424242;">
+                            @((MarkupString)(selectedEvento.nvchDescripcion?.Replace("\n", "<br/>") ?? "Sin descripción detallada."))
+                        </div>
+                    </div>
+
+                    <!-- NUEVA SECCIÓN: Puntos de Venta (EventosSucursales) -->
+                    @if (sucursalesEvento != null && sucursalesEvento.Any())
+                    {
+                        <div class="mt-5">
+                            <h3 class="mb-4" style="color: #880e4f; font-weight: 700;">
+                                <MudIcon Icon="@Icons.Material.Filled.Storefront" Class="me-2" Style="vertical-align: sub;" />
+                                Puntos de Venta
+                            </h3>
+                            <div class="row">
+                                @foreach (var sucursal in sucursalesEvento)
+                                {
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background: white; border-left: 5px solid #e91e63 !important;">
+                                            <div class="card-body p-4">
+                                                <h5 class="font-weight-bold mb-3" style="color: #212121;">@sucursal.vchNombre</h5>
+                                                
+                                                @if (!string.IsNullOrEmpty(sucursal.vchDireccion))
+                                                {
+                                                    <div class="d-flex align-items-start mb-2 text-muted">
+                                                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="me-2 mt-1" />
+                                                        <span style="font-size: 0.95rem;">@sucursal.vchDireccion</span>
+                                                    </div>
+                                                }
+                                                @if (!string.IsNullOrEmpty(sucursal.vchHorario))
+                                                {
+                                                    <div class="d-flex align-items-start mb-2 text-muted">
+                                                        <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Class="me-2 mt-1" />
+                                                        <span style="font-size: 0.95rem;">@sucursal.vchHorario</span>
+                                                    </div>
+                                                }
+                                                @if (!string.IsNullOrEmpty(sucursal.vchTelefono))
+                                                {
+                                                    <div class="d-flex align-items-start mb-2">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Class="me-2 mt-1" Style="color: #e91e63;" />
+                                                        <a href="tel:@sucursal.vchTelefono" style="font-size: 0.95rem; color: #e91e63; text-decoration: none;">@sucursal.vchTelefono</a>
+                                                    </div>
+                                                }
+                                                @if (!string.IsNullOrEmpty(sucursal.vchNotas))
+                                                {
+                                                    <div class="mt-3 p-2 rounded" style="background-color: #fff3e0; border-left: 3px solid #ff9800; font-size: 0.85rem; color: #e65100;">
+                                                        <strong>Nota:</strong> @sucursal.vchNotas
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                <div class="col-lg-4" style="padding-right: 15px; padding-left: 15px; width: 100%; max-width: 100%; @( "flex: 0 0 33.333333%; max-width: 33.333333%;" )">
+                    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 20px; background: white;">
+                        <h4 class="mb-4" style="color: #880e4f; font-weight: 700; margin-top: 0;">Detalles</h4>
+                        
+                        <div class="d-flex align-items-start mb-4" style="display: flex; align-items: flex-start; margin-bottom: 1.5rem;">
+                            <MudIcon Icon="@Icons.Material.Filled.Event" Color="Color.Primary" Class="me-3 mt-1" Style="margin-right: 1rem; margin-top: 0.25rem;" />
+                            <div>
+                                <div style="font-weight: 700; color: #212121;">Fecha y Hora</div>
+                                <div class="text-muted" style="color: #6c757d;">Inicio: @selectedEvento.dtFechaInicio.ToString("dd/MM/yyyy HH:mm")</div>
+                                @if (selectedEvento.dtFechaFin.HasValue)
+                                {
+                                    <div class="text-muted" style="color: #6c757d;">Fin: @selectedEvento.dtFechaFin.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-start mb-4" style="display: flex; align-items: flex-start; margin-bottom: 1.5rem;">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Primary" Class="me-3 mt-1" Style="margin-right: 1rem; margin-top: 0.25rem;" />
+                            <div>
+                                <div style="font-weight: 700; color: #212121;">Ubicación</div>
+                                <div class="text-muted" style="color: #6c757d;">@selectedEvento.vchLugar</div>
+                                @if (!string.IsNullOrEmpty(selectedEvento.vchDireccion))
+                                {
+                                    <div style="font-size: 0.9rem; color: #757575;">@selectedEvento.vchDireccion</div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-start mb-4" style="display: flex; align-items: flex-start; margin-bottom: 1.5rem;">
+                            <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Primary" Class="me-3 mt-1" Style="margin-right: 1rem; margin-top: 0.25rem;" />
+                            <div>
+                                <div style="font-weight: 700; color: #212121;">Costo</div>
+                                <div class="text-muted" style="color: #6c757d;">@(string.IsNullOrEmpty(selectedEvento.vchCostoTexto) ? (selectedEvento.mCosto > 0 ? $"${selectedEvento.mCosto}" : "Entrada Libre") : selectedEvento.vchCostoTexto)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(selectedEvento.vchOrganizador) || !string.IsNullOrEmpty(selectedEvento.vchTelefono) || !string.IsNullOrEmpty(selectedEvento.vchUrlOficial))
+                    {
+                        <div class="card border-0 shadow-sm p-4" style="border-radius: 20px; background: white;">
+                            <h4 class="mb-4" style="color: #880e4f; font-weight: 700; margin-top: 0;">Contacto</h4>
+                            @if (!string.IsNullOrEmpty(selectedEvento.vchOrganizador))
+                            {
+                                <div class="mb-2"><strong>Organiza:</strong> @selectedEvento.vchOrganizador</div>
+                            }
+                            @if (!string.IsNullOrEmpty(selectedEvento.vchTelefono))
+                            {
+                                <div class="mb-2" style="display: flex; align-items: center;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Class="me-2" Style="margin-right: 0.5rem;" />
+                                    <a href="tel:@selectedEvento.vchTelefono" style="color: #e91e63; text-decoration: none;">@selectedEvento.vchTelefono</a>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(selectedEvento.vchUrlOficial))
+                            {
+                                <div class="mt-3">
+                                    <a href="@selectedEvento.vchUrlOficial" target="_blank" style="display: block; width: 100%; text-align: center; border: 1px solid #e91e63; color: #e91e63; padding: 10px; border-radius: 50px; text-decoration: none;">Sitio Web Oficial</a>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    @@media (min-width: 992px) {
+        .col-lg-8 { flex: 0 0 66.666667% !important; max-width: 66.666667% !important; }
+        .col-lg-4 { flex: 0 0 33.333333% !important; max-width: 33.333333% !important; }
+    }
+    .back-btn:hover {
+        transform: translateX(-5px);
+    }
+</style>
