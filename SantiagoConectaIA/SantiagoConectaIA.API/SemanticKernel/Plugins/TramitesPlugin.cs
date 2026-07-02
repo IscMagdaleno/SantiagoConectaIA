@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.Share.PostModels.ConversationalModule;
+using SantiagoConectaIA.Share.PostModels.TramitesModule;
 
 using System.ComponentModel;
 
@@ -193,6 +194,109 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 				o.vchTelefono,
 				o.vchHorario
 			});
+
+			return JsonSerializer.Serialize(resultado);
+		}
+
+
+		/// <summary>
+		/// Obtiene los trámites en formato de tarjeta (resumen) para una visualización rápida.
+		/// </summary>
+		/// <param name="query">Texto de búsqueda para filtrar trámites. Vacío para obtener todos.</param>
+		/// <param name="limit">Número máximo de resultados. Por defecto es 5.</param>
+		/// <returns>Una cadena JSON con la lista de trámites en formato resumen.</returns>
+		[KernelFunction]
+		[Description("Obtiene los trámites en formato de tarjeta (resumen) con información rápida. Utiliza esta función cuando el usuario quiera ver una lista resumida de trámites disponibles en el municipio.")]
+		public async Task<string> SearchTramitesCard(
+			[Description("Palabra clave para filtrar trámites (ej. 'licencia', 'acta', 'predial'). Vacío para obtener todos los trámites activos.")]
+			string query = "",
+			[Description("Número máximo de resultados. Por defecto es 5.")]
+			int limit = 5)
+		{
+			using var scope = _scopeFactory.CreateScope();
+			var _tramiteDominio = scope.ServiceProvider.GetRequiredService<ITramiteDominio>();
+			var TramitesEncontrados = await _tramiteDominio.GetTramitesCard(new PostGetTramites { bActivo = true });
+
+			if (TramitesEncontrados.IsSuccess.False() || TramitesEncontrados.Data == null)
+			{
+				return "No se encontraron trámites disponibles.";
+			}
+
+			var tramites = TramitesEncontrados.Data;
+
+			if (!string.IsNullOrWhiteSpace(query))
+			{
+				var cleanQuery = query.Trim().ToLower();
+				tramites = tramites.Where(t =>
+					(t.vchNombre != null && t.vchNombre.ToLower().Contains(cleanQuery)) ||
+					(t.nvchDescripcion != null && t.nvchDescripcion.ToLower().Contains(cleanQuery))
+				).ToList();
+			}
+
+			var resultado = tramites.Take(limit).Select(t => new
+			{
+				t.iIdTramite,
+				t.vchNombre,
+				t.nvchDescripcion,
+				t.bModalidadEnLinea,
+				t.mCosto,
+				t.bPrecioCalculado
+			}).ToList();
+
+			if (resultado.Count == 0)
+			{
+				return $"No se encontraron trámites con la palabra clave '{query}'.";
+			}
+
+			return JsonSerializer.Serialize(resultado);
+		}
+
+
+		/// <summary>
+		/// Obtiene el detalle completo de un trámite incluyendo requisitos, pasos y documentos.
+		/// </summary>
+		/// <param name="idTramite">El ID del trámite (obtenido de una consulta previa a SearchTramites).</param>
+		/// <returns>Una cadena JSON con el detalle completo del trámite.</returns>
+		[KernelFunction]
+		[Description("Obtiene el detalle completo de un trámite incluyendo requisitos, pasos a seguir y documentos necesarios. Utiliza esta función cuando el usuario necesite información detallada sobre cómo realizar un trámite paso a paso.")]
+		public async Task<string> GetTramiteDetalle(
+			[Description("El ID del trámite para obtener su detalle completo.")]
+			int idTramite)
+		{
+			using var scope = _scopeFactory.CreateScope();
+			var _tramiteDominio = scope.ServiceProvider.GetRequiredService<ITramiteDominio>();
+			var DetalleEncontrado = await _tramiteDominio.GetTramiteDetalle(new PostGetTramiteDetalle { iIdTramite = idTramite });
+
+			if (DetalleEncontrado.IsSuccess.False() || DetalleEncontrado.Data == null)
+			{
+				return $"No se encontró detalle para el ID de trámite {idTramite}.";
+			}
+
+			var tramite = DetalleEncontrado.Data;
+			var resultado = new
+			{
+				tramite.iIdTramite,
+				tramite.vchNombre,
+				tramite.nvchDescripcion,
+				tramite.bModalidadEnLinea,
+				tramite.mCosto,
+				tramite.bPrecioCalculado,
+				Requisitos = tramite.Requisitos?.Select(r => new
+				{
+					r.vchNombre,
+					r.nvchDetalle,
+					r.bObligatorio
+				}),
+				Pasos = tramite.Pasos?.Select(p => new
+				{
+					p.nvchDescripcion,
+					p.iOrden
+				}),
+				Documentos = tramite.Documentos?.Select(d => new
+				{
+					d.vchNombre,
+				})
+			};
 
 			return JsonSerializer.Serialize(resultado);
 		}

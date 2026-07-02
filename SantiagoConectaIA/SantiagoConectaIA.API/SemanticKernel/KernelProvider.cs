@@ -89,6 +89,12 @@ namespace SantiagoConectaIA.API.SemanticKernel
 			_kernelInstance.Plugins.AddFromObject(new BuzonCiudadanoPlugin(_scopeFactory), "BuzonCiudadano");
 			_logger.LogInformation("BuzonCiudadanoPlugin registrado exitosamente con el Kernel como 'BuzonCiudadano'.");
 
+			_kernelInstance.Plugins.AddFromObject(new EmpresasPlugin(_scopeFactory), "Empresas");
+			_logger.LogInformation("EmpresasPlugin registrado exitosamente con el Kernel como 'Empresas'.");
+
+			_kernelInstance.Plugins.AddFromObject(new EventosPlugin(_scopeFactory), "Eventos");
+			_logger.LogInformation("EventosPlugin registrado exitosamente con el Kernel como 'Eventos'.");
+
 			return _kernelInstance;
 		}
 	}
