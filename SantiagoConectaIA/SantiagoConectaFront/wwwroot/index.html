@@ -56,6 +56,55 @@
     <script src="assets/js/imgfix.min.js"></script>
     <script src="assets/js/custom.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
+    
+    <!-- Script dinámico para la barra de estado de Android (PWA) -->
+    <script>
+        (function() {
+            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            if (!metaThemeColor) return;
+
+            // Colores extraídos del gradiente de la aplicación
+            const colors = [
+                [136, 14, 79],   // #880e4f (Guindo oscuro)
+                [216, 27, 96],   // #d81b60 (Rosa fuerte)
+                [74, 20, 140],   // #4a148c (Morado oscuro)
+                [194, 24, 91]    // #c2185b (Magenta)
+            ];
+
+            let startTime = performance.now();
+            const duration = 15000; // 15 segundos para el ciclo, sincronizado con la animación CSS
+
+            function updateThemeColor(currentTime) {
+                // Si el usuario hace scroll hacia abajo, la barra del navegador en la app suele ser blanca
+                if (window.scrollY > 80) {
+                    if (metaThemeColor.getAttribute('content') !== '#ffffff') {
+                        metaThemeColor.setAttribute('content', '#ffffff');
+                    }
+                } else {
+                    // Solo animar si estamos hasta arriba (donde se ve el gradiente)
+                    const elapsed = (currentTime - startTime) % duration;
+                    const progress = elapsed / duration;
+                    
+                    const totalSegments = colors.length;
+                    const segmentProgress = (progress * totalSegments) % 1;
+                    const currentIndex = Math.floor(progress * totalSegments);
+                    const nextIndex = (currentIndex + 1) % totalSegments;
+
+                    const c1 = colors[currentIndex];
+                    const c2 = colors[nextIndex];
+
+                    const r = Math.round(c1[0] + (c2[0] - c1[0]) * segmentProgress);
+                    const g = Math.round(c1[1] + (c2[1] - c1[1]) * segmentProgress);
+                    const b = Math.round(c1[2] + (c2[2] - c1[2]) * segmentProgress);
+
+                    const hex = "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
+                    metaThemeColor.setAttribute('content', hex);
+                }
+                requestAnimationFrame(updateThemeColor);
+            }
+            requestAnimationFrame(updateThemeColor);
+        })();
+    </script>
 </body>
 
 </html>
