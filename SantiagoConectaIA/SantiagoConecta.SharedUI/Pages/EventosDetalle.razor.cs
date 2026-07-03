@@ -23,6 +23,7 @@ namespace SantiagoConecta.SharedUI.Pages
         protected EventoDetalle? selectedEvento;
         protected List<SucursalEvento> sucursalesEvento = new();
         protected List<ImagenRegistro> galeriaImagenes = new();
+        protected bool isImageModalOpen = false;
 
         protected override async Task OnInitializedAsync()
         {
