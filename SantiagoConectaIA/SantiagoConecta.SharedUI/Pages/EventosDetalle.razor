@@ -3,9 +3,9 @@
 
 @if (selectedEvento == null)
 {
-    <div class="text-center py-5">
+    <div class="d-flex flex-column align-items-center justify-content-center w-100" style="min-height: 80vh;">
         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        <p class="mt-4 text-muted">Cargando evento...</p>
+        <p class="mt-4 text-muted" style="font-weight: 500; font-size: 1.1rem;">Cargando evento...</p>
     </div>
 }
 else
@@ -197,7 +197,7 @@ else
                         Galería del Evento
                     </h3>
                     <div class="shadow-sm hero-animated-bg" style="border-radius: 20px; overflow: hidden; position: relative;">
-                        <MudCarousel Class="mud-width-full" Style="height: 500px; color: white;" ShowArrows="@(galeriaImagenes.Count > 1)" ShowBullets="@(galeriaImagenes.Count > 1)" EnableSwipeGesture="true" AutoCycle="true" TData="object">
+                        <MudCarousel Class="mud-width-full" Style="height: 500px; color: white;" ShowArrows="@(galeriaImagenes.Count > 1)" ShowBullets="@(galeriaImagenes.Count > 1)" EnableSwipeGesture="false" AutoCycle="true" TData="object">
                             @foreach (var img in galeriaImagenes)
                             {
                                 <MudCarouselItem Transition="Transition.Slide">
@@ -225,6 +225,11 @@ else
 }
 
 <style>
+    /* Fix para permitir scroll vertical en celular sobre los carruseles */
+    .mud-carousel, .mud-carousel-item, .mud-swipearea, .mud-carousel-transition-slide {
+        touch-action: pan-y pinch-zoom !important;
+    }
+
     @@media (min-width: 992px) {
         .col-lg-8 { flex: 0 0 66.666667% !important; max-width: 66.666667% !important; }
         .col-lg-4 { flex: 0 0 33.333333% !important; max-width: 33.333333% !important; }

@@ -270,6 +270,16 @@
                             <p>Comunícate con nuestro asistente virtual directamente desde WhatsApp de forma rápida, sencilla y segura.</p>
                         </div>
                     </div>
+                    <!-- Eventos -->
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/eventos", forceLoad: true)' style="cursor: pointer;">
+                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Event" Color="Color.Primary" Size="Size.Large" />
+                            </div>
+                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Eventos</h5>
+                            <p>Descubre los próximos eventos, festivales y actividades culturales en Santiago Papasquiaro.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -487,6 +497,11 @@
 </style>
 
 <style>
+    /* Fix para permitir scroll vertical en celular sobre los carruseles */
+    .mud-carousel, .mud-carousel-item, .mud-swipearea, .mud-carousel-transition-slide {
+        touch-action: pan-y pinch-zoom !important;
+    }
+
     /* Estilos globales para forzar los colores en el carrusel sin arruinar los íconos */
     .destacado-card .mud-carousel .mud-icon-button {
         color: white !important;
@@ -572,6 +587,23 @@
                     }
                     window.addEventListener('resize', resize);
                     resize();
+
+                    // Swipe / Scroll Fix para MudCarousel en móviles
+                    let tsX = 0; let tsY = 0;
+                    document.addEventListener('touchstart', function(e) {
+                        tsX = e.changedTouches[0].screenX;
+                        tsY = e.changedTouches[0].screenY;
+                    }, {passive: true, capture: true});
+                    
+                    document.addEventListener('touchmove', function(e) {
+                        if (e.target.closest('.mud-carousel') || e.target.closest('.mud-swipearea')) {
+                            let cx = e.changedTouches[0].screenX;
+                            let cy = e.changedTouches[0].screenY;
+                            if (Math.abs(cy - tsY) > Math.abs(cx - tsX)) {
+                                e.stopPropagation();
+                            }
+                        }
+                    }, {passive: true, capture: true});
 
                     // Partículas
                     class Particle {
