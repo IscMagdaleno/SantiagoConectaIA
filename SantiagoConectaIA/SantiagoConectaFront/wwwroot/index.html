@@ -63,28 +63,33 @@
             const metaThemeColor = document.querySelector('meta[name="theme-color"]');
             if (!metaThemeColor) return;
 
-            // Colores extraídos del gradiente de la aplicación
+            // La animación CSS hace un paneo de 0% a 100% y luego regresa a 0% en 15 segundos.
+            // Por lo tanto, los colores en la esquina superior izquierda hacen un viaje de "ida y vuelta".
+            // Secuencia correcta: Guindo -> Rosa -> Morado -> Rosa -> (repite a Guindo)
             const colors = [
-                [136, 14, 79],   // #880e4f (Guindo oscuro)
-                [216, 27, 96],   // #d81b60 (Rosa fuerte)
-                [74, 20, 140],   // #4a148c (Morado oscuro)
-                [194, 24, 91]    // #c2185b (Magenta)
+                [136, 14, 79],   // #880e4f (Guindo oscuro - Inicio 0s)
+                [216, 27, 96],   // #d81b60 (Rosa fuerte - Medio viaje 3.75s)
+                [74, 20, 140],   // #4a148c (Morado oscuro - Extremo 7.5s)
+                [216, 27, 96]    // #d81b60 (Rosa fuerte - De regreso 11.25s)
             ];
 
             let startTime = performance.now();
-            const duration = 15000; // 15 segundos para el ciclo, sincronizado con la animación CSS
+            const duration = 15000; // 15 segundos para el ciclo completo
 
             function updateThemeColor(currentTime) {
-                // Si el usuario hace scroll hacia abajo, la barra del navegador en la app suele ser blanca
                 if (window.scrollY > 80) {
                     if (metaThemeColor.getAttribute('content') !== '#ffffff') {
                         metaThemeColor.setAttribute('content', '#ffffff');
                     }
                 } else {
-                    // Solo animar si estamos hasta arriba (donde se ve el gradiente)
                     const elapsed = (currentTime - startTime) % duration;
-                    const progress = elapsed / duration;
                     
+                    // Como la animación CSS usa 'ease', podemos hacer que el progreso no sea 100% lineal 
+                    // usando una curva de seno (para que frene suavemente en los extremos).
+                    let progress = elapsed / duration;
+                    // Ajuste de "ease" matemático (opcional, pero lo hace perfecto):
+                    // progress = 0.5 - 0.5 * Math.cos(progress * 2 * Math.PI); // Descomentar para ease absoluto
+
                     const totalSegments = colors.length;
                     const segmentProgress = (progress * totalSegments) % 1;
                     const currentIndex = Math.floor(progress * totalSegments);
