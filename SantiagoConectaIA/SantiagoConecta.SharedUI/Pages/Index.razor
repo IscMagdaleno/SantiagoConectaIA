@@ -16,7 +16,7 @@
 <PageTitle>Santiago Conecta - Inicio</PageTitle>
 
 <!-- ***** Hero Section (Bienvenida) ***** -->
-<div class="welcome-area hero-animated-bg" id="welcome" style="min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; padding-top: 80px;">
+<div class="welcome-area js-dynamic-bg" id="welcome" style="min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; padding-top: 80px;">
     
     <!-- Efecto Glow que sigue al cursor -->
     <div class="hero-glow" id="hero-glow"></div>
@@ -107,7 +107,7 @@
         <div class="row">
             <!-- Slider Destacados -->
             <div class="col-lg-6 mb-4">
-                <div class="destacado-card hero-animated-bg custom-slider" style="border-radius: 20px; overflow: hidden; height: 100%; min-height: 380px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); position: relative;">
+                <div class="destacado-card js-dynamic-bg custom-slider" style="border-radius: 20px; overflow: hidden; height: 100%; min-height: 380px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); position: relative;">
                     <MudCarousel Class="mud-width-full" Style="height:100%; min-height: 380px; width: 100%;" ShowArrows="true" ShowBullets="true" AutoCycle="true" EnableSwipeGesture="true" TData="object">
                         
                         <!-- Slide 1: WhatsApp -->
@@ -420,10 +420,9 @@
     }
     
     /* Hero Animations */
-    .hero-animated-bg {
-        background: linear-gradient(-45deg, #880e4f, #d81b60, #4a148c, #c2185b);
-        background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite;
+    .js-dynamic-bg {
+        /* El fondo ahora será controlado por JavaScript en index.html */
+        background-color: #880e4f; /* Color fallback */
     }
     
     .hero-glow {

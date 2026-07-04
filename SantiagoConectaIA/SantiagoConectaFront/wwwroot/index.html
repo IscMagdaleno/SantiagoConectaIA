@@ -57,67 +57,71 @@
     <script src="assets/js/custom.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
     
-    <!-- Script dinámico para la barra de estado de Android (PWA) con Lector de Píxeles -->
+    <!-- Motor Inteligente de Diseño (Fondo y Barra de PWA) -->
     <script>
         (function() {
             const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-            if (!metaThemeColor) return;
-
-            // 1. CREAR UNA HERRAMIENTA VIRTUAL (CANVAS OFF-SCREEN)
-            // Esto dibujará el gradiente exacto en la memoria para leer el color real de los píxeles
+            
+            // 1. Crear el Lector de Píxeles en memoria
             const canvas = document.createElement('canvas');
-            canvas.width = 1000; // Resolución del gradiente
+            canvas.width = 1000;
             canvas.height = 1;
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            
-            // Replicamos tu gradiente CSS (-45deg)
             const grd = ctx.createLinearGradient(0, 0, 1000, 0);
             grd.addColorStop(0, '#880e4f');
             grd.addColorStop(0.333, '#d81b60');
             grd.addColorStop(0.666, '#4a148c');
             grd.addColorStop(1, '#c2185b');
-            
             ctx.fillStyle = grd;
             ctx.fillRect(0, 0, 1000, 1);
-            
-            // Obtenemos los colores de todos los píxeles dibujados
             const pixels = ctx.getImageData(0, 0, 1000, 1).data;
 
             let startTime = performance.now();
-            const duration = 15000; // 15s de animación (7.5s de ida, 7.5s de regreso)
+            const duration = 15000; // 15 segundos
 
-            function updateThemeColor(currentTime) {
-                if (window.scrollY > 80) {
-                    if (metaThemeColor.getAttribute('content') !== '#ffffff') {
-                        metaThemeColor.setAttribute('content', '#ffffff');
-                    }
-                } else {
-                    const elapsed = currentTime - startTime;
-                    
-                    // Calcular el progreso del tiempo (0 a 2 para ida y vuelta)
-                    let timeProgress = (elapsed % duration) / (duration / 2);
-                    if (timeProgress > 1) timeProgress = 2 - timeProgress; // Va de 0 a 1 y luego de 1 a 0
-
-                    // Aproximar la función de aceleración CSS 'ease' (Smoothstep)
-                    let easeProgress = timeProgress * timeProgress * (3 - 2 * timeProgress);
-
-                    // El background-size es 400%.
-                    // El paneo de 0% a 100% en realidad muestra desde el 12.5% hasta el 87.5% de la imagen en el centro de la pantalla.
-                    let sampleX = Math.floor(125 + easeProgress * (875 - 125));
-                    if (sampleX >= 1000) sampleX = 999;
-
-                    // Leer el RGB exacto de ese pixel en la memoria
-                    const pixelIndex = sampleX * 4;
-                    const r = pixels[pixelIndex];
-                    const g = pixels[pixelIndex + 1];
-                    const b = pixels[pixelIndex + 2];
-
-                    const hex = "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
-                    metaThemeColor.setAttribute('content', hex);
+            function updateDynamicEngine(currentTime) {
+                const elapsed = currentTime - startTime;
+                
+                // Calcular progreso fluido (Ida y Vuelta con aceleración Ease)
+                let timeProgress = (elapsed % duration) / (duration / 2);
+                if (timeProgress > 1) timeProgress = 2 - timeProgress; 
+                let easeProgress = timeProgress * timeProgress * (3 - 2 * timeProgress);
+                
+                // ==========================================
+                // PASO A: ACTUALIZAR EL FONDO DE LA PANTALLA
+                // ==========================================
+                const bgPositionX = easeProgress * 100;
+                const dynamicElements = document.querySelectorAll('.js-dynamic-bg');
+                
+                // Inyectamos el gradiente físicamente desde JavaScript
+                for(let i = 0; i < dynamicElements.length; i++) {
+                    dynamicElements[i].style.background = 'linear-gradient(-45deg, #880e4f, #d81b60, #4a148c, #c2185b)';
+                    dynamicElements[i].style.backgroundSize = '400% 400%';
+                    dynamicElements[i].style.backgroundPosition = `${bgPositionX}% 50%`;
                 }
-                requestAnimationFrame(updateThemeColor);
+
+                // ==========================================
+                // PASO B: ACTUALIZAR LA BARRA DE ESTADO
+                // ==========================================
+                if (metaThemeColor) {
+                    if (window.scrollY > 80) {
+                        // Scroll abajo -> Barra blanca
+                        if (metaThemeColor.getAttribute('content') !== '#ffffff') {
+                            metaThemeColor.setAttribute('content', '#ffffff');
+                        }
+                    } else if (dynamicElements.length > 0) { 
+                        // Sin scroll y hay fondo -> Leer píxel exacto
+                        let sampleX = Math.floor(125 + easeProgress * (875 - 125));
+                        if (sampleX >= 1000) sampleX = 999;
+                        const pIdx = sampleX * 4;
+                        const hex = "#" + (1 << 24 | pixels[pIdx] << 16 | pixels[pIdx+1] << 8 | pixels[pIdx+2]).toString(16).slice(1);
+                        metaThemeColor.setAttribute('content', hex);
+                    }
+                }
+                
+                requestAnimationFrame(updateDynamicEngine);
             }
-            requestAnimationFrame(updateThemeColor);
+            requestAnimationFrame(updateDynamicEngine);
         })();
     </script>
 </body>
