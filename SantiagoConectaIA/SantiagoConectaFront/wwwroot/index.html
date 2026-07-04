@@ -57,24 +57,34 @@
     <script src="assets/js/custom.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
     
-    <!-- Script dinámico para la barra de estado de Android (PWA) -->
+    <!-- Script dinámico para la barra de estado de Android (PWA) con Lector de Píxeles -->
     <script>
         (function() {
             const metaThemeColor = document.querySelector('meta[name="theme-color"]');
             if (!metaThemeColor) return;
 
-            // La animación CSS hace un paneo de 0% a 100% y luego regresa a 0% en 15 segundos.
-            // Por lo tanto, los colores en la esquina superior izquierda hacen un viaje de "ida y vuelta".
-            // Secuencia correcta: Guindo -> Rosa -> Morado -> Rosa -> (repite a Guindo)
-            const colors = [
-                [136, 14, 79],   // #880e4f (Guindo oscuro - Inicio 0s)
-                [216, 27, 96],   // #d81b60 (Rosa fuerte - Medio viaje 3.75s)
-                [74, 20, 140],   // #4a148c (Morado oscuro - Extremo 7.5s)
-                [216, 27, 96]    // #d81b60 (Rosa fuerte - De regreso 11.25s)
-            ];
+            // 1. CREAR UNA HERRAMIENTA VIRTUAL (CANVAS OFF-SCREEN)
+            // Esto dibujará el gradiente exacto en la memoria para leer el color real de los píxeles
+            const canvas = document.createElement('canvas');
+            canvas.width = 1000; // Resolución del gradiente
+            canvas.height = 1;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            
+            // Replicamos tu gradiente CSS (-45deg)
+            const grd = ctx.createLinearGradient(0, 0, 1000, 0);
+            grd.addColorStop(0, '#880e4f');
+            grd.addColorStop(0.333, '#d81b60');
+            grd.addColorStop(0.666, '#4a148c');
+            grd.addColorStop(1, '#c2185b');
+            
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, 1000, 1);
+            
+            // Obtenemos los colores de todos los píxeles dibujados
+            const pixels = ctx.getImageData(0, 0, 1000, 1).data;
 
             let startTime = performance.now();
-            const duration = 15000; // 15 segundos para el ciclo completo
+            const duration = 15000; // 15s de animación (7.5s de ida, 7.5s de regreso)
 
             function updateThemeColor(currentTime) {
                 if (window.scrollY > 80) {
@@ -82,25 +92,25 @@
                         metaThemeColor.setAttribute('content', '#ffffff');
                     }
                 } else {
-                    const elapsed = (currentTime - startTime) % duration;
+                    const elapsed = currentTime - startTime;
                     
-                    // Como la animación CSS usa 'ease', podemos hacer que el progreso no sea 100% lineal 
-                    // usando una curva de seno (para que frene suavemente en los extremos).
-                    let progress = elapsed / duration;
-                    // Ajuste de "ease" matemático (opcional, pero lo hace perfecto):
-                    // progress = 0.5 - 0.5 * Math.cos(progress * 2 * Math.PI); // Descomentar para ease absoluto
+                    // Calcular el progreso del tiempo (0 a 2 para ida y vuelta)
+                    let timeProgress = (elapsed % duration) / (duration / 2);
+                    if (timeProgress > 1) timeProgress = 2 - timeProgress; // Va de 0 a 1 y luego de 1 a 0
 
-                    const totalSegments = colors.length;
-                    const segmentProgress = (progress * totalSegments) % 1;
-                    const currentIndex = Math.floor(progress * totalSegments);
-                    const nextIndex = (currentIndex + 1) % totalSegments;
+                    // Aproximar la función de aceleración CSS 'ease' (Smoothstep)
+                    let easeProgress = timeProgress * timeProgress * (3 - 2 * timeProgress);
 
-                    const c1 = colors[currentIndex];
-                    const c2 = colors[nextIndex];
+                    // El background-size es 400%.
+                    // El paneo de 0% a 100% en realidad muestra desde el 12.5% hasta el 87.5% de la imagen en el centro de la pantalla.
+                    let sampleX = Math.floor(125 + easeProgress * (875 - 125));
+                    if (sampleX >= 1000) sampleX = 999;
 
-                    const r = Math.round(c1[0] + (c2[0] - c1[0]) * segmentProgress);
-                    const g = Math.round(c1[1] + (c2[1] - c1[1]) * segmentProgress);
-                    const b = Math.round(c1[2] + (c2[2] - c1[2]) * segmentProgress);
+                    // Leer el RGB exacto de ese pixel en la memoria
+                    const pixelIndex = sampleX * 4;
+                    const r = pixels[pixelIndex];
+                    const g = pixels[pixelIndex + 1];
+                    const b = pixels[pixelIndex + 2];
 
                     const hex = "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
                     metaThemeColor.setAttribute('content', hex);
