@@ -1,10 +1,10 @@
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.EventosModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.EventosModule;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EventosModule;
-using SantiagoConectaIA.Share.Objetos.EventosModulo;
 using SantiagoConectaIA.Share.PostClass.EventosModulo;
 using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EventosModule
 {

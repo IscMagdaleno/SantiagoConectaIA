@@ -1,4 +1,4 @@
-using SantiagoConectaIA.Share.Objetos.EmpresasModulo;
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 
 namespace SantiagoConectaIA.Share.PostModels.EmpresasModulo
 {

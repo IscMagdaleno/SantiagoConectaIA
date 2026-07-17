@@ -1,6 +1,5 @@
 using EngramaCoreStandar.Results;
 using EngramaCoreStandar.Servicios;
-using SantiagoConectaIA.Share.Objetos.EventosModulo;
 using SantiagoConectaIA.Share.PostClass.EventosModulo;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using EngramaCoreStandar.Dapper.Results;
 using EngramaCoreStandar.Mapper;
 using SantiagoConectaIA.Share.Objects.Common;
 using Microsoft.AspNetCore.Components.Forms;
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 
 namespace SantiagoConectaIA.PWA.Areas.EventosArea.Utiles
 {

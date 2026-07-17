@@ -1,5 +1,6 @@
 using EngramaCoreStandar.Results;
-using SantiagoConectaIA.Share.Objetos.EmpresasModulo;
+
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
 using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 

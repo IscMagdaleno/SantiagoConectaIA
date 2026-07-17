@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using SantiagoConecta.SharedUI.Data;
-using SantiagoConectaIA.Share.Objetos.EventosModulo;
+
 using SantiagoConectaIA.Share.PostClass.EventosModulo;
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 namespace SantiagoConecta.SharedUI.Pages
 {
     public partial class EventosPage : ComponentBase

@@ -3,9 +3,9 @@ using MudBlazor;
 using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles;
 using SantiagoConectaIA.PWA.Shared.Workspace;
 using SantiagoConectaIA.PWA.Shared.Common;
-using SantiagoConectaIA.Share.Objetos.EmpresasModulo;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 
 namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
 {

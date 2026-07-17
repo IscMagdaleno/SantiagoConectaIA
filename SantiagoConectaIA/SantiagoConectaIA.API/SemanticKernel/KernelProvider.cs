@@ -95,6 +95,9 @@ namespace SantiagoConectaIA.API.SemanticKernel
 			_kernelInstance.Plugins.AddFromObject(new EventosPlugin(_scopeFactory), "Eventos");
 			_logger.LogInformation("EventosPlugin registrado exitosamente con el Kernel como 'Eventos'.");
 
+			_kernelInstance.Plugins.AddFromObject(new InformacionLocalPlugin(_scopeFactory), "InformacionLocal");
+			_logger.LogInformation("InformacionLocalPlugin registrado exitosamente con el Kernel como 'InformacionLocal'.");
+
 			return _kernelInstance;
 		}
 	}

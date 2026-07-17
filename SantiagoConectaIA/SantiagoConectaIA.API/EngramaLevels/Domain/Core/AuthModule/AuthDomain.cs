@@ -1,12 +1,15 @@
 using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.AuthModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.AuthModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.AuthModule;
-using SantiagoConectaIA.Share.Objetos.AuthModulo;
+using SantiagoConectaIA.Share.Objects.AuthModulo;
 using SantiagoConectaIA.Share.PostModels.AuthModulo;
+
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;

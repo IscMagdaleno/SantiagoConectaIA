@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SantiagoConectaIA.Share.Objetos.EventosModulo
+namespace SantiagoConectaIA.Share.Objects.EventosModulo
 {
     public class EventoDetalle
     {

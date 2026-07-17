@@ -1,4 +1,4 @@
-namespace SantiagoConectaIA.Share.Objetos.AuthModulo
+namespace SantiagoConectaIA.Share.Objects.AuthModulo
 {
     public class UsuarioAuth
     {

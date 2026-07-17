@@ -1,9 +1,13 @@
 using EngramaCoreStandar.Results;
+
 using Microsoft.AspNetCore.Components;
+
 using Newtonsoft.Json;
-using SantiagoConectaIA.Share.Objetos.EmpresasModulo;
+
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
 using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
+
 using System;
 using System.Collections.Generic;
 using System.Net;

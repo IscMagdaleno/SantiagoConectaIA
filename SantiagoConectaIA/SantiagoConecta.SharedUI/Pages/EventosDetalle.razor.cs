@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Components;
+
 using SantiagoConecta.SharedUI.Data;
-using SantiagoConectaIA.Share.Objetos.EventosModulo;
+
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 using SantiagoConectaIA.Share.PostClass.EventosModulo;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

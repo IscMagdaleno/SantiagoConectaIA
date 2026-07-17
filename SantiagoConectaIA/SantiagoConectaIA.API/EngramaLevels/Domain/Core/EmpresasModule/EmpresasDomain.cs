@@ -1,11 +1,11 @@
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.EmpresasModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.EmpresasModule;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule;
-using SantiagoConectaIA.Share.Objetos.EmpresasModulo;
 using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
 {

@@ -1,5 +1,6 @@
 using EngramaCoreStandar.Results;
-using SantiagoConectaIA.Share.Objetos.EventosModulo;
+
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 using SantiagoConectaIA.Share.PostClass.EventosModulo;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EventosModule

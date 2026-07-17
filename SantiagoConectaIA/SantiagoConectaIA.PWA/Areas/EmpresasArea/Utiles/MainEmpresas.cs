@@ -1,6 +1,5 @@
 using EngramaCoreStandar.Results;
 using EngramaCoreStandar.Servicios;
-using SantiagoConectaIA.Share.Objetos.EmpresasModulo;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
 using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using EngramaCoreStandar.Dapper.Results;
 using EngramaCoreStandar.Mapper;
 using SantiagoConectaIA.Share.Objects.Common;
 using Microsoft.AspNetCore.Components.Forms;
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 
 namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
 {

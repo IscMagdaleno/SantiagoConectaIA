@@ -3,9 +3,9 @@ using MudBlazor;
 using SantiagoConectaIA.PWA.Areas.EventosArea.Utiles;
 using SantiagoConectaIA.PWA.Shared.Workspace;
 using SantiagoConectaIA.PWA.Shared.Common;
-using SantiagoConectaIA.Share.Objetos.EventosModulo;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 
 namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
 {

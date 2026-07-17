@@ -1,8 +1,12 @@
 using EngramaCoreStandar.Results;
+
 using Microsoft.AspNetCore.Components;
+
 using Newtonsoft.Json;
-using SantiagoConectaIA.Share.Objetos.EventosModulo;
+
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 using SantiagoConectaIA.Share.PostClass.EventosModulo;
+
 using System;
 using System.Collections.Generic;
 using System.Net;

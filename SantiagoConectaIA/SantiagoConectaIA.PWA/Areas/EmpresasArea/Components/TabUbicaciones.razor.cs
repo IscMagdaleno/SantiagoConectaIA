@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles;
-using SantiagoConectaIA.Share.Objetos.EmpresasModulo;
 using System.Threading.Tasks;
 using MudBlazor;
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 
 namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
 {

@@ -1,6 +1,6 @@
 using System;
 
-namespace SantiagoConectaIA.Share.Objetos.EventosModulo
+namespace SantiagoConectaIA.Share.Objects.EventosModulo
 {
     public class Evento
     {

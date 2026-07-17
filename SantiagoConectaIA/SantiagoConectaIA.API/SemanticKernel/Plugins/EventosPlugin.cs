@@ -1,6 +1,6 @@
 using Microsoft.SemanticKernel;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EventosModule;
-using SantiagoConectaIA.Share.Objetos.EventosModulo;
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 using SantiagoConectaIA.Share.PostClass.EventosModulo;
 using System.ComponentModel;
 using System.Text.Json;

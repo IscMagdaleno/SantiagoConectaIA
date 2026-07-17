@@ -1,6 +1,6 @@
 using Microsoft.SemanticKernel;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule;
-using SantiagoConectaIA.Share.Objetos.EmpresasModulo;
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
 using System.ComponentModel;

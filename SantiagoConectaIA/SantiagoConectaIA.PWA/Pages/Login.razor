@@ -103,7 +103,7 @@
             var response = await Http.PostAsJsonAsync("api/Auth/PostLoginUsuario", loginModel);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<Response<SantiagoConectaIA.Share.Objetos.AuthModulo.UsuarioAuth>>();
+                var result = await response.Content.ReadFromJsonAsync<Response<SantiagoConectaIA.Share.Objects.AuthModulo.UsuarioAuth>>();
                 if (result != null && result.IsSuccess)
                 {
                     await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", result.Data.Token);

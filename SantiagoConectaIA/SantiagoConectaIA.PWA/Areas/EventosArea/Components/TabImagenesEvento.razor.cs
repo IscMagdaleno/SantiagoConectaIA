@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+
 using MudBlazor;
+
 using SantiagoConectaIA.PWA.Areas.EventosArea.Utiles;
-using SantiagoConectaIA.Share.Objetos.EventosModulo;
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 using SantiagoConectaIA.Share.PostClass.EventosModulo;
+
 using System.Threading.Tasks;
 
 namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components

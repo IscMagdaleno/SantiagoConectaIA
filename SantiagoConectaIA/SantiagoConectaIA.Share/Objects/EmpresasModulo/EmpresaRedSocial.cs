@@ -1,4 +1,4 @@
-namespace SantiagoConectaIA.Share.Objetos.EmpresasModulo
+namespace SantiagoConectaIA.Share.Objects.EmpresasModulo
 {
     public class EmpresaRedSocial
     {
