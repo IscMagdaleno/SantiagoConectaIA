@@ -27,7 +27,7 @@ else
                         <span class="d-flex align-center gap-1"><MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" /> 3 min de lectura</span>
                     </div>
                     <div class="sports-content">
-                        <NoticiaRenderer Noticia="@this.Noticia" />
+                        <NoticiaRenderer Noticia="@this.Noticia" OnImageClick="OnImageClick" />
                     </div>
                 </div>
             </div>
@@ -54,7 +54,7 @@ else
                         </div>
                     </div>
                     <div class="alert-content-box">
-                        <NoticiaRenderer Noticia="@this.Noticia" />
+                        <NoticiaRenderer Noticia="@this.Noticia" OnImageClick="OnImageClick" />
                     </div>
                 </div>
             </div>
@@ -73,7 +73,7 @@ else
                     <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?art" : Noticia.vchImagenPortada)" class="culture-hero-img" alt="Cultura" />
                 </div>
                 <div class="culture-body px-md-12">
-                    <NoticiaRenderer Noticia="@this.Noticia" />
+                    <NoticiaRenderer Noticia="@this.Noticia" OnImageClick="OnImageClick" />
                 </div>
             </div>
             break;
@@ -93,7 +93,7 @@ else
                     <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?tech" : Noticia.vchImagenPortada)" class="innovation-hero-img" alt="Innovación" />
                 </div>
                 <div class="innovation-body p-4">
-                    <NoticiaRenderer Noticia="@this.Noticia" />
+                    <NoticiaRenderer Noticia="@this.Noticia" OnImageClick="OnImageClick" />
                 </div>
             </div>
             break;
@@ -114,7 +114,7 @@ else
                     <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?city" : Noticia.vchImagenPortada)" class="classic-hero-img" alt="Portada de la noticia" />
                 </div>
                 <div class="classic-body">
-                    <NoticiaRenderer Noticia="@this.Noticia" />
+                    <NoticiaRenderer Noticia="@this.Noticia" OnImageClick="OnImageClick" />
                 </div>
             </div>
             break;
@@ -236,8 +236,16 @@ else
         font-weight: bold;
         text-transform: uppercase;
     }
-    .sports-content .noticia-body-text {
-        color: #e2e8f0 !important;
+    .sports-content .noticia-body-text,
+    .sports-content .noticia-html-content,
+    .sports-content .noticia-html-content p,
+    .sports-content .noticia-html-content h1,
+    .sports-content .noticia-html-content h2,
+    .sports-content .noticia-html-content h3,
+    .sports-content .noticia-html-content h4,
+    .sports-content .noticia-html-content h5,
+    .sports-content .news-block-title {
+        color: #ffffff !important;
     }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -465,12 +473,44 @@ else
 
     @@keyframes templateFadeIn {
         from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        to { opacity: 1; transform: none; }
+    }
+
+    /* =========================================
+       MODO CAPTURA INSTAGRAM (Proporción 4:5)
+       ========================================= */
+    @@media (aspect-ratio: 4/5) {
+        .header-area, footer { display: none !important; }
+        
+        /* Plantilla 1: Clásica */
+        .template-classic { padding: 4rem !important; }
+        .classic-title { font-size: 3.5rem !important; }
+        .classic-hero-img { max-height: 600px !important; }
+        
+        /* Plantilla 2: Deportes */
+        .sports-title { font-size: 4rem !important; }
+        .sports-banner { height: 500px !important; }
+        
+        /* Plantilla 3: Alerta */
+        .alert-title { font-size: 3rem !important; }
+        .alert-top-stripe { font-size: 1.8rem !important; padding: 20px !important; }
+        
+        /* Plantilla 4: Cultura */
+        .culture-title { font-size: 4.5rem !important; }
+        .culture-hero-img { max-height: 600px !important; }
+        
+        /* Plantilla 6: Innovación */
+        .innovation-title { font-size: 3.5rem !important; }
+        .innovation-hero-img { max-height: 600px !important; }
     }
 </style>
 
 @code {
-    [Parameter] public Noticia Noticia { get; set; }
+    [Parameter]
+    public Noticia Noticia { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnImageClick { get; set; }
 
     private CategoriaNoticiaEnum GetTemplateType()
     {

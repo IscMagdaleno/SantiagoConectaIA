@@ -109,8 +109,12 @@ else
                                         <div class="gallery-grid">
                                             @foreach (var url in urls)
                                             {
-                                                <div class="premium-gallery-item">
+                                                <div class="premium-gallery-item" @onclick="() => OnImageClick.InvokeAsync(url)" style="cursor: pointer;">
                                                     <img src="@url" class="gallery-img" />
+                                                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; text-align: center; padding: 30px 10px 10px 10px; transition: background 0.3s;">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Class="me-1" Style="vertical-align: sub; font-size: 1.2rem;" />
+                                                        <span style="font-weight: 600; font-size: 0.9rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Clic para ampliar</span>
+                                                    </div>
                                                 </div>
                                             }
                                         </div>
@@ -127,7 +131,13 @@ else
 
                         case TipoDatoMetadato.ImagenSola:
                             <div class="block-single-image w-100 text-center">
-                                <img src="@bloque.nvchValor" class="rounded-xl shadow-lg" style="width: 100%; object-fit: cover; max-height: 800px; @(heightStyle != "auto" ? $"height: {heightStyle};" : "")" alt="Imagen de Noticia" />
+                                <div style="position: relative; display: inline-block; cursor: pointer; border-radius: 16px; overflow: hidden;" @onclick="() => OnImageClick.InvokeAsync(bloque.nvchValor)">
+                                    <img src="@bloque.nvchValor" class="shadow-lg" style="width: 100%; object-fit: cover; max-height: 800px; display: block; @(heightStyle != "auto" ? $"height: {heightStyle};" : "")" alt="Imagen de Noticia" />
+                                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; text-align: center; padding: 40px 10px 15px 10px; transition: background 0.3s;">
+                                        <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Class="me-2" Style="vertical-align: sub; font-size: 1.2rem;" />
+                                        <span style="font-weight: 600; font-size: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Clic para ampliar</span>
+                                    </div>
+                                </div>
                             </div>
                             break;
 
@@ -293,7 +303,7 @@ else
         }
         to {
             opacity: 1;
-            transform: translateY(0);
+            transform: none;
         }
     }
 
@@ -498,10 +508,25 @@ else
             height: 220px;
         }
     }
+
+    /* =========================================
+       MODO CAPTURA INSTAGRAM (Proporción 4:5)
+       ========================================= */
+    @@media (aspect-ratio: 4/5) {
+        .news-block-title { font-size: 1.8rem !important; margin-bottom: 20px !important; }
+        .noticia-body-text, .noticia-html-content { font-size: 1.8rem !important; line-height: 1.8 !important; }
+        .noticia-html-content p { margin-bottom: 2rem !important; }
+        .noticia-html-content h1, .noticia-html-content h2 { font-size: 2.8rem !important; margin-top: 3rem !important; margin-bottom: 2rem !important; }
+        .noticia-html-content h3 { font-size: 2.4rem !important; margin-top: 2.5rem !important; margin-bottom: 1.5rem !important; }
+        .youtube-card { height: 400px !important; }
+        .thought-bubble { max-width: 90% !important; padding: 40px !important; }
+        .bubble-icon { width: 48px !important; height: 48px !important; }
+    }
 </style>
 
 @code {
     [Parameter] public Noticia Noticia { get; set; }
+    [Parameter] public EventCallback<string> OnImageClick { get; set; }
 
     private int GetBlockWidth(NoticiaMetadato metadato)
     {
