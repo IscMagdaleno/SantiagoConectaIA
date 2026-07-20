@@ -8,6 +8,7 @@ namespace SantiagoConectaIA.API.Services
         public string UserMessage { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public DateTime ReceivedAt { get; set; } = DateTime.UtcNow;
+        public string WhatsAppMessageId { get; set; } = string.Empty;
     }
 
     public class WhatsAppMessageQueue

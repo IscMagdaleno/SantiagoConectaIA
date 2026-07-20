@@ -1,4 +1,5 @@
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.Share.PostModels.WhatsAppModule;
 
 namespace SantiagoConectaIA.API.Services
 {
@@ -47,6 +48,44 @@ namespace SantiagoConectaIA.API.Services
                 using var scope = _serviceProvider.CreateScope();
                 var orchestrationService = scope.ServiceProvider.GetRequiredService<IAgentOrchestrationService>();
                 var whatsappService = scope.ServiceProvider.GetRequiredService<IWhatsAppService>();
+                var whatsAppDomain = scope.ServiceProvider.GetRequiredService<IWhatsAppDomain>();
+
+                // Guardar mensaje entrante en la base de datos
+                int conversationId = 0;
+                try
+                {
+                    // Buscar el usuario por teléfono para obtener su ID
+                    var userStats = await whatsAppDomain.GetWhatsAppStats();
+
+                    // Crear o actualizar conversación
+                    var conversationResult = await whatsAppDomain.SaveWhatsAppConversation(
+                        new PostSaveWhatsAppConversation
+                        {
+                            iIdConversation = 0,
+                            iIdWhatsAppUser = 0, // Se actualizará con el ID real del usuario
+                            nvchStatus = "active"
+                        });
+
+                    if (conversationResult.IsSuccess && conversationResult.Data != null)
+                    {
+                        conversationId = conversationResult.Data.iIdConversation;
+                    }
+
+                    // Guardar mensaje entrante
+                    await whatsAppDomain.SaveWhatsAppMessage(new PostSaveWhatsAppMessage
+                    {
+                        iIdConversation = conversationId,
+                        nvchWhatsAppMessageId = queuedMessage.WhatsAppMessageId,
+                        nvchDirection = "inbound",
+                        nvchMessageType = "text",
+                        nvchContent = queuedMessage.UserMessage,
+                        dtTimestamp = queuedMessage.ReceivedAt
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error saving inbound message for phone {Phone}", queuedMessage.PhoneNumber);
+                }
 
                 // Use phone number as the user ID for conversation tracking
                 var response = await orchestrationService.ProcessUserQueryAsync(
@@ -58,12 +97,49 @@ namespace SantiagoConectaIA.API.Services
                     await whatsappService.SendTextMessageAsync(
                         queuedMessage.PhoneNumber,
                         response.nvchAgenteResponse);
+
+                    // Guardar mensaje saliente en la base de datos
+                    try
+                    {
+                        await whatsAppDomain.SaveWhatsAppMessage(new PostSaveWhatsAppMessage
+                        {
+                            iIdConversation = conversationId,
+                            nvchWhatsAppMessageId = "",
+                            nvchDirection = "outbound",
+                            nvchMessageType = "text",
+                            nvchContent = response.nvchAgenteResponse,
+                            dtTimestamp = DateTime.UtcNow
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error saving outbound message for phone {Phone}", queuedMessage.PhoneNumber);
+                    }
                 }
                 else
                 {
+                    var fallbackMessage = "Lo siento, no pude procesar tu mensaje en este momento. Por favor intenta de nuevo.";
                     await whatsappService.SendTextMessageAsync(
                         queuedMessage.PhoneNumber,
-                        "Lo siento, no pude procesar tu mensaje en este momento. Por favor intenta de nuevo.");
+                        fallbackMessage);
+
+                    // Guardar mensaje de fallback
+                    try
+                    {
+                        await whatsAppDomain.SaveWhatsAppMessage(new PostSaveWhatsAppMessage
+                        {
+                            iIdConversation = conversationId,
+                            nvchWhatsAppMessageId = "",
+                            nvchDirection = "outbound",
+                            nvchMessageType = "text",
+                            nvchContent = fallbackMessage,
+                            dtTimestamp = DateTime.UtcNow
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error saving fallback message for phone {Phone}", queuedMessage.PhoneNumber);
+                    }
                 }
             }
             catch (Exception ex)

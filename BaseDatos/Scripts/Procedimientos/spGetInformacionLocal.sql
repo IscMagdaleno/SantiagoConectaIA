@@ -41,7 +41,7 @@ BEGIN
             iIdInformacionLocal, nvchCategoria, nvchTitulo, nvchPalabrasClave,
             nvchDescripcionCorta, nvchContenidoDetallado, nvchUbicacion_LatLong,
             dtFechaCreacion, bActivo
-        FROM Engrama.SCIA.InformacionLocal I WITH(NOLOCK)
+        FROM SCIA.InformacionLocal I WITH(NOLOCK)
         WHERE
             (@bActivo IS NULL OR I.bActivo = @bActivo)
             AND (@nvchCategoria IS NULL OR I.nvchCategoria = @nvchCategoria)

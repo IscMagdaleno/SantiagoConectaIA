@@ -84,9 +84,12 @@ builder.Services.AddScoped<IEmpresasDomain, EmpresasDomain>();
 builder.Services.AddScoped<IEventosDomain, EventosDomain>();
 builder.Services.AddScoped<IAnalyticsDomain, AnalyticsDomain>();
 builder.Services.AddScoped<IPageVisitsDomain, PageVisitsDomain>();
-builder.Services.AddScoped<IInformacionLocalDomain, InformacionLocalDomain>();
+	builder.Services.AddScoped<IInformacionLocalDomain, InformacionLocalDomain>();
 
-// WhatsApp Cloud API services
+	// WhatsApp Analytics services
+	builder.Services.AddScoped<IWhatsAppDomain, WhatsAppDomain>();
+
+	// WhatsApp Cloud API services
 
 builder.Services.AddSingleton<WhatsAppMessageQueue>();
 builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
@@ -105,9 +108,12 @@ builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
 builder.Services.AddScoped<IEventosRepository, EventosRepository>();
 builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 builder.Services.AddScoped<IPageVisitsRepository, PageVisitsRepository>();
-builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
+	builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
 
-builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
+	// WhatsApp Analytics repository
+	builder.Services.AddScoped<IWhatsAppRepository, WhatsAppRepository>();
+
+	builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
 builder.Services.AddScoped<INoticiasScraperService, NoticiasScraperService>();
 builder.Services.AddHostedService<DailyScraperBackgroundService>();
 
