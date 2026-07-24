@@ -1,0 +1,440 @@
+@page "/registro-emprendimiento"
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.Objects.EmpresasModulo
+@using SantiagoConectaIA.Share.PostModels.EmpresasModulo
+@using Microsoft.AspNetCore.Components.Forms
+@inject Data_Emprendimientos DataEmprendimientos
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Registro de Emprendimiento</PageTitle>
+
+<!-- Hero Section con Olas -->
+<div class="custom-hero-header">
+    <div class="container relative z-10 mx-auto px-4 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 56px; color: #ffffff; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
+        <h1 class="header-title mt-2">Registro de Emprendimiento</h1>
+        <p class="header-subtitle">Únete al catálogo digital interactivo de Santiago Papasquiaro</p>
+    </div>
+    <!-- Animated waves at bottom -->
+    <div class="waves-wrapper">
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+             viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </div>
+</div>
+
+<div class="container" style="padding-top: 40px; padding-bottom: 50px;">
+    @if (_isSuccess)
+    {
+        <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Class="my-4" Style="border-radius: 16px;">
+            ¡Registro completado con éxito! Tu emprendimiento ha sido enviado a revisión.
+        </MudAlert>
+        <div class="text-center mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" OnClick='() => NavManager.NavigateTo("/")'>Volver al Inicio</MudButton>
+        </div>
+    }
+    else
+    {
+        <MudPaper Elevation="4" Class="pa-6" Style="border-radius: 16px;">
+            <!-- Stepper Header -->
+            <div class="d-flex justify-space-between align-center mb-6">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    var stepNumber = i;
+                    <div class="d-flex flex-column align-center" style="cursor: pointer;" @onclick="() => SetStep(stepNumber)">
+                        <MudAvatar Color="@(currentStep == stepNumber ? Color.Primary : (currentStep > stepNumber ? Color.Success : Color.Default))" Variant="@(currentStep >= stepNumber ? Variant.Filled : Variant.Outlined)">
+                            @if (currentStep > stepNumber) { <MudIcon Icon="@Icons.Material.Filled.Check" /> } else { @stepNumber }
+                        </MudAvatar>
+                        <MudText Typo="Typo.caption" Class="mt-1" Color="@(currentStep >= stepNumber ? Color.Primary : Color.Default)">@GetStepName(stepNumber)</MudText>
+                    </div>
+                    @if (i < 5)
+                    {
+                        <div style="flex-grow: 1; height: 2px; background-color: @(currentStep > i ? "#d81b60" : "#e0e0e0"); margin: 0 10px;"></div>
+                    }
+                }
+            </div>
+
+            <!-- Formularios por paso -->
+            <EditForm Model="postModel" OnValidSubmit="SiguientePaso">
+                <DataAnnotationsValidator />
+
+                @if (currentStep == 1)
+                {
+                    <MudText Typo="Typo.h5" Class="mb-4">1. Datos del Propietario</MudText>
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="postModel.Propietario.vchNombre" Label="Nombre Completo" Required="true" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="postModel.Propietario.vchCorreo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" InputType="InputType.Email" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="postModel.Propietario.vchTelefono" Label="Teléfono" Required="true" Variant="Variant.Outlined" Pattern="[0-9]*" InputMode="InputMode.numeric" MaxLength="15" HelperText="Solo números" />
+                        </MudItem>
+                    </MudGrid>
+                }
+                else if (currentStep == 2)
+                {
+                    <MudText Typo="Typo.h5" Class="mb-4">2. Información del Emprendimiento</MudText>
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="postModel.Empresa.vchNombreComercial" Label="Nombre Comercial" Required="true" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="postModel.Empresa.vchSlogan" Label="Eslogan (Opcional)" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="postModel.Empresa.vchCorreo" Label="Correo de la Empresa" Variant="Variant.Outlined" InputType="InputType.Email" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="postModel.Empresa.vchTelefono" Label="Teléfono de la Empresa" Variant="Variant.Outlined" Pattern="[0-9]*" InputMode="InputMode.numeric" MaxLength="15" HelperText="Solo números" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="postModel.Empresa.nvchDescripcion" Label="Descripción Corta" Required="true" Variant="Variant.Outlined" Lines="3" />
+                        </MudItem>
+                        
+                        <MudItem xs="12">
+                            <MudExpansionPanels>
+                                <MudExpansionPanel Text="Misión y Visión (Opcional)">
+                                    <MudTextField @bind-Value="postModel.Empresa.nvchMision" Label="Misión" Variant="Variant.Outlined" Lines="2" Class="mb-3" />
+                                    <MudTextField @bind-Value="postModel.Empresa.nvchVision" Label="Visión" Variant="Variant.Outlined" Lines="2" />
+                                </MudExpansionPanel>
+                            </MudExpansionPanels>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Logo de la Empresa</MudText>
+                            <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg" FilesChanged="UploadLogo">
+                                <ActivatorContent>
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                                        Subir Logo
+                                    </MudButton>
+                                </ActivatorContent>
+                            </MudFileUpload>
+                            @if (_isUploadingLogo)
+                            {
+                                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="ml-3" />
+                            }
+                            @if (!string.IsNullOrEmpty(postModel.Empresa.vchLogoUrl))
+                            {
+                                <MudImage Src="@postModel.Empresa.vchLogoUrl" Width="100" Height="100" ObjectFit="ObjectFit.Cover" Class="mt-2 rounded-lg" Elevation="2" />
+                            }
+                        </MudItem>
+                    </MudGrid>
+                }
+                else if (currentStep == 3)
+                {
+                    <MudText Typo="Typo.h5" Class="mb-4">3. Sucursales / Ubicaciones</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddUbicacion" Class="mb-4">Agregar Ubicación</MudButton>
+                    
+                    @foreach (var ub in postModel.Ubicaciones)
+                    {
+                        <MudPaper Elevation="1" Class="pa-4 mb-4" Style="background-color: #f9f9f9;">
+                            <div class="d-flex justify-end">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => postModel.Ubicaciones.Remove(ub))" />
+                            </div>
+                            <MudGrid>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="ub.vchAlias" Label="Nombre (Ej. Sucursal Centro)" Required="true" Variant="Variant.Outlined" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="ub.vchDireccion" Label="Dirección" Required="true" Variant="Variant.Outlined" />
+                                </MudItem>
+
+                            </MudGrid>
+                        </MudPaper>
+                    }
+                    @if (postModel.Ubicaciones.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info">Agrega al menos una ubicación para continuar.</MudAlert>
+                    }
+                }
+                else if (currentStep == 4)
+                {
+                    <MudText Typo="Typo.h5" Class="mb-4">4. Redes Sociales</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddRedSocial" Class="mb-4">Agregar Red Social</MudButton>
+                    
+                    @foreach (var red in postModel.RedesSociales)
+                    {
+                        <MudPaper Elevation="1" Class="pa-4 mb-4" Style="background-color: #f9f9f9;">
+                            <div class="d-flex align-center">
+                                <MudSelect @bind-Value="red.vchPlataforma" Label="Tipo de Red" Required="true" Variant="Variant.Outlined" Class="mr-4">
+                                    <MudSelectItem Value="@("Facebook")">Facebook</MudSelectItem>
+                                    <MudSelectItem Value="@("Instagram")">Instagram</MudSelectItem>
+                                    <MudSelectItem Value="@("WhatsApp")">WhatsApp</MudSelectItem>
+                                    <MudSelectItem Value="@("X (Twitter)")">X (Twitter)</MudSelectItem>
+                                    <MudSelectItem Value="@("Sitio Web")">Sitio Web</MudSelectItem>
+                                </MudSelect>
+                                <MudTextField @bind-Value="red.vchUrl" Label="Enlace (URL)" Required="true" Variant="Variant.Outlined" Class="flex-grow-1 mr-4" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => postModel.RedesSociales.Remove(red))" />
+                            </div>
+                        </MudPaper>
+                    }
+                    @if (postModel.RedesSociales.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info">Opcional: Puedes agregar las redes sociales de tu negocio.</MudAlert>
+                    }
+                }
+                else if (currentStep == 5)
+                {
+                    <MudText Typo="Typo.h5" Class="mb-4">5. Catálogo de Productos y Servicios</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddProducto" Class="mb-4">Agregar Producto / Servicio</MudButton>
+                    
+                    @if (postModel.Categorias.Count > 0)
+                    {
+                        @foreach (var prod in postModel.Categorias[0].Productos)
+                        {
+                            <MudPaper Elevation="1" Class="pa-4 mb-4" Style="background-color: #f9f9f9;">
+                                <div class="d-flex justify-end">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveProducto(prod))" />
+                                </div>
+                                <MudGrid>
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="prod.vchNombre" Label="Nombre del Producto" Required="true" Variant="Variant.Outlined" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="6">
+                                        <MudNumericField @bind-Value="prod.mPrecio" Label="Precio ($)" Required="true" Variant="Variant.Outlined" Min="0" />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudTextField @bind-Value="prod.nvchDescripcionCorta" Label="Descripción Breve" Variant="Variant.Outlined" Lines="2" />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg" FilesChanged="@(e => UploadProductImage(e, prod))">
+                                            <ActivatorContent>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Image">
+                                                    Subir Foto del Producto
+                                                </MudButton>
+                                            </ActivatorContent>
+                                        </MudFileUpload>
+                                        @if (!string.IsNullOrEmpty(prod.vchImagenUrl))
+                                        {
+                                            <MudImage Src="@prod.vchImagenUrl" Width="80" Height="80" ObjectFit="ObjectFit.Cover" Class="mt-2 rounded-lg" Elevation="2" />
+                                        }
+                                    </MudItem>
+                                </MudGrid>
+                            </MudPaper>
+                        }
+                    }
+                    @if (postModel.Categorias.Count == 0 || postModel.Categorias[0].Productos.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Warning">Debes agregar al menos un producto o servicio.</MudAlert>
+                    }
+                }
+
+                <div class="d-flex justify-space-between mt-6">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="PasoAnterior" Disabled="@(currentStep == 1 || _isSubmitting)">Atrás</MudButton>
+                    
+                    @if (currentStep < 5)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Siguiente</MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="EnviarRegistro" Disabled="@_isSubmitting">
+                            @if (_isSubmitting)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                @("Enviando...")
+                            }
+                            else
+                            {
+                                @("Enviar Registro")
+                            }
+                        </MudButton>
+                    }
+                </div>
+            </EditForm>
+        </MudPaper>
+    }
+</div>
+
+@code {
+    private PostSaveEmprendimientoFull postModel = new();
+    private int currentStep = 1;
+    private bool _isSubmitting = false;
+    private bool _isSuccess = false;
+    private bool _isUploadingLogo = false;
+
+    protected override void OnInitialized()
+    {
+        if (postModel.Categorias.Count == 0)
+        {
+            postModel.Categorias.Add(new CategoriaCatalogoConProductos
+            {
+                vchNombre = "Catálogo Principal",
+                iIdEmpresa = 0
+            });
+        }
+    }
+
+    private string GetStepName(int step) => step switch
+    {
+        1 => "Propietario",
+        2 => "Empresa",
+        3 => "Ubicaciones",
+        4 => "Redes",
+        5 => "Productos",
+        _ => ""
+    };
+
+    private void SetStep(int step)
+    {
+        if (step < currentStep)
+        {
+            currentStep = step;
+        }
+    }
+
+    private void SiguientePaso()
+    {
+        if (currentStep == 2 && string.IsNullOrEmpty(postModel.Empresa.vchLogoUrl))
+        {
+            Snackbar.Add("Debes subir un logo para continuar.", Severity.Warning);
+            return;
+        }
+
+        if (currentStep == 3 && postModel.Ubicaciones.Count == 0)
+        {
+            Snackbar.Add("Debes agregar al menos una ubicación para continuar.", Severity.Warning);
+            return;
+        }
+        
+        if (currentStep < 5)
+        {
+            currentStep++;
+        }
+    }
+
+    private void PasoAnterior()
+    {
+        if (currentStep > 1)
+        {
+            currentStep--;
+        }
+    }
+
+    private async Task UploadLogo(IBrowserFile file)
+    {
+        if (file == null) return;
+        _isUploadingLogo = true;
+        StateHasChanged();
+        try
+        {
+            var url = await DataEmprendimientos.UploadGenericFile(file);
+            if (!string.IsNullOrEmpty(url))
+            {
+                postModel.Empresa.vchLogoUrl = url;
+                Snackbar.Add("Logo subido correctamente.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Error al subir el logo.", Severity.Error);
+            }
+        }
+        finally
+        {
+            _isUploadingLogo = false;
+            StateHasChanged();
+        }
+    }
+
+    private void AddUbicacion()
+    {
+        postModel.Ubicaciones.Add(new EmpresaUbicacion { bActivo = true });
+    }
+
+    private void AddRedSocial()
+    {
+        postModel.RedesSociales.Add(new EmpresaRedSocial { vchPlataforma = "Facebook", bActivo = true });
+    }
+
+    private void AddProducto()
+    {
+        if (postModel.Categorias.Count > 0)
+        {
+            postModel.Categorias[0].Productos.Add(new ProductoServicio { bEstatus = true });
+        }
+    }
+
+    private void RemoveProducto(ProductoServicio prod)
+    {
+        if (postModel.Categorias.Count > 0)
+        {
+            postModel.Categorias[0].Productos.Remove(prod);
+        }
+    }
+
+    private async Task UploadProductImage(IBrowserFile file, ProductoServicio prod)
+    {
+        if (file == null) return;
+        try
+        {
+            var url = await DataEmprendimientos.UploadGenericFile(file);
+            if (!string.IsNullOrEmpty(url))
+            {
+                prod.vchImagenUrl = url;
+                Snackbar.Add("Imagen del producto subida correctamente.", Severity.Success);
+                StateHasChanged();
+            }
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Error al subir la imagen.", Severity.Error);
+        }
+    }
+
+    private async Task EnviarRegistro()
+    {
+        if (postModel.Categorias.Count == 0 || postModel.Categorias[0].Productos.Count == 0)
+        {
+            Snackbar.Add("Debes agregar al menos un producto o servicio.", Severity.Warning);
+            return;
+        }
+
+        if (postModel.Categorias[0].Productos.Any(p => string.IsNullOrEmpty(p.vchImagenUrl)))
+        {
+            Snackbar.Add("Todos los productos o servicios deben tener una imagen subida.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            _isSubmitting = true;
+            
+            // Guardar como inactivo por defecto para revisión
+            postModel.Propietario.bActivo = false;
+            postModel.Empresa.bEstatus = false;
+            postModel.Empresa.dtFechaRegistro = DateTime.Now;
+
+            var result = await DataEmprendimientos.PostSaveEmprendimientoFull(postModel);
+
+            if (result != null && result.IsSuccess)
+            {
+                _isSuccess = true;
+            }
+            else
+            {
+                Snackbar.Add(result?.Message ?? "Ocurrió un error al registrar el emprendimiento.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+}

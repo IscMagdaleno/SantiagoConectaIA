@@ -241,10 +241,23 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
         {
             try
             {
+                // Guardar el propietario primero si se están enviando sus datos
+                if (postModel.Propietario != null && !string.IsNullOrEmpty(postModel.Propietario.vchNombre) && postModel.Propietario.iIdPropietario <= 0)
+                {
+                    var propRequest = _mapperHelper.Get<Propietario, spSavePropietario.Request>(postModel.Propietario);
+                    var propResult = await _empresasRepository.spSavePropietario(propRequest);
+                    var propValidation = _responseHelper.Validacion<spSavePropietario.Result, Propietario>(propResult);
+                    if (propValidation.IsSuccess)
+                    {
+                        postModel.Propietario.iIdPropietario = propValidation.Data.iIdPropietario;
+                        postModel.Empresa.iIdPropietario = propValidation.Data.iIdPropietario;
+                    }
+                }
+
                 var request = _mapperHelper.Get<Empresa, spSaveEmprendimientoCompleto.Request>(postModel.Empresa);
                 
                 // Set propietario Id from the Propietario object if it has been saved or exists
-                request.iIdPropietario = postModel.Propietario.iIdPropietario > 0 ? postModel.Propietario.iIdPropietario : postModel.Empresa.iIdPropietario;
+                request.iIdPropietario = postModel.Propietario?.iIdPropietario > 0 ? postModel.Propietario.iIdPropietario : postModel.Empresa.iIdPropietario;
                 
                 var detalles = new {
                     RedesSociales = postModel.RedesSociales,

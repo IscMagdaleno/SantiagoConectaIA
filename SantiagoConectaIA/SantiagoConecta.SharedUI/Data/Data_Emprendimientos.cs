@@ -54,5 +54,34 @@ namespace SantiagoConecta.SharedUI.Data
         public Task<Response<List<CategoriaCatalogo>>> PostGetCategoriasPorEmpresa(PostGetCategoriasPorEmpresa data) => PostAsync<List<CategoriaCatalogo>>("PostGetCategoriasPorEmpresa", data);
         public Task<Response<List<ProductoServicio>>> PostGetProductosPorCategoria(PostGetProductosPorCategoria data) => PostAsync<List<ProductoServicio>>("PostGetProductosPorCategoria", data);
         public Task<Response<ConfiguracionVisual>> PostGetConfiguracionVisual(PostGetConfiguracionVisual data) => PostAsync<ConfiguracionVisual>("PostGetConfiguracionVisual", data);
+        public Task<Response<Empresa>> PostSaveEmprendimientoFull(PostSaveEmprendimientoFull data) => PostAsync<Empresa>("PostSaveEmprendimientoFull", data);
+
+        public async Task<string> UploadGenericFile(Microsoft.AspNetCore.Components.Forms.IBrowserFile file, string endpoint = "UploadImage-empresas")
+        {
+            try
+            {
+                using var content = new MultipartFormDataContent();
+                using var fileContent = new StreamContent(file.OpenReadStream(maxAllowedSize: 10485760));
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                content.Add(fileContent, "image", file.Name);
+
+                var response = await _HttpClient.PostAsync($"/api/AzureBlob/{endpoint}", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var resultJson = await response.Content.ReadAsStringAsync();
+                    var blobResponse = JsonConvert.DeserializeObject<Response<SantiagoConectaIA.Share.Objects.Common.BlobSaved>>(resultJson);
+                    if (blobResponse != null && blobResponse.IsSuccess && blobResponse.Data != null)
+                    {
+                        return blobResponse.Data.URL;
+                    }
+                }
+                return string.Empty;
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+        }
     }
 }

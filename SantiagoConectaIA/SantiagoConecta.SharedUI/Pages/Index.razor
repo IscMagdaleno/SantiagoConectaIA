@@ -12,6 +12,7 @@
 @inject Data_BuzonCiudadano _dataBuzon
 @inject Data_Noticias dataNoticias
 @inject Data_Eventos dataEventos
+@inject ISnackbar Snackbar
 
 <PageTitle>Santiago Conecta - Inicio</PageTitle>
 
@@ -287,6 +288,37 @@
 </section>
 <!-- ***** Módulos End ***** -->
 
+<!-- ***** CTA Registro Emprendimiento ***** -->
+<section class="section js-dynamic-bg" style="padding: 60px 0; position: relative; overflow: hidden; margin-top: 40px;">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(216,27,96,0.9), rgba(136,14,79,0.9)); z-index: 1;"></div>
+    
+    <div class="container" style="position: relative; z-index: 2;">
+        <div class="row align-items-center">
+            <div class="col-lg-8 col-md-12 col-sm-12 text-lg-start text-center mb-lg-0 mb-4">
+                <span class="badge" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); color: white; padding: 8px 15px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: inline-block; border: 1px solid rgba(255,255,255,0.3);">¡Nuevo Servicio!</span>
+                <h2 style="color: white; font-weight: 800; font-size: clamp(1.8rem, 4vw, 2.5rem); line-height: 1.2; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">¿Tienes un negocio en Santiago Papasquiaro?</h2>
+                <p style="color: rgba(255,255,255,0.9); font-size: 1.15rem; font-weight: 300; line-height: 1.5; margin-bottom: 0; text-shadow: 0 1px 5px rgba(0,0,0,0.1);">
+                    Regístralo gratis en nuestro catálogo digital interactivo, sube tus productos y llega a más clientes a través de nuestra plataforma oficial.
+                </p>
+            </div>
+            <div class="col-lg-4 col-md-12 col-sm-12 text-lg-end text-center">
+                <button @onclick='() => NavManager.NavigateTo("/registro-emprendimiento")' style="background: white; color: #880e4f; padding: 15px 35px; border-radius: 30px; font-size: 1.15rem; font-weight: 700; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3); cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 10px;" class="cta-registro-btn">
+                    <MudIcon Icon="@Icons.Material.Filled.Storefront" />
+                    Registrar mi Negocio
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+    .cta-registro-btn:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(255,255,255,0.4) !important;
+    }
+</style>
+<!-- ***** CTA Registro Emprendimiento End ***** -->
+
+
 <!-- ***** Beneficios Section ***** -->
 <section class="section padding-top-70 padding-bottom-0" id="beneficios">
     <div class="container">
@@ -524,9 +556,69 @@
         background-color: rgba(255, 255, 255, 0.4) !important;
         transform: scale(1.1) !important;
     }
+    .promo-banner-bottom {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(135deg, #0288d1, #01579b);
+        color: white;
+        z-index: 9999;
+        padding: 12px 20px;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+        animation: slideUp 0.5s ease-out;
+    }
+    .promo-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        gap: 15px;
+    }
+    .promo-text {
+        font-size: 0.95rem;
+        line-height: 1.3;
+    }
+    .promo-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    @@media (max-width: 600px) {
+        .promo-content {
+            flex-direction: column;
+            text-align: center;
+        }
+        .promo-actions {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    @@keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
 </style>
 
+@if (_showPromoBanner)
+{
+    <div class="promo-banner-bottom">
+        <div class="promo-content">
+            <div class="promo-text">
+                <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="vertical-align: middle; margin-right: 5px;" />
+                <strong>¡Únete a nuestra plataforma!</strong> Registra tu emprendimiento local totalmente gratis y llega a más clientes.
+            </div>
+            <div class="promo-actions">
+                <MudButton Variant="Variant.Filled" Color="Color.Warning" Size="Size.Small" OnClick='() => NavManager.NavigateTo("/registro-emprendimiento")' Style="font-weight: bold; border-radius: 20px; white-space: nowrap;">REGISTRAR AHORA</MudButton>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="() => _showPromoBanner = false" />
+            </div>
+        </div>
+    </div>
+}
+
 @code {
+    private bool _showPromoBanner = true;
     private ContactModel contactModel = new();
     private bool _isSubmitting = false;
     private string _successMessage = string.Empty;
