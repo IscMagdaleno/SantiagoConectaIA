@@ -1,8 +1,8 @@
 using EngramaCoreStandar.Results;
 using Microsoft.AspNetCore.Components;
 using Newtonsoft.Json;
-using SantiagoConectaIA.Share.Objetos.InformacionLocalModulo;
-using SantiagoConectaIA.Share.PostClass.InformacionLocalModulo;
+using SantiagoConectaIA.Share.Objects.InformacionLocalModule;
+using SantiagoConectaIA.Share.PostModels.InformacionLocalModule;
 using System;
 using System.Collections.Generic;
 using System.Net;
