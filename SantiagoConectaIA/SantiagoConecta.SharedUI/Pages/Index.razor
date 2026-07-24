@@ -5,6 +5,8 @@
 @using SantiagoConectaIA.Share.PostModels.NoticiasModule
 @using SantiagoConectaIA.Share.Objects.EventosModulo
 @using SantiagoConectaIA.Share.PostClass.EventosModulo
+@using SantiagoConectaIA.Share.Objetos.InformacionLocalModulo
+@using SantiagoConectaIA.Share.PostClass.InformacionLocalModulo
 @using Microsoft.Extensions.Localization
 @inject NavigationManager NavManager
 @inject IStringLocalizer<App> Localizer
@@ -13,6 +15,7 @@
 @inject Data_Noticias dataNoticias
 @inject Data_Eventos dataEventos
 @inject ISnackbar Snackbar
+@inject Data_InformacionLocal dataInformacionLocal
 
 <PageTitle>Santiago Conecta - Inicio</PageTitle>
 
@@ -318,6 +321,361 @@
 </style>
 <!-- ***** CTA Registro Emprendimiento End ***** -->
 
+<!-- ***** Datos Curiosos (Informacion Local) - Diseño Edge-to-Edge ***** -->
+@if (datosCuriosos != null && datosCuriosos.Any())
+{
+<section class="innovative-section position-relative py-0 overflow-hidden">
+    
+    <!-- Elementos decorativos animados en el fondo -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="noise-overlay"></div>
+
+    <!-- Contenedor principal que respeta el flujo de caja -->
+    <div class="container-fluid px-0 h-100 position-relative" style="z-index: 10; padding-top: 40px; padding-bottom: 20px;">
+        
+        <!-- Título Integrado (sin solapamiento en móvil) -->
+        <div class="row w-100 mx-0 mb-3">
+            <div class="col-12 px-4 px-lg-5 text-center text-lg-start">
+                <h2 class="hero-gradient-title mb-0" style="font-family: 'Montaser Arabic', sans-serif;">
+                    <span style="color: #9b45c9;">Descubre</span> <span style="color: #cd4472;">Nuestro Municipio</span>
+                </h2>
+            </div>
+        </div>
+
+        <MudCarousel Class="innovative-carousel" Style="height: auto; min-height: 500px; width: 100%;" ShowArrows="true" ShowBullets="true" AutoCycle="true" EnableSwipeGesture="true" TData="object">
+            @foreach (var dato in datosCuriosos.Take(10))
+            {
+                <MudCarouselItem Transition="Transition.Slide">
+                    <div class="row g-0 h-100 w-100 align-items-center">
+                        
+                        <!-- Columna Izquierda: Espaciador en desktop -->
+                        <div class="col-xl-1 col-lg-1 d-none d-lg-block"></div>
+                        
+                        <!-- Columna de Contenido -->
+                        <div class="col-xl-5 col-lg-6 col-md-12 content-wrapper px-4 px-lg-0" style="z-index: 10;">
+                            <div class="glass-content-panel">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="category-pill-neon">
+                                        <MudIcon Icon="@Icons.Material.Filled.Explore" Size="Size.Small" Class="mr-2" />
+                                        @dato.nvchCategoria
+                                    </div>
+                                </div>
+                                
+                                <h3 class="display-title">@dato.nvchTitulo</h3>
+                                
+                                <div class="divider-glow"></div>
+                                
+                                <p class="lead-desc">@dato.nvchDescripcionCorta</p>
+                                <p class="body-desc">@dato.nvchContenidoDetallado</p>
+                                
+                                <button @onclick="OpenChatbot" class="btn-cyber-action mt-4 group">
+                                    <span class="btn-text">Pregúntale a la IA</span>
+                                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Class="btn-icon-right ml-2" />
+                                    <div class="btn-glow"></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Arte Visual Derecho (Sale de la pantalla creando profundidad) -->
+                        <div class="col-xl-6 col-lg-5 d-none d-lg-flex position-relative h-100 align-items-center justify-content-end" style="z-index: 5;">
+                            <!-- Texto Gigante como Marca de Agua -->
+                            <div class="watermark-text">@dato.nvchCategoria</div>
+                            
+                            <!-- Icono Flotante que se desborda -->
+                            <div class="giant-icon-showcase">
+                                <MudIcon Icon="@GetCategoryIcon(dato.nvchCategoria)" Class="floating-giant-icon" />
+                            </div>
+                        </div>
+                        
+                    </div>
+                </MudCarouselItem>
+            }
+        </MudCarousel>
+    </div>
+</section>
+
+<style>
+    /* =========================================================
+       DISEÑO ULTRA PREMIUM EDGE-TO-EDGE
+       ========================================================= */
+       
+    .innovative-section {
+        background-color: #0f0518;
+        width: 100%;
+        margin: 60px 0;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        position: relative;
+    }
+
+    /* Overlay de ruido para textura premium */
+    .noise-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+        opacity: 0.05;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    /* Blobs animados en el fondo */
+    .blob {
+        position: absolute;
+        filter: blur(80px);
+        z-index: 0;
+        animation: moveBlob 20s infinite alternate ease-in-out;
+        opacity: 0.6;
+    }
+
+    .blob-1 {
+        width: 500px; height: 500px;
+        background: #880e4f;
+        top: -100px; left: -100px;
+        border-radius: 50%;
+    }
+
+    .blob-2 {
+        width: 600px; height: 600px;
+        background: #d81b60;
+        bottom: -200px; right: -100px;
+        border-radius: 50%;
+        animation-delay: -10s;
+    }
+
+    @@keyframes moveBlob {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(100px, 150px) scale(1.2); }
+        100% { transform: translate(-50px, 50px) scale(0.9); }
+    }
+
+    /* Título Gradient */
+    .hero-gradient-title {
+        font-weight: 700;
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        line-height: 1.2;
+        text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* Panel de Cristal Ultra Realista */
+    .glass-content-panel {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        padding: 40px 35px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(255,255,255,0.03);
+        margin: 20px 0; 
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glass-content-panel::after {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        pointer-events: none;
+    }
+
+    .glass-content-panel:hover::after {
+        opacity: 1;
+    }
+
+    /* Tipografía del panel */
+    .display-title {
+        color: #ffffff;
+        font-weight: 800;
+        font-size: clamp(2.2rem, 3.5vw, 3rem);
+        line-height: 1.2;
+        letter-spacing: -1px;
+        margin-bottom: 25px;
+    }
+
+    .divider-glow {
+        width: 80px;
+        height: 6px;
+        background: linear-gradient(90deg, #ffb4a2, #d81b60);
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 0 20px rgba(216, 27, 96, 0.6);
+    }
+
+    .lead-desc {
+        color: #ffb4a2;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        letter-spacing: 0.5px;
+    }
+
+    .body-desc {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 1.1rem;
+        line-height: 1.8;
+        margin-bottom: 10px;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Píldora de Categoría */
+    .category-pill-neon {
+        background: rgba(216, 27, 96, 0.2);
+        border: 1px solid #d81b60;
+        color: #ffb4a2;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        box-shadow: 0 0 20px rgba(216, 27, 96, 0.5), inset 0 0 10px rgba(216, 27, 96, 0.5);
+    }
+
+    /* Botón Cyber Glow */
+    .btn-cyber-action {
+        background: linear-gradient(90deg, rgba(216,27,96,0.8), rgba(136,14,79,0.8));
+        border: 1px solid rgba(255,255,255,0.4);
+        color: white;
+        padding: 16px 40px;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(216,27,96,0.4);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        z-index: 10;
+    }
+
+    .btn-glow {
+        position: absolute;
+        top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 50%);
+        opacity: 0;
+        transform: scale(0.5);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .btn-text, .btn-icon-right {
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-cyber-action:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(216,27,96,0.6);
+        border-color: white;
+        background: linear-gradient(90deg, rgba(216,27,96,1), rgba(136,14,79,1));
+    }
+
+    .btn-cyber-action:hover .btn-glow {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+
+    .btn-cyber-action:hover .btn-icon-right {
+        transform: translateX(8px) rotate(15deg);
+        transition: transform 0.3s ease;
+    }
+
+    /* Elementos Visuales Gigantes */
+    .watermark-text {
+        position: absolute;
+        right: 0%;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: clamp(80px, 10vw, 200px);
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.06);
+        white-space: normal;
+        text-align: right;
+        pointer-events: none;
+        z-index: 1;
+        letter-spacing: -2px;
+        line-height: 0.9;
+        max-width: 80%;
+    }
+
+    .giant-icon-showcase {
+        position: relative;
+        right: 5%; 
+        z-index: 2;
+    }
+
+    .floating-giant-icon {
+        font-size: clamp(150px, 20vw, 350px) !important;
+        width: clamp(150px, 20vw, 350px) !important;
+        height: clamp(150px, 20vw, 350px) !important;
+        color: rgba(255, 255, 255, 0.8);
+        filter: drop-shadow(0 40px 60px rgba(0,0,0,0.5));
+        animation: float-3d 8s ease-in-out infinite;
+        transform-origin: center;
+    }
+
+    /* Controles del Carrusel Blazor */
+    .innovative-carousel .mud-carousel-next,
+    .innovative-carousel .mud-carousel-previous {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255,255,255,0.4) !important;
+        color: white !important;
+        width: 60px !important;
+        height: 60px !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .innovative-carousel .mud-carousel-next:hover,
+    .innovative-carousel .mud-carousel-previous:hover {
+        background-color: white !important;
+        color: #880e4f !important;
+        transform: scale(1.15) !important;
+        box-shadow: 0 0 20px rgba(255,255,255,0.5) !important;
+    }
+
+    @@keyframes float-3d {
+        0% { transform: translateY(0px) rotate(-3deg) scale(1); }
+        50% { transform: translateY(-30px) rotate(3deg) scale(1.05); filter: drop-shadow(0 50px 70px rgba(0,0,0,0.6)); }
+        100% { transform: translateY(0px) rotate(-3deg) scale(1); }
+    }
+
+    /* Responsividad Móvil */
+    @@media (max-width: 991px) {
+        .glass-content-panel {
+            margin: 10px 10px 60px 10px; /* Margen inferior para los controles del carrusel */
+            padding: 30px 20px;
+            border-radius: 15px;
+        }
+        .innovative-section {
+            margin: 40px 0;
+        }
+        .hero-gradient-title { 
+            font-size: 2rem; 
+        }
+        .blob-1 { width: 250px; height: 250px; top: -50px; left: -50px; }
+        .blob-2 { width: 300px; height: 300px; bottom: -50px; right: -50px; }
+        
+        .innovative-carousel .mud-carousel-next,
+        .innovative-carousel .mud-carousel-previous {
+            width: 40px !important;
+            height: 40px !important;
+        }
+    }
+</style>
+}
+<!-- ***** Datos Curiosos End ***** -->
 
 <!-- ***** Beneficios Section ***** -->
 <section class="section padding-top-70 padding-bottom-0" id="beneficios">
@@ -625,6 +983,7 @@
     private string _errorMessage = string.Empty;
     private Noticia latestNoticia;
     private List<Evento> destacados = new();
+    private List<InformacionLocal> datosCuriosos = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -653,7 +1012,36 @@
         {
             Console.WriteLine($"Error cargando eventos destacados: {ex.Message}");
         }
+
+        try
+        {
+            var infoResp = await dataInformacionLocal.PostGetInformacionLocal(new PostGetInformacionLocal { bActivo = true });
+            if (infoResp != null && infoResp.IsSuccess && infoResp.Data != null)
+            {
+                datosCuriosos = infoResp.Data.ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando datos curiosos: {ex.Message}");
+        }
     }
+
+    private string GetCategoryIcon(string category)
+    {
+    if (string.IsNullOrEmpty(category)) return Icons.Material.Filled.Lightbulb;
+    
+    var cat = category.ToLower();
+    
+    if (cat.Contains("historia")) return Icons.Material.Filled.HistoryEdu;
+    if (cat.Contains("gastronomía") || cat.Contains("comida")) return Icons.Material.Filled.Restaurant;
+    if (cat.Contains("leyenda") || cat.Contains("mito")) return Icons.Material.Filled.AutoStories;
+    if (cat.Contains("turismo") || cat.Contains("lugar")) return Icons.Material.Filled.Map;
+    if (cat.Contains("cultura") || cat.Contains("arte") || cat.Contains("tradición")) return Icons.Material.Filled.Palette;
+    if (cat.Contains("naturaleza") || cat.Contains("flora") || cat.Contains("fauna")) return Icons.Material.Filled.Forest;
+    
+    return Icons.Material.Filled.Lightbulb; // Icono por defecto
+        }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

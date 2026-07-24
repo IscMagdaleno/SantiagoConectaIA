@@ -15,13 +15,34 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 {
     public class InformacionLocalDomain : IInformacionLocalDomain
     {
-        private readonly IInformacionLocalRepository _repository;
+        private readonly IInformacionLocalRepository _informacionLocalRepository;
+        private readonly MapperHelper _mapperHelper;
+        private readonly IResponseHelper _responseHelper;
 
-        public InformacionLocalDomain(IInformacionLocalRepository repository)
+        public InformacionLocalDomain(
+            IInformacionLocalRepository informacionLocalRepository,
+            MapperHelper mapperHelper,
+            IResponseHelper responseHelper)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _informacionLocalRepository = informacionLocalRepository;
+            _mapperHelper = mapperHelper;
+            _responseHelper = responseHelper;
         }
 
+        public async Task<Response<IEnumerable<InformacionLocal>>> GetInformacionLocal(PostGetInformacionLocal daoModel)
+        {
+            try
+            {
+                var model = _mapperHelper.Get<PostGetInformacionLocal, spGetInformacionLocal.Request>(daoModel);
+                var result = await _informacionLocalRepository.spGetInformacionLocal(model);
+                return _responseHelper.Validacion<spGetInformacionLocal.Result, InformacionLocal>(result);
+            }
+            catch (Exception ex)
+            {
+                return Response<IEnumerable<InformacionLocal>>.BadResult(ex.Message, new List<InformacionLocal>());
+            }
+        }
+        
         public async Task<Response<IEnumerable<InformacionLocal>>> GetInformacionLocal()
         {
             try
@@ -33,7 +54,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                     bActivo = true
                 };
 
-                var result = await _repository.spGetInformacionLocal(request);
+                var result = await _informacionLocalRepository.spGetInformacionLocal(request);
 
                 if (result == null || !result.Any())
                     return new Response<IEnumerable<InformacionLocal>> { IsSuccess = false, Message = "No se encontraron registros.", Data = Enumerable.Empty<InformacionLocal>() };
@@ -56,7 +77,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             try
             {
                 var request = new spGetInformacionLocalById.Request { iIdInformacionLocal = id };
-                var result = await _repository.spGetInformacionLocalById(request);
+                var result = await _informacionLocalRepository.spGetInformacionLocalById(request);
 
                 if (result == null || !result.bResult)
                     return Response<InformacionLocal>.BadResult(result?.vchMessage ?? "Registro no encontrado.", new InformacionLocal());
@@ -80,7 +101,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 					bActivo = postModel.bActivo
 				};
 
-				var result = await _repository.spGetInformacionLocal(request);
+				var result = await _informacionLocalRepository.spGetInformacionLocal(request);
 
 				if (result == null || !result.Any())
 					return new Response<IEnumerable<InformacionLocal>> { IsSuccess = false, Message = "No se encontraron registros.", Data = Enumerable.Empty<InformacionLocal>() };
@@ -114,7 +135,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                     bActivo = postModel.bActivo
                 };
 
-                var result = await _repository.spSaveInformacionLocal(request);
+                var result = await _informacionLocalRepository.spSaveInformacionLocal(request);
 
                 if (result == null || !result.bResult)
                     return Response<InformacionLocal>.BadResult(result?.vchMessage ?? "Error al guardar.", new InformacionLocal());

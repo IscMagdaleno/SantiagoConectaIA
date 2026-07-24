@@ -12,5 +12,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces
         Task<Response<InformacionLocal>> GetInformacionLocalById(int id);
         Task<Response<IEnumerable<InformacionLocal>>> PostGetformacionLocalByText(PostGetInformacionLocal postModel);
         Task<Response<InformacionLocal>> SaveInformacionLocal(PostSaveInformacionLocal postModel);
+        Task<Response<IEnumerable<InformacionLocal>>> GetInformacionLocal(PostGetInformacionLocal daoModel);
     }
 }

@@ -78,6 +78,7 @@ builder.Services.AddScoped<IConversationalDominio, ConversationalDominio>();
 builder.Services.AddScoped<IAzureBlobDomain, AzureBlobDomain>();
 builder.Services.AddScoped<ILogsDomain, LogsDomain>();
 builder.Services.AddScoped<INoticiasDomain, NoticiasDomain>();
+builder.Services.AddScoped<IInformacionLocalDomain, InformacionLocalDomain>();
 builder.Services.AddScoped<IBuzonCiudadanoDomain, BuzonCiudadanoDomain>();
 builder.Services.AddScoped<ICatalogosDomain, CatalogosDomain>();
 builder.Services.AddScoped<IEmpresasDomain, EmpresasDomain>();
@@ -101,6 +102,7 @@ builder.Services.AddScoped<IConversationalRepository, ConversationalRepository>(
 builder.Services.AddScoped<IAzureBlobRepository, AzureBlobRepository>();
 builder.Services.AddScoped<ILogsRepository, LogsRepository>();
 builder.Services.AddScoped<INoticiasRepository, NoticiasRepository>();
+builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
 builder.Services.AddScoped<IBuzonCiudadanoRepository, BuzonCiudadanoRepository>();
 builder.Services.AddScoped<ICatalogosRepository, CatalogosRepository>();
 builder.Services.AddScoped<ICatalogosProvider, CatalogosProvider>();

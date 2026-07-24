@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace SantiagoConectaIA.API.Controllers
 {
+    /// <summary>
+    /// Controlador para la tabla InformacionLocal (Datos Curiosos)
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class InformacionLocalController : ControllerBase
@@ -52,6 +55,22 @@ namespace SantiagoConectaIA.API.Controllers
             var result = await _informacionLocalDomain.SaveInformacionLocal(postModel);
             if (result.IsSuccess)
                 return Ok(result);
+            return BadRequest(result);
+        }
+        
+        /// <summary>
+        /// Consulta una lista de registros de InformacionLocal
+        /// </summary>
+        /// <param name="postModel">Modelo con parámetros de búsqueda</param>
+        /// <returns>Registros o mensaje de error</returns>
+        [HttpPost("PostGetInformacionLocal")]
+        public async Task<IActionResult> PostGetInformacionLocal([FromBody] PostGetInformacionLocal postModel)
+        {
+            var result = await _informacionLocalDomain.GetInformacionLocal(postModel);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
             return BadRequest(result);
         }
     }
