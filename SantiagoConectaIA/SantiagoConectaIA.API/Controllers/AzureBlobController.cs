@@ -21,20 +21,20 @@ namespace SantiagoConectaIA.API.Controllers
 		/// </summary>
 		/// <param name="image">El archivo subido.</param>
 		[HttpPost("UploadDocument")]
-		public async Task<IActionResult> UploadDocument(IFormFile image)
+		public async Task<IActionResult> UploadDocument(IFormFile file)
 		{
-			if (image == null || image.Length == 0)
+			if (file == null || file.Length == 0)
 			{
 				return BadRequest(EngramaCoreStandar.Results.Response<BlobSaved>.BadResult("No se proporcionó ningún archivo.", new BlobSaved()));
 			}
 
 
 			// Generar un nombre único para el archivo
-			var extension = Path.GetExtension(image.FileName);
+			var extension = Path.GetExtension(file.FileName);
 			var uniqueFileName = $"{Guid.NewGuid()}{extension}";
 
 			// Usar 'using' para asegurar que el stream se cierra correctamente
-			using (var stream = image.OpenReadStream())
+			using (var stream = file.OpenReadStream())
 			{
 				var result = await _azureBlobDomain.UploadDocument(stream, uniqueFileName, "tramitedocs");
 
