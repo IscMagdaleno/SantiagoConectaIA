@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
 using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 using System.Threading.Tasks;
 
 namespace SantiagoConectaIA.API.Controllers
@@ -132,6 +133,30 @@ namespace SantiagoConectaIA.API.Controllers
         public async Task<IActionResult> PostSaveConfiguracionVisual([FromBody] PostSaveConfiguracionVisual postModel)
         {
             var result = await _empresasDomain.SaveConfiguracionVisual(postModel);
+            if (result.IsSuccess) return Ok(result);
+            return BadRequest(result);
+        }
+
+        [HttpPost("PostSavePropietario")]
+        public async Task<IActionResult> PostSavePropietario([FromBody] Propietario postModel)
+        {
+            var result = await _empresasDomain.SavePropietario(postModel);
+            if (result.IsSuccess) return Ok(result);
+            return BadRequest(result);
+        }
+
+        [HttpPost("PostGetPropietario")]
+        public async Task<IActionResult> PostGetPropietario([FromBody] PostGetPropietario postModel)
+        {
+            var result = await _empresasDomain.GetPropietario(postModel);
+            if (result.IsSuccess) return Ok(result);
+            return BadRequest(result);
+        }
+
+        [HttpPost("PostSaveEmprendimientoFull")]
+        public async Task<IActionResult> PostSaveEmprendimientoFull([FromBody] PostSaveEmprendimientoFull postModel)
+        {
+            var result = await _empresasDomain.SaveEmprendimientoFull(postModel);
             if (result.IsSuccess) return Ok(result);
             return BadRequest(result);
         }

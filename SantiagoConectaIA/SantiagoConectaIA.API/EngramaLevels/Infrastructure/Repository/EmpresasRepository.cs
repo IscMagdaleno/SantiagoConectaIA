@@ -109,5 +109,26 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
             if (respuesta.Ok) return respuesta.Data;
             return new spSaveConfiguracionVisual.Result { bResult = false, vchMessage = respuesta.Msg };
         }
+
+        public async Task<spSavePropietario.Result> spSavePropietario(spSavePropietario.Request request)
+        {
+            var respuesta = await _managerHelper.GetAsync<spSavePropietario.Result, spSavePropietario.Request>(request, "", "SCIA");
+            if (respuesta.Ok) return respuesta.Data;
+            return new spSavePropietario.Result { bResult = false, vchMessage = respuesta.Msg };
+        }
+
+        public async Task<IEnumerable<spGetPropietario.Result>> spGetPropietario(spGetPropietario.Request request)
+        {
+            var respuesta = await _managerHelper.GetAllAsync<spGetPropietario.Result, spGetPropietario.Request>(request, "", "SCIA");
+            if (respuesta.Ok) return respuesta.Data;
+            return new List<spGetPropietario.Result> { new() { bResult = false, vchMessage = respuesta.Msg } };
+        }
+
+        public async Task<spSaveEmprendimientoCompleto.Result> spSaveEmprendimientoCompleto(spSaveEmprendimientoCompleto.Request request)
+        {
+            var respuesta = await _managerHelper.GetAsync<spSaveEmprendimientoCompleto.Result, spSaveEmprendimientoCompleto.Request>(request, "", "SCIA");
+            if (respuesta.Ok) return respuesta.Data;
+            return new spSaveEmprendimientoCompleto.Result { bResult = false, vchMessage = respuesta.Msg };
+        }
     }
 }

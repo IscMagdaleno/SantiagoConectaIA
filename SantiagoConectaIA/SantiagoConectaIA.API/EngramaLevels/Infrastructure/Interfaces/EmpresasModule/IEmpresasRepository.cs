@@ -19,5 +19,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.Empresas
         Task<spSaveProductoServicio.Result> spSaveProductoServicio(spSaveProductoServicio.Request request);
         Task<spGetConfiguracionVisual.Result> spGetConfiguracionVisual(spGetConfiguracionVisual.Request request);
         Task<spSaveConfiguracionVisual.Result> spSaveConfiguracionVisual(spSaveConfiguracionVisual.Request request);
+        Task<spSavePropietario.Result> spSavePropietario(spSavePropietario.Request request);
+        Task<IEnumerable<spGetPropietario.Result>> spGetPropietario(spGetPropietario.Request request);
+        Task<spSaveEmprendimientoCompleto.Result> spSaveEmprendimientoCompleto(spSaveEmprendimientoCompleto.Request request);
     }
 }

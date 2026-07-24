@@ -208,5 +208,63 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
             }
             catch (Exception ex) { return Response<ConfiguracionVisual>.BadResult(ex.Message, new ConfiguracionVisual()); }
         }
+
+        public async Task<Response<Propietario>> SavePropietario(Propietario postModel)
+        {
+            try
+            {
+                var request = _mapperHelper.Get<Propietario, spSavePropietario.Request>(postModel);
+                var result = await _empresasRepository.spSavePropietario(request);
+                var validation = _responseHelper.Validacion<spSavePropietario.Result, Propietario>(result);
+                if (validation.IsSuccess)
+                {
+                    postModel.iIdPropietario = validation.Data.iIdPropietario;
+                    validation.Data = postModel;
+                }
+                return validation;
+            }
+            catch (Exception ex) { return Response<Propietario>.BadResult(ex.Message, new Propietario()); }
+        }
+
+        public async Task<Response<IEnumerable<Propietario>>> GetPropietario(PostGetPropietario postModel)
+        {
+            try
+            {
+                var request = _mapperHelper.Get<PostGetPropietario, spGetPropietario.Request>(postModel);
+                var result = await _empresasRepository.spGetPropietario(request);
+                return _responseHelper.Validacion<spGetPropietario.Result, Propietario>(result);
+            }
+            catch (Exception ex) { return Response<IEnumerable<Propietario>>.BadResult(ex.Message, new List<Propietario>()); }
+        }
+
+        public async Task<Response<Empresa>> SaveEmprendimientoFull(PostSaveEmprendimientoFull postModel)
+        {
+            try
+            {
+                var request = _mapperHelper.Get<Empresa, spSaveEmprendimientoCompleto.Request>(postModel.Empresa);
+                
+                // Set propietario Id from the Propietario object if it has been saved or exists
+                request.iIdPropietario = postModel.Propietario.iIdPropietario > 0 ? postModel.Propietario.iIdPropietario : postModel.Empresa.iIdPropietario;
+                
+                var detalles = new {
+                    RedesSociales = postModel.RedesSociales,
+                    Ubicaciones = postModel.Ubicaciones,
+                    Categorias = postModel.Categorias
+                };
+                
+                request.vchJsonDetalles = System.Text.Json.JsonSerializer.Serialize(detalles);
+                
+                var result = await _empresasRepository.spSaveEmprendimientoCompleto(request);
+                var validation = _responseHelper.Validacion<spSaveEmprendimientoCompleto.Result, Empresa>(result);
+                
+                if (validation.IsSuccess)
+                {
+                    postModel.Empresa.iIdEmpresa = validation.Data.iIdEmpresa;
+                    validation.Data = postModel.Empresa;
+                }
+                return validation;
+            }
+            catch (Exception ex) { return Response<Empresa>.BadResult(ex.Message, new Empresa()); }
+        }
     }
 }

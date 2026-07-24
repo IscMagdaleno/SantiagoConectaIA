@@ -5,6 +5,7 @@ namespace SantiagoConectaIA.Share.Objects.EmpresasModulo
     public class Empresa
     {
         public int iIdEmpresa { get; set; }
+        public int? iIdPropietario { get; set; }
         public int? iIdCatalogoEmpresa { get; set; }
         public string vchNombreComercial { get; set; }
         public string? vchSlogan { get; set; }
