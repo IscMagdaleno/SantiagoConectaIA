@@ -10,7 +10,7 @@
     .innovative-section {
         background-color: #0f0518;
         width: 100%;
-        margin: 60px 0;
+        margin: 0 0 60px 0;
         box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
         position: relative;
     }
@@ -201,10 +201,10 @@
     /* Elementos Visuales Gigantes */
     .watermark-text {
         position: absolute;
-        right: 0%;
+        right: 10%;
         top: 50%;
         transform: translateY(-50%);
-        font-size: clamp(80px, 10vw, 200px);
+        font-size: clamp(40px, 6vw, 120px);
         font-weight: 900;
         color: rgba(255, 255, 255, 0.06);
         white-space: normal;
@@ -288,8 +288,15 @@
     
     /* Hero Animations */
     .js-dynamic-bg {
-        /* El fondo ahora será controlado por JavaScript en index.html */
-        background-color: #880e4f; /* Color fallback */
+        background: linear-gradient(-45deg, #880e4f, #d81b60, #4a148c, #c2185b);
+        background-size: 400% 400%;
+        animation: gradientAnimation 15s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
     
     .hero-glow {

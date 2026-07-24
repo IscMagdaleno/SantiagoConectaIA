@@ -1,5 +1,14 @@
 @inject NavigationManager NavManager
 
+<style>
+    /* Fix para el notch/isla de iPhone */
+    @@supports (-webkit-touch-callout: none) {
+        .header-area {
+            padding-top: env(safe-area-inset-top) !important;
+        }
+    }
+</style>
+
 <header class="header-area header-sticky">
     <div class="container">
         <div class="row">
