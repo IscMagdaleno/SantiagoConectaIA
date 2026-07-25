@@ -70,9 +70,9 @@
 
                 @if (currentStep == 1)
                 {
-                    <div class="d-flex justify-space-between align-center mb-4">
+                    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-4 gap-2">
                         <MudText Typo="Typo.h5">1. Datos del Propietario</MudText>
-                        <MudSwitch @bind-Value="isEditMode" Color="Color.Secondary" Label="Ya tengo un negocio, quiero editarlo" />
+                        <MudSwitch @bind-Value="isEditMode" Color="Color.Secondary" Label="Ya tengo un negocio, quiero editarlo" Style="margin-left: 0; white-space: normal;" />
                     </div>
 
                     @if (isEditMode)
