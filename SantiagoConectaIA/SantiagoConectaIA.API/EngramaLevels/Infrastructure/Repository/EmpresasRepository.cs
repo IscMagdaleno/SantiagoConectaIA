@@ -130,5 +130,12 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
             if (respuesta.Ok) return respuesta.Data;
             return new spSaveEmprendimientoCompleto.Result { bResult = false, vchMessage = respuesta.Msg };
         }
+
+        public async Task<spGetEmpresaIdByCorreo.Result> spGetEmpresaIdByCorreo(spGetEmpresaIdByCorreo.Request request)
+        {
+            var respuesta = await _managerHelper.GetAsync<spGetEmpresaIdByCorreo.Result, spGetEmpresaIdByCorreo.Request>(request, "", "SCIA");
+            if (respuesta.Ok) return respuesta.Data;
+            return new spGetEmpresaIdByCorreo.Result { bResult = false, vchMessage = respuesta.Msg };
+        }
     }
 }

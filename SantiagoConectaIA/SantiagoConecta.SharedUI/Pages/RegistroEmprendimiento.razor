@@ -70,18 +70,47 @@
 
                 @if (currentStep == 1)
                 {
-                    <MudText Typo="Typo.h5" Class="mb-4">1. Datos del Propietario</MudText>
-                    <MudGrid>
-                        <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="postModel.Propietario.vchNombre" Label="Nombre Completo" Required="true" Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="postModel.Propietario.vchCorreo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" InputType="InputType.Email" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="postModel.Propietario.vchTelefono" Label="Teléfono" Required="true" Variant="Variant.Outlined" Pattern="[0-9]*" InputMode="InputMode.numeric" MaxLength="15" HelperText="Solo números" />
-                        </MudItem>
-                    </MudGrid>
+                    <div class="d-flex justify-space-between align-center mb-4">
+                        <MudText Typo="Typo.h5">1. Datos del Propietario</MudText>
+                        <MudSwitch @bind-Value="isEditMode" Color="Color.Secondary" Label="Ya tengo un negocio, quiero editarlo" />
+                    </div>
+
+                    @if (isEditMode)
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mb-4">Ingresa el correo con el que registraste tu negocio para cargar tu información.</MudAlert>
+                        <MudGrid>
+                            <MudItem xs="12" md="8">
+                                <MudTextField @bind-Value="postModel.Propietario.vchCorreo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" InputType="InputType.Email" />
+                            </MudItem>
+                            <MudItem xs="12" md="4" Class="d-flex align-end">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="BuscarNegocio" Disabled="isLoadingSearch" FullWidth="true" Style="height: 56px;">
+                                    @if (isLoadingSearch)
+                                    {
+                                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                        <MudText Class="ms-2">Buscando...</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText>Buscar Mi Negocio</MudText>
+                                    }
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    }
+                    else
+                    {
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="postModel.Propietario.vchNombre" Label="Nombre Completo" Required="true" Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="postModel.Propietario.vchCorreo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" InputType="InputType.Email" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="postModel.Propietario.vchTelefono" Label="Teléfono" Required="true" Variant="Variant.Outlined" Pattern="[0-9]*" InputMode="InputMode.numeric" MaxLength="15" HelperText="Solo números" />
+                            </MudItem>
+                        </MudGrid>
+                    }
                 }
                 else if (currentStep == 2)
                 {
@@ -264,6 +293,8 @@
     private bool _isSubmitting = false;
     private bool _isSuccess = false;
     private bool _isUploadingLogo = false;
+    private bool isEditMode = false;
+    private bool isLoadingSearch = false;
 
     protected override void OnInitialized()
     {
@@ -274,6 +305,44 @@
                 vchNombre = "Catálogo Principal",
                 iIdEmpresa = 0
             });
+        }
+    }
+
+    private async Task BuscarNegocio()
+    {
+        if (string.IsNullOrWhiteSpace(postModel.Propietario.vchCorreo))
+        {
+            Snackbar.Add("Por favor ingresa un correo válido.", Severity.Warning);
+            return;
+        }
+
+        isLoadingSearch = true;
+        StateHasChanged();
+
+        try
+        {
+            var req = new PostGetEmprendimientoFullByEmail { vchCorreo = postModel.Propietario.vchCorreo };
+            var response = await DataEmprendimientos.PostGetEmprendimientoFullByEmail(req);
+
+            if (response != null && response.IsSuccess && response.Data != null)
+            {
+                postModel = response.Data;
+                Snackbar.Add("¡Negocio cargado exitosamente! Ahora puedes editar tus datos.", Severity.Success);
+                currentStep = 2; // Avanzar automáticamente al paso 2
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No se encontró ningún negocio con ese correo.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Ocurrió un error al buscar el negocio.", Severity.Error);
+        }
+        finally
+        {
+            isLoadingSearch = false;
+            StateHasChanged();
         }
     }
 
@@ -309,6 +378,13 @@
             return;
         }
         
+        if (currentStep == 1 && isEditMode)
+        {
+            // If in edit mode, they must use the search button instead of 'Next'
+            Snackbar.Add("Usa el botón de 'Buscar Mi Negocio' para continuar.", Severity.Info);
+            return;
+        }
+
         if (currentStep < 5)
         {
             currentStep++;

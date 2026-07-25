@@ -160,5 +160,13 @@ namespace SantiagoConectaIA.API.Controllers
             if (result.IsSuccess) return Ok(result);
             return BadRequest(result);
         }
+
+        [HttpPost("PostGetEmprendimientoFullByEmail")]
+        public async Task<IActionResult> PostGetEmprendimientoFullByEmail([FromBody] PostGetEmprendimientoFullByEmail postModel)
+        {
+            var result = await _empresasDomain.GetEmprendimientoFullByEmail(postModel);
+            if (result.IsSuccess) return Ok(result);
+            return BadRequest(result);
+        }
     }
 }
