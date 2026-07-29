@@ -47,6 +47,13 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
             return new List<spGetEmpresaUbicaciones.Result> { new() { bResult = false, vchMessage = respuesta.Msg } };
         }
 
+        public async Task<IEnumerable<spGetEmpresaIdByCorreo.Result>> spGetEmpresaIdByCorreo(spGetEmpresaIdByCorreo.Request request)
+        {
+            var respuesta = await _managerHelper.GetAllAsync<spGetEmpresaIdByCorreo.Result, spGetEmpresaIdByCorreo.Request>(request, "", "SCIA");
+            if (respuesta.Ok) return respuesta.Data;
+            return new List<spGetEmpresaIdByCorreo.Result> { new() { bResult = false, vchMessage = respuesta.Msg } };
+        }
+
         public async Task<spSaveEmpresaUbicacion.Result> spSaveEmpresaUbicacion(spSaveEmpresaUbicacion.Request request)
         {
             var respuesta = await _managerHelper.GetAsync<spSaveEmpresaUbicacion.Result, spSaveEmpresaUbicacion.Request>(request, "", "SCIA");
@@ -129,13 +136,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
             var respuesta = await _managerHelper.GetAsync<spSaveEmprendimientoCompleto.Result, spSaveEmprendimientoCompleto.Request>(request, "", "SCIA");
             if (respuesta.Ok) return respuesta.Data;
             return new spSaveEmprendimientoCompleto.Result { bResult = false, vchMessage = respuesta.Msg };
-        }
-
-        public async Task<spGetEmpresaIdByCorreo.Result> spGetEmpresaIdByCorreo(spGetEmpresaIdByCorreo.Request request)
-        {
-            var respuesta = await _managerHelper.GetAsync<spGetEmpresaIdByCorreo.Result, spGetEmpresaIdByCorreo.Request>(request, "", "SCIA");
-            if (respuesta.Ok) return respuesta.Data;
-            return new spGetEmpresaIdByCorreo.Result { bResult = false, vchMessage = respuesta.Msg };
         }
     }
 }

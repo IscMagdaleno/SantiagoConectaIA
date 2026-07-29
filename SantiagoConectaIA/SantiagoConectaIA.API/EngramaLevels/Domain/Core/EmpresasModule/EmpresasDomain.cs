@@ -279,38 +279,63 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
             }
             catch (Exception ex) { return Response<Empresa>.BadResult(ex.Message, new Empresa()); }
         }
-        public async Task<Response<PostSaveEmprendimientoFull>> GetEmprendimientoFullByEmail(PostGetEmprendimientoFullByEmail postModel)
+        public async Task<Response<IEnumerable<EmpresaBasic>>> GetEmpresasPropietarioByCorreo(PostGetEmpresasPropietarioByCorreo postModel)
         {
             try
             {
                 var request = new spGetEmpresaIdByCorreo.Request { vchCorreo = postModel.vchCorreo };
                 var result = await _empresasRepository.spGetEmpresaIdByCorreo(request);
 
-                if (!result.bResult || result.iIdEmpresa <= 0)
+                if (result == null || !result.Any(r => r.bResult))
                 {
-                    return Response<PostSaveEmprendimientoFull>.BadResult("No se encontró ningún negocio con ese correo.", null);
+                    return Response<IEnumerable<EmpresaBasic>>.BadResult("No se encontró ningún negocio con ese correo.", null);
+                }
+
+                var list = result.Where(r => r.bResult).Select(r => new EmpresaBasic
+                {
+                    iIdEmpresa = r.iIdEmpresa,
+                    iIdPropietario = r.iIdPropietario,
+                    vchNombreComercial = r.vchNombreComercial
+                }).ToList();
+
+                return new Response<IEnumerable<EmpresaBasic>> { IsSuccess = true, Data = list, Message = "Éxito" };
+            }
+            catch (Exception ex)
+            {
+                return Response<IEnumerable<EmpresaBasic>>.BadResult(ex.Message, null);
+            }
+        }
+
+        public async Task<Response<PostSaveEmprendimientoFull>> GetEmprendimientoFullById(PostGetEmprendimientoFullById postModel)
+        {
+            try
+            {
+                var empResult = await _empresasRepository.spGetEmpresas(new spGetEmpresas.Request { iIdEmpresa = postModel.iIdEmpresa });
+                var empresa = empResult.FirstOrDefault();
+
+                if (empresa == null || empresa.iIdEmpresa <= 0)
+                {
+                    return Response<PostSaveEmprendimientoFull>.BadResult("No se encontró el negocio especificado.", null);
                 }
 
                 var fullModel = new PostSaveEmprendimientoFull();
                 
-                // 1. Propietario
-                var propResult = await _empresasRepository.spGetPropietario(new spGetPropietario.Request { iIdPropietario = result.iIdPropietario });
+                var propResult = await _empresasRepository.spGetPropietario(new spGetPropietario.Request { iIdPropietario = postModel.iIdPropietario });
                 fullModel.Propietario = _mapperHelper.Get<spGetPropietario.Result, Propietario>(propResult.FirstOrDefault() ?? new spGetPropietario.Result());
 
                 // 2. Empresa
-                var empResult = await _empresasRepository.spGetEmpresas(new spGetEmpresas.Request { iIdEmpresa = result.iIdEmpresa });
-                fullModel.Empresa = _mapperHelper.Get<spGetEmpresas.Result, Empresa>(empResult.FirstOrDefault() ?? new spGetEmpresas.Result());
+                fullModel.Empresa = _mapperHelper.Get<spGetEmpresas.Result, Empresa>(empresa);
 
                 // 3. Ubicaciones
-                var ubiResult = await _empresasRepository.spGetEmpresaUbicaciones(new spGetEmpresaUbicaciones.Request { iIdEmpresa = result.iIdEmpresa });
+                var ubiResult = await _empresasRepository.spGetEmpresaUbicaciones(new spGetEmpresaUbicaciones.Request { iIdEmpresa = postModel.iIdEmpresa });
                 fullModel.Ubicaciones = ubiResult.Select(x => _mapperHelper.Get<spGetEmpresaUbicaciones.Result, EmpresaUbicacion>(x)).ToList();
 
                 // 4. Redes
-                var redesResult = await _empresasRepository.spGetEmpresaRedesSociales(new spGetEmpresaRedesSociales.Request { iIdEmpresa = result.iIdEmpresa });
+                var redesResult = await _empresasRepository.spGetEmpresaRedesSociales(new spGetEmpresaRedesSociales.Request { iIdEmpresa = postModel.iIdEmpresa });
                 fullModel.RedesSociales = redesResult.Select(x => _mapperHelper.Get<spGetEmpresaRedesSociales.Result, EmpresaRedSocial>(x)).ToList();
 
                 // 5. Categorias y Productos
-                var catsResult = await _empresasRepository.spGetCategoriasPorEmpresa(new spGetCategoriasPorEmpresa.Request { iIdEmpresa = result.iIdEmpresa });
+                var catsResult = await _empresasRepository.spGetCategoriasPorEmpresa(new spGetCategoriasPorEmpresa.Request { iIdEmpresa = postModel.iIdEmpresa });
                 fullModel.Categorias = catsResult.Select(x => _mapperHelper.Get<spGetCategoriasPorEmpresa.Result, CategoriaCatalogoConProductos>(x)).ToList();
 
                 foreach (var cat in fullModel.Categorias)

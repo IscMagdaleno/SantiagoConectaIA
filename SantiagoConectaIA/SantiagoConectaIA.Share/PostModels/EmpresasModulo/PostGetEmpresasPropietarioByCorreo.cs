@@ -1,6 +1,6 @@
 namespace SantiagoConectaIA.Share.PostModels.EmpresasModulo
 {
-    public class PostGetEmprendimientoFullByEmail
+    public class PostGetEmpresasPropietarioByCorreo
     {
         public string vchCorreo { get; set; }
     }

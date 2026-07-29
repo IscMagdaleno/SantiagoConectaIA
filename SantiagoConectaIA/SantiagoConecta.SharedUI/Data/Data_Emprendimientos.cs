@@ -55,7 +55,8 @@ namespace SantiagoConecta.SharedUI.Data
         public Task<Response<List<ProductoServicio>>> PostGetProductosPorCategoria(PostGetProductosPorCategoria data) => PostAsync<List<ProductoServicio>>("PostGetProductosPorCategoria", data);
         public Task<Response<ConfiguracionVisual>> PostGetConfiguracionVisual(PostGetConfiguracionVisual data) => PostAsync<ConfiguracionVisual>("PostGetConfiguracionVisual", data);
         public Task<Response<Empresa>> PostSaveEmprendimientoFull(PostSaveEmprendimientoFull data) => PostAsync<Empresa>("PostSaveEmprendimientoFull", data);
-        public Task<Response<PostSaveEmprendimientoFull>> PostGetEmprendimientoFullByEmail(PostGetEmprendimientoFullByEmail data) => PostAsync<PostSaveEmprendimientoFull>("PostGetEmprendimientoFullByEmail", data);
+        public Task<Response<List<EmpresaBasic>>> PostGetEmpresasPropietarioByCorreo(PostGetEmpresasPropietarioByCorreo data) => PostAsync<List<EmpresaBasic>>("PostGetEmpresasPropietarioByCorreo", data);
+        public Task<Response<PostSaveEmprendimientoFull>> PostGetEmprendimientoFullById(PostGetEmprendimientoFullById data) => PostAsync<PostSaveEmprendimientoFull>("PostGetEmprendimientoFullById", data);
         public async Task<string> UploadGenericFile(Microsoft.AspNetCore.Components.Forms.IBrowserFile file, string endpoint = "UploadImage-empresas")
         {
             try

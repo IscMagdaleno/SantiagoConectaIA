@@ -12,6 +12,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.Empresas
         Task<IEnumerable<spGetEmpresaUbicaciones.Result>> spGetEmpresaUbicaciones(spGetEmpresaUbicaciones.Request request);
         Task<spSaveEmpresaUbicacion.Result> spSaveEmpresaUbicacion(spSaveEmpresaUbicacion.Request request);
         Task<IEnumerable<spGetEmpresaRedesSociales.Result>> spGetEmpresaRedesSociales(spGetEmpresaRedesSociales.Request request);
+        Task<IEnumerable<spGetEmpresaIdByCorreo.Result>> spGetEmpresaIdByCorreo(spGetEmpresaIdByCorreo.Request request);
         Task<spSaveEmpresaRedSocial.Result> spSaveEmpresaRedSocial(spSaveEmpresaRedSocial.Request request);
         Task<IEnumerable<spGetCategoriasPorEmpresa.Result>> spGetCategoriasPorEmpresa(spGetCategoriasPorEmpresa.Request request);
         Task<spSaveCategoriaCatalogo.Result> spSaveCategoriaCatalogo(spSaveCategoriaCatalogo.Request request);
@@ -22,6 +23,5 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.Empresas
         Task<spSavePropietario.Result> spSavePropietario(spSavePropietario.Request request);
         Task<IEnumerable<spGetPropietario.Result>> spGetPropietario(spGetPropietario.Request request);
         Task<spSaveEmprendimientoCompleto.Result> spSaveEmprendimientoCompleto(spSaveEmprendimientoCompleto.Request request);
-        Task<spGetEmpresaIdByCorreo.Result> spGetEmpresaIdByCorreo(spGetEmpresaIdByCorreo.Request request);
     }
 }

@@ -70,9 +70,14 @@
 
                 @if (currentStep == 1)
                 {
-                    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-4 gap-2">
-                        <MudText Typo="Typo.h5">1. Datos del Propietario</MudText>
-                        <MudSwitch @bind-Value="isEditMode" Color="Color.Secondary" Label="Ya tengo un negocio, quiero editarlo" Style="margin-left: 0; white-space: normal;" />
+                    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
+                        <MudText Typo="Typo.h5" Class="mb-0">1. Datos del Propietario</MudText>
+                        <MudPaper Elevation="0" Class="pa-2 px-4 d-flex align-center w-100" Style="background-color: var(--mud-palette-background-grey); border-radius: 12px; max-width: 450px;">
+                            <MudIcon Icon="@Icons.Material.Filled.EditNote" Color="Color.Secondary" Class="mr-3" />
+                            <MudSwitch @bind-Value="isEditMode" Color="Color.Secondary" Class="ma-0 flex-grow-1" Style="white-space: normal; line-height: 1.2;">
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">Ya tengo un negocio, quiero editarlo</MudText>
+                            </MudSwitch>
+                        </MudPaper>
                     </div>
 
                     @if (isEditMode)
@@ -80,10 +85,10 @@
                         <MudAlert Severity="Severity.Info" Class="mb-4">Ingresa el correo con el que registraste tu negocio para cargar tu información.</MudAlert>
                         <MudGrid>
                             <MudItem xs="12" md="8">
-                                <MudTextField @bind-Value="postModel.Propietario.vchCorreo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" InputType="InputType.Email" />
+                                <MudTextField @bind-Value="postModel.Propietario.vchCorreo" Label="Correo Electrónico" Required="true" Variant="Variant.Outlined" InputType="InputType.Email" Disabled="showEmpresaSelector" />
                             </MudItem>
                             <MudItem xs="12" md="4" Class="d-flex align-end">
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="BuscarNegocio" Disabled="isLoadingSearch" FullWidth="true" Style="height: 56px;">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="BuscarNegocio" Disabled="@(isLoadingSearch || showEmpresaSelector)" FullWidth="true" Style="height: 56px;">
                                     @if (isLoadingSearch)
                                     {
                                         <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
@@ -96,6 +101,23 @@
                                 </MudButton>
                             </MudItem>
                         </MudGrid>
+
+                        @if (showEmpresaSelector)
+                        {
+                            <MudAlert Severity="Severity.Info" Class="mt-4 mb-2">Se encontraron los siguientes negocios asociados a este correo. Selecciona cuál quieres editar:</MudAlert>
+                            <MudList T="int" Class="mt-2" ReadOnly="false">
+                                @foreach (var emp in empresasEncontradas)
+                                {
+                                    <MudListItem T="int" OnClick="@(() => CargarNegocio(emp.iIdEmpresa, emp.iIdPropietario))" Icon="@Icons.Material.Filled.Store" IconColor="Color.Primary">
+                                        <div class="d-flex flex-column">
+                                            <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">@emp.vchNombreComercial</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">ID Empresa: @emp.iIdEmpresa</MudText>
+                                        </div>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                            <MudButton Variant="Variant.Text" Color="Color.Default" Class="mt-2" OnClick="() => showEmpresaSelector = false">Cancelar Búsqueda</MudButton>
+                        }
                     }
                     else
                     {
@@ -295,6 +317,8 @@
     private bool _isUploadingLogo = false;
     private bool isEditMode = false;
     private bool isLoadingSearch = false;
+    private bool showEmpresaSelector = false;
+    private List<EmpresaBasic> empresasEncontradas = new();
 
     protected override void OnInitialized()
     {
@@ -317,12 +341,54 @@
         }
 
         isLoadingSearch = true;
+        showEmpresaSelector = false;
+        empresasEncontradas.Clear();
         StateHasChanged();
 
         try
         {
-            var req = new PostGetEmprendimientoFullByEmail { vchCorreo = postModel.Propietario.vchCorreo };
-            var response = await DataEmprendimientos.PostGetEmprendimientoFullByEmail(req);
+            var req = new PostGetEmpresasPropietarioByCorreo { vchCorreo = postModel.Propietario.vchCorreo };
+            var response = await DataEmprendimientos.PostGetEmpresasPropietarioByCorreo(req);
+
+            if (response != null && response.IsSuccess && response.Data != null && response.Data.Any())
+            {
+                if (response.Data.Count == 1)
+                {
+                    // Si solo hay uno, cargarlo directamente
+                    await CargarNegocio(response.Data.First().iIdEmpresa, response.Data.First().iIdPropietario);
+                }
+                else
+                {
+                    // Si hay varios, mostrar selector
+                    empresasEncontradas = response.Data;
+                    showEmpresaSelector = true;
+                }
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No se encontró ningún negocio con ese correo.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Ocurrió un error al buscar negocios asociados a este correo.", Severity.Error);
+        }
+        finally
+        {
+            isLoadingSearch = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarNegocio(int idEmpresa, int idPropietario)
+    {
+        isLoadingSearch = true;
+        showEmpresaSelector = false;
+        StateHasChanged();
+        try
+        {
+            var req = new PostGetEmprendimientoFullById { iIdEmpresa = idEmpresa, iIdPropietario = idPropietario };
+            var response = await DataEmprendimientos.PostGetEmprendimientoFullById(req);
 
             if (response != null && response.IsSuccess && response.Data != null)
             {
@@ -332,12 +398,12 @@
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "No se encontró ningún negocio con ese correo.", Severity.Error);
+                Snackbar.Add(response?.Message ?? "No se encontró la información del negocio.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add("Ocurrió un error al buscar el negocio.", Severity.Error);
+            Snackbar.Add("Ocurrió un error al cargar el negocio.", Severity.Error);
         }
         finally
         {
