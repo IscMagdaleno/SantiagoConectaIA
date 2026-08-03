@@ -165,5 +165,41 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 				return Response<IEnumerable<WhatsAppDailyStats>>.BadResult(ex.Message, Enumerable.Empty<WhatsAppDailyStats>());
 			}
 		}
+
+		public async Task<Response<IEnumerable<WhatsAppUser>>> GetWhatsAppUsers(PostGetWhatsAppUsers postModel)
+		{
+			try
+			{
+				var request = new spGetWhatsAppUsers.Request
+				{
+					iTopRows = postModel?.iTopRows > 0 ? postModel.iTopRows : 100
+				};
+				var result = await _whatsAppRepository.spGetWhatsAppUsers(request);
+
+				var users = result
+					.Where(r => r.bResult)
+					.Select(r => new WhatsAppUser
+					{
+						iIdWhatsAppUser = r.iIdWhatsAppUser ?? 0,
+						nvchPhoneNumber = r.nvchPhoneNumber ?? string.Empty,
+						nvchName = r.nvchName ?? string.Empty,
+						dtFirstContact = r.dtFirstContact ?? DateTime.MinValue,
+						dtLastContact = r.dtLastContact ?? DateTime.MinValue,
+						iTotalMessages = r.iTotalMessages ?? 0,
+						bActive = r.bActive ?? false
+					});
+
+				return new Response<IEnumerable<WhatsAppUser>>
+				{
+					IsSuccess = true,
+					Data = users,
+					Message = "Ok"
+				};
+			}
+			catch (Exception ex)
+			{
+				return Response<IEnumerable<WhatsAppUser>>.BadResult(ex.Message, Enumerable.Empty<WhatsAppUser>());
+			}
+		}
 	}
 }

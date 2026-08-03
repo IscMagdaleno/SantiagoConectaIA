@@ -77,11 +77,6 @@ namespace SantiagoConectaIA.API.Controllers
 					using var reader = new StreamReader(Request.Body);
 					var rawRequestBody = reader.ReadToEnd();
 
-
-					// Note: In production, capture raw body in middleware for accurate signature validation
-
-					// For now, we validate the parsed body
-
 				}
 
 				// Parse the webhook payload
@@ -153,8 +148,9 @@ namespace SantiagoConectaIA.API.Controllers
 
 
 			var userName = contacts.FirstOrDefault()?.Profile.Name ?? "Usuario";
+			var whatsAppUserId = 0;
 
-			// Guardar el usuario en la base de datos
+			// Guardar el usuario en la base de datos y capturar el ID para la conversación
 			try
 			{
 				var saveUserResult = await _whatsAppDomain.SaveWhatsAppUser(new PostSaveWhatsAppUser
@@ -164,7 +160,11 @@ namespace SantiagoConectaIA.API.Controllers
 					nvchName = userName
 				});
 
-				if (!saveUserResult.IsSuccess)
+				if (saveUserResult.IsSuccess && saveUserResult.Data != null)
+				{
+					whatsAppUserId = saveUserResult.Data.iIdWhatsAppUser;
+				}
+				else
 				{
 					_logger.LogWarning("Error saving WhatsApp user: {Message}", saveUserResult.Message);
 				}
@@ -180,19 +180,13 @@ namespace SantiagoConectaIA.API.Controllers
 
 			// Enqueue for async processing
 			_queue.Enqueue(new WhatsAppQueuedMessage
-
 			{
-
+				iIdWhatsAppUser = whatsAppUserId,
 				PhoneNumber = phoneNumber,
-
 				UserMessage = userMessage,
-
 				UserName = userName,
-
 				ReceivedAt = DateTime.UtcNow,
-
 				WhatsAppMessageId = message.Id ?? string.Empty
-
 			});
 
 		}

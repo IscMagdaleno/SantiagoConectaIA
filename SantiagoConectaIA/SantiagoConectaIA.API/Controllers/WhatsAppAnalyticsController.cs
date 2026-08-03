@@ -61,5 +61,21 @@ namespace SantiagoConectaIA.API.Controllers
 			}
 			return BadRequest(result);
 		}
+
+		/// <summary>
+		/// Obtiene el listado de usuarios de WhatsApp ordenados por fecha de primer contacto.
+		/// </summary>
+		[HttpGet("users")]
+		public async Task<IActionResult> GetUsers([FromQuery] int top = 100)
+		{
+			_logger.LogInformation("Consultando usuarios de WhatsApp (top {Top})", top);
+			var result = await _whatsAppDomain.GetWhatsAppUsers(
+				new PostGetWhatsAppUsers { iTopRows = top });
+			if (result.IsSuccess)
+			{
+				return Ok(result);
+			}
+			return BadRequest(result);
+		}
 	}
 }

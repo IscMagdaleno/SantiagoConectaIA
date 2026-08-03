@@ -48,5 +48,12 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 			if (res.Ok) return res.Data;
 			return new List<spGetWhatsAppDailyStats.Result> { new() { bResult = false, vchMessage = res.Msg } };
 		}
+
+		public async Task<IEnumerable<spGetWhatsAppUsers.Result>> spGetWhatsAppUsers(spGetWhatsAppUsers.Request request)
+		{
+			var res = await _managerHelper.GetAllAsync<spGetWhatsAppUsers.Result, spGetWhatsAppUsers.Request>(request, "", "SCIA");
+			if (res.Ok) return res.Data;
+			return new List<spGetWhatsAppUsers.Result> { new() { bResult = false, vchMessage = res.Msg } };
+		}
 	}
 }

@@ -44,6 +44,8 @@ builder.Services.AddScoped<MainMockup>();
 builder.Services.AddScoped<MainEmpresas>();
 builder.Services.AddScoped<MainEventos>();
 builder.Services.AddScoped<MainPageVisits>();
+builder.Services.AddScoped<MainAnalytics>();
+builder.Services.AddScoped<MainWhatsAppAnalytics>();
 
 builder.Services.AddEngramaDependenciesBlazor();
 

@@ -13,5 +13,7 @@ namespace SantiagoConectaIA.Share.PostModels.AnalyticsModule
         public string vchBrowser { get; set; } = string.Empty;
         public string vchOperatingSystem { get; set; } = string.Empty;
         public string vchDeviceType { get; set; } = string.Empty;
+        /// <summary>Stable client visitor id (localStorage).</summary>
+        public string vchVisitorId { get; set; } = string.Empty;
     }
 }

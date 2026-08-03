@@ -4,6 +4,7 @@ namespace SantiagoConectaIA.API.Services
 {
     public class WhatsAppQueuedMessage
     {
+        public int iIdWhatsAppUser { get; set; }
         public string PhoneNumber { get; set; } = string.Empty;
         public string UserMessage { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;

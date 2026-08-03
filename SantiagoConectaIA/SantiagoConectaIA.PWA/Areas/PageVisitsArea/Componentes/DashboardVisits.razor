@@ -1,163 +1,503 @@
 @using SantiagoConectaIA.Share.Objects.PageVisitsModule
+@using SantiagoConectaIA.Share.Objects.AnalyticsModule
+@using SantiagoConectaIA.Share.Objects.WhatsAppModule
 @using SantiagoConectaIA.Share.PostModels.PageVisitsModule
 @using SantiagoConectaIA.PWA.Areas.PageVisitsArea.Utiles
 @using SantiagoConectaIA.PWA.Shared.Workspace
 @inherits EngramaWorkspaceComponent
 @inject MainPageVisits PageVisitsService
+@inject MainAnalytics AnalyticsService
+@inject MainWhatsAppAnalytics WhatsAppAnalyticsService
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 pa-0">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 pa-0">
     <style>
-        /* Forzar que el texto del tooltip en la gráfica sea blanco */
         .mud-chart-tooltip text, .mud-chart-tooltip tspan, .mud-chart-line text {
             fill: #ffffff !important;
         }
-        /* Mantener los textos de los ejes de un color gris para que no se pierdan */
         .mud-charts-xaxis text, .mud-charts-yaxis text {
             fill: #64748b !important;
         }
+        .chart-daily .mud-charts-xaxis text {
+            font-size: 11px !important;
+        }
+        .stat-quick-btn.active {
+            background-color: var(--mud-palette-primary) !important;
+            color: #fff !important;
+        }
     </style>
 
-    <!-- Header Minimalista y Limpio -->
-    <div class="d-flex align-center justify-space-between mb-8 px-4">
+    <div class="d-flex align-center justify-space-between mb-4 px-4">
         <div>
             <MudText Typo="Typo.h4" Class="font-bold text-gray-800 d-flex align-center">
                 <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Large" Class="mr-3 text-primary" />
-                Analítica Web
+                Estadísticas
             </MudText>
-            <MudText Typo="Typo.body1" Class="text-gray-500 mt-1">Supervisa en tiempo real el tráfico y comportamiento de los ciudadanos.</MudText>
+            <MudText Typo="Typo.body1" Class="text-gray-500 mt-1">
+                Tráfico web y actividad de WhatsApp en un solo panel.
+            </MudText>
         </div>
-        <div class="d-flex align-center">
-            <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.Refresh" OnClick="CargarDatos" Class="rounded-pill px-4">Refrescar</MudButton>
-        </div>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                   StartIcon="@Icons.Material.Filled.Refresh"
+                   OnClick="RefrescarActivo"
+                   Class="rounded-pill px-4">
+            Refrescar
+        </MudButton>
     </div>
 
-    <!-- Panel de Filtros Flotante -->
-    <MudPaper Class="pa-6 mb-8 mx-4 rounded-xl" Elevation="4" Style="background-color: #ffffff; border: 1px solid #f1f5f9;">
-        <MudGrid Spacing="3" Justify="Justify.Center" AlignItems="AlignItems.Center">
-            <MudItem xs="12" sm="4">
-                <MudSelect @bind-Value="Filtro.vchPageName" Label="Página a filtrar" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" AnchorOrigin="Origin.BottomCenter">
-                    <MudSelectItem Value="@string.Empty">Todas (Consolidado)</MudSelectItem>
-                    <MudSelectItem Value="@("Index")">Index (Inicio)</MudSelectItem>
-                    <MudSelectItem Value="@("tramites")">trámites</MudSelectItem>
-                    <MudSelectItem Value="@("noticias")">noticias</MudSelectItem>
-                    <MudSelectItem Value="@("emprendimientos")">emprendimientos</MudSelectItem>
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" sm="3">
-                <MudDatePicker @bind-Date="StartDate" Label="Desde" Variant="Variant.Outlined" Margin="Margin.Dense" IconSize="Size.Small" />
-            </MudItem>
-            <MudItem xs="12" sm="3">
-                <MudDatePicker @bind-Date="EndDate" Label="Hasta" Variant="Variant.Outlined" Margin="Margin.Dense" IconSize="Size.Small" />
-            </MudItem>
-            <MudItem xs="12" sm="2">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CargarDatos" FullWidth="true" Class="rounded-lg py-2" DisableElevation="true">Aplicar Filtros</MudButton>
-            </MudItem>
-        </MudGrid>
-    </MudPaper>
+    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true"
+             PanelClass="pa-0 pt-4" Class="mx-4"
+             ActivePanelIndex="ActiveTab"
+             ActivePanelIndexChanged="OnTabChanged">
 
-    @if (Cargando)
-    {
-        <div class="d-flex flex-column align-center justify-center py-16">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            <MudText Typo="Typo.body2" Class="mt-4 text-gray-500 font-medium">Recopilando estadísticas...</MudText>
-        </div>
-    }
-    else if (Stats == null || !Stats.Any())
-    {
-        <div class="d-flex justify-center mx-4">
-            <MudPaper Class="pa-10 text-center rounded-xl w-100" Elevation="0" Style="background-color: #f8fafc; border: 2px dashed #cbd5e1;">
-                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Class="text-gray-400 mb-4" Style="font-size: 64px;" />
-                <MudText Typo="Typo.h6" Class="text-gray-700 font-bold">No hay actividad registrada</MudText>
-                <MudText Typo="Typo.body2" Class="text-gray-500 mt-2">Intenta ajustar el rango de fechas o limpiar los filtros para ver el tráfico general.</MudText>
-                <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-4" OnClick="LimpiarFiltros">Limpiar Filtros</MudButton>
+        @* ===================== TAB WEB ===================== *@
+        <MudTabPanel Text="Analítica Web" Icon="@Icons.Material.Filled.Language">
+            <MudPaper Class="pa-4 mb-6 rounded-xl" Elevation="2" Style="border: 1px solid #f1f5f9;">
+                <MudGrid Spacing="2" Justify="Justify.FlexStart" AlignItems="AlignItems.Center">
+                    <MudItem xs="12" md="4">
+                        <MudButtonGroup OverrideStyles="false" Class="d-flex flex-wrap gap-2">
+                            <MudButton Variant="@(WebPreset == DatePreset.Day ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Primary" Size="Size.Small"
+                                       OnClick="@(() => AplicarPresetWeb(DatePreset.Day))"
+                                       Class="rounded-lg">
+                                Hoy
+                            </MudButton>
+                            <MudButton Variant="@(WebPreset == DatePreset.Week ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Primary" Size="Size.Small"
+                                       OnClick="@(() => AplicarPresetWeb(DatePreset.Week))"
+                                       Class="rounded-lg">
+                                Semana
+                            </MudButton>
+                            <MudButton Variant="@(WebPreset == DatePreset.Month ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Primary" Size="Size.Small"
+                                       OnClick="@(() => AplicarPresetWeb(DatePreset.Month))"
+                                       Class="rounded-lg">
+                                Mes
+                            </MudButton>
+                        </MudButtonGroup>
+                    </MudItem>
+                    <MudItem xs="12" sm="3" md="2">
+                        <MudSelect T="string" @bind-Value="FiltroPagina" Label="Página" Variant="Variant.Outlined"
+                                   Margin="Margin.Dense" Dense="true" Clearable="true">
+                            <MudSelectItem Value="@string.Empty">Todas</MudSelectItem>
+                            <MudSelectItem Value="@("Index")">Index</MudSelectItem>
+                            <MudSelectItem Value="@("tramites")">trámites</MudSelectItem>
+                            <MudSelectItem Value="@("noticias")">noticias</MudSelectItem>
+                            <MudSelectItem Value="@("emprendimientos")">emprendimientos</MudSelectItem>
+                            <MudSelectItem Value="@("eventos")">eventos</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="6" sm="2" md="2">
+                        <MudDatePicker @bind-Date="WebStartDate" Label="Desde" Variant="Variant.Outlined"
+                                       Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="6" sm="2" md="2">
+                        <MudDatePicker @bind-Date="WebEndDate" Label="Hasta" Variant="Variant.Outlined"
+                                       Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3" md="2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CargarWeb"
+                                   FullWidth="true" Class="rounded-lg" DisableElevation="true">
+                            Aplicar
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
             </MudPaper>
-        </div>
-    }
-    else
-    {
-        <!-- Indicadores Clave de Rendimiento (KPIs) -->
-        <MudGrid Class="mb-8 px-4" Spacing="4">
-            <MudItem xs="12" sm="4">
-                <MudPaper Class="pa-6 rounded-xl h-100 d-flex align-center justify-start relative overflow-hidden" Elevation="2" Style="border-left: 6px solid #3B82F6;">
-                    <div class="absolute" style="right: -20px; top: -10px; opacity: 0.05;">
-                        <MudIcon Icon="@Icons.Material.Filled.AdsClick" Style="font-size: 140px;" />
-                    </div>
-                    <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="mr-4 z-10">
-                        <MudIcon Icon="@Icons.Material.Filled.AdsClick" />
-                    </MudAvatar>
-                    <div class="z-10">
-                        <MudText Typo="Typo.body2" Class="text-gray-500 font-bold text-uppercase tracking-wider">Total de Visitas</MudText>
-                        <MudText Typo="Typo.h3" Class="font-bold text-gray-800">@TotalVisitas</MudText>
-                    </div>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" sm="4">
-                <MudPaper Class="pa-6 rounded-xl h-100 d-flex align-center justify-start relative overflow-hidden" Elevation="2" Style="border-left: 6px solid #10B981;">
-                    <div class="absolute" style="right: -20px; top: -10px; opacity: 0.05;">
-                        <MudIcon Icon="@Icons.Material.Filled.Group" Style="font-size: 140px;" />
-                    </div>
-                    <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Large" Class="mr-4 z-10">
-                        <MudIcon Icon="@Icons.Material.Filled.Group" />
-                    </MudAvatar>
-                    <div class="z-10">
-                        <MudText Typo="Typo.body2" Class="text-gray-500 font-bold text-uppercase tracking-wider">Visitantes Únicos</MudText>
-                        <MudText Typo="Typo.h3" Class="font-bold text-gray-800">@VisitantesUnicos</MudText>
-                    </div>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" sm="4">
-                <MudPaper Class="pa-6 rounded-xl h-100 d-flex align-center justify-start relative overflow-hidden" Elevation="2" Style="border-left: 6px solid #8B5CF6;">
-                    <div class="absolute" style="right: -20px; top: -10px; opacity: 0.05;">
-                        <MudIcon Icon="@Icons.Material.Filled.AccessTimeFilled" Style="font-size: 140px;" />
-                    </div>
-                    <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Large" Class="mr-4 z-10">
-                        <MudIcon Icon="@Icons.Material.Filled.AccessTimeFilled" />
-                    </MudAvatar>
-                    <div class="z-10">
-                        <MudText Typo="Typo.body2" Class="text-gray-500 font-bold text-uppercase tracking-wider">Hora de Tráfico</MudText>
-                        <div class="d-flex align-end">
-                            <MudText Typo="Typo.h3" Class="font-bold text-gray-800">@HoraPico:00</MudText>
-                            <MudText Typo="Typo.subtitle1" Class="text-gray-500 ml-1 mb-1 font-medium">hrs</MudText>
-                        </div>
-                    </div>
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
 
-        <!-- Gráfico de Tendencias -->
-        <div class="px-4 pb-8">
-            <MudPaper Class="pa-6 rounded-xl" Elevation="4" Style="background-color: #ffffff;">
-                <div class="d-flex align-center justify-space-between mb-8">
-                    <div>
-                        <MudText Typo="Typo.h6" Class="font-bold text-gray-800">Tendencia de Tráfico por Hora</MudText>
-                        <MudText Typo="Typo.body2" Class="text-gray-500">Métricas consolidadas de visitas a través del día.</MudText>
-                    </div>
+            @if (CargandoWeb)
+            {
+                <div class="d-flex flex-column align-center justify-center py-16">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                    <MudText Typo="Typo.body2" Class="mt-4 text-gray-500">Recopilando analítica web...</MudText>
                 </div>
-                <div style="height: 450px;">
-                    <MudChart ChartType="ChartType.Line" ChartSeries="@Series" XAxisLabels="@XAxisLabels" Width="100%" Height="100%" ChartOptions="@options" />
+            }
+            else if (!HayDatosWeb)
+            {
+                <MudPaper Class="pa-10 text-center rounded-xl" Elevation="0" Style="background-color: #f8fafc; border: 2px dashed #cbd5e1;">
+                    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Class="text-gray-400 mb-4" Style="font-size: 64px;" />
+                    <MudText Typo="Typo.h6" Class="text-gray-700 font-bold">No hay actividad registrada</MudText>
+                    <MudText Typo="Typo.body2" Class="text-gray-500 mt-2">Ajusta el periodo o limpia los filtros.</MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-4" OnClick="@(() => AplicarPresetWeb(DatePreset.Week))">
+                        Ver última semana
+                    </MudButton>
+                </MudPaper>
+            }
+            else
+            {
+                <MudGrid Class="mb-6" Spacing="3">
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="2" Style="border-left: 5px solid #3B82F6;">
+                            <MudText Typo="Typo.caption" Class="text-gray-500 font-bold text-uppercase">Total visitas</MudText>
+                            <MudText Typo="Typo.h3" Class="font-bold">@WebSummary.TotalVisits</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="2" Style="border-left: 5px solid #10B981;">
+                            <MudText Typo="Typo.caption" Class="text-gray-500 font-bold text-uppercase">Visitantes únicos</MudText>
+                            <MudText Typo="Typo.h3" Class="font-bold">@WebSummary.UniqueVisitors</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="2" Style="border-left: 5px solid #F59E0B;">
+                            <MudText Typo="Typo.caption" Class="text-gray-500 font-bold text-uppercase">Nuevos</MudText>
+                            <MudText Typo="Typo.h3" Class="font-bold">@WebSummary.NewVisitors</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="2" Style="border-left: 5px solid #8B5CF6;">
+                            <MudText Typo="Typo.caption" Class="text-gray-500 font-bold text-uppercase">
+                                @(UsarVistaHoraria ? "Hora pico" : "Recurrentes")
+                            </MudText>
+                            @if (UsarVistaHoraria)
+                            {
+                                <MudText Typo="Typo.h3" Class="font-bold">@HoraPico:00</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.h3" Class="font-bold">@WebSummary.ReturningVisitors</MudText>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+
+                <MudGrid Spacing="3" Class="mb-6">
+                    <MudItem xs="12" md="8">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="3">
+                            <MudText Typo="Typo.h6" Class="font-bold mb-1">@TituloTendenciaWeb</MudText>
+                            <MudText Typo="Typo.body2" Class="text-gray-500 mb-1">@SubtituloTendenciaWeb</MudText>
+                            @if (!UsarVistaHoraria && WebXAxisLabels.Length > 10)
+                            {
+                                <MudText Typo="Typo.caption" Class="text-gray-400 mb-3">
+                                    Eje X: se muestran fechas clave para evitar solapamiento (@WebXAxisLabels.Count(l => !string.IsNullOrEmpty(l)) de @WebXAxisLabels.Length días).
+                                </MudText>
+                            }
+                            <div class="chart-daily" style="height: 420px;">
+                                <MudChart ChartType="ChartType.Line"
+                                          ChartSeries="@WebLineSeries"
+                                          XAxisLabels="@WebXAxisLabels"
+                                          Width="100%" Height="100%"
+                                          ChartOptions="@LineOptions" />
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="3">
+                            <MudText Typo="Typo.h6" Class="font-bold mb-1">Visitas por página</MudText>
+                            <MudText Typo="Typo.body2" Class="text-gray-500 mb-4">Distribución del tráfico</MudText>
+                            @if (PieData.Length > 0)
+                            {
+                                <MudChart ChartType="ChartType.Donut"
+                                          InputData="@PieData"
+                                          InputLabels="@PieLabels"
+                                          Width="100%" Height="320px"
+                                          ChartOptions="@PieOptions" />
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Class="text-gray-400 text-center py-10">Sin datos para el pastel</MudText>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" md="5">
+                        <MudPaper Class="pa-5 rounded-xl" Elevation="3">
+                            <MudText Typo="Typo.h6" Class="font-bold mb-4">Ranking de páginas</MudText>
+                            <MudSimpleTable Dense="true" Hover="true" Style="overflow-x: auto;">
+                                <thead>
+                                    <tr>
+                                        <th>Página</th>
+                                        <th>Visitas</th>
+                                        <th>Únicos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var pag in PagesByTraffic.Take(8))
+                                    {
+                                        <tr>
+                                            <td>@(string.IsNullOrWhiteSpace(pag.vchPageName) ? pag.vchPageUrl : pag.vchPageName)</td>
+                                            <td>@pag.TotalVisits</td>
+                                            <td>@pag.UniqueVisitors</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" md="7">
+                        <MudPaper Class="pa-5 rounded-xl" Elevation="3">
+                            <MudText Typo="Typo.h6" Class="font-bold mb-4">Visitas recientes</MudText>
+                            <MudSimpleTable Dense="true" Hover="true" Style="overflow-x: auto;">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Página</th>
+                                        <th>Dispositivo</th>
+                                        <th>Navegador</th>
+                                        <th>Único</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var visit in RecentVisits)
+                                    {
+                                        <tr>
+                                            <td>@visit.dtVisitDate.ToLocalTime().ToString("dd/MM HH:mm")</td>
+                                            <td>@(string.IsNullOrWhiteSpace(visit.vchPageName) ? visit.vchPageUrl : visit.vchPageName)</td>
+                                            <td>@visit.vchDeviceType</td>
+                                            <td>@visit.vchBrowser</td>
+                                            <td>
+                                                @(visit.bIsUniqueVisitor ? "Sí" : "No")
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            }
+        </MudTabPanel>
+
+        @* ===================== TAB WHATSAPP ===================== *@
+        <MudTabPanel Text="WhatsApp" Icon="@Icons.Material.Filled.Chat">
+            <MudPaper Class="pa-4 mb-6 rounded-xl" Elevation="2" Style="border: 1px solid #f1f5f9;">
+                <div class="d-flex flex-wrap align-center justify-space-between gap-3">
+                    <MudButtonGroup OverrideStyles="false" Class="d-flex flex-wrap gap-2">
+                        <MudButton Variant="@(WaPreset == DatePreset.Day ? Variant.Filled : Variant.Outlined)"
+                                   Color="Color.Primary" Size="Size.Small"
+                                   OnClick="@(() => AplicarPresetWa(DatePreset.Day))"
+                                   Class="rounded-lg">
+                            Hoy
+                        </MudButton>
+                        <MudButton Variant="@(WaPreset == DatePreset.Week ? Variant.Filled : Variant.Outlined)"
+                                   Color="Color.Primary" Size="Size.Small"
+                                   OnClick="@(() => AplicarPresetWa(DatePreset.Week))"
+                                   Class="rounded-lg">
+                            Semana
+                        </MudButton>
+                        <MudButton Variant="@(WaPreset == DatePreset.Month ? Variant.Filled : Variant.Outlined)"
+                                   Color="Color.Primary" Size="Size.Small"
+                                   OnClick="@(() => AplicarPresetWa(DatePreset.Month))"
+                                   Class="rounded-lg">
+                            Mes
+                        </MudButton>
+                    </MudButtonGroup>
+                    <MudText Typo="Typo.caption" Class="text-gray-500">
+                        Periodo diario: últimos @WaDays día(s)
+                    </MudText>
                 </div>
             </MudPaper>
-        </div>
-    }
+
+            @if (CargandoWa)
+            {
+                <div class="d-flex flex-column align-center justify-center py-16">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                    <MudText Typo="Typo.body2" Class="mt-4 text-gray-500">Recopilando estadísticas de WhatsApp...</MudText>
+                </div>
+            }
+            else
+            {
+                <MudGrid Class="mb-6" Spacing="3">
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="2" Style="border-left: 5px solid #25D366;">
+                            <MudText Typo="Typo.caption" Class="text-gray-500 font-bold text-uppercase">Usuarios</MudText>
+                            <MudText Typo="Typo.h3" Class="font-bold">@WaStats.iTotalUsers</MudText>
+                            <MudText Typo="Typo.caption" Class="text-success">+@WaStats.iNewUsersToday hoy</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="2" Style="border-left: 5px solid #128C7E;">
+                            <MudText Typo="Typo.caption" Class="text-gray-500 font-bold text-uppercase">Conversaciones</MudText>
+                            <MudText Typo="Typo.h3" Class="font-bold">@WaStats.iTotalConversations</MudText>
+                            <MudText Typo="Typo.caption">@WaStats.iActiveConversations activas</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="2" Style="border-left: 5px solid #075E54;">
+                            <MudText Typo="Typo.caption" Class="text-gray-500 font-bold text-uppercase">Mensajes</MudText>
+                            <MudText Typo="Typo.h3" Class="font-bold">@WaStats.iTotalMessages</MudText>
+                            <MudText Typo="Typo.caption">@WaStats.iMessagesToday hoy</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="2" Style="border-left: 5px solid #34B7F1;">
+                            <MudText Typo="Typo.caption" Class="text-gray-500 font-bold text-uppercase">Prom. msgs / conv.</MudText>
+                            <MudText Typo="Typo.h3" Class="font-bold">@WaStats.flAvgMessagesPerConversation.ToString("0.0")</MudText>
+                            <MudText Typo="Typo.caption">@WaStats.iActiveUsersToday usuarios activos hoy</MudText>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+
+                <MudGrid Spacing="3" Class="mb-6">
+                    <MudItem xs="12" md="8">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="3">
+                            <MudText Typo="Typo.h6" Class="font-bold mb-1">Actividad diaria</MudText>
+                            <MudText Typo="Typo.body2" Class="text-gray-500 mb-4">
+                                Mensajes y conversaciones en los últimos @WaDays día(s)
+                            </MudText>
+                            <div class="chart-daily" style="height: 420px;">
+                                <MudChart ChartType="ChartType.Line"
+                                          ChartSeries="@WaLineSeries"
+                                          XAxisLabels="@WaXAxisLabels"
+                                          Width="100%" Height="100%"
+                                          ChartOptions="@LineOptions" />
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudPaper Class="pa-5 rounded-xl h-100" Elevation="3">
+                            <MudText Typo="Typo.h6" Class="font-bold mb-1">Entrantes vs salientes</MudText>
+                            <MudText Typo="Typo.body2" Class="text-gray-500 mb-4">Volumen del periodo</MudText>
+                            @if (WaPieData.Length > 0 && WaPieData.Sum() > 0)
+                            {
+                                <MudChart ChartType="ChartType.Donut"
+                                          InputData="@WaPieData"
+                                          InputLabels="@WaPieLabels"
+                                          Width="100%" Height="320px"
+                                          ChartOptions="@WaPieOptions" />
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Class="text-gray-400 text-center py-10">Sin mensajes en el periodo</MudText>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+
+                <MudPaper Class="pa-5 rounded-xl mb-4" Elevation="3">
+                    <MudText Typo="Typo.h6" Class="font-bold mb-4">Detalle diario</MudText>
+                    <MudSimpleTable Dense="true" Hover="true" Style="overflow-x: auto;">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Nuevos usuarios</th>
+                                <th>Entrantes</th>
+                                <th>Salientes</th>
+                                <th>Total msgs</th>
+                                <th>Conversaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var day in WaDaily.OrderByDescending(d => d.dtDate))
+                            {
+                                <tr>
+                                    <td>@day.dtDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@day.iNewUsers</td>
+                                    <td>@day.iMessagesInbound</td>
+                                    <td>@day.iMessagesOutbound</td>
+                                    <td>@day.iTotalMessages</td>
+                                    <td>@day.iActiveConversations</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+
+                <MudPaper Class="pa-5 rounded-xl mb-4" Elevation="3">
+                    <MudText Typo="Typo.h6" Class="font-bold mb-1">Usuarios de WhatsApp</MudText>
+                    <MudText Typo="Typo.body2" Class="text-gray-500 mb-4">
+                        Ordenados por fecha de registro (primer contacto)
+                    </MudText>
+                    <MudSimpleTable Dense="true" Hover="true" Style="overflow-x: auto;">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Teléfono</th>
+                                <th>Registro</th>
+                                <th>Último contacto</th>
+                                <th>Mensajes</th>
+                                <th>Activo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (WaUsers.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-gray-400">Sin usuarios registrados</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var user in WaUsers)
+                                {
+                                    <tr>
+                                        <td>@user.nvchName</td>
+                                        <td>@user.nvchPhoneNumber</td>
+                                        <td>@user.dtFirstContact.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@user.dtLastContact.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@user.iTotalMessages</td>
+                                        <td>@(user.bActive ? "Sí" : "No")</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+            }
+        </MudTabPanel>
+    </MudTabs>
 </MudContainer>
 
 @code {
-    private bool Cargando = false;
-    private PostGetPageVisitsStats Filtro = new();
-    private DateTime? StartDate = DateTime.Today.AddDays(-7);
-    private DateTime? EndDate = DateTime.Today;
+    private enum DatePreset { Day, Week, Month, Custom }
 
-    private List<PageVisitsStat> Stats = new();
-    
-    // Resumen
-    private int TotalVisitas => Stats?.Sum(s => s.iTotalVisits) ?? 0;
-    private int VisitantesUnicos => Stats?.Sum(s => s.iUniqueVisits) ?? 0;
-    private int HoraPico => Stats?.OrderByDescending(s => s.iTotalVisits).FirstOrDefault()?.iHour ?? 0;
+    private int ActiveTab;
+    private bool CargandoWeb;
+    private bool CargandoWa;
+    private bool WaLoaded;
 
-    // Gráfica
-    public List<ChartSeries> Series = new();
-    public string[] XAxisLabels = new string[24];
-    private ChartOptions options = new ChartOptions
+    private DatePreset WebPreset = DatePreset.Week;
+    private DatePreset WaPreset = DatePreset.Week;
+    private DateTime? WebStartDate = DateTime.Today.AddDays(-6);
+    private DateTime? WebEndDate = DateTime.Today;
+    private string FiltroPagina = string.Empty;
+
+    private PageVisitSummary WebSummary = new();
+    private List<PageVisitByPage> PagesByTraffic = new();
+    private List<DailyTraffic> DailyTrafficData = new();
+    private List<PageVisitsStat> HourlyStats = new();
+    private List<PageVisit> RecentVisits = new();
+
+    private WhatsAppStats WaStats = new();
+    private List<WhatsAppDailyStats> WaDaily = new();
+    private List<WhatsAppUser> WaUsers = new();
+    private int WaDays => WaPreset switch
+    {
+        DatePreset.Day => 1,
+        DatePreset.Week => 7,
+        _ => 30
+    };
+
+    private List<ChartSeries> WebLineSeries = new();
+    private string[] WebXAxisLabels = Array.Empty<string>();
+    private double[] PieData = Array.Empty<double>();
+    private string[] PieLabels = Array.Empty<string>();
+
+    private List<ChartSeries> WaLineSeries = new();
+    private string[] WaXAxisLabels = Array.Empty<string>();
+    private double[] WaPieData = Array.Empty<double>();
+    private string[] WaPieLabels = { "Entrantes", "Salientes" };
+
+    private int HoraPico => HourlyStats.OrderByDescending(s => s.iTotalVisits).FirstOrDefault()?.iHour ?? 0;
+
+    private bool HayDatosWeb =>
+        WebSummary.TotalVisits > 0
+        || PagesByTraffic.Any(p => p.TotalVisits > 0)
+        || DailyTrafficData.Any(d => d.TotalVisits > 0)
+        || HourlyStats.Any(h => h.iTotalVisits > 0);
+
+    private bool UsarVistaHoraria =>
+        WebStartDate?.Date == WebEndDate?.Date;
+
+    private string TituloTendenciaWeb => UsarVistaHoraria
+        ? "Tendencia por hora"
+        : "Tendencia diaria";
+
+    private string SubtituloTendenciaWeb => UsarVistaHoraria
+        ? "Visitas agrupadas por hora del día seleccionado."
+        : "Visitas y visitantes únicos por día en el periodo.";
+
+    private ChartOptions LineOptions = new()
     {
         ChartPalette = new[] { "#1E293B", "#3B82F6", "#10B981", "#8B5CF6", "#F59E0B", "#EF4444", "#EC4899", "#14B8A6" },
         InterpolationOption = InterpolationOption.NaturalSpline,
@@ -167,89 +507,276 @@
         YAxisTicks = 5
     };
 
+    private ChartOptions PieOptions = new()
+    {
+        ChartPalette = new[] { "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6", "#EF4444", "#14B8A6", "#EC4899", "#64748B" }
+    };
+
+    private ChartOptions WaPieOptions = new()
+    {
+        ChartPalette = new[] { "#25D366", "#128C7E" }
+    };
+
     protected override async Task OnInitializedAsync()
     {
-        for (int i = 0; i < 24; i++)
-        {
-            // Etiquetas cortas para el eje X (e.g., "00h", "01h")
-            XAxisLabels[i] = $"{i:00}h";
-        }
-        await CargarDatos();
+        await CargarWeb();
     }
 
-    private void LimpiarFiltros()
+    private async Task OnTabChanged(int index)
     {
-        Filtro.vchPageName = string.Empty;
-        StartDate = DateTime.Today.AddDays(-7);
-        EndDate = DateTime.Today;
-        _ = CargarDatos();
+        ActiveTab = index;
+        if (index == 1 && !WaLoaded)
+            await CargarWhatsApp();
     }
 
-    private async Task CargarDatos()
+    private async Task RefrescarActivo()
     {
-        Cargando = true;
-        StateHasChanged();
-
-        Filtro.dtStartDate = StartDate;
-        Filtro.dtEndDate = EndDate?.Date.AddDays(1).AddTicks(-1);
-
-        var respuesta = await PageVisitsService.GetPageVisitsStats(Filtro);
-        
-        if (respuesta.IsSuccess && respuesta.Data != null)
-        {
-            Stats = respuesta.Data.ToList();
-            ActualizarGrafica();
-        }
+        if (ActiveTab == 0)
+            await CargarWeb();
         else
-        {
-            Stats = new List<PageVisitsStat>();
-        }
+            await CargarWhatsApp();
+    }
 
-        Cargando = false;
+    private async Task AplicarPresetWeb(DatePreset preset)
+    {
+        WebPreset = preset;
+        WebEndDate = DateTime.Today;
+        WebStartDate = preset switch
+        {
+            DatePreset.Day => DateTime.Today,
+            DatePreset.Week => DateTime.Today.AddDays(-6),
+            DatePreset.Month => DateTime.Today.AddDays(-29),
+            _ => WebStartDate
+        };
+        await CargarWeb();
+    }
+
+    private async Task AplicarPresetWa(DatePreset preset)
+    {
+        WaPreset = preset;
+        await CargarWhatsApp();
+    }
+
+    private async Task CargarWeb()
+    {
+        CargandoWeb = true;
+        StateHasChanged();
+
+        SincronizarPresetWebDesdeFechas();
+
+        var start = WebStartDate?.Date ?? DateTime.Today.AddDays(-6);
+        // Analytics SPs usan rango half-open [start, end)
+        var analyticsEnd = (WebEndDate?.Date ?? DateTime.Today).AddDays(1);
+        // PageVisitsStats usa inclusive <= end
+        var statsEnd = analyticsEnd.AddTicks(-1);
+
+        var summaryTask = AnalyticsService.GetPageVisitsSummary(start, analyticsEnd);
+        var byPageTask = AnalyticsService.GetPageVisitsByPage(start, analyticsEnd);
+        var dailyTask = AnalyticsService.GetDailyTraffic(start, analyticsEnd);
+        var recentTask = AnalyticsService.GetRecentVisits(15);
+        var hourlyTask = PageVisitsService.GetPageVisitsStats(new PostGetPageVisitsStats
+        {
+            vchPageName = FiltroPagina ?? string.Empty,
+            dtStartDate = start,
+            dtEndDate = statsEnd
+        });
+
+        await Task.WhenAll(summaryTask, byPageTask, dailyTask, recentTask, hourlyTask);
+
+        WebSummary = (await summaryTask).FirstOrDefault(s => s.bResult) ?? new PageVisitSummary();
+        PagesByTraffic = (await byPageTask).Where(p => p.bResult && p.TotalVisits > 0)
+            .OrderByDescending(p => p.TotalVisits).ToList();
+        DailyTrafficData = (await dailyTask).Where(d => d.bResult).OrderBy(d => d.dtVisitDay).ToList();
+        RecentVisits = (await recentTask).ToList();
+
+        var hourlyResponse = await hourlyTask;
+        HourlyStats = hourlyResponse.IsSuccess && hourlyResponse.Data != null
+            ? hourlyResponse.Data.ToList()
+            : new List<PageVisitsStat>();
+
+        ActualizarGraficasWeb();
+        CargandoWeb = false;
         StateHasChanged();
     }
 
-    private void ActualizarGrafica()
+    private async Task CargarWhatsApp()
     {
-        var grouped = Stats.GroupBy(s => string.IsNullOrWhiteSpace(s.vchPageName) ? "Index" : s.vchPageName).ToList();
-        Series.Clear();
+        CargandoWa = true;
+        StateHasChanged();
 
-        if (string.IsNullOrWhiteSpace(Filtro.vchPageName))
+        var statsTask = WhatsAppAnalyticsService.GetStats();
+        var dailyTask = WhatsAppAnalyticsService.GetDailyStats(WaDays);
+        var usersTask = WhatsAppAnalyticsService.GetUsers(100);
+        await Task.WhenAll(statsTask, dailyTask, usersTask);
+
+        var statsResult = await statsTask;
+        WaStats = statsResult.IsSuccess && statsResult.Data != null ? statsResult.Data : new WhatsAppStats();
+
+        var dailyResult = await dailyTask;
+        WaDaily = dailyResult.IsSuccess && dailyResult.Data != null
+            ? dailyResult.Data.OrderBy(d => d.dtDate).ToList()
+            : new List<WhatsAppDailyStats>();
+
+        var usersResult = await usersTask;
+        WaUsers = usersResult.IsSuccess && usersResult.Data != null
+            ? usersResult.Data.OrderByDescending(u => u.dtFirstContact).ToList()
+            : new List<WhatsAppUser>();
+
+        ActualizarGraficasWa();
+        WaLoaded = true;
+        CargandoWa = false;
+        StateHasChanged();
+    }
+
+    private void ActualizarGraficasWeb()
+    {
+        WebLineSeries = new List<ChartSeries>();
+
+        if (UsarVistaHoraria)
         {
-            // Sumamos todas las visitas por hora (Consolidado Total)
+            WebXAxisLabels = Enumerable.Range(0, 24).Select(i => $"{i:00}h").ToArray();
             var totalData = new double[24];
-            for (int i = 0; i < 24; i++)
-            {
-                totalData[i] = Stats.Where(s => s.iHour == i).Sum(s => s.iTotalVisits);
-            }
-            // Agregamos primero la línea de Todos, en color negro/oscuro (el primer color de la paleta)
-            Series.Add(new ChartSeries { Name = "Todas (Consolidado)", Data = totalData });
+            for (var i = 0; i < 24; i++)
+                totalData[i] = HourlyStats.Where(s => s.iHour == i).Sum(s => s.iTotalVisits);
 
-            // Luego añadimos una línea por cada página individual para poder compararlas visualmente
-            foreach (var group in grouped)
+            WebLineSeries.Add(new ChartSeries { Name = "Visitas", Data = totalData });
+
+            if (string.IsNullOrWhiteSpace(FiltroPagina))
             {
-                var data = new double[24];
-                for (int i = 0; i < 24; i++)
+                foreach (var group in HourlyStats.GroupBy(s => string.IsNullOrWhiteSpace(s.vchPageName) ? "Index" : s.vchPageName))
                 {
-                    var stat = group.FirstOrDefault(s => s.iHour == i);
-                    data[i] = stat?.iTotalVisits ?? 0;
+                    var data = new double[24];
+                    for (var i = 0; i < 24; i++)
+                        data[i] = group.FirstOrDefault(s => s.iHour == i)?.iTotalVisits ?? 0;
+                    WebLineSeries.Add(new ChartSeries { Name = group.Key, Data = data });
                 }
-                Series.Add(new ChartSeries { Name = group.Key, Data = data });
             }
         }
         else
         {
-            // Solo se muestra la página seleccionada en el filtro
-            foreach (var group in grouped)
+            if (DailyTrafficData.Count == 0)
             {
-                var data = new double[24];
-                for (int i = 0; i < 24; i++)
+                WebXAxisLabels = Array.Empty<string>();
+            }
+            else
+            {
+                WebXAxisLabels = BuildReadableDateLabels(
+                    DailyTrafficData.Select(d => d.dtVisitDay),
+                    maxVisibleLabels: 8);
+                WebLineSeries.Add(new ChartSeries
                 {
-                    var stat = group.FirstOrDefault(s => s.iHour == i);
-                    data[i] = stat?.iTotalVisits ?? 0;
-                }
-                Series.Add(new ChartSeries { Name = group.Key, Data = data });
+                    Name = "Visitas",
+                    Data = DailyTrafficData.Select(d => (double)d.TotalVisits).ToArray()
+                });
+                WebLineSeries.Add(new ChartSeries
+                {
+                    Name = "Únicos",
+                    Data = DailyTrafficData.Select(d => (double)d.UniqueVisitors).ToArray()
+                });
+                WebLineSeries.Add(new ChartSeries
+                {
+                    Name = "Nuevos",
+                    Data = DailyTrafficData.Select(d => (double)d.NewVisitors).ToArray()
+                });
             }
         }
+
+        var topPages = PagesByTraffic.Take(8).ToList();
+        PieData = topPages.Select(p => (double)p.TotalVisits).ToArray();
+        PieLabels = topPages.Select(p =>
+        {
+            var name = string.IsNullOrWhiteSpace(p.vchPageName) ? p.vchPageUrl : p.vchPageName;
+            return name.Length > 28 ? name[..25] + "…" : name;
+        }).ToArray();
+    }
+
+    private void ActualizarGraficasWa()
+    {
+        WaLineSeries = new List<ChartSeries>();
+        if (WaDaily.Count == 0)
+        {
+            WaXAxisLabels = Array.Empty<string>();
+            WaPieData = Array.Empty<double>();
+            return;
+        }
+
+        WaXAxisLabels = BuildReadableDateLabels(
+            WaDaily.Select(d => d.dtDate),
+            maxVisibleLabels: WaDays <= 7 ? 7 : 8);
+        WaLineSeries.Add(new ChartSeries
+        {
+            Name = "Entrantes",
+            Data = WaDaily.Select(d => (double)d.iMessagesInbound).ToArray()
+        });
+        WaLineSeries.Add(new ChartSeries
+        {
+            Name = "Salientes",
+            Data = WaDaily.Select(d => (double)d.iMessagesOutbound).ToArray()
+        });
+        WaLineSeries.Add(new ChartSeries
+        {
+            Name = "Conversaciones",
+            Data = WaDaily.Select(d => (double)d.iActiveConversations).ToArray()
+        });
+        WaLineSeries.Add(new ChartSeries
+        {
+            Name = "Nuevos usuarios",
+            Data = WaDaily.Select(d => (double)d.iNewUsers).ToArray()
+        });
+
+        WaPieData = new[]
+        {
+            (double)WaDaily.Sum(d => d.iMessagesInbound),
+            (double)WaDaily.Sum(d => d.iMessagesOutbound)
+        };
+    }
+
+    /// <summary>
+    /// Builds X-axis labels that stay readable: all dates when few points,
+    /// evenly spaced key dates (always including first/last) when many.
+    /// </summary>
+    private static string[] BuildReadableDateLabels(IEnumerable<DateTime> dates, int maxVisibleLabels = 8)
+    {
+        var list = dates.ToList();
+        var count = list.Count;
+        if (count == 0)
+            return Array.Empty<string>();
+
+        // Week or less: show every day
+        if (count <= maxVisibleLabels)
+        {
+            return list.Select(d => count <= 7
+                ? d.ToString("ddd dd", new System.Globalization.CultureInfo("es-MX"))
+                : d.ToString("dd/MM")).ToArray();
+        }
+
+        var labels = Enumerable.Repeat(string.Empty, count).ToArray();
+        var visible = Math.Max(2, maxVisibleLabels);
+        var indices = new HashSet<int> { 0, count - 1 };
+
+        for (var k = 1; k < visible - 1; k++)
+        {
+            var idx = (int)Math.Round(k * (count - 1) / (double)(visible - 1));
+            indices.Add(idx);
+        }
+
+        foreach (var i in indices.OrderBy(x => x))
+            labels[i] = list[i].ToString("dd/MM");
+
+        return labels;
+    }
+
+    private void SincronizarPresetWebDesdeFechas()
+    {
+        var start = WebStartDate?.Date;
+        var end = WebEndDate?.Date;
+        if (start == DateTime.Today && end == DateTime.Today)
+            WebPreset = DatePreset.Day;
+        else if (start == DateTime.Today.AddDays(-6) && end == DateTime.Today)
+            WebPreset = DatePreset.Week;
+        else if (start == DateTime.Today.AddDays(-29) && end == DateTime.Today)
+            WebPreset = DatePreset.Month;
+        else
+            WebPreset = DatePreset.Custom;
     }
 }

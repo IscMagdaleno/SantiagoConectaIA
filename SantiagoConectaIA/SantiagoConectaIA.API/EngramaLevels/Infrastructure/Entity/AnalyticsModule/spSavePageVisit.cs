@@ -16,6 +16,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.AnalyticsMod
             public string vchBrowser { get; set; } = string.Empty;
             public string vchOperatingSystem { get; set; } = string.Empty;
             public string vchDeviceType { get; set; } = string.Empty;
+            public string vchVisitorId { get; set; } = string.Empty;
         }
 
         public class Result : DbResult

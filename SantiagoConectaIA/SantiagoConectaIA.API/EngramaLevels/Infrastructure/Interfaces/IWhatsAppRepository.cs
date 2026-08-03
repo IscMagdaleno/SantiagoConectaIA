@@ -9,5 +9,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces
 		Task<spSaveWhatsAppMessage.Result> spSaveWhatsAppMessage(spSaveWhatsAppMessage.Request request);
 		Task<IEnumerable<spGetWhatsAppStats.Result>> spGetWhatsAppStats(spGetWhatsAppStats.Request request);
 		Task<IEnumerable<spGetWhatsAppDailyStats.Result>> spGetWhatsAppDailyStats(spGetWhatsAppDailyStats.Request request);
+		Task<IEnumerable<spGetWhatsAppUsers.Result>> spGetWhatsAppUsers(spGetWhatsAppUsers.Request request);
 	}
 }

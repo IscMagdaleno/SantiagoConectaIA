@@ -79,6 +79,8 @@
     };
 
     private bool IsMenuOpen = false;
+    private bool _firstRenderTracked;
+    private string _visitorId = string.Empty;
 
     private void ToggleMenu()
     {
@@ -95,15 +97,65 @@
         NavManager.LocationChanged += OnLocationChanged;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _firstRenderTracked)
+            return;
+
+        _firstRenderTracked = true;
+        await TrackPageVisitAsync();
+    }
+
     private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         IsMenuOpen = false;
         StateHasChanged();
+        await TrackPageVisitAsync();
+    }
 
+    private async Task TrackPageVisitAsync()
+    {
         try
         {
+            if (string.IsNullOrWhiteSpace(_visitorId))
+            {
+                try
+                {
+                    await JS.InvokeAsync<object>("eval", @"
+                        if (!window.santiagoAnalytics) {
+                            window.santiagoAnalytics = {
+                                getOrCreateVisitorId: function () {
+                                    try {
+                                        var key = 'scia_visitor_id';
+                                        var id = localStorage.getItem(key);
+                                        if (!id) {
+                                            id = (window.crypto && window.crypto.randomUUID)
+                                                ? window.crypto.randomUUID()
+                                                : ('v-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10));
+                                            localStorage.setItem(key, id);
+                                        }
+                                        return id;
+                                    } catch (e) {
+                                        return 'anon-' + Date.now().toString(36);
+                                    }
+                                }
+                            };
+                        }
+                    ");
+                    _visitorId = await JS.InvokeAsync<string>("santiagoAnalytics.getOrCreateVisitorId");
+                }
+                catch
+                {
+                    _visitorId = Guid.NewGuid().ToString("N");
+                }
+            }
+
             var relativePath = NavManager.ToBaseRelativePath(NavManager.Uri);
             var pageName = string.IsNullOrEmpty(relativePath) ? "Index" : relativePath.Split('/')[0];
+            if (pageName.Contains('?'))
+                pageName = pageName.Split('?')[0];
+            if (pageName.Contains('#'))
+                pageName = pageName.Split('#')[0];
 
             var userAgent = await JS.InvokeAsync<string>("eval", "navigator.userAgent");
             var referrer = await JS.InvokeAsync<string>("eval", "document.referrer");
@@ -112,6 +164,7 @@
             {
                 vchPageUrl = NavManager.Uri,
                 vchPageName = pageName,
+                vchVisitorId = _visitorId ?? string.Empty,
                 vchUserAgent = userAgent ?? string.Empty,
                 vchReferrer = referrer ?? string.Empty,
                 vchBrowser = ParseBrowser(userAgent),
@@ -131,7 +184,7 @@
     {
         if (string.IsNullOrEmpty(userAgent)) return "Unknown";
         if (userAgent.Contains("Edg/")) return "Edge";
-        if (userAgent.Contains("Chrome/")) return "Chrome";
+        if (userAgent.Contains("Chrome/") && !userAgent.Contains("Edg/")) return "Chrome";
         if (userAgent.Contains("Firefox/")) return "Firefox";
         if (userAgent.Contains("Safari/")) return "Safari";
         return "Other";
@@ -140,19 +193,20 @@
     private string ParseOS(string? userAgent)
     {
         if (string.IsNullOrEmpty(userAgent)) return "Unknown";
+        // iPhone/iPad UAs also contain "Mac OS X" — check mobile Apple first
+        if (userAgent.Contains("iPhone") || userAgent.Contains("iPad")) return "iOS";
+        if (userAgent.Contains("Android")) return "Android";
         if (userAgent.Contains("Windows")) return "Windows";
         if (userAgent.Contains("Mac OS")) return "macOS";
         if (userAgent.Contains("Linux")) return "Linux";
-        if (userAgent.Contains("Android")) return "Android";
-        if (userAgent.Contains("iPhone") || userAgent.Contains("iPad")) return "iOS";
         return "Other";
     }
 
     private string ParseDevice(string? userAgent)
     {
         if (string.IsNullOrEmpty(userAgent)) return "Unknown";
-        if (userAgent.Contains("Mobile") || userAgent.Contains("Android")) return "Mobile";
         if (userAgent.Contains("iPad") || userAgent.Contains("Tablet")) return "Tablet";
+        if (userAgent.Contains("Mobile") || userAgent.Contains("Android") || userAgent.Contains("iPhone")) return "Mobile";
         return "Desktop";
     }
 

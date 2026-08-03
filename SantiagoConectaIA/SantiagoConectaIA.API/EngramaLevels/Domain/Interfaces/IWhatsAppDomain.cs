@@ -12,5 +12,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces
 		Task<Response<WhatsAppMessage>> SaveWhatsAppMessage(PostSaveWhatsAppMessage postModel);
 		Task<Response<WhatsAppStats>> GetWhatsAppStats();
 		Task<Response<IEnumerable<WhatsAppDailyStats>>> GetWhatsAppDailyStats(PostGetWhatsAppDailyStats postModel);
+		Task<Response<IEnumerable<WhatsAppUser>>> GetWhatsAppUsers(PostGetWhatsAppUsers postModel);
 	}
 }

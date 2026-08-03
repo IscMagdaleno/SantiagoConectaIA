@@ -54,33 +54,62 @@ namespace SantiagoConectaIA.API.Services
                 int conversationId = 0;
                 try
                 {
-                    // Buscar el usuario por teléfono para obtener su ID
-                    var userStats = await whatsAppDomain.GetWhatsAppStats();
-
-                    // Crear o actualizar conversación
-                    var conversationResult = await whatsAppDomain.SaveWhatsAppConversation(
-                        new PostSaveWhatsAppConversation
+                    // Asegurar iIdWhatsAppUser: usar el del queue o resolverlo por teléfono
+                    var whatsAppUserId = queuedMessage.iIdWhatsAppUser;
+                    if (whatsAppUserId <= 0)
+                    {
+                        var saveUserResult = await whatsAppDomain.SaveWhatsAppUser(new PostSaveWhatsAppUser
                         {
-                            iIdConversation = 0,
-                            iIdWhatsAppUser = 0, // Se actualizará con el ID real del usuario
-                            nvchStatus = "active"
+                            iIdWhatsAppUser = 0,
+                            nvchPhoneNumber = queuedMessage.PhoneNumber,
+                            nvchName = queuedMessage.UserName
                         });
 
-                    if (conversationResult.IsSuccess && conversationResult.Data != null)
-                    {
-                        conversationId = conversationResult.Data.iIdConversation;
+                        if (saveUserResult.IsSuccess && saveUserResult.Data != null)
+                        {
+                            whatsAppUserId = saveUserResult.Data.iIdWhatsAppUser;
+                        }
+                        else
+                        {
+                            _logger.LogWarning(
+                                "Could not resolve WhatsApp user for phone {Phone}: {Message}",
+                                queuedMessage.PhoneNumber,
+                                saveUserResult.Message);
+                        }
                     }
 
-                    // Guardar mensaje entrante
-                    await whatsAppDomain.SaveWhatsAppMessage(new PostSaveWhatsAppMessage
+                    if (whatsAppUserId <= 0)
                     {
-                        iIdConversation = conversationId,
-                        nvchWhatsAppMessageId = queuedMessage.WhatsAppMessageId,
-                        nvchDirection = "inbound",
-                        nvchMessageType = "text",
-                        nvchContent = queuedMessage.UserMessage,
-                        dtTimestamp = queuedMessage.ReceivedAt
-                    });
+                        _logger.LogError(
+                            "Skipping conversation save: invalid iIdWhatsAppUser for phone {Phone}",
+                            queuedMessage.PhoneNumber);
+                    }
+                    else
+                    {
+                        var conversationResult = await whatsAppDomain.SaveWhatsAppConversation(
+                            new PostSaveWhatsAppConversation
+                            {
+                                iIdConversation = 0,
+                                iIdWhatsAppUser = whatsAppUserId,
+                                nvchStatus = "active"
+                            });
+
+                        if (conversationResult.IsSuccess && conversationResult.Data != null)
+                        {
+                            conversationId = conversationResult.Data.iIdConversation;
+                        }
+
+                        // Guardar mensaje entrante
+                        await whatsAppDomain.SaveWhatsAppMessage(new PostSaveWhatsAppMessage
+                        {
+                            iIdConversation = conversationId,
+                            nvchWhatsAppMessageId = queuedMessage.WhatsAppMessageId,
+                            nvchDirection = "inbound",
+                            nvchMessageType = "text",
+                            nvchContent = queuedMessage.UserMessage,
+                            dtTimestamp = queuedMessage.ReceivedAt
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {

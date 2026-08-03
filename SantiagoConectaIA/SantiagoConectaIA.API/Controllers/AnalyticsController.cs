@@ -42,6 +42,15 @@ namespace SantiagoConectaIA.API.Controllers
 				if (!ModelState.IsValid)
 					return BadRequest(Response<PageVisitSaveResult>.BadResult("Modelo inválido.", new PageVisitSaveResult()));
 
+				// Blazor WASM cannot see the public IP; enrich server-side.
+				if (string.IsNullOrWhiteSpace(model.vchIpAddress))
+				{
+					var forwarded = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+					model.vchIpAddress = !string.IsNullOrWhiteSpace(forwarded)
+						? forwarded.Split(',')[0].Trim()
+						: HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
+				}
+
 				var result = await _analyticsDomain.SavePageVisit(model);
 				if (result.IsSuccess)
 				{
@@ -63,7 +72,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <returns>Estadísticas generales de visitas.</returns>
 		[HttpPost("PostGetPageVisitsSummary")]
 		[ProducesResponseType(typeof(IEnumerable<PageVisitSummary>), 200)]
-		public async Task<IActionResult> PostGetPageVisitsSummary([FromBody] AnalyticsDateRange model)
+		public async Task<IActionResult> PostGetPageVisitsSummary([FromBody] PostAnalyticsDateRange model)
 		{
 			try
 			{
@@ -84,7 +93,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <returns>Listado de visitas por página con conteo.</returns>
 		[HttpPost("PostGetPageVisitsByPage")]
 		[ProducesResponseType(typeof(IEnumerable<PageVisitByPage>), 200)]
-		public async Task<IActionResult> PostGetPageVisitsByPage([FromBody] AnalyticsDateRange model)
+		public async Task<IActionResult> PostGetPageVisitsByPage([FromBody] PostAnalyticsDateRange model)
 		{
 			try
 			{
@@ -105,7 +114,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <returns>Datos de tráfico diario para gráficas.</returns>
 		[HttpPost("PostGetDailyTraffic")]
 		[ProducesResponseType(typeof(IEnumerable<DailyTraffic>), 200)]
-		public async Task<IActionResult> PostGetDailyTraffic([FromBody] AnalyticsDateRange model)
+		public async Task<IActionResult> PostGetDailyTraffic([FromBody] PostAnalyticsDateRange model)
 		{
 			try
 			{
@@ -126,7 +135,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <returns>Listado de visitas recientes.</returns>
 		[HttpPost("PostGetRecentVisits")]
 		[ProducesResponseType(typeof(IEnumerable<PageVisit>), 200)]
-		public async Task<IActionResult> PostGetRecentVisits([FromBody] AnalyticsTopRows model)
+		public async Task<IActionResult> PostGetRecentVisits([FromBody] PostAnalyticsTopRows model)
 		{
 			try
 			{
@@ -140,25 +149,5 @@ namespace SantiagoConectaIA.API.Controllers
 				return BadRequest(new List<PageVisit> { new() { vchPageUrl = "Error", vchPageName = ex.Message } });
 			}
 		}
-	}
-
-	/// <summary>
-	/// Modelo para rango de fechas en consultas de analytics.
-	/// </summary>
-	public class AnalyticsDateRange
-	{
-		/// <summary>Fecha de inicio del rango.</summary>
-		public DateTime? dtStartDate { get; set; }
-		/// <summary>Fecha de fin del rango.</summary>
-		public DateTime? dtEndDate { get; set; }
-	}
-
-	/// <summary>
-	/// Modelo para obtener N registros recientes.
-	/// </summary>
-	public class AnalyticsTopRows
-	{
-		/// <summary>Número de registros a obtener (default 100).</summary>
-		public int iTopRows { get; set; } = 100;
 	}
 }
