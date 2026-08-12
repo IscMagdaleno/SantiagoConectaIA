@@ -1,0 +1,265 @@
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.Objects.FeedModule
+@using SantiagoConectaIA.Share.PostModels.FeedModule
+@inject Data_Feed DataFeed
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<section class="feed-area" style="padding: 24px 0 48px; position: relative; z-index: 10;">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-12">
+                <div class="center-heading mb-3">
+                    <h2 class="section-title" style="color: #880e4f; font-weight: 800;">Explora Santiago</h2>
+                    <p style="color: #666; max-width: 640px; margin: 8px auto 0;">Trámites, noticias, eventos y cápsulas del municipio en un solo feed.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-lg-8 col-md-10 mx-auto">
+                <div style="display: flex; gap: 8px; align-items: center; background: #fff; border-radius: 999px; padding: 6px 8px 6px 18px; box-shadow: 0 8px 24px rgba(136,14,79,0.1);">
+                    <MudIcon Icon="@Icons.Material.Filled.Search" Style="color: #880e4f;" />
+                    <input @bind="_searchText"
+                           @bind:event="oninput"
+                           @onkeydown="OnSearchKeyDown"
+                           placeholder="Buscar trámites, noticias, eventos o cápsulas..."
+                           style="flex: 1; border: none; outline: none; background: transparent; font-size: 1rem; padding: 10px 4px; color: #333;" />
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Style="border-radius: 999px; text-transform: none; font-weight: 700; min-width: 110px;"
+                               OnClick="GoToSearch">
+                        Buscar
+                    </MudButton>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Warning" Class="mb-3">@_errorMessage</MudAlert>
+        }
+
+        <div class="row feed-grid g-3 g-lg-4">
+            @foreach (var card in _items)
+            {
+                <div class="col-12 col-lg-6 feed-item">
+                    <FeedCardComponent Card="card" />
+                </div>
+            }
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="d-flex justify-content-center py-4">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else if (!_hasMore && _items.Count > 0)
+        {
+            <div class="text-center py-3" style="color: #9e9e9e; font-size: 0.9rem;">
+                Has llegado al final del feed.
+            </div>
+        }
+        else if (!_isLoading && _items.Count == 0 && string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="text-center py-5" style="color: #757575;">
+                Aún no hay contenido para mostrar.
+            </div>
+        }
+
+        <div @ref="_sentinel" style="height: 1px; width: 100%;"></div>
+    </div>
+</section>
+
+<style>
+    .feed-item {
+        display: flex;
+    }
+
+    .feed-item ::deep .feed-card {
+        width: 100%;
+    }
+
+    @@media (max-width: 991.98px) {
+        .feed-area .container {
+            max-width: 100%;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .feed-item {
+            margin-bottom: 16px;
+        }
+    }
+
+    @@media (min-width: 992px) {
+        .feed-area .container {
+            max-width: 960px;
+        }
+    }
+</style>
+
+@code {
+    [Inject]
+    private NavigationManager NavManager { get; set; } = default!;
+
+    private readonly List<FeedCard> _items = new();
+    private ElementReference _sentinel;
+    private DotNetObjectReference<FeedListComponent>? _dotNetRef;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _observer;
+    private string _sessionSeed = Guid.NewGuid().ToString("N");
+    private string _searchText = string.Empty;
+    private string _errorMessage = string.Empty;
+    private int _page = 0;
+    private int _pageSize = 10;
+    private bool _isLoading;
+    private bool _hasMore = true;
+    private bool _observerReady;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNextPageAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_observerReady)
+        {
+            try
+            {
+                _module = await JS.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/SantiagoConecta.SharedUI/js/feedInfinite.js");
+                _dotNetRef = DotNetObjectReference.Create(this);
+                _observer = await _module.InvokeAsync<IJSObjectReference>("observe", _sentinel, _dotNetRef);
+                _observerReady = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Feed infinite scroll init error: {ex.Message}");
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnFeedSentinelVisible()
+    {
+        if (_isLoading || !_hasMore)
+        {
+            return;
+        }
+
+        await LoadNextPageAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadNextPageAsync()
+    {
+        if (_isLoading || !_hasMore)
+        {
+            return;
+        }
+
+        _isLoading = true;
+        _errorMessage = string.Empty;
+
+        try
+        {
+            var nextPage = _page + 1;
+            var response = await DataFeed.PostGetFeed(new PostGetFeed
+            {
+                iPage = nextPage,
+                iPageSize = _pageSize,
+                vchSessionSeed = _sessionSeed
+            });
+
+            if (response == null)
+            {
+                _errorMessage = "No se pudo cargar el feed. Intenta de nuevo.";
+                _hasMore = false;
+                return;
+            }
+
+            if (!response.IsSuccess)
+            {
+                if (_items.Count == 0)
+                {
+                    _errorMessage = response.Message ?? "No hay contenido disponible.";
+                }
+                _hasMore = false;
+                return;
+            }
+
+            var pageItems = response.Data?.ToList() ?? new List<FeedCard>();
+            if (pageItems.Count == 0)
+            {
+                _hasMore = false;
+                return;
+            }
+
+            _items.AddRange(pageItems);
+            _page = nextPage;
+
+            var total = pageItems.First().iTotalRegistros;
+            if (pageItems.Count < _pageSize || (total > 0 && _items.Count >= total))
+            {
+                _hasMore = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Error de conexión al cargar el feed.";
+            Console.WriteLine(ex.Message);
+            _hasMore = false;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OnSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await GoToSearch();
+        }
+    }
+
+    private Task GoToSearch()
+    {
+        var q = (_searchText ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(q))
+        {
+            return Task.CompletedTask;
+        }
+
+        NavManager.NavigateTo($"/buscar?q={Uri.EscapeDataString(q)}");
+        return Task.CompletedTask;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_module is not null && _observer is not null)
+            {
+                await _module.InvokeVoidAsync("disconnect", _observer);
+            }
+        }
+        catch { }
+
+        if (_observer is not null)
+        {
+            try { await _observer.DisposeAsync(); } catch { }
+        }
+
+        if (_module is not null)
+        {
+            try { await _module.DisposeAsync(); } catch { }
+        }
+
+        _dotNetRef?.Dispose();
+    }
+}

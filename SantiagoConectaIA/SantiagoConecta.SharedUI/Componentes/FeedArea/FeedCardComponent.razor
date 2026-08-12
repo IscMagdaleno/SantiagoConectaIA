@@ -1,0 +1,247 @@
+@using SantiagoConectaIA.Share.Objects.FeedModule
+@inject NavigationManager NavManager
+@inject IDialogService DialogService
+
+<div class="feed-card">
+    <div class="feed-card-media">
+        @if (!string.IsNullOrWhiteSpace(Card.vchImagenUrl))
+        {
+            <img src="@Card.vchImagenUrl" alt="@Card.vchTitulo" loading="lazy" />
+        }
+        else
+        {
+            <div class="feed-card-placeholder">
+                <MudIcon Icon="@GetTypeIcon()" Class="feed-card-placeholder-icon" />
+            </div>
+        }
+        <span class="feed-card-badge">@GetTypeLabel()</span>
+    </div>
+
+    <div class="feed-card-body">
+        <h3 class="feed-card-title">@Card.vchTitulo</h3>
+
+        @if (!string.IsNullOrWhiteSpace(Card.nvchDescripcion))
+        {
+            <p class="feed-card-desc">@Card.nvchDescripcion</p>
+        }
+
+        @if (Card.dtFecha.HasValue && Card.dtFecha.Value > DateTime.MinValue)
+        {
+            <div class="feed-card-date">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Style="font-size: 14px;" />
+                <span>@Card.dtFecha.Value.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-MX"))</span>
+            </div>
+        }
+
+        <div class="feed-card-cta">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                       OnClick="HandleCta">
+                @GetCtaLabel()
+            </MudButton>
+        </div>
+    </div>
+</div>
+
+<style>
+    .feed-card {
+        background: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 12px 32px rgba(136, 14, 79, 0.1);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+    }
+
+    .feed-card-media {
+        position: relative;
+        width: 100%;
+        background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+        overflow: hidden;
+        flex: 0 0 auto;
+        height: 220px;
+    }
+
+    .feed-card-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .feed-card-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .feed-card-placeholder-icon {
+        font-size: 64px !important;
+        color: #880e4f;
+        opacity: 0.55;
+    }
+
+    .feed-card-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: rgba(255, 255, 255, 0.94);
+        color: #880e4f;
+        padding: 5px 14px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+    }
+
+    .feed-card-body {
+        padding: 18px 20px 22px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        gap: 10px;
+    }
+
+    .feed-card-title {
+        color: #4a148c;
+        font-weight: 800;
+        font-size: 1.2rem;
+        line-height: 1.35;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .feed-card-desc {
+        color: #5c5c5c;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex: 1;
+    }
+
+    .feed-card-date {
+        color: #9e9e9e;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .feed-card-cta {
+        margin-top: auto;
+        padding-top: 8px;
+    }
+
+    /* Desktop: 2 large cards */
+    @@media (min-width: 992px) {
+        .feed-card {
+            min-height: 560px;
+        }
+
+        .feed-card-media {
+            height: 280px;
+        }
+
+        .feed-card-title {
+            font-size: 1.35rem;
+        }
+    }
+
+    /* Phone: one card ~ full screen (Facebook-style) */
+    @@media (max-width: 991.98px) {
+        .feed-card {
+            min-height: calc(100dvh - 150px);
+            border-radius: 16px;
+        }
+
+        .feed-card-media {
+            height: 48dvh;
+            min-height: 240px;
+        }
+
+        .feed-card-title {
+            font-size: 1.35rem;
+        }
+
+        .feed-card-desc {
+            -webkit-line-clamp: 5;
+            font-size: 1rem;
+        }
+
+        .feed-card-placeholder-icon {
+            font-size: 80px !important;
+        }
+    }
+</style>
+
+@code {
+    [Parameter, EditorRequired]
+    public FeedCard Card { get; set; } = new();
+
+    private string GetTypeLabel() => Card.vchTipoEntidad?.ToUpperInvariant() switch
+    {
+        "TRAMITE" => "Trámite",
+        "NOTICIA" => "Noticia",
+        "EVENTO" => "Evento",
+        "CAPSULA" => "Dato Curioso",
+        _ => "Contenido"
+    };
+
+    private string GetCtaLabel() => Card.vchTipoEntidad?.ToUpperInvariant() switch
+    {
+        "TRAMITE" => "Ver Detalle",
+        "NOTICIA" => "Leer Noticia",
+        "EVENTO" => "Ir al Evento",
+        "CAPSULA" => "Ver Dato Curioso",
+        _ => "Ver más"
+    };
+
+    private string GetTypeIcon() => Card.vchTipoEntidad?.ToUpperInvariant() switch
+    {
+        "TRAMITE" => Icons.Material.Filled.Assignment,
+        "NOTICIA" => Icons.Material.Filled.Article,
+        "EVENTO" => Icons.Material.Filled.Event,
+        "CAPSULA" => Icons.Material.Filled.Lightbulb,
+        _ => Icons.Material.Filled.Info
+    };
+
+    private async Task HandleCta()
+    {
+        if (string.Equals(Card.vchTipoEntidad, "CAPSULA", StringComparison.OrdinalIgnoreCase))
+        {
+            var parameters = new DialogParameters
+            {
+                ["Titulo"] = Card.vchTitulo,
+                ["Descripcion"] = Card.nvchDescripcion,
+                ["Contenido"] = Card.nvchContenidoDetallado
+            };
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true
+            };
+            await DialogService.ShowAsync<FeedCapsulaDialog>("Dato Curioso", parameters, options);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Card.vchRutaDetalle))
+        {
+            NavManager.NavigateTo(Card.vchRutaDetalle, forceLoad: true);
+        }
+    }
+}

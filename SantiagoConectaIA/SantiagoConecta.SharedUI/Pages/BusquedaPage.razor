@@ -1,0 +1,223 @@
+@page "/buscar"
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConecta.SharedUI.Componentes.FeedArea
+@using SantiagoConectaIA.Share.Objects.FeedModule
+@using SantiagoConectaIA.Share.PostModels.FeedModule
+@inject Data_Feed DataFeed
+@inject NavigationManager NavManager
+
+<PageTitle>Búsqueda - Santiago Conecta</PageTitle>
+
+<section class="section" style="padding-top: 120px; padding-bottom: 60px; min-height: 70vh;">
+    <div class="container">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-8">
+                <h1 style="color: #880e4f; font-weight: 800; font-size: clamp(1.6rem, 4vw, 2.2rem); margin-bottom: 8px;">
+                    Resultados de búsqueda
+                </h1>
+                @if (!string.IsNullOrWhiteSpace(_query))
+                {
+                    <p style="color: #666; margin: 0;">Mostrando resultados para <strong>"@_query"</strong></p>
+                }
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.ArrowBack"
+                           Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                           OnClick='() => NavManager.NavigateTo("/feed")'>
+                    Volver al Feed
+                </MudButton>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-lg-8 col-md-10">
+                <div style="display: flex; gap: 8px; align-items: center; background: #fff; border-radius: 999px; padding: 6px 8px 6px 18px; box-shadow: 0 8px 24px rgba(136,14,79,0.1);">
+                    <MudIcon Icon="@Icons.Material.Filled.Search" Style="color: #880e4f;" />
+                    <input @bind="_searchInput"
+                           @bind:event="oninput"
+                           @onkeydown="OnSearchKeyDown"
+                           placeholder="Nueva búsqueda..."
+                           style="flex: 1; border: none; outline: none; background: transparent; font-size: 1rem; padding: 10px 4px; color: #333;" />
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Style="border-radius: 999px; text-transform: none; font-weight: 700; min-width: 110px;"
+                               OnClick="RunSearchFromInput">
+                        Buscar
+                    </MudButton>
+                </div>
+            </div>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="d-flex justify-content-center py-5">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(_errorMessage) && TotalCount == 0)
+        {
+            <MudAlert Severity="Severity.Warning">@_errorMessage</MudAlert>
+        }
+        else if (_result == null || TotalCount == 0)
+        {
+            <MudAlert Severity="Severity.Info">No se encontraron resultados. Intenta con otras palabras clave.</MudAlert>
+        }
+        else
+        {
+            <MudExpansionPanels MultiExpansion="true">
+                <MudExpansionPanel Text="@($"Trámites ({_result.Tramites.Count})")" IsExpanded="@(_result.Tramites.Count > 0)" Disabled="@(_result.Tramites.Count == 0)">
+                    <div class="row">
+                        @foreach (var card in _result.Tramites)
+                        {
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <FeedCardComponent Card="card" />
+                            </div>
+                        }
+                    </div>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="@($"Noticias ({_result.Noticias.Count})")" IsExpanded="@(_result.Noticias.Count > 0)" Disabled="@(_result.Noticias.Count == 0)">
+                    <div class="row">
+                        @foreach (var card in _result.Noticias)
+                        {
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <FeedCardComponent Card="card" />
+                            </div>
+                        }
+                    </div>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="@($"Eventos ({_result.Eventos.Count})")" IsExpanded="@(_result.Eventos.Count > 0)" Disabled="@(_result.Eventos.Count == 0)">
+                    <div class="row">
+                        @foreach (var card in _result.Eventos)
+                        {
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <FeedCardComponent Card="card" />
+                            </div>
+                        }
+                    </div>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="@($"Cápsulas de Santiago ({_result.Capsulas.Count})")" IsExpanded="@(_result.Capsulas.Count > 0)" Disabled="@(_result.Capsulas.Count == 0)">
+                    <div class="row">
+                        @foreach (var card in _result.Capsulas)
+                        {
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <FeedCardComponent Card="card" />
+                            </div>
+                        }
+                    </div>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        }
+    </div>
+</section>
+
+@code {
+    private string _query = string.Empty;
+    private string _searchInput = string.Empty;
+    private bool _isLoading;
+    private string _errorMessage = string.Empty;
+    private FeedSearchResult? _result;
+    private string? _lastQuery;
+
+    private int TotalCount =>
+        (_result?.Tramites.Count ?? 0)
+        + (_result?.Noticias.Count ?? 0)
+        + (_result?.Eventos.Count ?? 0)
+        + (_result?.Capsulas.Count ?? 0);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _query = GetQueryParam("q");
+        _searchInput = _query;
+
+        if (!string.IsNullOrWhiteSpace(_query) && !string.Equals(_query, _lastQuery, StringComparison.Ordinal))
+        {
+            _lastQuery = _query;
+            await SearchAsync(_query);
+        }
+    }
+
+    private string GetQueryParam(string key)
+    {
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        var query = uri.Query.TrimStart('?');
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return string.Empty;
+        }
+
+        foreach (var part in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var kv = part.Split('=', 2);
+            if (kv.Length == 2 && string.Equals(Uri.UnescapeDataString(kv[0]), key, StringComparison.OrdinalIgnoreCase))
+            {
+                return Uri.UnescapeDataString(kv[1].Replace("+", " "));
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private async Task OnSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await RunSearchFromInput();
+        }
+    }
+
+    private Task RunSearchFromInput()
+    {
+        var q = (_searchInput ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(q))
+        {
+            return Task.CompletedTask;
+        }
+
+        NavManager.NavigateTo($"/buscar?q={Uri.EscapeDataString(q)}");
+        return Task.CompletedTask;
+    }
+
+    private async Task SearchAsync(string texto)
+    {
+        _isLoading = true;
+        _errorMessage = string.Empty;
+        _result = null;
+        StateHasChanged();
+
+        try
+        {
+            var response = await DataFeed.PostSearchFeed(new PostSearchFeed
+            {
+                vchTexto = texto,
+                iPage = 1,
+                iPageSize = 50
+            });
+
+            if (response == null)
+            {
+                _errorMessage = "No se pudo realizar la búsqueda.";
+                return;
+            }
+
+            if (!response.IsSuccess)
+            {
+                _errorMessage = response.Message ?? "No se encontraron resultados.";
+                _result = response.Data ?? new FeedSearchResult();
+                return;
+            }
+
+            _result = response.Data ?? new FeedSearchResult();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Error de conexión al buscar.";
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

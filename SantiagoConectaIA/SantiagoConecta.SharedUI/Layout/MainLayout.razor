@@ -27,6 +27,7 @@
                     </a>
                     <ul class="nav" style="@(IsMenuOpen ? "display: block !important;" : "")">
                         <li><NavLink href="/" Match="NavLinkMatch.All" @onclick="CloseMenu">Inicio</NavLink></li>
+                        <li><NavLink href="feed" @onclick="CloseMenu">Feed</NavLink></li>
                         <li><NavLink href="tramites" @onclick="CloseMenu">Trámites</NavLink></li>
                         <li><NavLink href="noticias" @onclick="CloseMenu">Noticias</NavLink></li>
                         <li><NavLink href="eventos" @onclick="CloseMenu">Eventos</NavLink></li>

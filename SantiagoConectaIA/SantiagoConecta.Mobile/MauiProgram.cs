@@ -47,6 +47,7 @@ public static class MauiProgram
 		builder.Services.AddScoped<Data_InformacionLocal>();
 		builder.Services.AddScoped<Data_BuzonCiudadano>();
 		builder.Services.AddScoped<Data_Emprendimientos>();
+		builder.Services.AddScoped<Data_Feed>();
 		builder.Services.AddMudServices();
 		builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 

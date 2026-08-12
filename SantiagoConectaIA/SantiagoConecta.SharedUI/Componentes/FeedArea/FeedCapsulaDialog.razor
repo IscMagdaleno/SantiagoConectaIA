@@ -1,0 +1,22 @@
+<div style="padding: 8px 4px;">
+    <MudText Typo="Typo.h5" Style="color: #880e4f; font-weight: 800; margin-bottom: 12px;">@Titulo</MudText>
+    @if (!string.IsNullOrWhiteSpace(Descripcion))
+    {
+        <MudText Typo="Typo.body1" Style="color: #5c5c5c; margin-bottom: 16px; white-space: pre-wrap;">@Descripcion</MudText>
+    }
+    @if (!string.IsNullOrWhiteSpace(Contenido))
+    {
+        <MudText Typo="Typo.body2" Style="color: #424242; white-space: pre-wrap; line-height: 1.6;">@Contenido</MudText>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Titulo { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Descripcion { get; set; }
+
+    [Parameter]
+    public string? Contenido { get; set; }
+}

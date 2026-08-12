@@ -85,6 +85,7 @@ builder.Services.AddScoped<IEmpresasDomain, EmpresasDomain>();
 builder.Services.AddScoped<IEventosDomain, EventosDomain>();
 builder.Services.AddScoped<IAnalyticsDomain, AnalyticsDomain>();
 builder.Services.AddScoped<IPageVisitsDomain, PageVisitsDomain>();
+builder.Services.AddScoped<IFeedDomain, FeedDomain>();
 	builder.Services.AddScoped<IInformacionLocalDomain, InformacionLocalDomain>();
 
 	// WhatsApp Analytics services
@@ -110,6 +111,7 @@ builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
 builder.Services.AddScoped<IEventosRepository, EventosRepository>();
 builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 builder.Services.AddScoped<IPageVisitsRepository, PageVisitsRepository>();
+builder.Services.AddScoped<IFeedRepository, FeedRepository>();
 	builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
 
 	// WhatsApp Analytics repository
