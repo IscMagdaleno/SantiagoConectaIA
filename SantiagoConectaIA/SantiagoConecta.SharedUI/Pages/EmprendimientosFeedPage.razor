@@ -1,0 +1,31 @@
+@page "/emprendimientos"
+@using SantiagoConecta.SharedUI.Componentes.EmprendimientosFeedArea
+@inject NavigationManager NavManager
+
+<PageTitle>Emprendimientos - Santiago Conecta</PageTitle>
+
+<section class="section" style="padding-top: 100px; min-height: 70vh; background: linear-gradient(180deg, #fdf2f8 0%, #ffffff 180px);">
+    <div class="container mb-3">
+        <div class="row align-items-center mb-3">
+            <div class="col-md-8">
+                <div class="center-heading mb-0 text-md-start text-center">
+                    <h2 class="section-title" style="color: #880e4f; font-weight: 800; margin-bottom: 8px;">Emprendimientos Locales</h2>
+                    <p style="color: #666; margin: 0;">Negocios y productos de Santiago Papasquiaro en un solo feed.</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end text-center mt-3 mt-md-0">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.GridView"
+                           Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                           OnClick='() => NavManager.NavigateTo("/emprendimientos/galeria")'>
+                    Ver galería
+                </MudButton>
+            </div>
+        </div>
+
+        <EmprendimientosFeedSearchBar />
+    </div>
+
+    <EmprendimientosFeedListComponent />
+</section>

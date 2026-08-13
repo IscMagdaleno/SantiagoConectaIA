@@ -1,0 +1,243 @@
+@using SantiagoConectaIA.Share.Objects.EmprendimientosFeedModule
+@inject NavigationManager NavManager
+
+<div class="emp-feed-card">
+    <div class="emp-feed-card-media">
+        @if (!string.IsNullOrWhiteSpace(Card.vchImagenUrl))
+        {
+            <img src="@Card.vchImagenUrl" alt="@Card.vchTitulo" loading="lazy" />
+        }
+        else
+        {
+            <div class="emp-feed-card-placeholder">
+                <MudIcon Icon="@GetTypeIcon()" Class="emp-feed-card-placeholder-icon" />
+            </div>
+        }
+        <span class="emp-feed-card-badge">@GetTypeLabel()</span>
+    </div>
+
+    <div class="emp-feed-card-body">
+        <h3 class="emp-feed-card-title">@Card.vchTitulo</h3>
+
+        @if (IsProducto && !string.IsNullOrWhiteSpace(Card.vchNombreEmpresa))
+        {
+            <div class="emp-feed-card-shop">
+                <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 16px;" />
+                <span>@Card.vchNombreEmpresa</span>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Card.nvchDescripcion))
+        {
+            <p class="emp-feed-card-desc">@Card.nvchDescripcion</p>
+        }
+
+        @if (IsProducto)
+        {
+            <div class="emp-feed-card-price">
+                @if (Card.bAplicaDescuento && Card.mPrecioDescuento > 0)
+                {
+                    <span class="price-old">@Card.mPrecio.ToString("C")</span>
+                    <span class="price-now">@Card.mPrecioDescuento.ToString("C")</span>
+                }
+                else if (Card.mPrecio > 0)
+                {
+                    <span class="price-now">@Card.mPrecio.ToString("C")</span>
+                }
+            </div>
+        }
+
+        <div class="emp-feed-card-cta">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                       OnClick="HandleCta"
+                       EndIcon="@Icons.Material.Filled.ArrowForward">
+                @GetCtaLabel()
+            </MudButton>
+        </div>
+    </div>
+</div>
+
+<style>
+    .emp-feed-card {
+        background: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 12px 32px rgba(136, 14, 79, 0.1);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+    }
+
+    .emp-feed-card-media {
+        position: relative;
+        width: 100%;
+        background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+        overflow: hidden;
+        height: 220px;
+    }
+
+    .emp-feed-card-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .emp-feed-card-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .emp-feed-card-placeholder-icon {
+        font-size: 64px !important;
+        color: #880e4f;
+        opacity: 0.55;
+    }
+
+    .emp-feed-card-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: rgba(255, 255, 255, 0.94);
+        color: #880e4f;
+        padding: 5px 14px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+    }
+
+    .emp-feed-card-body {
+        padding: 18px 20px 22px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        gap: 10px;
+    }
+
+    .emp-feed-card-title {
+        color: #4a148c;
+        font-weight: 800;
+        font-size: 1.2rem;
+        line-height: 1.35;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .emp-feed-card-shop {
+        color: #880e4f;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .emp-feed-card-desc {
+        color: #5c5c5c;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex: 1;
+    }
+
+    .emp-feed-card-price {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+    }
+
+    .emp-feed-card-price .price-old {
+        color: #9e9e9e;
+        text-decoration: line-through;
+        font-size: 0.9rem;
+    }
+
+    .emp-feed-card-price .price-now {
+        color: #d81b60;
+        font-weight: 800;
+        font-size: 1.15rem;
+    }
+
+    .emp-feed-card-cta {
+        margin-top: auto;
+        padding-top: 8px;
+    }
+
+    @@media (min-width: 992px) {
+        .emp-feed-card {
+            min-height: 560px;
+        }
+
+        .emp-feed-card-media {
+            height: 280px;
+        }
+
+        .emp-feed-card-title {
+            font-size: 1.35rem;
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        .emp-feed-card {
+            min-height: calc(100dvh - 150px);
+            border-radius: 16px;
+        }
+
+        .emp-feed-card-media {
+            height: 48dvh;
+            min-height: 240px;
+        }
+
+        .emp-feed-card-title {
+            font-size: 1.35rem;
+        }
+
+        .emp-feed-card-desc {
+            -webkit-line-clamp: 5;
+            font-size: 1rem;
+        }
+
+        .emp-feed-card-placeholder-icon {
+            font-size: 80px !important;
+        }
+    }
+</style>
+
+@code {
+    [Parameter, EditorRequired]
+    public EmprendimientosFeedCard Card { get; set; } = new();
+
+    private bool IsProducto => string.Equals(Card.vchTipoEntidad, "PRODUCTO", StringComparison.OrdinalIgnoreCase);
+
+    private string GetTypeLabel() => IsProducto ? "Producto" : "Emprendimiento";
+
+    private string GetCtaLabel() => IsProducto ? "Ver en tienda" : "Visitar";
+
+    private string GetTypeIcon() => IsProducto
+        ? Icons.Material.Filled.ShoppingBag
+        : Icons.Material.Filled.Storefront;
+
+    private void HandleCta()
+    {
+        if (!string.IsNullOrWhiteSpace(Card.vchRutaDetalle))
+        {
+            NavManager.NavigateTo(Card.vchRutaDetalle, forceLoad: true);
+        }
+    }
+}

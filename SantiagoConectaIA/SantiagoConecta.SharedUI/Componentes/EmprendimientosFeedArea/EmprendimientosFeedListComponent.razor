@@ -1,0 +1,213 @@
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.Objects.EmprendimientosFeedModule
+@using SantiagoConectaIA.Share.PostModels.EmprendimientosFeedModule
+@inject Data_EmprendimientosFeed DataFeed
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<section class="emp-feed-area" style="padding: 24px 0 48px; position: relative; z-index: 10;">
+    <div class="container">
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Warning" Class="mb-3">@_errorMessage</MudAlert>
+        }
+
+        <div class="row emp-feed-grid g-3 g-lg-4">
+            @foreach (var card in _items)
+            {
+                <div class="col-12 col-lg-6 emp-feed-item">
+                    <EmprendimientosFeedCardComponent Card="card" />
+                </div>
+            }
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="d-flex justify-content-center py-4">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else if (!_hasMore && _items.Count > 0)
+        {
+            <div class="text-center py-3" style="color: #9e9e9e; font-size: 0.9rem;">
+                Has llegado al final del feed.
+            </div>
+        }
+        else if (!_isLoading && _items.Count == 0 && string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="text-center py-5" style="color: #757575;">
+                Aún no hay emprendimientos o productos para mostrar.
+            </div>
+        }
+
+        <div @ref="_sentinel" style="height: 1px; width: 100%;"></div>
+    </div>
+</section>
+
+<style>
+    .emp-feed-item {
+        display: flex;
+    }
+
+    .emp-feed-item ::deep .emp-feed-card {
+        width: 100%;
+    }
+
+    @@media (max-width: 991.98px) {
+        .emp-feed-area .container {
+            max-width: 100%;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .emp-feed-item {
+            margin-bottom: 16px;
+        }
+    }
+
+    @@media (min-width: 992px) {
+        .emp-feed-area .container {
+            max-width: 960px;
+        }
+    }
+</style>
+
+@code {
+    private readonly List<EmprendimientosFeedCard> _items = new();
+    private ElementReference _sentinel;
+    private DotNetObjectReference<EmprendimientosFeedListComponent>? _dotNetRef;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _observer;
+    private string _sessionSeed = Guid.NewGuid().ToString("N");
+    private string _errorMessage = string.Empty;
+    private int _page = 0;
+    private int _pageSize = 10;
+    private bool _isLoading;
+    private bool _hasMore = true;
+    private bool _observerReady;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNextPageAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_observerReady)
+        {
+            try
+            {
+                _module = await JS.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/SantiagoConecta.SharedUI/js/feedInfinite.js");
+                _dotNetRef = DotNetObjectReference.Create(this);
+                _observer = await _module.InvokeAsync<IJSObjectReference>("observe", _sentinel, _dotNetRef);
+                _observerReady = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Emprendimientos feed infinite scroll init error: {ex.Message}");
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnFeedSentinelVisible()
+    {
+        if (_isLoading || !_hasMore)
+        {
+            return;
+        }
+
+        await LoadNextPageAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadNextPageAsync()
+    {
+        if (_isLoading || !_hasMore)
+        {
+            return;
+        }
+
+        _isLoading = true;
+        _errorMessage = string.Empty;
+
+        try
+        {
+            var nextPage = _page + 1;
+            var response = await DataFeed.PostGetEmprendimientosFeed(new PostGetEmprendimientosFeed
+            {
+                iPage = nextPage,
+                iPageSize = _pageSize,
+                vchSessionSeed = _sessionSeed
+            });
+
+            if (response == null)
+            {
+                _errorMessage = "No se pudo cargar el feed. Intenta de nuevo.";
+                _hasMore = false;
+                return;
+            }
+
+            if (!response.IsSuccess)
+            {
+                if (_items.Count == 0)
+                {
+                    _errorMessage = response.Message ?? "No hay contenido disponible.";
+                }
+                _hasMore = false;
+                return;
+            }
+
+            var pageItems = response.Data?.ToList() ?? new List<EmprendimientosFeedCard>();
+            if (pageItems.Count == 0)
+            {
+                _hasMore = false;
+                return;
+            }
+
+            _items.AddRange(pageItems);
+            _page = nextPage;
+
+            var total = pageItems.First().iTotalRegistros;
+            if (pageItems.Count < _pageSize || (total > 0 && _items.Count >= total))
+            {
+                _hasMore = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Error de conexión al cargar el feed.";
+            Console.WriteLine(ex.Message);
+            _hasMore = false;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_module is not null && _observer is not null)
+            {
+                await _module.InvokeVoidAsync("disconnect", _observer);
+            }
+        }
+        catch { }
+
+        if (_observer is not null)
+        {
+            try { await _observer.DisposeAsync(); } catch { }
+        }
+
+        if (_module is not null)
+        {
+            try { await _module.DisposeAsync(); } catch { }
+        }
+
+        _dotNetRef?.Dispose();
+    }
+}

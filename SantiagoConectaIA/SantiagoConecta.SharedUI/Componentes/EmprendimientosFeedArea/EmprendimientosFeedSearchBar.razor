@@ -1,0 +1,69 @@
+@inject NavigationManager NavManager
+
+<div class="row mb-4">
+    <div class="col-lg-8 col-md-10 mx-auto">
+        <div style="display: flex; gap: 8px; align-items: center; background: #fff; border-radius: 999px; padding: 6px 8px 6px 18px; box-shadow: 0 8px 24px rgba(136,14,79,0.1);">
+            <MudIcon Icon="@Icons.Material.Filled.Search" Style="color: #880e4f;" />
+            <input @bind="_searchText"
+                   @bind:event="oninput"
+                   @onkeydown="OnSearchKeyDown"
+                   placeholder="Buscar emprendimientos o productos..."
+                   style="flex: 1; border: none; outline: none; background: transparent; font-size: 1rem; padding: 10px 4px; color: #333;" />
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Style="border-radius: 999px; text-transform: none; font-weight: 700; min-width: 110px;"
+                       OnClick="GoToSearch">
+                Buscar
+            </MudButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// When set, search runs in-page (no full navigation). Parent updates results.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnSearch { get; set; }
+
+    [Parameter]
+    public string? InitialQuery { get; set; }
+
+    private string _searchText = string.Empty;
+    private string? _lastInitialQuery;
+
+    protected override void OnParametersSet()
+    {
+        if (!string.Equals(InitialQuery, _lastInitialQuery, StringComparison.Ordinal))
+        {
+            _lastInitialQuery = InitialQuery;
+            _searchText = InitialQuery ?? string.Empty;
+        }
+    }
+
+    private async Task OnSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await GoToSearch();
+        }
+    }
+
+    private async Task GoToSearch()
+    {
+        var q = (_searchText ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(q))
+        {
+            return;
+        }
+
+        if (OnSearch.HasDelegate)
+        {
+            await OnSearch.InvokeAsync(q);
+            return;
+        }
+
+        // Soft SPA navigation — no forceLoad
+        NavManager.NavigateTo($"/emprendimientos/buscar?q={Uri.EscapeDataString(q)}");
+    }
+}

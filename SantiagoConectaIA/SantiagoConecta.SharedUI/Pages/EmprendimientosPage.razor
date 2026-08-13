@@ -1,4 +1,4 @@
-@page "/emprendimientos"
+@page "/emprendimientos/galeria"
 @using SantiagoConecta.SharedUI.Data
 @using SantiagoConectaIA.Share.Objects.EmpresasModulo
 @using SantiagoConectaIA.Share.PostModels.EmpresasModulo
@@ -6,16 +6,24 @@
 @inject Data_Emprendimientos dataEmprendimientos
 @inject NavigationManager NavManager
 
-<PageTitle>Santiago Conecta - Emprendimientos Locales</PageTitle>
+<PageTitle>Santiago Conecta - Galería de Emprendimientos</PageTitle>
 
 <!-- Hero Section -->
 <div class="custom-hero-header">
     <div class="container relative z-10 mx-auto px-4 text-center">
         <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 64px; color: #fbbf24; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));" />
-        <h1 class="header-title mt-3">Emprendimientos Locales</h1>
+        <h1 class="header-title mt-3">Galería de Emprendimientos</h1>
         <p class="header-subtitle">
             Descubre los mejores negocios, productos y servicios de Santiago Papasquiaro. Apoya la economía local.
         </p>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Class="mt-3"
+                   StartIcon="@Icons.Material.Filled.DynamicFeed"
+                   Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                   OnClick='() => NavManager.NavigateTo("/emprendimientos")'>
+            Volver al Feed
+        </MudButton>
     </div>
     
     <!-- Animated waves at bottom -->
