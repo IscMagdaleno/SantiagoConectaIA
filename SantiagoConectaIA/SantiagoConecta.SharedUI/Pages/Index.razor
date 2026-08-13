@@ -98,8 +98,12 @@
 </div>
 <!-- ***** Hero Section End ***** -->
 
-<!-- ***** Feed de Contenido Principal ***** -->
-<FeedListComponent />
+<!-- ***** Búsqueda (el feed vive en /feed) ***** -->
+<section class="section" style="padding: 32px 0 8px; position: relative; z-index: 10;">
+    <div class="container">
+        <FeedSearchBar />
+    </div>
+</section>
 
 <!-- ***** Sección de Destacados (Noticias y Eventos) ***** -->
 <section class="section" style="padding-top: 40px; position: relative; z-index: 10;">
