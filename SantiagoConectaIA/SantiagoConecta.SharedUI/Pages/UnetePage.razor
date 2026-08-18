@@ -1,0 +1,287 @@
+@page "/unete"
+@implements IDisposable
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.PostModels.CiudadanoModule
+@inject Data_Ciudadano DataCiudadano
+@inject CiudadanoSession Session
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Únete - Santiago Conecta</PageTitle>
+
+<div class="custom-hero-header">
+    <div class="container relative z-10 mx-auto px-4 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.Favorite" Style="font-size: 56px; color: #ffffff; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
+        <h1 class="header-title mt-2">Sé parte de Santiago Conecta</h1>
+        <p class="header-subtitle">Regístrate con tu celular y forma parte de esta comunidad. Pronto podrás dejar tu opinión en noticias, trámites y eventos.</p>
+    </div>
+    <div class="waves-wrapper">
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+             viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </div>
+</div>
+
+<section class="section" style="padding: 40px 0 80px;">
+    <div class="container" style="max-width: 520px;">
+        @if (Session.IsLoggedIn)
+        {
+            <MudPaper Elevation="4" Class="pa-6 text-center" Style="border-radius: 20px;">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Style="font-size: 48px;" />
+                <MudText Typo="Typo.h5" Class="mt-3" Style="font-weight: 700;">Hola, @Session.Alias</MudText>
+                <MudText Typo="Typo.body2" Class="mt-2 mb-4" Style="color: #666;">
+                    Ya eres parte de Santiago Conecta. Pronto podrás dejar tu opinión en noticias, trámites y eventos.
+                </MudText>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                           OnClick="SalirAsync">
+                    Salir
+                </MudButton>
+            </MudPaper>
+        }
+        else
+        {
+        <MudPaper Elevation="4" Class="pa-6" Style="border-radius: 20px;">
+            <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-6" Color="Color.Primary">
+                <MudTabPanel Text="Únete">
+                    <MudText Typo="Typo.body2" Class="mb-4" Style="color: #666;">
+                        Tres datos y ya eres parte de Santiago Conecta.
+                    </MudText>
+                    <MudTextField @bind-Value="_regAlias"
+                                  Label="Nombre / Alias"
+                                  Placeholder="¿Cómo te dicen? (ej. Juan Pérez o JuanP94)"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  Class="mb-3" />
+                    <MudTextField @bind-Value="_regTelefono"
+                                  Label="Teléfono / Celular"
+                                  Placeholder="674 ..."
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Telephone"
+                                  MaxLength="10"
+                                  Immediate="true"
+                                  Required="true"
+                                  HelperText="10 dígitos, será tu identificador"
+                                  Class="mb-3" />
+                    <MudTextField @bind-Value="_regPin"
+                                  Label="PIN"
+                                  Placeholder="Mínimo 4 caracteres"
+                                  Variant="Variant.Outlined"
+                                  InputType="@(_showRegPin ? InputType.Text : InputType.Password)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_showRegPin ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="() => _showRegPin = !_showRegPin"
+                                  Required="true"
+                                  Class="mb-4" />
+                    @if (!string.IsNullOrWhiteSpace(_regError))
+                    {
+                        <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_regError</MudAlert>
+                    }
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Disabled="@_isBusy"
+                               Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                               OnClick="RegistrarAsync">
+                        @(_isBusy ? "Uniendo..." : "Quiero ser parte")
+                    </MudButton>
+                </MudTabPanel>
+                <MudTabPanel Text="Ya soy parte">
+                    <MudText Typo="Typo.body2" Class="mb-4" Style="color: #666;">
+                        Entra con tu celular y tu PIN.
+                    </MudText>
+                    <MudTextField @bind-Value="_loginTelefono"
+                                  Label="Teléfono / Celular"
+                                  Placeholder="674 ..."
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Telephone"
+                                  MaxLength="10"
+                                  Immediate="true"
+                                  Required="true"
+                                  Class="mb-3" />
+                    <MudTextField @bind-Value="_loginPin"
+                                  Label="PIN"
+                                  Variant="Variant.Outlined"
+                                  InputType="@(_showLoginPin ? InputType.Text : InputType.Password)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_showLoginPin ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="() => _showLoginPin = !_showLoginPin"
+                                  Required="true"
+                                  Class="mb-4" />
+                    @if (!string.IsNullOrWhiteSpace(_loginError))
+                    {
+                        <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_loginError</MudAlert>
+                    }
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Disabled="@_isBusy"
+                               Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                               OnClick="LoginAsync">
+                        @(_isBusy ? "Entrando..." : "Entrar")
+                    </MudButton>
+                </MudTabPanel>
+            </MudTabs>
+        </MudPaper>
+        }
+    </div>
+</section>
+
+<style>
+    @@keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+</style>
+
+@code {
+    private string _regAlias = string.Empty;
+    private string _regTelefono = string.Empty;
+    private string _regPin = string.Empty;
+    private string _regError = string.Empty;
+    private bool _showRegPin;
+
+    private string _loginTelefono = string.Empty;
+    private string _loginPin = string.Empty;
+    private string _loginError = string.Empty;
+    private bool _showLoginPin;
+
+    private bool _isBusy;
+
+    protected override void OnInitialized()
+    {
+        Session.Changed += OnSessionChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Session.LoadAsync();
+        }
+    }
+
+    private void OnSessionChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SalirAsync()
+    {
+        await Session.SignOutAsync();
+        Snackbar.Add("Sesión cerrada.", Severity.Info);
+    }
+
+    public void Dispose()
+    {
+        Session.Changed -= OnSessionChanged;
+    }
+
+    private async Task RegistrarAsync()
+    {
+        _regError = string.Empty;
+        var telefono = DigitsOnly(_regTelefono);
+        if (string.IsNullOrWhiteSpace(_regAlias))
+        {
+            _regError = "El nombre o alias es obligatorio.";
+            return;
+        }
+        if (telefono.Length != 10)
+        {
+            _regError = "El teléfono debe tener exactamente 10 dígitos.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_regPin) || _regPin.Length < 4)
+        {
+            _regError = "El PIN debe tener al menos 4 caracteres.";
+            return;
+        }
+
+        _isBusy = true;
+        try
+        {
+            var response = await DataCiudadano.PostSaveCiudadano(new PostSaveCiudadano
+            {
+                vchAlias = _regAlias.Trim(),
+                vchTelefono = telefono,
+                vchPassword = _regPin
+            });
+
+            if (response == null || !response.IsSuccess || response.Data == null || string.IsNullOrWhiteSpace(response.Data.Token))
+            {
+                _regError = response?.Message ?? "No se pudo completar el registro.";
+                return;
+            }
+
+            await Session.SignInAsync(response.Data);
+            Snackbar.Add("Bienvenido a Santiago Conecta.", Severity.Success);
+            NavManager.NavigateTo("/");
+        }
+        catch
+        {
+            _regError = "Error de conexión. Intenta de nuevo.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task LoginAsync()
+    {
+        _loginError = string.Empty;
+        var telefono = DigitsOnly(_loginTelefono);
+        if (telefono.Length != 10)
+        {
+            _loginError = "El teléfono debe tener exactamente 10 dígitos.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_loginPin) || _loginPin.Length < 4)
+        {
+            _loginError = "El PIN debe tener al menos 4 caracteres.";
+            return;
+        }
+
+        _isBusy = true;
+        try
+        {
+            var response = await DataCiudadano.PostLoginCiudadano(new PostLoginCiudadano
+            {
+                vchTelefono = telefono,
+                vchPassword = _loginPin
+            });
+
+            if (response == null || !response.IsSuccess || response.Data == null || string.IsNullOrWhiteSpace(response.Data.Token))
+            {
+                _loginError = response?.Message ?? "Teléfono o PIN incorrectos.";
+                return;
+            }
+
+            await Session.SignInAsync(response.Data);
+            Snackbar.Add($"Hola, {response.Data.vchAlias}.", Severity.Success);
+            NavManager.NavigateTo("/");
+        }
+        catch
+        {
+            _loginError = "Error de conexión. Intenta de nuevo.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private static string DigitsOnly(string? value)
+        => string.IsNullOrEmpty(value) ? string.Empty : new string(value.Where(char.IsDigit).ToArray());
+}

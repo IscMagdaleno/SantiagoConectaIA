@@ -33,6 +33,8 @@ builder.Services.AddScoped<Data_Emprendimientos>();
 builder.Services.AddScoped<Data_Analytics>(); 
 builder.Services.AddScoped<Data_Feed>();
 builder.Services.AddScoped<Data_EmprendimientosFeed>();
+builder.Services.AddScoped<Data_Ciudadano>();
+builder.Services.AddScoped<CiudadanoSession>();
 builder.Services.AddMudServices();
 
 
