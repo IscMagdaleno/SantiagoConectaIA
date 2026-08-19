@@ -9,5 +9,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces
     {
         Task<Response<Ciudadano>> Registrar(PostSaveCiudadano postModel);
         Task<Response<Ciudadano>> Login(PostLoginCiudadano postModel);
+        Task<Response<string>> EnviarCodigoWhatsApp(PostSendCodigoCiudadano postModel);
     }
 }

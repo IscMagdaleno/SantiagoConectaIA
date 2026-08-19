@@ -26,7 +26,13 @@ namespace SantiagoConecta.SharedUI.Data
         public Task<Response<Ciudadano>?> PostLoginCiudadano(PostLoginCiudadano data)
             => PostAsync("/api/Ciudadano/PostLoginCiudadano", data);
 
-        private async Task<Response<Ciudadano>?> PostAsync<T>(string url, T data)
+        public Task<Response<string>?> PostEnviarCodigoWhatsApp(PostSendCodigoCiudadano data)
+            => PostAsync<string, PostSendCodigoCiudadano>("/api/Ciudadano/PostEnviarCodigoWhatsApp", data);
+
+        private Task<Response<Ciudadano>?> PostAsync<T>(string url, T data)
+            => PostAsync<Ciudadano, T>(url, data);
+
+        private async Task<Response<TResponse>?> PostAsync<TResponse, TRequest>(string url, TRequest data)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_HttpClient.BaseAddress!, url));
             request.Content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
@@ -38,7 +44,7 @@ namespace SantiagoConecta.SharedUI.Data
                 return null;
             }
 
-            return JsonConvert.DeserializeObject<Response<Ciudadano>>(json);
+            return JsonConvert.DeserializeObject<Response<TResponse>>(json);
         }
     }
 }

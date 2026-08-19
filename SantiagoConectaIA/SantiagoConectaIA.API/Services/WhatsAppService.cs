@@ -1,6 +1,7 @@
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.Share.PostModels.CatalogosModule;
 using SantiagoConectaIA.Share.PostModels.WhatsAppModule;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -61,9 +62,28 @@ namespace SantiagoConectaIA.API.Services
 
         public async Task<bool> SendTextMessageAsync(string to, string message)
         {
+            var result = await SendTextMessageDetailedAsync(to, message);
+            return result.IsSuccess;
+        }
+
+        public async Task<WhatsAppSendResult> SendTextMessageDetailedAsync(string to, string message)
+        {
+            var result = new WhatsAppSendResult
+            {
+                Destination = to
+            };
+
             try
             {
                 var config = GetConfig();
+                var configValidationError = ValidateConfig(config, to, message);
+                if (!string.IsNullOrWhiteSpace(configValidationError))
+                {
+                    result.ErrorMessage = configValidationError;
+                    _logger.LogWarning("WhatsApp validation failed: {ValidationError}", configValidationError);
+                    return result;
+                }
+
                 var url = $"{config.BaseUrl}/{config.ApiVersion}/{config.PhoneNumberId}/messages";
 
                 var payload = new
@@ -79,24 +99,85 @@ namespace SantiagoConectaIA.API.Services
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 _httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.AccessToken);
+                    new AuthenticationHeaderValue("Bearer", config.AccessToken);
 
                 var response = await _httpClient.PostAsync(url, content);
                 var responseText = await response.Content.ReadAsStringAsync();
+                result.StatusCode = (int)response.StatusCode;
+                result.ResponseBody = responseText;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation("WhatsApp message sent to {To}", to);
-                    return true;
+                    ExtractMessageInfo(responseText, result);
+                    result.IsSuccess = true;
+
+                    _logger.LogInformation(
+                        "WhatsApp accepted message to {To}. Status={StatusCode}, MessageId={MessageId}, WaId={WaId}",
+                        to,
+                        result.StatusCode,
+                        string.IsNullOrWhiteSpace(result.MessageId) ? "n/a" : result.MessageId,
+                        string.IsNullOrWhiteSpace(result.WaId) ? "n/a" : result.WaId
+                    );
+                    return result;
                 }
 
+                result.ErrorMessage = $"WhatsApp API returned {(int)response.StatusCode}.";
                 _logger.LogWarning("WhatsApp API returned {StatusCode}: {Response}", response.StatusCode, responseText);
-                return false;
+                return result;
             }
             catch (Exception ex)
             {
+                result.ErrorMessage = ex.Message;
                 _logger.LogError(ex, "Error sending WhatsApp message to {To}", to);
-                return false;
+                return result;
+            }
+        }
+
+        private static string? ValidateConfig(WhatsAppConfig config, string to, string message)
+        {
+            if (string.IsNullOrWhiteSpace(config.AccessToken))
+                return "WHATSAPP_CONFIG_2.NvchValor1 (AccessToken) está vacío.";
+            if (string.IsNullOrWhiteSpace(config.PhoneNumberId))
+                return "WHATSAPP_CONFIG_2.NvchValor2 (PhoneNumberId) está vacío.";
+            if (string.IsNullOrWhiteSpace(config.ApiVersion))
+                return "WHATSAPP_CONFIG_3.NvchValor1 (ApiVersion) está vacío.";
+            if (string.IsNullOrWhiteSpace(config.BaseUrl))
+                return "WHATSAPP_CONFIG_3.NvchValor2 (BaseUrl) está vacío.";
+            if (string.IsNullOrWhiteSpace(to) || to.Length < 10 || to.Any(c => c < '0' || c > '9'))
+                return "El teléfono destino no está en formato numérico esperado para Meta (ej. 523328340146).";
+            if (string.IsNullOrWhiteSpace(message))
+                return "El mensaje a enviar está vacío.";
+            return null;
+        }
+
+        private static void ExtractMessageInfo(string responseText, WhatsAppSendResult result)
+        {
+            if (string.IsNullOrWhiteSpace(responseText))
+                return;
+
+            try
+            {
+                using var doc = JsonDocument.Parse(responseText);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("messages", out var messages) &&
+                    messages.ValueKind == JsonValueKind.Array &&
+                    messages.GetArrayLength() > 0 &&
+                    messages[0].TryGetProperty("id", out var messageId))
+                {
+                    result.MessageId = messageId.GetString() ?? string.Empty;
+                }
+
+                if (root.TryGetProperty("contacts", out var contacts) &&
+                    contacts.ValueKind == JsonValueKind.Array &&
+                    contacts.GetArrayLength() > 0 &&
+                    contacts[0].TryGetProperty("wa_id", out var waId))
+                {
+                    result.WaId = waId.GetString() ?? string.Empty;
+                }
+            }
+            catch
+            {
+                // ignore parse errors; response body is still returned for diagnostics
             }
         }
 

@@ -71,7 +71,7 @@
                                   MaxLength="10"
                                   Immediate="true"
                                   Required="true"
-                                  HelperText="10 dígitos, será tu identificador"
+                                  HelperText="@GetTelefonoHelperText(_regTelefono)"
                                   Class="mb-3" />
                     <MudTextField @bind-Value="_regPin"
                                   Label="PIN"
@@ -82,6 +82,49 @@
                                   AdornmentIcon="@(_showRegPin ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
                                   OnAdornmentClick="() => _showRegPin = !_showRegPin"
                                   Required="true"
+                                  Class="mb-3" />
+                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
+                        Para obtener tu código, primero manda un mensaje por WhatsApp al <strong>@NumeroWhatsAppAtencion</strong>
+                        (por ejemplo: "me quiero unir a Santiago Conecta"). Después de eso, usa el botón para enviar el código.
+                    </MudAlert>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Disabled="@(_isBusy || !CanSendVerificationCode)"
+                               Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                               OnClick="EnviarCodigoAsync"
+                               Class="mb-3">
+                        @(_isBusy ? "Enviando..." : (_codigoEnviado ? "Reenviar código por WhatsApp" : "Enviar código por WhatsApp"))
+                    </MudButton>
+                    @if (_codigoEnviado)
+                    {
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Secondary"
+                                   FullWidth="true"
+                                   Style="text-transform: none; font-weight: 700;"
+                                   OnClick="() => _showNoCodeHelp = !_showNoCodeHelp"
+                                   Class="mb-2">
+                            No recibí ningún código
+                        </MudButton>
+                    }
+                    @if (_showNoCodeHelp)
+                    {
+                        <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
+                            Si no has recibido ningún código, es porque aún no has iniciado una conversación con Santiago Conecta.
+                            Envía un mensaje saludando al agente para abrir el chat y así poder recibir el mensaje de verificación.
+                            <br />
+                            Si ya tenías un chat abierto de más de 24 horas, también necesitas enviar un mensaje para iniciar una charla nueva.
+                        </MudAlert>
+                    }
+                    <MudTextField @bind-Value="_regCodigo"
+                                  Label="Código"
+                                  Placeholder="6 dígitos"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Telephone"
+                                  MaxLength="6"
+                                  Immediate="true"
+                                  Required="true"
+                                  HelperText="Captura el código que recibiste por WhatsApp"
                                   Class="mb-4" />
                     @if (!string.IsNullOrWhiteSpace(_regError))
                     {
@@ -149,15 +192,20 @@
     private string _regAlias = string.Empty;
     private string _regTelefono = string.Empty;
     private string _regPin = string.Empty;
+    private string _regCodigo = string.Empty;
     private string _regError = string.Empty;
     private bool _showRegPin;
+    private bool _codigoEnviado;
+    private bool _showNoCodeHelp;
 
     private string _loginTelefono = string.Empty;
     private string _loginPin = string.Empty;
     private string _loginError = string.Empty;
     private bool _showLoginPin;
+    private const string NumeroWhatsAppAtencion = "+52206490951";
 
     private bool _isBusy;
+    private bool CanSendVerificationCode => ValidateRegisterFields(false) == null;
 
     protected override void OnInitialized()
     {
@@ -191,20 +239,25 @@
     private async Task RegistrarAsync()
     {
         _regError = string.Empty;
-        var telefono = DigitsOnly(_regTelefono);
-        if (string.IsNullOrWhiteSpace(_regAlias))
+        var telefono = NormalizePhone(_regTelefono);
+
+        var validationError = ValidateRegisterFields(true);
+        if (validationError != null)
         {
-            _regError = "El nombre o alias es obligatorio.";
+            _regError = validationError;
             return;
         }
-        if (telefono.Length != 10)
+
+        if (!_codigoEnviado)
         {
-            _regError = "El teléfono debe tener exactamente 10 dígitos.";
+            _regError = "Primero solicita el código por WhatsApp.";
             return;
         }
-        if (string.IsNullOrWhiteSpace(_regPin) || _regPin.Length < 4)
+
+        var codigo = DigitsOnly(_regCodigo);
+        if (codigo.Length != 6)
         {
-            _regError = "El PIN debe tener al menos 4 caracteres.";
+            _regError = "El código debe tener 6 dígitos.";
             return;
         }
 
@@ -215,7 +268,8 @@
             {
                 vchAlias = _regAlias.Trim(),
                 vchTelefono = telefono,
-                vchPassword = _regPin
+                vchPassword = _regPin,
+                vchCodigo = codigo
             });
 
             if (response == null || !response.IsSuccess || response.Data == null || string.IsNullOrWhiteSpace(response.Data.Token))
@@ -238,13 +292,55 @@
         }
     }
 
+    private async Task EnviarCodigoAsync()
+    {
+        _regError = string.Empty;
+        _showNoCodeHelp = false;
+
+        var validationError = ValidateRegisterFields(false);
+        if (validationError != null)
+        {
+            _regError = validationError;
+            return;
+        }
+
+        _isBusy = true;
+        try
+        {
+            var response = await DataCiudadano.PostEnviarCodigoWhatsApp(new PostSendCodigoCiudadano
+            {
+                vchAlias = _regAlias.Trim(),
+                vchTelefono = NormalizePhone(_regTelefono),
+                vchPassword = _regPin
+            });
+
+            if (response == null || !response.IsSuccess)
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo enviar el código por WhatsApp.", Severity.Error);
+                return;
+            }
+
+            _codigoEnviado = true;
+            Snackbar.Add("Código enviado. Revisa tu WhatsApp.", Severity.Success);
+        }
+        catch
+        {
+            _regError = "Error de conexión. Intenta de nuevo.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
     private async Task LoginAsync()
     {
         _loginError = string.Empty;
-        var telefono = DigitsOnly(_loginTelefono);
-        if (telefono.Length != 10)
+        var telefono = NormalizePhone(_loginTelefono);
+        var phoneError = ValidatePhone(telefono);
+        if (phoneError != null)
         {
-            _loginError = "El teléfono debe tener exactamente 10 dígitos.";
+            _loginError = phoneError;
             return;
         }
         if (string.IsNullOrWhiteSpace(_loginPin) || _loginPin.Length < 4)
@@ -280,6 +376,74 @@
         {
             _isBusy = false;
         }
+    }
+
+    private string? ValidateRegisterFields(bool requireCode)
+    {
+        if (string.IsNullOrWhiteSpace(_regAlias))
+        {
+            return "El nombre o alias es obligatorio.";
+        }
+
+        var phoneError = ValidatePhone(NormalizePhone(_regTelefono));
+        if (phoneError != null)
+        {
+            return phoneError;
+        }
+
+        if (string.IsNullOrWhiteSpace(_regPin) || _regPin.Length < 4)
+        {
+            return "El PIN debe tener al menos 4 caracteres.";
+        }
+
+        if (requireCode && DigitsOnly(_regCodigo).Length != 6)
+        {
+            return "El código debe tener 6 dígitos.";
+        }
+
+        return null;
+    }
+
+    private static string? ValidatePhone(string telefono)
+    {
+        if (telefono.Length != 10)
+        {
+            return "El teléfono debe tener exactamente 10 dígitos.";
+        }
+
+        if (telefono[0] < '2' || telefono[0] > '9')
+        {
+            return "El teléfono debe iniciar con un dígito entre 2 y 9.";
+        }
+
+        if (telefono.All(c => c == telefono[0]))
+        {
+            return "El teléfono no puede tener todos los dígitos iguales.";
+        }
+
+        return null;
+    }
+
+    private static string GetTelefonoHelperText(string? rawPhone)
+    {
+        var telefono = NormalizePhone(rawPhone);
+        if (telefono.Length == 0)
+        {
+            return "10 dígitos, será tu identificador";
+        }
+
+        if (telefono.Length < 10)
+        {
+            return $"Faltan {10 - telefono.Length} dígitos";
+        }
+
+        return ValidatePhone(telefono) ?? "Teléfono válido";
+    }
+
+    private static string NormalizePhone(string? value)
+    {
+        var digits = DigitsOnly(value);
+        return digits.Length > 10 ? digits[..10] : digits;
     }
 
     private static string DigitsOnly(string? value)

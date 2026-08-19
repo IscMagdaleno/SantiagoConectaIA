@@ -1,44 +1,31 @@
-IF OBJECT_ID('SCIA.spSaveCiudadano') IS NULL
-    EXEC('CREATE PROCEDURE SCIA.spSaveCiudadano AS SET NOCOUNT ON;');
+IF OBJECT_ID('SCIA.spSaveCiudadanoCodigo') IS NULL
+    EXEC('CREATE PROCEDURE SCIA.spSaveCiudadanoCodigo AS SET NOCOUNT ON;');
 GO
 
-ALTER PROCEDURE [SCIA].[spSaveCiudadano]
+ALTER PROCEDURE [SCIA].[spSaveCiudadanoCodigo]
 (
-    @vchAlias NVARCHAR(80),
     @vchTelefono VARCHAR(20),
-    @vchPassword VARCHAR(500)
+    @vchCodigo VARCHAR(10)
 )
 AS
 /*
-** Propósito: Registrar un ciudadano. El teléfono (10 dígitos) es único.
-** Última fecha: 18/08/2026
+** Propósito: Generar/guardar código OTP para registro ciudadano.
+** Última fecha: 19/08/2026
 */
 BEGIN
     DECLARE @vchError VARCHAR(200) = '';
-    DECLARE @iIdCiudadano INT = -1;
     DECLARE @Telefono CHAR(10);
 
     DECLARE @Result AS TABLE
     (
         bResult BIT DEFAULT(1),
-        vchMessage VARCHAR(500) DEFAULT(''),
-        iIdCiudadano INT DEFAULT(-1),
-        vchAlias NVARCHAR(80) DEFAULT(''),
-        vchTelefono VARCHAR(10) DEFAULT('')
+        vchMessage VARCHAR(500) DEFAULT('')
     );
 
-    SET NOCOUNT ON;
-
     BEGIN TRY
-        SET @vchAlias = LTRIM(RTRIM(ISNULL(@vchAlias, N'')));
         SET @vchTelefono = REPLACE(REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@vchTelefono, ''))), ' ', ''), '-', ''), '(', '');
         SET @vchTelefono = REPLACE(@vchTelefono, ')', '');
-
-        IF @vchAlias = N''
-        BEGIN
-            SET @vchError = 'El nombre o alias es obligatorio.';
-            GOTO _Fin;
-        END
+        SET @vchCodigo = LTRIM(RTRIM(ISNULL(@vchCodigo, '')));
 
         IF LEN(@vchTelefono) <> 10 OR @vchTelefono LIKE '%[^0-9]%'
         BEGIN
@@ -58,9 +45,9 @@ BEGIN
             GOTO _Fin;
         END
 
-        IF LEN(LTRIM(RTRIM(ISNULL(@vchPassword, '')))) < 4
+        IF LEN(@vchCodigo) <> 6 OR @vchCodigo LIKE '%[^0-9]%'
         BEGIN
-            SET @vchError = 'El PIN debe tener al menos 4 caracteres.';
+            SET @vchError = 'El código debe tener 6 dígitos.';
             GOTO _Fin;
         END
 
@@ -72,33 +59,41 @@ BEGIN
             GOTO _Fin;
         END
 
-        IF NOT EXISTS
-        (
-            SELECT 1
+        IF (
+            SELECT COUNT(1)
             FROM SCIA.CiudadanoVerificacion CV WITH (NOLOCK)
             WHERE CV.vchTelefono = @Telefono
-              AND CV.bValidado = 1
-              AND CV.dtExpiracion >= GETDATE()
-              AND CV.dtFechaCreacion >= DATEADD(MINUTE, -30, GETDATE())
-        )
+              AND CV.dtFechaCreacion >= DATEADD(HOUR, -1, GETDATE())
+        ) >= 3
         BEGIN
-            SET @vchError = 'Primero valida tu código de WhatsApp.';
+            SET @vchError = 'Límite de envíos alcanzado. Intenta de nuevo en unos minutos.';
             GOTO _Fin;
         END
 
-        INSERT INTO SCIA.Ciudadano (vchAlias, vchTelefono, vchPassword, dtFechaCreacion, bActivo)
+        UPDATE SCIA.CiudadanoVerificacion
+        SET dtExpiracion = DATEADD(MINUTE, -1, GETDATE())
+        WHERE vchTelefono = @Telefono
+          AND bValidado = 0
+          AND dtExpiracion >= GETDATE();
+
+        INSERT INTO SCIA.CiudadanoVerificacion
+        (
+            vchTelefono,
+            vchCodigoHash,
+            dtFechaCreacion,
+            dtExpiracion,
+            iIntentos,
+            bValidado
+        )
         VALUES
         (
-            @vchAlias,
             @Telefono,
-            CONVERT(VARCHAR(500), HASHBYTES('SHA2_256', @vchPassword), 2),
+            CONVERT(VARCHAR(500), HASHBYTES('SHA2_256', @vchCodigo), 2),
             GETDATE(),
-            1
+            DATEADD(MINUTE, 10, GETDATE()),
+            0,
+            0
         );
-
-        DELETE FROM SCIA.CiudadanoVerificacion WHERE vchTelefono = @Telefono;
-
-        SET @iIdCiudadano = SCOPE_IDENTITY();
     END TRY
     BEGIN CATCH
         SET @vchError = CONCAT(ERROR_PROCEDURE(), ': ', ERROR_MESSAGE(), ' - Línea ', ERROR_LINE());
@@ -108,9 +103,8 @@ _Fin:
     IF LEN(@vchError) > 0
         INSERT INTO @Result (bResult, vchMessage) VALUES (0, @vchError);
     ELSE
-        INSERT INTO @Result (bResult, vchMessage, iIdCiudadano, vchAlias, vchTelefono)
-        VALUES (1, 'Bienvenido a Santiago Conecta.', @iIdCiudadano, @vchAlias, RTRIM(@Telefono));
+        INSERT INTO @Result (bResult, vchMessage) VALUES (1, 'Código generado.');
 
-    SELECT * FROM @Result;
+    SELECT TOP 1 * FROM @Result ORDER BY bResult DESC;
 END
 GO

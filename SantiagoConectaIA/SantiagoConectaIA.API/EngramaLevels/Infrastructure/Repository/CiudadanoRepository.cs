@@ -33,5 +33,25 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
             }
             return new spGetCiudadanoAuth.Result { bResult = false, vchMessage = respuesta.Msg };
         }
+
+        public async Task<spSaveCiudadanoCodigo.Result> spSaveCiudadanoCodigo(spSaveCiudadanoCodigo.Request daoModel)
+        {
+            var respuesta = await _managerHelper.GetAsync<spSaveCiudadanoCodigo.Result, spSaveCiudadanoCodigo.Request>(daoModel, "", "SCIA");
+            if (respuesta.Ok)
+            {
+                return respuesta.Data;
+            }
+            return new spSaveCiudadanoCodigo.Result { bResult = false, vchMessage = respuesta.Msg };
+        }
+
+        public async Task<spValidarCiudadanoCodigo.Result> spValidarCiudadanoCodigo(spValidarCiudadanoCodigo.Request daoModel)
+        {
+            var respuesta = await _managerHelper.GetAsync<spValidarCiudadanoCodigo.Result, spValidarCiudadanoCodigo.Request>(daoModel, "", "SCIA");
+            if (respuesta.Ok)
+            {
+                return respuesta.Data;
+            }
+            return new spValidarCiudadanoCodigo.Result { bResult = false, vchMessage = respuesta.Msg };
+        }
     }
 }

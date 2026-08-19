@@ -31,6 +31,20 @@ namespace SantiagoConectaIA.API.Controllers
         }
 
         /// <summary>
+        /// Envía un código de verificación por WhatsApp para completar el registro.
+        /// </summary>
+        [HttpPost("PostEnviarCodigoWhatsApp")]
+        public async Task<IActionResult> PostEnviarCodigoWhatsApp([FromBody] PostSendCodigoCiudadano postModel)
+        {
+            var result = await _ciudadanoDomain.EnviarCodigoWhatsApp(postModel ?? new PostSendCodigoCiudadano());
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        /// <summary>
         /// Inicia sesión de un ciudadano con teléfono y PIN.
         /// </summary>
         [HttpPost("PostLoginCiudadano")]
