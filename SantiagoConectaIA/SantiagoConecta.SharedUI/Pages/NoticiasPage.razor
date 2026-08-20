@@ -149,6 +149,15 @@ else
             <div class="shadow-xl rounded-2xl overflow-hidden bg-white mb-8 border border-gray-100">
                 <PlantillaNoticia Noticia="selectedNoticia" OnImageClick="OpenImageModal" />
             </div>
+
+            @if (selectedNoticia != null)
+            {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-8">
+                    <OpinionThread TipoEntidad="NOTICIA"
+                                   IdEntidad="selectedNoticia.iIdNoticia"
+                                   StartExpanded="true" />
+                </div>
+            }
         </div>
     </div>
 }

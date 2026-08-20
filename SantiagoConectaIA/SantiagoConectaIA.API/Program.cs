@@ -88,6 +88,7 @@ builder.Services.AddScoped<IPageVisitsDomain, PageVisitsDomain>();
 builder.Services.AddScoped<IFeedDomain, FeedDomain>();
 builder.Services.AddScoped<IEmprendimientosFeedDomain, EmprendimientosFeedDomain>();
 builder.Services.AddScoped<ICiudadanoDomain, CiudadanoDomain>();
+builder.Services.AddScoped<IOpinionDomain, OpinionDomain>();
 	builder.Services.AddScoped<IInformacionLocalDomain, InformacionLocalDomain>();
 
 	// WhatsApp Analytics services
@@ -116,6 +117,7 @@ builder.Services.AddScoped<IPageVisitsRepository, PageVisitsRepository>();
 builder.Services.AddScoped<IFeedRepository, FeedRepository>();
 builder.Services.AddScoped<IEmprendimientosFeedRepository, EmprendimientosFeedRepository>();
 builder.Services.AddScoped<ICiudadanoRepository, CiudadanoRepository>();
+builder.Services.AddScoped<IOpinionRepository, OpinionRepository>();
 	builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
 
 	// WhatsApp Analytics repository

@@ -8,6 +8,14 @@
     {
         <MudText Typo="Typo.body2" Style="color: #424242; white-space: pre-wrap; line-height: 1.6;">@Contenido</MudText>
     }
+
+    @if (IdEntidad > 0)
+    {
+        <OpinionThread TipoEntidad="CAPSULA"
+                       IdEntidad="IdEntidad"
+                       StartExpanded="true"
+                       CssClass="mt-4" />
+    }
 </div>
 
 @code {
@@ -19,4 +27,7 @@
 
     [Parameter]
     public string? Contenido { get; set; }
+
+    [Parameter]
+    public int IdEntidad { get; set; }
 }

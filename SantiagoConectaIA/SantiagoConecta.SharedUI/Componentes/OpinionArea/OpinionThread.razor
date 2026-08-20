@@ -1,0 +1,404 @@
+@implements IDisposable
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.Objects.OpinionModule
+@using SantiagoConectaIA.Share.PostModels.OpinionModule
+@inject Data_Opinion DataOpinion
+@inject CiudadanoSession Session
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+
+<div class="opinion-thread @CssClass">
+    <div class="opinion-thread-header" @onclick="ToggleExpanded">
+        <MudIcon Icon="@Icons.Material.Filled.Forum" Style="font-size: 18px; color: #d81b60;" />
+        <span class="opinion-thread-title">Opiniones</span>
+        <span class="opinion-thread-count">@_opiniones.Count</span>
+        <MudIcon Icon="@(_expanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                 Style="margin-left: auto; font-size: 20px; color: #880e4f;" />
+    </div>
+
+    @if (_expanded)
+    {
+        <div class="opinion-thread-body">
+            @if (_loading)
+            {
+                <div class="pa-3 d-flex justify-center">
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
+                </div>
+            }
+            else if (!_opiniones.Any())
+            {
+                <MudText Typo="Typo.caption" Class="mb-2" Style="color: #888;">Sé el primero en opinar.</MudText>
+            }
+            else
+            {
+                @foreach (var opinion in _opiniones)
+                {
+                    <div class="opinion-item">
+                        <div class="opinion-meta">
+                            <strong>@opinion.vchAlias</strong>
+                            <span>@opinion.dtFechaCreacion.ToString("dd MMM yyyy HH:mm", new System.Globalization.CultureInfo("es-MX"))</span>
+                        </div>
+                        <p class="opinion-text">@opinion.nvchTexto</p>
+
+                        @if (Session.IsLoggedIn)
+                        {
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Style="text-transform: none; padding-left: 0;"
+                                       OnClick="() => ToggleReply(opinion.iIdOpinion)">
+                                Responder
+                            </MudButton>
+                        }
+
+                        @if (opinion.Respuestas?.Any() == true)
+                        {
+                            <div class="opinion-replies">
+                                @foreach (var respuesta in opinion.Respuestas)
+                                {
+                                    <div class="opinion-item reply">
+                                        <div class="opinion-meta">
+                                            <strong>@respuesta.vchAlias</strong>
+                                            <span>@respuesta.dtFechaCreacion.ToString("dd MMM yyyy HH:mm", new System.Globalization.CultureInfo("es-MX"))</span>
+                                        </div>
+                                        <p class="opinion-text">@respuesta.nvchTexto</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (_replyingToId == opinion.iIdOpinion)
+                        {
+                            <div class="opinion-compose reply-compose">
+                                <MudTextField @bind-Value="_replyText"
+                                              Variant="Variant.Outlined"
+                                              Placeholder="Escribe tu respuesta..."
+                                              Lines="2"
+                                              MaxLength="1000"
+                                              Immediate="true"
+                                              Class="mb-2" />
+                                <div class="d-flex gap-2">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               Disabled="@_saving"
+                                               Style="text-transform: none; border-radius: 999px;"
+                                               OnClick="() => PublicarAsync(opinion.iIdOpinion)">
+                                        Publicar respuesta
+                                    </MudButton>
+                                    <MudButton Variant="Variant.Text"
+                                               Size="Size.Small"
+                                               Style="text-transform: none;"
+                                               OnClick="() => _replyingToId = null">
+                                        Cancelar
+                                    </MudButton>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+
+            <div class="opinion-compose mt-3">
+                @if (!Session.IsLoggedIn)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="mb-2">
+                        <MudLink Href="/unete" Style="font-weight: 700;">Únete</MudLink> para opinar y abrir el debate.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudTextField @bind-Value="_newText"
+                                  Variant="Variant.Outlined"
+                                  Label="Tu opinión"
+                                  Placeholder="¿Qué opinas?"
+                                  Lines="2"
+                                  MaxLength="1000"
+                                  Immediate="true"
+                                  HelperText="@($"{_newText.Length}/1000")"
+                                  Class="mb-2" />
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Disabled="@(_saving || string.IsNullOrWhiteSpace(_newText))"
+                               Style="text-transform: none; border-radius: 999px; font-weight: 700;"
+                               OnClick="() => PublicarAsync(null)">
+                        @(_saving ? "Publicando..." : "Publicar opinión")
+                    </MudButton>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2">@_error</MudAlert>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .opinion-thread {
+        margin-top: 12px;
+        border: 1px solid #f0d6e2;
+        border-radius: 14px;
+        background: #fffafc;
+        overflow: hidden;
+    }
+
+    .opinion-thread-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .opinion-thread-title {
+        font-weight: 700;
+        color: #880e4f;
+        font-size: 0.95rem;
+    }
+
+    .opinion-thread-count {
+        background: #f8bbd0;
+        color: #880e4f;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 2px 8px;
+    }
+
+    .opinion-thread-body {
+        padding: 0 12px 12px;
+        border-top: 1px solid #f0d6e2;
+    }
+
+    .opinion-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #f5e6ed;
+    }
+
+    .opinion-item:last-of-type {
+        border-bottom: none;
+    }
+
+    .opinion-item.reply {
+        margin-left: 14px;
+        padding-left: 12px;
+        border-left: 3px solid #f8bbd0;
+        border-bottom: none;
+        background: #fff;
+        border-radius: 0 10px 10px 0;
+        margin-top: 8px;
+    }
+
+    .opinion-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 0.78rem;
+        color: #888;
+        margin-bottom: 4px;
+    }
+
+    .opinion-meta strong {
+        color: #d81b60;
+    }
+
+    .opinion-text {
+        margin: 0;
+        color: #424242;
+        font-size: 0.92rem;
+        line-height: 1.45;
+        white-space: pre-wrap;
+    }
+
+    .opinion-replies {
+        margin-top: 4px;
+    }
+
+    .reply-compose {
+        margin-top: 8px;
+    }
+</style>
+
+@code {
+    [Parameter] public string TipoEntidad { get; set; } = string.Empty;
+    [Parameter] public int IdEntidad { get; set; }
+    [Parameter] public bool StartExpanded { get; set; }
+    [Parameter] public string CssClass { get; set; } = string.Empty;
+
+    private readonly List<Opinion> _opiniones = new();
+    private bool _expanded;
+    private bool _loading;
+    private bool _saving;
+    private bool _loaded;
+    private string _newText = string.Empty;
+    private string _replyText = string.Empty;
+    private string _error = string.Empty;
+    private int? _replyingToId;
+    private int _lastTipoHash;
+    private int _lastId;
+
+    protected override void OnInitialized()
+    {
+        Session.Changed += OnSessionChanged;
+        _expanded = StartExpanded;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var tipo = (TipoEntidad ?? string.Empty).Trim().ToUpperInvariant();
+        var tipoHash = tipo.GetHashCode();
+        if (_lastTipoHash == tipoHash && _lastId == IdEntidad && _loaded)
+            return;
+
+        _lastTipoHash = tipoHash;
+        _lastId = IdEntidad;
+        _loaded = false;
+        _opiniones.Clear();
+
+        if (_expanded || StartExpanded)
+        {
+            await LoadAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Session.LoadAsync();
+            if (_expanded && !_loaded)
+            {
+                await LoadAsync();
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async void OnSessionChanged()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleExpanded()
+    {
+        _expanded = !_expanded;
+        if (_expanded && !_loaded)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private void ToggleReply(int opinionId)
+    {
+        _replyingToId = _replyingToId == opinionId ? null : opinionId;
+        _replyText = string.Empty;
+        _error = string.Empty;
+    }
+
+    private async Task LoadAsync()
+    {
+        if (IdEntidad <= 0 || string.IsNullOrWhiteSpace(TipoEntidad))
+            return;
+
+        _loading = true;
+        _error = string.Empty;
+        try
+        {
+            var response = await DataOpinion.PostGetOpiniones(new PostGetOpiniones
+            {
+                vchTipoEntidad = TipoEntidad.Trim().ToUpperInvariant(),
+                iIdEntidad = IdEntidad
+            });
+
+            _opiniones.Clear();
+            if (response?.IsSuccess == true && response.Data != null)
+            {
+                _opiniones.AddRange(response.Data);
+            }
+            _loaded = true;
+        }
+        catch
+        {
+            _error = "No se pudieron cargar las opiniones.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task PublicarAsync(int? padreId)
+    {
+        _error = string.Empty;
+        if (!Session.IsLoggedIn)
+        {
+            NavManager.NavigateTo("/unete");
+            return;
+        }
+
+        var texto = padreId.HasValue ? _replyText.Trim() : _newText.Trim();
+        if (texto.Length < 1)
+        {
+            _error = "Escribe tu opinión.";
+            return;
+        }
+
+        _saving = true;
+        try
+        {
+            var response = await DataOpinion.PostSaveOpinion(new PostSaveOpinion
+            {
+                vchTipoEntidad = TipoEntidad.Trim().ToUpperInvariant(),
+                iIdEntidad = IdEntidad,
+                iIdOpinionPadre = padreId,
+                nvchTexto = texto
+            }, Session.Token);
+
+            if (response == null || !response.IsSuccess)
+            {
+                var msg = response?.Message ?? "No se pudo publicar.";
+                if (msg.Contains("sesión", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("login", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("Unauthorized", StringComparison.OrdinalIgnoreCase))
+                {
+                    Snackbar.Add("Tu sesión expiró. Entra de nuevo.", Severity.Warning);
+                    NavManager.NavigateTo("/unete");
+                    return;
+                }
+
+                _error = msg;
+                return;
+            }
+
+            if (padreId.HasValue)
+            {
+                _replyText = string.Empty;
+                _replyingToId = null;
+            }
+            else
+            {
+                _newText = string.Empty;
+            }
+
+            Snackbar.Add("Opinión publicada.", Severity.Success);
+            await LoadAsync();
+        }
+        catch
+        {
+            _error = "Error de conexión al publicar.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        Session.Changed -= OnSessionChanged;
+    }
+}

@@ -42,6 +42,10 @@
                 @GetCtaLabel()
             </MudButton>
         </div>
+
+        <OpinionThread TipoEntidad="@Card.vchTipoEntidad"
+                       IdEntidad="Card.iIdEntidad"
+                       CssClass="feed-card-opinions" />
     </div>
 </div>
 
@@ -227,7 +231,8 @@
             {
                 ["Titulo"] = Card.vchTitulo,
                 ["Descripcion"] = Card.nvchDescripcion,
-                ["Contenido"] = Card.nvchContenidoDetallado
+                ["Contenido"] = Card.nvchContenidoDetallado,
+                ["IdEntidad"] = Card.iIdEntidad
             };
             var options = new DialogOptions
             {

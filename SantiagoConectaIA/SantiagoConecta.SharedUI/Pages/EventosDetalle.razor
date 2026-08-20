@@ -66,6 +66,12 @@ else
                         </div>
                     </div>
 
+                    <div class="card border-0 shadow-sm p-4 p-md-5 mt-4" style="border-radius: 20px; background: white;">
+                        <OpinionThread TipoEntidad="EVENTO"
+                                       IdEntidad="selectedEvento.iIdEvento"
+                                       StartExpanded="true" />
+                    </div>
+
                     <!-- NUEVA SECCIÓN: Puntos de Venta (EventosSucursales) -->
                     @if (sucursalesEvento != null && sucursalesEvento.Any())
                     {
