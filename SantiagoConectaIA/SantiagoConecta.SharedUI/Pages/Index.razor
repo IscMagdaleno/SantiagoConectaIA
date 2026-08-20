@@ -70,12 +70,23 @@
                     <h1 style="color: white; font-weight: 800; font-size: clamp(2rem, 8vw, 3.5rem); line-height: 1.2; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -1px;">
                         Bienvenido a <span style="color: #ffb4a2;">Santiago Conecta</span>
                     </h1>
-                    <p style="color: rgba(255, 255, 255, 0.95); font-size: clamp(1rem, 4vw, 1.25rem); margin-bottom: 40px; font-weight: 300; line-height: 1.6; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                    <p style="color: rgba(255, 255, 255, 0.95); font-size: clamp(1rem, 4vw, 1.25rem); margin-bottom: 28px; font-weight: 300; line-height: 1.6; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
                         Tu Asistente Virtual Inteligente 24/7. Santiago Conecta pone a tu disposición esta herramienta de nueva generación para resolver tus dudas, consultar trámites y evitar filas.
                     </p>
-                    <button class="main-button-slider hero-btn" @onclick="OpenChatbot">
-                        <i class="fa fa-comments mr-2"></i> Conversar con la IA
-                    </button>
+
+                    <div class="hero-register-invite">
+                        <div class="hero-opinion-bubble">
+                            <span class="hero-opinion-bubble-badge">Tu voz cuenta</span>
+                            <p>
+                                Únete y comparte tu opinión en <strong>noticias</strong>, <strong>trámites</strong> y <strong>eventos</strong>.
+                                Sé parte del debate de Santiago.
+                            </p>
+                            <span class="hero-opinion-bubble-tail" aria-hidden="true"></span>
+                        </div>
+                        <button class="main-button-slider hero-btn" @onclick='() => NavManager.NavigateTo("/unete")'>
+                            <i class="fa fa-heart mr-2"></i> Registrarse
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

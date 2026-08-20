@@ -368,6 +368,70 @@
         box-shadow: 0 15px 40px rgba(255,255,255,0.4);
     }
 
+    .hero-register-invite {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+        max-width: 520px;
+        margin: 0 auto;
+    }
+
+    .hero-opinion-bubble {
+        position: relative;
+        width: 100%;
+        max-width: 460px;
+        padding: 18px 22px 20px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 12px 30px rgba(136, 14, 79, 0.25);
+        color: #ffffff;
+        text-align: center;
+        animation: float 3.5s ease-in-out infinite;
+    }
+
+    .hero-opinion-bubble-badge {
+        display: inline-block;
+        margin-bottom: 10px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #ffb4a2, #ff8a65);
+        color: #880e4f;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+    }
+
+    .hero-opinion-bubble p {
+        margin: 0;
+        font-size: clamp(0.95rem, 2.8vw, 1.1rem);
+        line-height: 1.45;
+        font-weight: 500;
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .hero-opinion-bubble strong {
+        color: #ffd6cc;
+        font-weight: 800;
+    }
+
+    .hero-opinion-bubble-tail {
+        position: absolute;
+        left: 50%;
+        bottom: -10px;
+        width: 18px;
+        height: 18px;
+        transform: translateX(-50%) rotate(45deg);
+        background: rgba(255, 255, 255, 0.18);
+        border-right: 1px solid rgba(255, 255, 255, 0.45);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(12px);
+    }
+
     /* =========================================
        MODO CAPTURA INSTAGRAM (Proporción 4:5)
        ========================================= */
