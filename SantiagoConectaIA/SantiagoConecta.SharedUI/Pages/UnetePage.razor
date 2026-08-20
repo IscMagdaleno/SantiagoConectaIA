@@ -6,6 +6,7 @@
 @inject CiudadanoSession Session
 @inject NavigationManager NavManager
 @inject ISnackbar Snackbar
+@inject IJSRuntime JS
 
 <PageTitle>Únete - Santiago Conecta</PageTitle>
 
@@ -52,41 +53,67 @@
         else
         {
         <MudPaper Elevation="4" Class="pa-6" Style="border-radius: 20px;">
-            <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-6" Color="Color.Primary">
-                <MudTabPanel Text="Únete">
-                    <MudText Typo="Typo.body2" Class="mb-4" Style="color: #666;">
-                        Tres datos y ya eres parte de Santiago Conecta.
-                    </MudText>
-                    <MudTextField @bind-Value="_regAlias"
-                                  Label="Nombre / Alias"
-                                  Placeholder="¿Cómo te dicen? (ej. Juan Pérez o JuanP94)"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  Class="mb-3" />
-                    <MudTextField @bind-Value="_regTelefono"
-                                  Label="Teléfono / Celular"
-                                  Placeholder="674 ..."
-                                  Variant="Variant.Outlined"
-                                  InputType="InputType.Telephone"
-                                  MaxLength="10"
-                                  Immediate="true"
-                                  Required="true"
-                                  HelperText="@GetTelefonoHelperText(_regTelefono)"
-                                  Class="mb-3" />
-                    <MudTextField @bind-Value="_regPin"
-                                  Label="PIN"
-                                  Placeholder="Mínimo 4 caracteres"
-                                  Variant="Variant.Outlined"
-                                  InputType="@(_showRegPin ? InputType.Text : InputType.Password)"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@(_showRegPin ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                  OnAdornmentClick="() => _showRegPin = !_showRegPin"
-                                  Required="true"
-                                  Class="mb-3" />
-                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
-                        Para obtener tu código, primero manda un mensaje por WhatsApp al <strong>@NumeroWhatsAppAtencion</strong>
-                        (por ejemplo: "me quiero unir a Santiago Conecta"). Después de eso, usa el botón para enviar el código.
-                    </MudAlert>
+            <div class="unete-tab-switch">
+                <button type="button"
+                        class="unete-tab @(_activeTab == 0 ? "active" : "")"
+                        @onclick="() => _activeTab = 0">
+                    Únete
+                </button>
+                <span class="unete-tab-divider" aria-hidden="true"></span>
+                <button type="button"
+                        class="unete-tab @(_activeTab == 1 ? "active" : "")"
+                        @onclick="() => _activeTab = 1">
+                    Ya soy parte
+                </button>
+            </div>
+
+            @if (_activeTab == 0)
+            {
+                <MudText Typo="Typo.body2" Class="mb-4 mt-4" Style="color: #666;">
+                    Tres datos y ya eres parte de Santiago Conecta.
+                </MudText>
+                <MudTextField @bind-Value="_regAlias"
+                              Label="Nombre / Alias"
+                              Placeholder="¿Cómo te dicen? (ej. Juan Pérez o JuanP94)"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              Class="mb-3" />
+                <MudTextField @bind-Value="_regTelefono"
+                              Label="Teléfono / Celular"
+                              Placeholder="674 ..."
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Telephone"
+                              MaxLength="10"
+                              Immediate="true"
+                              Required="true"
+                              HelperText="@GetTelefonoHelperText(_regTelefono)"
+                              Class="mb-3" />
+                <MudTextField @bind-Value="_regPin"
+                              Label="PIN"
+                              Placeholder="Mínimo 4 caracteres"
+                              Variant="Variant.Outlined"
+                              InputType="@(_showRegPin ? InputType.Text : InputType.Password)"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@(_showRegPin ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                              OnAdornmentClick="() => _showRegPin = !_showRegPin"
+                              Required="true"
+                              Class="mb-3" />
+                <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
+                    Primero inicia el chat con Santiago Conecta en WhatsApp. Escribe algo como:
+                    <strong>"me quiero unir a Santiago Conecta"</strong>.
+                    Después podrás pedir tu código de verificación.
+                </MudAlert>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           FullWidth="true"
+                           Style="border-radius: 999px; text-transform: none; font-weight: 700; background: #25D366;"
+                           OnClick="AbrirWhatsAppAsync"
+                           Class="mb-3"
+                           StartIcon="@Icons.Custom.Brands.WhatsApp">
+                    Abrir WhatsApp y saludar
+                </MudButton>
+                @if (_chatIniciado)
+                {
                     <MudButton Variant="Variant.Outlined"
                                Color="Color.Primary"
                                FullWidth="true"
@@ -96,26 +123,29 @@
                                Class="mb-3">
                         @(_isBusy ? "Enviando..." : (_codigoEnviado ? "Reenviar código por WhatsApp" : "Enviar código por WhatsApp"))
                     </MudButton>
-                    @if (_codigoEnviado)
-                    {
-                        <MudButton Variant="Variant.Text"
-                                   Color="Color.Secondary"
-                                   FullWidth="true"
-                                   Style="text-transform: none; font-weight: 700;"
-                                   OnClick="() => _showNoCodeHelp = !_showNoCodeHelp"
-                                   Class="mb-2">
-                            No recibí ningún código
-                        </MudButton>
-                    }
-                    @if (_showNoCodeHelp)
-                    {
-                        <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
-                            Si no has recibido ningún código, es porque aún no has iniciado una conversación con Santiago Conecta.
-                            Envía un mensaje saludando al agente para abrir el chat y así poder recibir el mensaje de verificación.
-                            <br />
-                            Si ya tenías un chat abierto de más de 24 horas, también necesitas enviar un mensaje para iniciar una charla nueva.
-                        </MudAlert>
-                    }
+                }
+                @if (_codigoEnviado)
+                {
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Secondary"
+                               FullWidth="true"
+                               Style="text-transform: none; font-weight: 700;"
+                               OnClick="() => _showNoCodeHelp = !_showNoCodeHelp"
+                               Class="mb-2">
+                        No recibí ningún código
+                    </MudButton>
+                }
+                @if (_showNoCodeHelp)
+                {
+                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
+                        Si no has recibido ningún código, es porque aún no has iniciado una conversación con Santiago Conecta.
+                        Envía un mensaje saludando al agente para abrir el chat y así poder recibir el mensaje de verificación.
+                        <br />
+                        Si ya tenías un chat abierto de más de 24 horas, también necesitas enviar un mensaje para iniciar una charla nueva.
+                    </MudAlert>
+                }
+                @if (_chatIniciado)
+                {
                     <MudTextField @bind-Value="_regCodigo"
                                   Label="Código"
                                   Placeholder="6 dígitos"
@@ -126,55 +156,56 @@
                                   Required="true"
                                   HelperText="Captura el código que recibiste por WhatsApp"
                                   Class="mb-4" />
-                    @if (!string.IsNullOrWhiteSpace(_regError))
-                    {
-                        <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_regError</MudAlert>
-                    }
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               FullWidth="true"
-                               Disabled="@_isBusy"
-                               Style="border-radius: 999px; text-transform: none; font-weight: 700;"
-                               OnClick="RegistrarAsync">
-                        @(_isBusy ? "Uniendo..." : "Quiero ser parte")
-                    </MudButton>
-                </MudTabPanel>
-                <MudTabPanel Text="Ya soy parte">
-                    <MudText Typo="Typo.body2" Class="mb-4" Style="color: #666;">
-                        Entra con tu celular y tu PIN.
-                    </MudText>
-                    <MudTextField @bind-Value="_loginTelefono"
-                                  Label="Teléfono / Celular"
-                                  Placeholder="674 ..."
-                                  Variant="Variant.Outlined"
-                                  InputType="InputType.Telephone"
-                                  MaxLength="10"
-                                  Immediate="true"
-                                  Required="true"
-                                  Class="mb-3" />
-                    <MudTextField @bind-Value="_loginPin"
-                                  Label="PIN"
-                                  Variant="Variant.Outlined"
-                                  InputType="@(_showLoginPin ? InputType.Text : InputType.Password)"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@(_showLoginPin ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                  OnAdornmentClick="() => _showLoginPin = !_showLoginPin"
-                                  Required="true"
-                                  Class="mb-4" />
-                    @if (!string.IsNullOrWhiteSpace(_loginError))
-                    {
-                        <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_loginError</MudAlert>
-                    }
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               FullWidth="true"
-                               Disabled="@_isBusy"
-                               Style="border-radius: 999px; text-transform: none; font-weight: 700;"
-                               OnClick="LoginAsync">
-                        @(_isBusy ? "Entrando..." : "Entrar")
-                    </MudButton>
-                </MudTabPanel>
-            </MudTabs>
+                }
+                @if (!string.IsNullOrWhiteSpace(_regError))
+                {
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_regError</MudAlert>
+                }
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Disabled="@_isBusy"
+                           Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                           OnClick="RegistrarAsync">
+                    @(_isBusy ? "Uniendo..." : "Quiero ser parte")
+                </MudButton>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Class="mb-4 mt-4" Style="color: #666;">
+                    Entra con tu celular y tu PIN.
+                </MudText>
+                <MudTextField @bind-Value="_loginTelefono"
+                              Label="Teléfono / Celular"
+                              Placeholder="674 ..."
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Telephone"
+                              MaxLength="10"
+                              Immediate="true"
+                              Required="true"
+                              Class="mb-3" />
+                <MudTextField @bind-Value="_loginPin"
+                              Label="PIN"
+                              Variant="Variant.Outlined"
+                              InputType="@(_showLoginPin ? InputType.Text : InputType.Password)"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@(_showLoginPin ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                              OnAdornmentClick="() => _showLoginPin = !_showLoginPin"
+                              Required="true"
+                              Class="mb-4" />
+                @if (!string.IsNullOrWhiteSpace(_loginError))
+                {
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_loginError</MudAlert>
+                }
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Disabled="@_isBusy"
+                           Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                           OnClick="LoginAsync">
+                    @(_isBusy ? "Entrando..." : "Entrar")
+                </MudButton>
+            }
         </MudPaper>
         }
     </div>
@@ -186,9 +217,47 @@
         50% { transform: translateY(-10px); }
         100% { transform: translateY(0px); }
     }
+
+    .unete-tab-switch {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: stretch;
+        gap: 0;
+        background: #f7f2f5;
+        border: 1px solid #e8d5de;
+        border-radius: 14px;
+        padding: 6px;
+        margin-bottom: 4px;
+    }
+
+    .unete-tab {
+        border: 0;
+        background: transparent;
+        color: #7a4a5f;
+        font-weight: 700;
+        font-size: 0.95rem;
+        padding: 12px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .unete-tab.active {
+        background: #d81b60;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(216, 27, 96, 0.28);
+    }
+
+    .unete-tab-divider {
+        width: 2px;
+        margin: 8px 4px;
+        background: #d9b8c6;
+        border-radius: 2px;
+    }
 </style>
 
 @code {
+    private int _activeTab;
     private string _regAlias = string.Empty;
     private string _regTelefono = string.Empty;
     private string _regPin = string.Empty;
@@ -197,12 +266,14 @@
     private bool _showRegPin;
     private bool _codigoEnviado;
     private bool _showNoCodeHelp;
+    private bool _chatIniciado;
 
     private string _loginTelefono = string.Empty;
     private string _loginPin = string.Empty;
     private string _loginError = string.Empty;
     private bool _showLoginPin;
     private const string NumeroWhatsAppAtencion = "+52206490951";
+    private const string WhatsAppMensajeInicio = "Hola, me quiero unir a Santiago Conecta";
 
     private bool _isBusy;
     private bool CanSendVerificationCode => ValidateRegisterFields(false) == null;
@@ -245,6 +316,12 @@
         if (validationError != null)
         {
             _regError = validationError;
+            return;
+        }
+
+        if (!_chatIniciado)
+        {
+            _regError = "Primero abre WhatsApp y saluda al agente.";
             return;
         }
 
@@ -292,10 +369,25 @@
         }
     }
 
+    private async Task AbrirWhatsAppAsync()
+    {
+        var phoneDigits = new string(NumeroWhatsAppAtencion.Where(char.IsDigit).ToArray());
+        var url = $"https://wa.me/{phoneDigits}?text={Uri.EscapeDataString(WhatsAppMensajeInicio)}";
+        await JS.InvokeVoidAsync("open", url, "_blank");
+        _chatIniciado = true;
+        Snackbar.Add("WhatsApp abierto. Envía el mensaje y luego pide tu código aquí.", Severity.Info);
+    }
+
     private async Task EnviarCodigoAsync()
     {
         _regError = string.Empty;
         _showNoCodeHelp = false;
+
+        if (!_chatIniciado)
+        {
+            _regError = "Primero abre WhatsApp y saluda al agente.";
+            return;
+        }
 
         var validationError = ValidateRegisterFields(false);
         if (validationError != null)
