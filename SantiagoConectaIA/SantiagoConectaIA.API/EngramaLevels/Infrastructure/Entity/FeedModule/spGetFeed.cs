@@ -12,6 +12,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.FeedModule
             public int iPage { get; set; } = 1;
             public int iPageSize { get; set; } = 10;
             public string? vchSessionSeed { get; set; }
+            public string? vchTipoFiltro { get; set; }
         }
 
         public class Result : DbResult

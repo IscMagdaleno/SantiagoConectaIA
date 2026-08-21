@@ -18,6 +18,20 @@
 
         <FeedSearchBar />
 
+        <div class="feed-filters" role="tablist" aria-label="Filtrar por tipo">
+            @foreach (var filter in _filters)
+            {
+                <button type="button"
+                        class="feed-filter-pill @(_tipoFiltro == filter.Value ? "is-active" : null)"
+                        role="tab"
+                        aria-selected="@(_tipoFiltro == filter.Value)"
+                        disabled="@_isLoading"
+                        @onclick="() => SetFilterAsync(filter.Value)">
+                    @filter.Label
+                </button>
+            }
+        </div>
+
         @if (!string.IsNullOrWhiteSpace(_errorMessage))
         {
             <MudAlert Severity="Severity.Warning" Class="mb-3">@_errorMessage</MudAlert>
@@ -56,6 +70,46 @@
 </section>
 
 <style>
+    .feed-filters {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 4px 2px 16px;
+        margin-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .feed-filter-pill {
+        flex: 0 0 auto;
+        border: 1px solid #f8bbd0;
+        background: #fff;
+        color: #880e4f;
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        line-height: 1.2;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .feed-filter-pill:hover:not(:disabled) {
+        background: #fce4ec;
+    }
+
+    .feed-filter-pill.is-active {
+        background: #880e4f;
+        border-color: #880e4f;
+        color: #fff;
+    }
+
+    .feed-filter-pill:disabled {
+        opacity: 0.65;
+        cursor: wait;
+    }
+
     .feed-item {
         display: flex;
     }
@@ -84,12 +138,24 @@
 </style>
 
 @code {
+    private sealed record FilterOption(string Value, string Label);
+
+    private static readonly FilterOption[] _filters =
+    {
+        new("TODO", "Todo"),
+        new("TRAMITE", "Trámites"),
+        new("NOTICIA", "Noticias"),
+        new("EVENTO", "Eventos"),
+        new("CAPSULA", "Cápsulas")
+    };
+
     private readonly List<FeedCard> _items = new();
     private ElementReference _sentinel;
     private DotNetObjectReference<FeedListComponent>? _dotNetRef;
     private IJSObjectReference? _module;
     private IJSObjectReference? _observer;
     private string _sessionSeed = Guid.NewGuid().ToString("N");
+    private string _tipoFiltro = "TODO";
     private string _errorMessage = string.Empty;
     private int _page = 0;
     private int _pageSize = 10;
@@ -133,6 +199,23 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task SetFilterAsync(string tipo)
+    {
+        if (string.Equals(_tipoFiltro, tipo, StringComparison.OrdinalIgnoreCase) || _isLoading)
+        {
+            return;
+        }
+
+        _tipoFiltro = tipo;
+        _items.Clear();
+        _page = 0;
+        _hasMore = true;
+        _errorMessage = string.Empty;
+        _sessionSeed = Guid.NewGuid().ToString("N");
+
+        await LoadNextPageAsync();
+    }
+
     private async Task LoadNextPageAsync()
     {
         if (_isLoading || !_hasMore)
@@ -150,7 +233,8 @@
             {
                 iPage = nextPage,
                 iPageSize = _pageSize,
-                vchSessionSeed = _sessionSeed
+                vchSessionSeed = _sessionSeed,
+                vchTipoFiltro = _tipoFiltro
             });
 
             if (response == null)

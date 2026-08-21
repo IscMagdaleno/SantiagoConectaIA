@@ -1,6 +1,7 @@
 @using SantiagoConectaIA.Share.Objects.FeedModule
 @inject NavigationManager NavManager
 @inject IDialogService DialogService
+@inject IJSRuntime JS
 
 <div class="feed-card">
     <div class="feed-card-media">
@@ -33,7 +34,7 @@
             </div>
         }
 
-        <div class="feed-card-cta">
+        <div class="feed-card-actions">
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        FullWidth="true"
@@ -41,6 +42,27 @@
                        OnClick="HandleCta">
                 @GetCtaLabel()
             </MudButton>
+
+            <MudMenu Icon="@Icons.Material.Filled.Share"
+                     AriaLabel="Compartir"
+                     Color="Color.Primary"
+                     Variant="Variant.Outlined"
+                     AnchorOrigin="Origin.BottomRight"
+                     TransformOrigin="Origin.TopRight"
+                     Class="feed-card-share-menu">
+                @if (_canNativeShare)
+                {
+                    <MudMenuItem Icon="@Icons.Material.Filled.IosShare" OnClick="ShareNativeAsync">
+                        Compartir…
+                    </MudMenuItem>
+                }
+                <MudMenuItem Icon="@Icons.Custom.Brands.WhatsApp" OnClick="ShareWhatsAppAsync">
+                    WhatsApp
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Custom.Brands.Facebook" OnClick="ShareFacebookAsync">
+                    Facebook
+                </MudMenuItem>
+            </MudMenu>
         </div>
 
         <OpinionThread TipoEntidad="@Card.vchTipoEntidad"
@@ -145,9 +167,23 @@
         gap: 4px;
     }
 
-    .feed-card-cta {
+    .feed-card-actions {
         margin-top: auto;
         padding-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .feed-card-actions ::deep .mud-button-root:first-child {
+        flex: 1;
+    }
+
+    .feed-card-share-menu {
+        flex: 0 0 auto;
+        border-radius: 999px !important;
+        min-width: 48px;
+        height: 40px;
     }
 
     /* Desktop: 2 large cards */
@@ -196,6 +232,29 @@
     [Parameter, EditorRequired]
     public FeedCard Card { get; set; } = new();
 
+    private IJSObjectReference? _shareModule;
+    private bool _canNativeShare;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            _shareModule = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/SantiagoConecta.SharedUI/js/feedShare.js");
+            _canNativeShare = await _shareModule.InvokeAsync<bool>("canShare");
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Feed share init error: {ex.Message}");
+        }
+    }
+
     private string GetTypeLabel() => Card.vchTipoEntidad?.ToUpperInvariant() switch
     {
         "TRAMITE" => "Trámite",
@@ -222,6 +281,65 @@
         "CAPSULA" => Icons.Material.Filled.Lightbulb,
         _ => Icons.Material.Filled.Info
     };
+
+    private string GetShareUrl()
+    {
+        if (string.Equals(Card.vchTipoEntidad, "CAPSULA", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(Card.vchRutaDetalle))
+        {
+            return NavManager.ToAbsoluteUri("/feed").AbsoluteUri;
+        }
+
+        return NavManager.ToAbsoluteUri(Card.vchRutaDetalle).AbsoluteUri;
+    }
+
+    private string GetShareText()
+    {
+        var title = string.IsNullOrWhiteSpace(Card.vchTitulo) ? "Santiago Conecta" : Card.vchTitulo.Trim();
+        var url = GetShareUrl();
+
+        if (string.Equals(Card.vchTipoEntidad, "CAPSULA", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"{title} — mira este dato curioso en Santiago Conecta: {url}";
+        }
+
+        return $"{title} — {url}";
+    }
+
+    private async Task ShareNativeAsync()
+    {
+        if (_shareModule is null)
+        {
+            return;
+        }
+
+        await _shareModule.InvokeAsync<bool>("share", Card.vchTitulo, GetShareText(), GetShareUrl());
+    }
+
+    private async Task ShareWhatsAppAsync()
+    {
+        var text = Uri.EscapeDataString(GetShareText());
+        var url = $"https://wa.me/?text={text}";
+        await OpenShareUrlAsync(url);
+    }
+
+    private async Task ShareFacebookAsync()
+    {
+        var u = Uri.EscapeDataString(GetShareUrl());
+        var url = $"https://www.facebook.com/sharer/sharer.php?u={u}";
+        await OpenShareUrlAsync(url);
+    }
+
+    private async Task OpenShareUrlAsync(string url)
+    {
+        if (_shareModule is not null)
+        {
+            await _shareModule.InvokeVoidAsync("openUrl", url);
+            return;
+        }
+
+        await JS.InvokeVoidAsync("open", url, "_blank");
+    }
 
     private async Task HandleCta()
     {

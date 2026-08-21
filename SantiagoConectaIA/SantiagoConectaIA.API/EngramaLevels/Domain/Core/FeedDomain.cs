@@ -28,7 +28,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                 {
                     iPage = postModel.iPage < 1 ? 1 : postModel.iPage,
                     iPageSize = postModel.iPageSize < 1 ? 10 : postModel.iPageSize,
-                    vchSessionSeed = postModel.vchSessionSeed
+                    vchSessionSeed = postModel.vchSessionSeed,
+                    vchTipoFiltro = NormalizeTipoFiltro(postModel.vchTipoFiltro)
                 };
 
                 var results = (await _feedRepository.spGetFeed(request)).ToList();
@@ -160,5 +161,15 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             "CAPSULA" => string.Empty,
             _ => string.Empty
         };
+
+        private static string NormalizeTipoFiltro(string? filtro)
+        {
+            var value = (filtro ?? string.Empty).Trim().ToUpperInvariant();
+            return value switch
+            {
+                "TRAMITE" or "NOTICIA" or "EVENTO" or "CAPSULA" => value,
+                _ => "TODO"
+            };
+        }
     }
 }

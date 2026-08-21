@@ -1,3 +1,10 @@
+/*
+** Migration: Feed filter by content type (vchTipoFiltro on spGetFeed)
+** Date: 2026-08-21
+*/
+SET NOCOUNT ON;
+GO
+
 IF OBJECT_ID('SCIA.spGetFeed') IS NULL
     EXEC('CREATE PROCEDURE SCIA.spGetFeed AS SET NOCOUNT ON;');
 GO
@@ -10,12 +17,6 @@ ALTER PROCEDURE [SCIA].[spGetFeed]
     @vchTipoFiltro VARCHAR(20) = NULL
 )
 AS
-/*
-** Propósito: Feed paginado.
-**   - TODO / NULL: patrón 1 TRAMITE → 2 NOTICIA → 1 CAPSULA → 1 EVENTO
-**   - TRAMITE|NOTICIA|EVENTO|CAPSULA: solo ese tipo, orden por fecha
-** Última fecha: 21/08/2026
-*/
 BEGIN
     SET NOCOUNT ON;
 
