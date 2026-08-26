@@ -59,6 +59,8 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
                 iIdEvento = sucursal.iIdEvento,
                 vchNombre = sucursal.vchNombre,
                 vchDireccion = sucursal.vchDireccion,
+                flLatitud = sucursal.flLatitud,
+                flLongitud = sucursal.flLongitud,
                 vchContacto = sucursal.vchContacto,
                 vchTelefono = sucursal.vchTelefono,
                 vchHorario = sucursal.vchHorario,
