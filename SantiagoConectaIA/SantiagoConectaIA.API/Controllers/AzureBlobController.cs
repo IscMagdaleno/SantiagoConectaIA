@@ -103,5 +103,32 @@ namespace SantiagoConectaIA.API.Controllers
 				return BadRequest(result);
 			}
 		}
+
+		/// <summary>
+		/// Sube un archivo de imagen (Portada) de Noticias al Azure Blob Storage y retorna su URL.
+		/// </summary>
+		/// <param name="image">El archivo de imagen subido.</param>
+		[HttpPost("UploadImage-noticias")]
+		public async Task<IActionResult> UploadImageNoticias(IFormFile image)
+		{
+			if (image == null || image.Length == 0)
+			{
+				return BadRequest(EngramaCoreStandar.Results.Response<BlobSaved>.BadResult("No se proporcionó ninguna imagen.", new BlobSaved()));
+			}
+
+			var extension = Path.GetExtension(image.FileName);
+			var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+
+			using (var stream = image.OpenReadStream())
+			{
+				var result = await _azureBlobDomain.UploadDocument(stream, uniqueFileName, "noticias");
+
+				if (result.IsSuccess)
+				{
+					return Ok(result);
+				}
+				return BadRequest(result);
+			}
+		}
 	}
 }

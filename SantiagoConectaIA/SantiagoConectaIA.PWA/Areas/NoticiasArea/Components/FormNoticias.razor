@@ -27,10 +27,33 @@
                             <MudSelectItem T="int?" Value="2">Cultura</MudSelectItem>
                             <MudSelectItem T="int?" Value="3">Deportes</MudSelectItem>
                             <MudSelectItem T="int?" Value="4">Policiaca</MudSelectItem>
+                            <MudSelectItem T="int?" Value="5">Obra Pública</MudSelectItem>
                         </MudSelect>
                     </MudItem>
-                    <MudItem xs="12" sm="6">
+                    <MudItem xs="12" sm="6" Class="d-flex align-center">
                         <MudCheckBox T="bool" @bind-Value="Data.NoticiaSelected.bActivo" Label="Noticia Activa" Color="Color.Primary" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"></MudCheckBox>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle2" Class="mb-1 font-weight-bold">Imagen de Portada</MudText>
+                        @if (!string.IsNullOrEmpty(Data.NoticiaSelected.vchImagenPortada))
+                        {
+                            <div class="d-flex align-center gap-3 mb-3">
+                                <MudImage Src="@Data.NoticiaSelected.vchImagenPortada" Height="110" Width="180" Class="rounded-lg border shadow-sm" ObjectFit="ObjectFit.Cover" />
+                                @if (EstadoControl != TipoEstadoControl.Lectura)
+                                {
+                                    <MudTooltip Text="Eliminar portada">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="EliminarPortada" />
+                                    </MudTooltip>
+                                }
+                            </div>
+                        }
+                        <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg, .webp" FilesChanged="UploadPortada" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" Disabled="@(EstadoControl == TipoEstadoControl.Lectura)">
+                                    @(string.IsNullOrEmpty(Data.NoticiaSelected.vchImagenPortada) ? "Subir Portada" : "Cambiar Portada")
+                                </MudButton>
+                            </ActivatorContent>
+                        </MudFileUpload>
                     </MudItem>
                 </MudGrid>
             </MudTabPanel>

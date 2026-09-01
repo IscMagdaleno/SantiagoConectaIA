@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles;
 using SantiagoConectaIA.PWA.Shared.Workspace;
+using System.Threading.Tasks;
 
 namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 {
@@ -8,6 +10,28 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
     {
         [Parameter] public MainNoticias Data { get; set; }
         [Parameter] public EventCallback OnSuccess { get; set; }
+
+        private async Task UploadPortada(IBrowserFile file)
+        {
+            if (file == null) return;
+            var result = await Data.PostUploadPortada(file);
+            if (result.IsSuccess && result.Data != null)
+            {
+                Data.NoticiaSelected.vchImagenPortada = result.Data.URL;
+                StateHasChanged();
+                ShowSnake(new EngramaCoreStandar.Dapper.Results.SeverityMessage(true, "Portada subida exitosamente"));
+            }
+            else
+            {
+                ShowSnake(new EngramaCoreStandar.Dapper.Results.SeverityMessage(false, result.Message ?? "Error al subir la portada"));
+            }
+        }
+
+        private void EliminarPortada()
+        {
+            Data.NoticiaSelected.vchImagenPortada = null;
+            StateHasChanged();
+        }
 
         private async Task Submit()
         {

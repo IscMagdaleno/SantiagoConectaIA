@@ -15,9 +15,13 @@ else
         case CategoriaNoticiaEnum.Deportes:
             <!-- ================= PLANTILLA 2: DEPORTES & ENERGÍA (Categoría 3) ================= -->
             <div class="template-sports animate-fade-in">
-                <div class="sports-banner mb-6">
-                    <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?sport" : Noticia.vchImagenPortada)" class="sports-hero-img" alt="Portada de Deporte" />
+                <div class="sports-banner mb-6 position-relative" style="cursor: pointer;" @onclick='() => HandleCoverClick("https://picsum.photos/1200/500?sport")'>
+                    <img src="@GetCoverImage("https://picsum.photos/1200/500?sport")" class="sports-hero-img" alt="Portada de Deporte" />
                     <div class="sports-badge">DEPORTES</div>
+                    <div class="cover-zoom-overlay">
+                        <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Class="me-2" Style="vertical-align: sub; font-size: 1.3rem;" />
+                        <span>Haz clic para ver la imagen completa</span>
+                    </div>
                 </div>
                 <div class="px-4">
                     <h1 class="sports-title">@Noticia.vchTitulo</h1>
@@ -43,7 +47,13 @@ else
                 <div class="alert-container p-6">
                     <div class="row align-center mb-6">
                         <div class="col-12 col-md-4">
-                            <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/600/400?warning" : Noticia.vchImagenPortada)" class="alert-hero-img" alt="Alerta" />
+                            <div class="position-relative" style="cursor: pointer; border-radius: 8px; overflow: hidden;" @onclick='() => HandleCoverClick("https://picsum.photos/600/400?warning")'>
+                                <img src="@GetCoverImage("https://picsum.photos/600/400?warning")" class="alert-hero-img" alt="Alerta" />
+                                <div class="cover-zoom-overlay">
+                                    <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Class="me-1" Style="vertical-align: sub; font-size: 1.1rem;" />
+                                    <span style="font-size: 0.9rem;">Clic para ampliar</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-12 col-md-8">
                             <h1 class="alert-title">@Noticia.vchTitulo</h1>
@@ -69,8 +79,12 @@ else
                     <div class="culture-ornament">✦ ━━━━━━━━ ✦</div>
                     <p class="culture-date">@Noticia.dtFechaPublicacion.ToString("dd 'de' MMMM, yyyy")</p>
                 </div>
-                <div class="culture-cover-wrapper mb-8">
-                    <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?art" : Noticia.vchImagenPortada)" class="culture-hero-img" alt="Cultura" />
+                <div class="culture-cover-wrapper mb-8 position-relative" style="cursor: pointer;" @onclick='() => HandleCoverClick("https://picsum.photos/1200/500?art")'>
+                    <img src="@GetCoverImage("https://picsum.photos/1200/500?art")" class="culture-hero-img" alt="Cultura" />
+                    <div class="cover-zoom-overlay">
+                        <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Class="me-2" Style="vertical-align: sub; font-size: 1.3rem;" />
+                        <span>Haz clic para ver la imagen completa</span>
+                    </div>
                 </div>
                 <div class="culture-body px-md-12">
                     <NoticiaRenderer Noticia="@this.Noticia" OnImageClick="OnImageClick" />
@@ -89,8 +103,12 @@ else
                     <h1 class="innovation-title">@Noticia.vchTitulo</h1>
                     <p class="innovation-meta">ID de Proyecto: SC-#@Noticia.iIdNoticia | @Noticia.dtFechaPublicacion.ToString("yyyy-MM-dd")</p>
                 </div>
-                <div class="innovation-image-panel mb-6">
-                    <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?tech" : Noticia.vchImagenPortada)" class="innovation-hero-img" alt="Innovación" />
+                <div class="innovation-image-panel mb-6 position-relative" style="cursor: pointer;" @onclick='() => HandleCoverClick("https://picsum.photos/1200/500?tech")'>
+                    <img src="@GetCoverImage("https://picsum.photos/1200/500?tech")" class="innovation-hero-img" alt="Innovación" />
+                    <div class="cover-zoom-overlay">
+                        <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Class="me-2" Style="vertical-align: sub; font-size: 1.3rem;" />
+                        <span>Haz clic para ver la imagen completa</span>
+                    </div>
                 </div>
                 <div class="innovation-body p-4">
                     <NoticiaRenderer Noticia="@this.Noticia" OnImageClick="OnImageClick" />
@@ -110,8 +128,12 @@ else
                         <span class="classic-badge">Gobierno de Santiago</span>
                     </div>
                 </div>
-                <div class="classic-image-container my-6">
-                    <img src="@(string.IsNullOrEmpty(Noticia.vchImagenPortada) ? "https://picsum.photos/1200/500?city" : Noticia.vchImagenPortada)" class="classic-hero-img" alt="Portada de la noticia" />
+                <div class="classic-image-container my-6 position-relative" style="cursor: pointer; border-radius: 8px; overflow: hidden;" @onclick='() => HandleCoverClick("https://picsum.photos/1200/500?city")'>
+                    <img src="@GetCoverImage("https://picsum.photos/1200/500?city")" class="classic-hero-img" alt="Portada de la noticia" />
+                    <div class="cover-zoom-overlay">
+                        <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Class="me-2" Style="vertical-align: sub; font-size: 1.3rem;" />
+                        <span>Haz clic para ver la imagen completa</span>
+                    </div>
                 </div>
                 <div class="classic-body">
                     <NoticiaRenderer Noticia="@this.Noticia" OnImageClick="OnImageClick" />
@@ -476,6 +498,27 @@ else
         to { opacity: 1; transform: none; }
     }
 
+    .cover-zoom-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        color: white;
+        text-align: center;
+        padding: 35px 10px 15px 10px;
+        transition: background 0.3s, opacity 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+    .cover-zoom-overlay span {
+        font-weight: 600;
+        font-size: 1.05rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
     /* =========================================
        MODO CAPTURA INSTAGRAM (Proporción 4:5)
        ========================================= */
@@ -505,12 +548,50 @@ else
     }
 </style>
 
+@if (!OnImageClick.HasDelegate)
+{
+    <!-- Modal (Overlay) para ver la imagen completa si no hay callback externo -->
+    <MudOverlay @bind-Visible="isInternalModalOpen" DarkBackground="true" ZIndex="99999" AutoClose="true">
+        <div style="position: relative; max-width: 95vw; max-height: 90vh; display: flex; align-items: center; justify-content: center;">
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Size="Size.Large" Style="position: absolute; top: -50px; right: 0; z-index: 10000;" OnClick="() => isInternalModalOpen = false" />
+            <img src="@internalModalImageUrl" style="max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);" />
+        </div>
+    </MudOverlay>
+}
+
 @code {
     [Parameter]
     public Noticia Noticia { get; set; }
 
     [Parameter]
     public EventCallback<string> OnImageClick { get; set; }
+
+    private bool isInternalModalOpen = false;
+    private string internalModalImageUrl = "";
+
+    private string GetCoverImage(string fallback)
+    {
+        return string.IsNullOrEmpty(Noticia?.vchImagenPortada) ? fallback : Noticia.vchImagenPortada;
+    }
+
+    private async Task HandleCoverClick(string fallback = "")
+    {
+        var url = !string.IsNullOrEmpty(Noticia?.vchImagenPortada) 
+            ? Noticia.vchImagenPortada 
+            : fallback;
+
+        if (string.IsNullOrEmpty(url)) return;
+
+        if (OnImageClick.HasDelegate)
+        {
+            await OnImageClick.InvokeAsync(url);
+        }
+        else
+        {
+            internalModalImageUrl = url;
+            isInternalModalOpen = true;
+        }
+    }
 
     private CategoriaNoticiaEnum GetTemplateType()
     {

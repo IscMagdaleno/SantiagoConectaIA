@@ -66,7 +66,8 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
             // Map NoticiaSelected to PostSaveNoticia
             var model = _mapper.Get<Noticia, PostSaveNoticia>(NoticiaSelected);
             
-            // Ensure child lists and categories are included
+            // Ensure child lists, cover and categories are included
+            model.vchImagenPortada = NoticiaSelected.vchImagenPortada;
             model.Imagenes = NoticiaSelected.Imagenes;
             model.Filas = NoticiaSelected.Filas;
             model.iIdCategoria = NoticiaSelected.iIdCategoria;
@@ -80,6 +81,21 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
                     NoticiaSelected = data;
                 });
             return validation;
+        }
+
+        public async Task<Response<BlobSaved>> PostUploadPortada(IBrowserFile file)
+        {
+            var urlAzureEndpoint = "api/AzureBlob/UploadImage-noticias";
+
+            var safeTitle = string.IsNullOrWhiteSpace(NoticiaSelected?.vchTitulo) ? "noticia" : NoticiaSelected.vchTitulo.Replace(" ", "_");
+            var nombreUnico = $"{safeTitle}_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream(1024 * 1024 * 10).CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+            using var imgContent = new StreamContent(memoryStream);
+
+            var response = await _httpService.PostWithImage<Response<BlobSaved>>(urlAzureEndpoint, imgContent, nombreUnico);
+            return response.Response ?? Response<BlobSaved>.BadResult("Error al subir la imagen al servidor.", new BlobSaved());
         }
 
         public async Task<SeverityMessage> UploadImage()
