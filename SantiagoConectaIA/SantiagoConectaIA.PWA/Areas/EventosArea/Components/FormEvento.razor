@@ -8,18 +8,18 @@
         <MudCard Elevation="0">
             <MudCardContent>
                 <MudText Typo="Typo.h6" Class="mb-4">Información del Evento</MudText>
-                @if (Data != null && Data.RegistroSeleccionado != null)
+                @if (Model != null)
                 {
                     <MudGrid>
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchNombre"
+                            <MudTextField @bind-Value="Model.vchNombre"
                                           Label="Nombre del Evento"
                                           Variant="Variant.Outlined"
                                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudSelect T="int?" @bind-Value="Data.RegistroSeleccionado.iIdCategoriaEvento"
+                            <MudSelect T="int?" @bind-Value="Model.iIdCategoriaEvento"
                                        Label="Categoría"
                                        Variant="Variant.Outlined"
                                        Disabled="@(EstadoControl == TipoEstadoControl.Lectura)"
@@ -32,7 +32,7 @@
                         </MudItem>
 
                         <MudItem xs="12">
-                            <MudTextField @bind-Value="Data.RegistroSeleccionado.nvchDescripcion"
+                            <MudTextField @bind-Value="Model.nvchDescripcion"
                                           Label="Descripción"
                                           Variant="Variant.Outlined"
                                           Lines="4"
@@ -72,28 +72,28 @@
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchLugar"
+                            <MudTextField @bind-Value="Model.vchLugar"
                                           Label="Lugar / Sede"
                                           Variant="Variant.Outlined"
                                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchCostoTexto"
+                            <MudTextField @bind-Value="Model.vchCostoTexto"
                                           Label="Costo (ej. Gratis, $50, $100-$200)"
                                           Variant="Variant.Outlined"
                                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12">
-                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchDireccion"
+                            <MudTextField @bind-Value="Model.vchDireccion"
                                           Label="Dirección"
                                           Variant="Variant.Outlined"
                                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudNumericField @bind-Value="Data.RegistroSeleccionado.flLatitud"
+                            <MudNumericField @bind-Value="Model.flLatitud"
                                              Label="Latitud"
                                              Variant="Variant.Outlined"
                                              HideSpinButtons="true"
@@ -101,7 +101,7 @@
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudNumericField @bind-Value="Data.RegistroSeleccionado.flLongitud"
+                            <MudNumericField @bind-Value="Model.flLongitud"
                                              Label="Longitud"
                                              Variant="Variant.Outlined"
                                              HideSpinButtons="true"
@@ -110,46 +110,46 @@
                     </MudGrid>
                 }
 
-                @if (Data != null && Data.RegistroSeleccionado != null)
+                @if (Model != null)
                 {
                     <MudGrid>
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchOrganizador"
+                            <MudTextField @bind-Value="Model.vchOrganizador"
                                           Label="Organizador"
                                           Variant="Variant.Outlined"
                                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchTelefono"
+                            <MudTextField @bind-Value="Model.vchTelefono"
                                           Label="Teléfono de Contacto"
                                           Variant="Variant.Outlined"
                                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchCorreo"
+                            <MudTextField @bind-Value="Model.vchCorreo"
                                           Label="Correo Electrónico"
                                           Variant="Variant.Outlined"
                                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="Data.RegistroSeleccionado.vchUrlOficial"
+                            <MudTextField @bind-Value="Model.vchUrlOficial"
                                           Label="URL Oficial / Boletos"
                                           Variant="Variant.Outlined"
                                           Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudSwitch @bind-Value="Data.RegistroSeleccionado.bDestacado"
+                            <MudSwitch @bind-Value="Model.bDestacado"
                                        Label="Evento Destacado"
                                        Color="Color.Warning"
                                        Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
                         </MudItem>
 
                         <MudItem xs="12" sm="6">
-                            <MudSwitch @bind-Value="Data.RegistroSeleccionado.bEstatus"
+                            <MudSwitch @bind-Value="Model.bEstatus"
                                        Label="Activo"
                                        Color="Color.Success"
                                        Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />
@@ -160,21 +160,20 @@
         </MudCard>
     </MudTabPanel>
 
-
-    <MudTabPanel Text="Imágenes" Icon="@Icons.Material.Filled.Image">
+    <MudTabPanel Text="Imágenes" Icon="@Icons.Material.Filled.Image" Disabled="@(Model.iIdEvento <= 0)">
         <MudCard Elevation="0">
             <MudCardContent>
                 <MudText Typo="Typo.h6" Class="mb-4">Imágenes del Evento</MudText>
-                <TabImagenesEvento />
+                <TabImagenesEvento EventoModel="@Model" />
             </MudCardContent>
         </MudCard>
     </MudTabPanel>
 
-    <MudTabPanel Text="Sucursales" Icon="@Icons.Material.Filled.Store">
+    <MudTabPanel Text="Sucursales" Icon="@Icons.Material.Filled.Store" Disabled="@(Model.iIdEvento <= 0)">
         <MudCard Elevation="0">
             <MudCardContent>
                 <MudText Typo="Typo.h6" Class="mb-4">Sucursales / Locales del Evento</MudText>
-                <TabSucursales />
+                <TabSucursales EventoModel="@Model" />
             </MudCardContent>
         </MudCard>
     </MudTabPanel>

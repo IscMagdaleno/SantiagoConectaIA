@@ -12,6 +12,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 	{
 		#region PARAMETROS
 		[Inject] public MainTramites Data { get; set; }
+		[Parameter] public Tramite Model { get; set; }
 		[Parameter] public EventCallback OnTramiteSaved { get; set; }
 		#endregion
 
@@ -20,13 +21,17 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 
 		protected override void OnInitialized()
 		{
-			if (Data.TramiteSelected.iIdTramite <= 0)
+			if (Model != null)
 			{
-				TramiteModel = new Tramite();
+				TramiteModel = Model;
+			}
+			else if (Data.TramiteSelected != null && Data.TramiteSelected.iIdTramite > 0)
+			{
+				TramiteModel = Data.TramiteSelected;
 			}
 			else
 			{
-				TramiteModel = Data.TramiteSelected;
+				TramiteModel = new Tramite();
 			}
 		}
 
@@ -48,13 +53,10 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			ShowSnake(result);
 			if (result.bResult)
 			{
-				// Sincronizar el ID devuelto por el servidor
-				TramiteModel.iIdTramite = Data.TramiteSelected.iIdTramite;
-
 				// Pasar a modo Lectura después de guardar
 				EstadoControl = TipoEstadoControl.Lectura;
 				
-				// Actualizar el nombre del tab con el nuevo ID si era un alta
+				// Actualizar el nombre del tab con el nuevo nombre
 				SetNombreTab($"Trámite {TramiteModel.vchNombre}");
 				
 				TriggerMenuUpdate();

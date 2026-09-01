@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using SantiagoConectaIA.PWA.Shared.Workspace;
 using SantiagoConectaIA.PWA.Areas.EventosArea.Utiles;
+using SantiagoConectaIA.Share.Objects.EventosModulo;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,59 +10,60 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
     public partial class FormEvento : EngramaWorkspaceComponent
     {
         [Inject] public MainEventos Data { get; set; }
+        [Parameter] public Evento Model { get; set; } = new();
 
         [Parameter] public EventCallback OnSuccess { get; set; }
 
         private DateTime? FechaInicioDate
         {
-            get => Data.RegistroSeleccionado.dtFechaInicio.Date;
+            get => Model.dtFechaInicio.Date;
             set
             {
                 if (value.HasValue)
                 {
-                    Data.RegistroSeleccionado.dtFechaInicio = value.Value.Add(Data.RegistroSeleccionado.dtFechaInicio.TimeOfDay);
+                    Model.dtFechaInicio = value.Value.Add(Model.dtFechaInicio.TimeOfDay);
                 }
             }
         }
 
         private TimeSpan? FechaInicioTime
         {
-            get => Data.RegistroSeleccionado.dtFechaInicio.TimeOfDay;
+            get => Model.dtFechaInicio.TimeOfDay;
             set
             {
                 if (value.HasValue)
                 {
-                    Data.RegistroSeleccionado.dtFechaInicio = Data.RegistroSeleccionado.dtFechaInicio.Date.Add(value.Value);
+                    Model.dtFechaInicio = Model.dtFechaInicio.Date.Add(value.Value);
                 }
             }
         }
 
         private DateTime? FechaFinDate
         {
-            get => Data.RegistroSeleccionado.dtFechaFin?.Date;
+            get => Model.dtFechaFin?.Date;
             set
             {
                 if (value.HasValue)
                 {
-                    var time = Data.RegistroSeleccionado.dtFechaFin?.TimeOfDay ?? TimeSpan.Zero;
-                    Data.RegistroSeleccionado.dtFechaFin = value.Value.Add(time);
+                    var time = Model.dtFechaFin?.TimeOfDay ?? TimeSpan.Zero;
+                    Model.dtFechaFin = value.Value.Add(time);
                 }
                 else
                 {
-                    Data.RegistroSeleccionado.dtFechaFin = null;
+                    Model.dtFechaFin = null;
                 }
             }
         }
 
         private TimeSpan? FechaFinTime
         {
-            get => Data.RegistroSeleccionado.dtFechaFin?.TimeOfDay;
+            get => Model.dtFechaFin?.TimeOfDay;
             set
             {
                 if (value.HasValue)
                 {
-                    var date = Data.RegistroSeleccionado.dtFechaFin?.Date ?? DateTime.Today;
-                    Data.RegistroSeleccionado.dtFechaFin = date.Add(value.Value);
+                    var date = Model.dtFechaFin?.Date ?? DateTime.Today;
+                    Model.dtFechaFin = date.Add(value.Value);
                 }
             }
         }
@@ -73,29 +75,24 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
             {
                 await Data.PostGetCategorias();
             }
-            if (Data.RegistroSeleccionado != null)
+            if (Model != null)
             {
-                if (Data.RegistroSeleccionado.iIdEvento > 0)
+                if (Model.dtFechaInicio == DateTime.MinValue)
                 {
-                    await Data.PostGetDetalle(Data.RegistroSeleccionado.iIdEvento);
-                    await Data.PostGetSucursales(Data.RegistroSeleccionado.iIdEvento);
-                }
-                else if (Data.RegistroSeleccionado.dtFechaInicio == DateTime.MinValue)
-                {
-                    Data.RegistroSeleccionado.dtFechaInicio = DateTime.Now;
+                    Model.dtFechaInicio = DateTime.Now;
                 }
             }
         }
 
         private async Task Submit()
         {
-            var result = await Data.PostSaveRegistro();
+            var result = await Data.PostSaveRegistro(Model);
             ShowSnake(result);
 
             if (result.bResult)
             {
                 EstadoControl = TipoEstadoControl.Lectura;
-                SetNombreTab($"Evento: {Data.RegistroSeleccionado.vchNombre}");
+                SetNombreTab($"Evento: {Model.vchNombre}");
                 TriggerMenuUpdate();
                 await OnSuccess.InvokeAsync();
             }

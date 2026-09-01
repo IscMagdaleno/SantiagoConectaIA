@@ -41,23 +41,31 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
                 .ToList() ?? new List<Evento>();
         }
 
+        private Evento CloneEvento(Evento source)
+        {
+            if (source == null) return new Evento();
+            var json = System.Text.Json.JsonSerializer.Serialize(source);
+            return System.Text.Json.JsonSerializer.Deserialize<Evento>(json) ?? new Evento();
+        }
+
         private void OnClickShowForm()
         {
-            Data.RegistroSeleccionado = new Evento();
+            var newEvento = new Evento();
             var type = typeof(FormEvento);
             var tab = new WorkspaceTab
             {
                 Icono = Icons.Material.Filled.AddBox,
                 Text = "Nuevo Evento",
                 TipoControl = type,
-                Repetir = false,
+                Repetir = true,
                 EstadoControl = TipoEstadoControl.Alta
             };
 
             tab.Componente = builder =>
             {
                 builder.OpenComponent(0, type);
-                builder.AddComponentReferenceCapture(1, instance =>
+                builder.AddAttribute(1, "Model", newEvento);
+                builder.AddComponentReferenceCapture(2, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)
                     {
@@ -79,12 +87,12 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
 
         protected void OnViewRegistro(Evento registro)
         {
-            Data.RegistroSeleccionado = registro;
+            var eventoModel = CloneEvento(registro);
             var type = typeof(FormEvento);
             var tab = new WorkspaceTab
             {
                 Icono = Icons.Material.Filled.Visibility,
-                Text = "Ver Evento",
+                Text = $"Ver Evento: {registro.vchNombre}",
                 TipoControl = type,
                 Repetir = true,
                 EstadoControl = TipoEstadoControl.Lectura
@@ -93,7 +101,8 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
             tab.Componente = builder =>
             {
                 builder.OpenComponent(0, type);
-                builder.AddComponentReferenceCapture(1, instance =>
+                builder.AddAttribute(1, "Model", eventoModel);
+                builder.AddComponentReferenceCapture(2, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)
                     {
@@ -115,12 +124,12 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
 
         protected void OnEditRegistro(Evento registro)
         {
-            Data.RegistroSeleccionado = registro;
+            var eventoModel = CloneEvento(registro);
             var type = typeof(FormEvento);
             var tab = new WorkspaceTab
             {
                 Icono = Icons.Material.Filled.Edit,
-                Text = "Editar Evento",
+                Text = $"Editar: {registro.vchNombre}",
                 TipoControl = type,
                 Repetir = true,
                 EstadoControl = TipoEstadoControl.Edicion
@@ -129,7 +138,8 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
             tab.Componente = builder =>
             {
                 builder.OpenComponent(0, type);
-                builder.AddComponentReferenceCapture(1, instance =>
+                builder.AddAttribute(1, "Model", eventoModel);
+                builder.AddComponentReferenceCapture(2, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)
                     {

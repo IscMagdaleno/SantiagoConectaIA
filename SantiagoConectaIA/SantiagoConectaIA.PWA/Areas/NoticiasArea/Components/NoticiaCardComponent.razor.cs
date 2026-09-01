@@ -30,10 +30,9 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
             if (!result.Canceled)
             {
                 Loading.Show();
-                Data.NoticiaSelected = noticia;
-                Data.NoticiaSelected.bActivo = false;
+                noticia.bActivo = false;
 
-                var saveResult = await Data.PostSaveNoticia();
+                var saveResult = await Data.PostSaveNoticia(noticia);
                 ShowSnake(saveResult);
                 
                 if (saveResult.bResult)

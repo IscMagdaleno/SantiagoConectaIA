@@ -128,15 +128,15 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 
 			var response = await _httpService.Post<PostSaveTramite, Response<Tramite>>(APIUrl, model);
 			var validacion = _validaServicioService.ValidadionServicio(response,
-			onSuccess: data => AfterSaveTramite(data));
+			onSuccess: data => 
+			{
+				if (data != null)
+				{
+					tramite.iIdTramite = data.iIdTramite;
+				}
+				TramiteSelected = data ?? tramite;
+			});
 			return validacion;
-		}
-
-
-		private void AfterSaveTramite(Tramite tramite)
-		{
-			TramiteSelected.iIdTramite = tramite.iIdTramite;
-
 		}
 
 		/// <summary>

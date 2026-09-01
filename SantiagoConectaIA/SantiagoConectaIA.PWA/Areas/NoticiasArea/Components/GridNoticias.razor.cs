@@ -29,17 +29,24 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
             await Data.PostGetNoticias();
         }
 
+        private Noticia CloneNoticia(Noticia source)
+        {
+            if (source == null) return new Noticia();
+            var json = System.Text.Json.JsonSerializer.Serialize(source);
+            return System.Text.Json.JsonSerializer.Deserialize<Noticia>(json) ?? new Noticia();
+        }
+
         // Show Create Form
         private void OnClickShowForm()
         {
-            Data.NoticiaSelected = new Noticia();
+            var newNoticia = new Noticia();
             var type = typeof(FormNoticias);
             var tab = new WorkspaceTab
             {
                 Icono = Icons.Material.Filled.Article,
                 Text = "Nueva Noticia",
                 TipoControl = type,
-                Repetir = false,
+                Repetir = true,
                 EstadoControl = TipoEstadoControl.Alta
             };
 
@@ -47,7 +54,8 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
             {
                 builder.OpenComponent(0, type);
                 builder.AddAttribute(1, "Data", Data);
-                builder.AddComponentReferenceCapture(2, instance =>
+                builder.AddAttribute(2, "Model", newNoticia);
+                builder.AddComponentReferenceCapture(3, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)
                     {
@@ -70,7 +78,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
         // View Item
         private void OnViewNoticia(Noticia noticia)
         {
-            Data.NoticiaSelected = noticia;
+            var noticiaModel = CloneNoticia(noticia);
             var type = typeof(FormNoticias);
             var tab = new WorkspaceTab
             {
@@ -85,7 +93,8 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
             {
                 builder.OpenComponent(0, type);
                 builder.AddAttribute(1, "Data", Data);
-                builder.AddComponentReferenceCapture(2, instance =>
+                builder.AddAttribute(2, "Model", noticiaModel);
+                builder.AddComponentReferenceCapture(3, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)
                     {
@@ -108,7 +117,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
         // Edit Item
         private void OnEditNoticia(Noticia noticia)
         {
-            Data.NoticiaSelected = noticia;
+            var noticiaModel = CloneNoticia(noticia);
             var type = typeof(FormNoticias);
             var tab = new WorkspaceTab
             {
@@ -123,7 +132,8 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
             {
                 builder.OpenComponent(0, type);
                 builder.AddAttribute(1, "Data", Data);
-                builder.AddComponentReferenceCapture(2, instance =>
+                builder.AddAttribute(2, "Model", noticiaModel);
+                builder.AddComponentReferenceCapture(3, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)
                     {

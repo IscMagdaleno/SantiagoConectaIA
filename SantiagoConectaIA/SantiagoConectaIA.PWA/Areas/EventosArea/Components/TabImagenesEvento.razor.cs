@@ -15,21 +15,33 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
     {
         [Inject] public MainEventos Data { get; set; }
         [Inject] public ISnackbar Snackbar { get; set; }
+        [Parameter] public Evento EventoModel { get; set; } = default!;
 
         private bool bEsPortada { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+            var targetId = EventoModel?.iIdEvento ?? Data.RegistroSeleccionado.iIdEvento;
+            if (targetId > 0)
+            {
+                await Data.PostGetDetalle(targetId);
+            }
+        }
 
         private async Task UploadNuevaImagen(IBrowserFile file)
         {
             if (file == null) return;
 
-            var uploadResult = await Data.PostUploadImagen(file);
+            var target = EventoModel ?? Data.RegistroSeleccionado;
+            var uploadResult = await Data.PostUploadImagen(file, target.vchNombre);
             if (uploadResult != null && uploadResult.IsSuccess && uploadResult.Data != null && !string.IsNullOrEmpty(uploadResult.Data.URL))
             {
                 if (bEsPortada)
                 {
                     // Guardar SOLO como portada
-                    Data.RegistroSeleccionado.vchImagenPortada = uploadResult.Data.URL;
-                    var result = await Data.PostSaveRegistro();
+                    target.vchImagenPortada = uploadResult.Data.URL;
+                    var result = await Data.PostSaveRegistro(target);
                     
                     if (result.bResult)
                     {
@@ -48,7 +60,7 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
                     var nuevaImagen = new PostSaveImagenRegistro
                     {
                         vchTablaOrigen = "Eventos",
-                        iIdRegistro = Data.RegistroSeleccionado.iIdEvento,
+                        iIdRegistro = target.iIdEvento,
                         vchUrlImagen = uploadResult.Data.URL,
                         vchDescripcion = "",
                         iOrden = Data.LstImagenes?.Count ?? 0
@@ -57,7 +69,7 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
                     var result = await Data.PostSaveImagen(nuevaImagen);
                     if (result.bResult)
                     {
-                        await Data.PostGetDetalle(Data.RegistroSeleccionado.iIdEvento);
+                        await Data.PostGetDetalle(target.iIdEvento);
                         Snackbar.Add("Imagen agregada exitosamente a la galería.", Severity.Success);
                         StateHasChanged();
                     }
@@ -75,10 +87,11 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
 
         private async Task EliminarImagen(ImagenRegistro imagen)
         {
+            var target = EventoModel ?? Data.RegistroSeleccionado;
             var result = await Data.PostDeleteImagen(imagen.iIdImagen);
             if (result.bResult)
             {
-                await Data.PostGetDetalle(Data.RegistroSeleccionado.iIdEvento);
+                await Data.PostGetDetalle(target.iIdEvento);
                 Snackbar.Add("Imagen eliminada exitosamente.", Severity.Success);
                 StateHasChanged();
             }

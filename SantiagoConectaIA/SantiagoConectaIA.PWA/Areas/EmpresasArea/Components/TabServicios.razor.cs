@@ -10,6 +10,7 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
     {
         [Inject] public MainEmpresas Data { get; set; }
         [Inject] public ISnackbar Snackbar { get; set; }
+        [Parameter] public Empresa EmpresaModel { get; set; } = default!;
 
         private CategoriaCatalogo categoriaSeleccionada;
         
@@ -23,6 +24,16 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
         private DialogOptions dialogOptionsMedium = new() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         private ProductoServicio productoActual = new();
 
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+            var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
+            if (targetId > 0)
+            {
+                await Data.PostGetCategorias(targetId);
+            }
+        }
+
         private async Task SeleccionarCategoria(CategoriaCatalogo cat)
         {
             categoriaSeleccionada = cat;
@@ -33,9 +44,10 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
         // ---------- CATEGORÍA ----------
         private void AbrirDialogoNuevaCategoria()
         {
+            var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
             categoriaActual = new CategoriaCatalogo
             {
-                iIdEmpresa = Data.RegistroSeleccionado.iIdEmpresa,
+                iIdEmpresa = targetId,
                 iOrdenAparicion = (Data.LstCategorias.Count + 1) * 10
             };
             dialogCategoriaVisible = true;
@@ -43,10 +55,11 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
 
         private void EditarCategoria(CategoriaCatalogo cat)
         {
+            var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
             categoriaActual = new CategoriaCatalogo
             {
                 iIdCategoriaCat = cat.iIdCategoriaCat,
-                iIdEmpresa = cat.iIdEmpresa,
+                iIdEmpresa = targetId,
                 vchNombre = cat.vchNombre,
                 iOrdenAparicion = cat.iOrdenAparicion
             };
@@ -64,7 +77,8 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
             var result = await Data.PostSaveCategoria(categoriaActual);
             if (result.bResult)
             {
-                await Data.PostGetCategorias();
+                var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
+                await Data.PostGetCategorias(targetId);
                 Snackbar.Add("Categoría guardada exitosamente.", Severity.Success);
                 dialogCategoriaVisible = false;
             }

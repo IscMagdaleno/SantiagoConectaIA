@@ -51,15 +51,29 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Utiles
             return validation;
         }
 
-        public async Task<SeverityMessage> PostSaveRegistro()
+        public async Task<SeverityMessage> PostSaveRegistro(Evento? evento = null)
         {
+            var target = evento ?? RegistroSeleccionado;
             var APIUrl = url + "/PostSaveEvento";
-            var request = _mapper.Get<Evento, PostSaveEvento>(RegistroSeleccionado);
+            var request = _mapper.Get<Evento, PostSaveEvento>(target);
             var response = await _httpService.Post<PostSaveEvento, Response<Evento>>(APIUrl, request);
             var validation = _validaServicioService.ValidadionServicio(response,
                 onSuccess: data =>
                 {
-                    RegistroSeleccionado = data;
+                    if (data != null)
+                    {
+                        target.iIdEvento = data.iIdEvento;
+                        target.vchNombre = data.vchNombre;
+                        target.nvchDescripcion = data.nvchDescripcion;
+                        target.dtFechaInicio = data.dtFechaInicio;
+                        target.dtFechaFin = data.dtFechaFin;
+                        target.iIdCategoriaEvento = data.iIdCategoriaEvento;
+                        target.vchLugar = data.vchLugar;
+                        target.vchDireccion = data.vchDireccion;
+                        target.bDestacado = data.bDestacado;
+                        target.bEstatus = data.bEstatus;
+                    }
+                    RegistroSeleccionado = data ?? target;
                 });
             return validation;
         }
@@ -104,11 +118,12 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Utiles
             return _validaServicioService.ValidadionServicio(response);
         }
 
-		public async Task<Response<BlobSaved>> PostUploadImagen(IBrowserFile file)
+		public async Task<Response<BlobSaved>> PostUploadImagen(IBrowserFile file, string? nombre = null)
 		{
 			var urlAzure = "api/AzureBlob/UploadImage-Eventos";
 
-			var nombreUnico = $"{RegistroSeleccionado.vchNombre}_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+			var name = !string.IsNullOrWhiteSpace(nombre) ? nombre : (!string.IsNullOrWhiteSpace(RegistroSeleccionado?.vchNombre) ? RegistroSeleccionado.vchNombre : "evento");
+			var nombreUnico = $"{name}_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
 
 			using var memoryStream = new MemoryStream();
 			await file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10).CopyToAsync(memoryStream);

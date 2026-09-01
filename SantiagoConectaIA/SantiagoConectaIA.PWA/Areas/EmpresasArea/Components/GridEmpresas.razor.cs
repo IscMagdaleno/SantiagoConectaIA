@@ -41,24 +41,32 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
                 .ToList() ?? new List<Empresa>();
         }
 
+        private Empresa CloneEmpresa(Empresa source)
+        {
+            if (source == null) return new Empresa();
+            var json = System.Text.Json.JsonSerializer.Serialize(source);
+            return System.Text.Json.JsonSerializer.Deserialize<Empresa>(json) ?? new Empresa();
+        }
+
         // Abrir pestaña para Crear
         private void OnClickShowForm()
         {
-            Data.RegistroSeleccionado = new Empresa(); 
+            var newEmpresa = new Empresa(); 
             var type = typeof(FormEmpresa);
             var tab = new WorkspaceTab
             {
                 Icono = Icons.Material.Filled.AddBox,
                 Text = "Nueva Empresa",
                 TipoControl = type,
-                Repetir = false,
+                Repetir = true,
                 EstadoControl = TipoEstadoControl.Alta
             };
 
             tab.Componente = builder =>
             {
                 builder.OpenComponent(0, type);
-                builder.AddComponentReferenceCapture(1, instance =>
+                builder.AddAttribute(1, "Model", newEmpresa);
+                builder.AddComponentReferenceCapture(2, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)
                     {
@@ -81,12 +89,12 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
         // Abrir pestaña para Ver
         protected void OnViewRegistro(Empresa registro)
         {
-            Data.RegistroSeleccionado = registro;
+            var empresaModel = CloneEmpresa(registro);
             var type = typeof(FormEmpresa);
             var tab = new WorkspaceTab
             {
                 Icono = Icons.Material.Filled.Visibility,
-                Text = "Ver Empresa",
+                Text = $"Ver Empresa: {registro.vchNombreComercial}",
                 TipoControl = type,
                 Repetir = true,
                 EstadoControl = TipoEstadoControl.Lectura
@@ -95,7 +103,8 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
             tab.Componente = builder =>
             {
                 builder.OpenComponent(0, type);
-                builder.AddComponentReferenceCapture(1, instance =>
+                builder.AddAttribute(1, "Model", empresaModel);
+                builder.AddComponentReferenceCapture(2, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)
                     {
@@ -118,12 +127,12 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
         // Abrir pestaña para Editar
         protected void OnEditRegistro(Empresa registro)
         {
-            Data.RegistroSeleccionado = registro;
+            var empresaModel = CloneEmpresa(registro);
             var type = typeof(FormEmpresa);
             var tab = new WorkspaceTab
             {
                 Icono = Icons.Material.Filled.Edit,
-                Text = "Editar Empresa",
+                Text = $"Editar: {registro.vchNombreComercial}",
                 TipoControl = type,
                 Repetir = true,
                 EstadoControl = TipoEstadoControl.Edicion
@@ -132,7 +141,8 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
             tab.Componente = builder =>
             {
                 builder.OpenComponent(0, type);
-                builder.AddComponentReferenceCapture(1, instance =>
+                builder.AddAttribute(1, "Model", empresaModel);
+                builder.AddComponentReferenceCapture(2, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)
                     {

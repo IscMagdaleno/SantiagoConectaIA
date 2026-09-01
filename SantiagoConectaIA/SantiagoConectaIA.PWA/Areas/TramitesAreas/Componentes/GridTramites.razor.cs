@@ -35,16 +35,24 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		#endregion
 
 
+		private Tramite CloneTramite(Tramite source)
+		{
+			if (source == null) return new Tramite();
+			var json = System.Text.Json.JsonSerializer.Serialize(source);
+			return System.Text.Json.JsonSerializer.Deserialize<Tramite>(json) ?? new Tramite();
+		}
+
 		private async Task OnTramiteView(Tramite tramite)
 		{
 			Loading.Show();
 			ShowSnake(await Data.PostGetTramiteDetalle(tramite.iIdTramite));
+			var tramiteModel = CloneTramite(Data.TramiteSelected);
 			
 			var type = typeof(FormTramites);
 			var tab = new WorkspaceTab
 			{
 				Icono = MudBlazor.Icons.Material.Filled.Visibility,
-				Text = $"Trámite {tramite.iIdTramite}",
+				Text = $"Trámite {tramite.vchNombre}",
 				TipoControl = type,
 				Repetir = true,
 				EstadoControl = TipoEstadoControl.Lectura
@@ -53,7 +61,8 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			tab.Componente = builder =>
 			{
 				builder.OpenComponent(0, type);
-				builder.AddComponentReferenceCapture(1, instance =>
+				builder.AddAttribute(1, "Model", tramiteModel);
+				builder.AddComponentReferenceCapture(2, instance =>
 				{
 					if (instance is EngramaWorkspaceComponent baseComponent)
 					{
@@ -78,12 +87,13 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		{
 			Loading.Show();
 			ShowSnake(await Data.PostGetTramiteDetalle(tramite.iIdTramite));
+			var tramiteModel = CloneTramite(Data.TramiteSelected);
 			
 			var type = typeof(FormTramites);
 			var tab = new WorkspaceTab
 			{
 				Icono = MudBlazor.Icons.Material.Filled.Edit,
-				Text = $"Trámite {tramite.iIdTramite}",
+				Text = $"Editar: {tramite.vchNombre}",
 				TipoControl = type,
 				Repetir = true,
 				EstadoControl = TipoEstadoControl.Edicion
@@ -92,7 +102,8 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			tab.Componente = builder =>
 			{
 				builder.OpenComponent(0, type);
-				builder.AddComponentReferenceCapture(1, instance =>
+				builder.AddAttribute(1, "Model", tramiteModel);
+				builder.AddComponentReferenceCapture(2, instance =>
 				{
 					if (instance is EngramaWorkspaceComponent baseComponent)
 					{
@@ -115,21 +126,22 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 
 		private void OnClickShowForm()
 		{
-			Data.TramiteSelected = new();
+			var newTramite = new Tramite();
 			var type = typeof(FormTramites);
 			var tab = new WorkspaceTab
 			{
 				Icono = MudBlazor.Icons.Material.Filled.NoteAdd,
 				Text = "Nuevo Trámite",
 				TipoControl = type,
-				Repetir = false,
+				Repetir = true,
 				EstadoControl = TipoEstadoControl.Alta
 			};
 
 			tab.Componente = builder =>
 			{
 				builder.OpenComponent(0, type);
-				builder.AddComponentReferenceCapture(1, instance =>
+				builder.AddAttribute(1, "Model", newTramite);
+				builder.AddComponentReferenceCapture(2, instance =>
 				{
 					if (instance is EngramaWorkspaceComponent baseComponent)
 					{

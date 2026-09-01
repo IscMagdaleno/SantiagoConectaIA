@@ -13,13 +13,25 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
     {
         [Inject] public MainEventos Data { get; set; }
         [Inject] public ISnackbar Snackbar { get; set; }
+        [Parameter] public Evento EventoModel { get; set; } = default!;
 
         private int editingId = -1;
         private SucursalEvento editModel = new SucursalEvento();
 
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+            var targetId = EventoModel?.iIdEvento ?? Data.RegistroSeleccionado.iIdEvento;
+            if (targetId > 0)
+            {
+                await Data.PostGetSucursales(targetId);
+            }
+        }
+
         private async Task AgregarSucursal()
         {
-            if (Data.RegistroSeleccionado.iIdEvento <= 0)
+            var targetId = EventoModel?.iIdEvento ?? Data.RegistroSeleccionado.iIdEvento;
+            if (targetId <= 0)
             {
                 Snackbar.Add("Guarda el evento primero antes de agregar sucursales.", Severity.Warning);
                 return;
@@ -27,7 +39,7 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
 
             var nueva = new SucursalEvento
             {
-                iIdEvento = Data.RegistroSeleccionado.iIdEvento,
+                iIdEvento = targetId,
                 vchNombre = "Nueva Sucursal",
                 vchDireccion = "",
                 vchContacto = "",
@@ -40,7 +52,7 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
             var result = await Data.PostSaveSucursalItem(nueva);
             if (result.bResult)
             {
-                await Data.PostGetSucursales(Data.RegistroSeleccionado.iIdEvento);
+                await Data.PostGetSucursales(targetId);
                 Snackbar.Add("Sucursal agregada exitosamente.", Severity.Success);
                 StateHasChanged();
             }
@@ -77,10 +89,11 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
 
         private async Task GuardarEdicion()
         {
+            var targetId = EventoModel?.iIdEvento ?? Data.RegistroSeleccionado.iIdEvento;
             var result = await Data.PostSaveSucursalItem(editModel);
             if (result.bResult)
             {
-                await Data.PostGetSucursales(Data.RegistroSeleccionado.iIdEvento);
+                await Data.PostGetSucursales(targetId);
                 Snackbar.Add("Sucursal guardada exitosamente.", Severity.Success);
                 CancelarEdicion();
                 StateHasChanged();

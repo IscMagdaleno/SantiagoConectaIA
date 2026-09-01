@@ -12,7 +12,10 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
         [Inject] public ISnackbar Snackbar { get; set; } = default!;
 
         [Parameter] public MainNoticias Data { get; set; } = default!;
+        [Parameter] public Noticia? NoticiaModel { get; set; }
         [Parameter] public TipoEstadoControl EstadoControl { get; set; } = default!;
+
+        private Noticia? _loadedNoticia;
 
         // Filas del layout
         protected List<NoticiaFila> _filas = new List<NoticiaFila>();
@@ -55,23 +58,32 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
                         Data.LstTipoDatos.Add(new TipoDatoDto { iIdTipoDato = (int)TipoDatoMetadato.Contenido, nvchTipo = "Contenido" });
                 }
 
-                LoadFromData();
+                var target = NoticiaModel ?? Data?.NoticiaSelected;
+                if (target != null)
+                {
+                    _loadedNoticia = target;
+                    LoadFromData();
+                }
             }
         }
 
         protected override void OnParametersSet()
         {
-            if (Data?.NoticiaSelected != null)
+            var target = NoticiaModel ?? Data?.NoticiaSelected;
+            if (target != null && target != _loadedNoticia)
             {
+                _loadedNoticia = target;
                 LoadFromData();
             }
         }
 
         private void LoadFromData()
         {
-            if (Data.NoticiaSelected == null) return;
+            var target = NoticiaModel ?? Data?.NoticiaSelected;
+            if (target == null) return;
 
-            _filas = Data.NoticiaSelected.Filas?.OrderBy(f => f.iOrden).ToList() ?? new List<NoticiaFila>();
+            _filas = target.Filas?.OrderBy(f => f.iOrden).ToList() ?? new List<NoticiaFila>();
+            target.Filas = _filas;
             
             _dropItems.Clear();
             
@@ -106,9 +118,10 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 
         protected void AddFilaVacia()
         {
+            var target = NoticiaModel ?? Data?.NoticiaSelected;
             var fila = new NoticiaFila
             {
-                iIdNoticia = Data.NoticiaSelected.iIdNoticia,
+                iIdNoticia = target?.iIdNoticia ?? 0,
                 iOrden = _filas.Count + 1,
                 UI_Id = Guid.NewGuid().ToString()
             };
@@ -224,6 +237,9 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 
         protected void SyncData()
         {
+            var target = NoticiaModel ?? Data?.NoticiaSelected;
+            if (target == null) return;
+
             // Reconstruir la lista Filas con sus Metadatos ordenados
             for (int i = 0; i < _filas.Count; i++)
             {
@@ -236,7 +252,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
                 
                 foreach(var b in bloquesFila)
                 {
-                    b.iIdNoticia = Data.NoticiaSelected.iIdNoticia;
+                    b.iIdNoticia = target.iIdNoticia;
                     if (_filas[i].iIdFila > 0)
                         b.iIdFila = _filas[i].iIdFila;
                 }
@@ -244,7 +260,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
                 _filas[i].Metadatos = bloquesFila;
             }
 
-            Data.NoticiaSelected.Filas = _filas;
+            target.Filas = _filas;
         }
 
         protected void SeleccionarBloque(DropItem item)

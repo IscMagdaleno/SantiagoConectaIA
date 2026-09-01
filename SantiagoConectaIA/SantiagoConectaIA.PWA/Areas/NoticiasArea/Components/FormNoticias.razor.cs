@@ -8,16 +8,17 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 {
     public partial class FormNoticias : EngramaWorkspaceComponent
     {
-        [Parameter] public MainNoticias Data { get; set; }
+        [Parameter] public MainNoticias Data { get; set; } = default!;
+        [Parameter] public SantiagoConectaIA.Share.Objects.NoticiasModule.Noticia Model { get; set; } = new();
         [Parameter] public EventCallback OnSuccess { get; set; }
 
         private async Task UploadPortada(IBrowserFile file)
         {
             if (file == null) return;
-            var result = await Data.PostUploadPortada(file);
+            var result = await Data.PostUploadPortada(file, Model?.vchTitulo);
             if (result.IsSuccess && result.Data != null)
             {
-                Data.NoticiaSelected.vchImagenPortada = result.Data.URL;
+                Model.vchImagenPortada = result.Data.URL;
                 StateHasChanged();
                 ShowSnake(new EngramaCoreStandar.Dapper.Results.SeverityMessage(true, "Portada subida exitosamente"));
             }
@@ -29,13 +30,13 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 
         private void EliminarPortada()
         {
-            Data.NoticiaSelected.vchImagenPortada = null;
+            Model.vchImagenPortada = null;
             StateHasChanged();
         }
 
         private async Task Submit()
         {
-            var result = await Data.PostSaveNoticia();
+            var result = await Data.PostSaveNoticia(Model);
             ShowSnake(result);
             if (result.bResult)
             {
@@ -43,7 +44,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
                 EstadoControl = TipoEstadoControl.Lectura;
                 
                 // Actualizar el nombre del tab con el nuevo ID si era un alta
-                SetNombreTab($"Noticia {Data.NoticiaSelected.vchTitulo}");
+                SetNombreTab($"Noticia: {Model.vchTitulo}");
                 
                 TriggerMenuUpdate();
                 await OnSuccess.InvokeAsync();

@@ -30,7 +30,7 @@ namespace SantiagoConectaIA.PWA.Areas.MockupArea.Components
                 Icono = Icons.Material.Filled.AddBox,
                 Text = "Nuevo Registro",
                 TipoControl = type,
-                Repetir = false,
+                Repetir = true,
                 EstadoControl = TipoEstadoControl.Alta
             };
 

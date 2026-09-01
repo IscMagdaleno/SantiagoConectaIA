@@ -42,15 +42,29 @@ namespace SantiagoConectaIA.PWA.Areas.OficinasArea.Utiles
             return validation;
         }
 
-        public async Task<SeverityMessage> PostSaveOficina()
+        public async Task<SeverityMessage> PostSaveOficina(Oficina? oficina = null)
         {
+            var target = oficina ?? OficinaSelected;
             var APIUrl = urlOficinas + "/PostSaveOficina";
-            var model = _mapper.Get<Oficina, PostSaveOficina>(OficinaSelected);
+            var model = _mapper.Get<Oficina, PostSaveOficina>(target);
             var response = await _httpService.Post<PostSaveOficina, Response<Oficina>>(APIUrl, model);
             var validacion = _validaServicioService.ValidadionServicio(response,
                 onSuccess: async data => 
                 {
-                    OficinaSelected.iIdOficina = data.iIdOficina;
+                    if (data != null)
+                    {
+                        target.iIdOficina = data.iIdOficina;
+                        target.vchNombre = data.vchNombre;
+                        target.vchDireccion = data.vchDireccion;
+                        target.vchTelefono = data.vchTelefono;
+                        target.vchEmail = data.vchEmail;
+                        target.vchHorario = data.vchHorario;
+                        target.flLatitud = data.flLatitud;
+                        target.flLongitud = data.flLongitud;
+                        target.vchNotas = data.vchNotas;
+                        target.bActivo = data.bActivo;
+                    }
+                    OficinaSelected = data ?? target;
                     await PostGetOficinas();
                 });
 

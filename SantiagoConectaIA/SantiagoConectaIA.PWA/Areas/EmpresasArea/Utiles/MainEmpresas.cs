@@ -51,15 +51,29 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             return validation;
         }
 
-        public async Task<SeverityMessage> PostSaveRegistro()
+        public async Task<SeverityMessage> PostSaveRegistro(Empresa? empresa = null)
         {
+            var target = empresa ?? RegistroSeleccionado;
             var APIUrl = url + "/PostSaveEmpresa";
-            var request = _mapper.Get<Empresa, PostSaveEmpresa>(RegistroSeleccionado);
+            var request = _mapper.Get<Empresa, PostSaveEmpresa>(target);
             var response = await _httpService.Post<PostSaveEmpresa, Response<Empresa>>(APIUrl, request);
             var validation = _validaServicioService.ValidadionServicio(response, 
                 onSuccess: data => 
                 {
-                    RegistroSeleccionado = data;
+                    if (data != null)
+                    {
+                        target.iIdEmpresa = data.iIdEmpresa;
+                        target.vchNombreComercial = data.vchNombreComercial;
+                        target.vchSlogan = data.vchSlogan;
+                        target.nvchDescripcion = data.nvchDescripcion;
+                        target.vchTelefono = data.vchTelefono;
+                        target.vchCorreo = data.vchCorreo;
+                        target.vchLogoUrl = data.vchLogoUrl;
+                        target.nvchMision = data.nvchMision;
+                        target.nvchVision = data.nvchVision;
+                        target.iIdCatalogoEmpresa = data.iIdCatalogoEmpresa;
+                    }
+                    RegistroSeleccionado = data ?? target;
                 });
             return validation;
         }
@@ -71,10 +85,11 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstCatalogos = data);
         }
 
-        public async Task<SeverityMessage> PostGetUbicaciones()
+        public async Task<SeverityMessage> PostGetUbicaciones(int? iIdEmpresa = null)
         {
+            int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
             var APIUrl = url + "/PostGetEmpresaUbicaciones";
-            var response = await _httpService.Post<PostGetEmpresaUbicaciones, Response<List<EmpresaUbicacion>>>(APIUrl, new PostGetEmpresaUbicaciones { iIdEmpresa = RegistroSeleccionado.iIdEmpresa });
+            var response = await _httpService.Post<PostGetEmpresaUbicaciones, Response<List<EmpresaUbicacion>>>(APIUrl, new PostGetEmpresaUbicaciones { iIdEmpresa = targetId });
             return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstUbicaciones = data);
         }
 
@@ -86,10 +101,11 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             return _validaServicioService.ValidadionServicio(response);
         }
 
-        public async Task<SeverityMessage> PostGetRedesSociales()
+        public async Task<SeverityMessage> PostGetRedesSociales(int? iIdEmpresa = null)
         {
+            int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
             var APIUrl = url + "/PostGetEmpresaRedesSociales";
-            var response = await _httpService.Post<PostGetEmpresaRedesSociales, Response<List<EmpresaRedSocial>>>(APIUrl, new PostGetEmpresaRedesSociales { iIdEmpresa = RegistroSeleccionado.iIdEmpresa });
+            var response = await _httpService.Post<PostGetEmpresaRedesSociales, Response<List<EmpresaRedSocial>>>(APIUrl, new PostGetEmpresaRedesSociales { iIdEmpresa = targetId });
             return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstRedesSociales = data);
         }
 
@@ -101,10 +117,11 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             return _validaServicioService.ValidadionServicio(response);
         }
 
-        public async Task<SeverityMessage> PostGetCategorias()
+        public async Task<SeverityMessage> PostGetCategorias(int? iIdEmpresa = null)
         {
+            int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
             var APIUrl = url + "/PostGetCategoriasPorEmpresa";
-            var response = await _httpService.Post<PostGetCategoriasPorEmpresa, Response<List<CategoriaCatalogo>>>(APIUrl, new PostGetCategoriasPorEmpresa { iIdEmpresa = RegistroSeleccionado.iIdEmpresa });
+            var response = await _httpService.Post<PostGetCategoriasPorEmpresa, Response<List<CategoriaCatalogo>>>(APIUrl, new PostGetCategoriasPorEmpresa { iIdEmpresa = targetId });
             return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstCategorias = data);
         }
 
@@ -131,11 +148,12 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
             return _validaServicioService.ValidadionServicio(response);
         }
 
-		public async Task<Response<BlobSaved>> PostUploadLogo(IBrowserFile file)
+		public async Task<Response<BlobSaved>> PostUploadLogo(IBrowserFile file, string? nombreComercial = null)
 		{
 			var urlAzure = "api/AzureBlob/UploadImage-empresas";
 
-			var nombreUnico = $"{RegistroSeleccionado.vchNombreComercial}_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+			var name = !string.IsNullOrWhiteSpace(nombreComercial) ? nombreComercial : (!string.IsNullOrWhiteSpace(RegistroSeleccionado?.vchNombreComercial) ? RegistroSeleccionado.vchNombreComercial : "empresa");
+			var nombreUnico = $"{name}_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
 			using var memoryStream = new MemoryStream();
 			await file.OpenReadStream(1024 * 1024 * 10).CopyToAsync(memoryStream);
 			memoryStream.Position = 0;
@@ -145,20 +163,40 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
 			return response.Response ?? Response<BlobSaved>.BadResult("Error al subir la imagen al servidor.", new BlobSaved());
 		}
 
-        public async Task<SeverityMessage> PostGetConfiguracionVisual()
+        public async Task<SeverityMessage> PostGetConfiguracionVisual(int? iIdEmpresa = null)
         {
+            int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
             var APIUrl = url + "/PostGetConfiguracionVisual";
-            var response = await _httpService.Post<PostGetConfiguracionVisual, Response<ConfiguracionVisual>>(APIUrl, new PostGetConfiguracionVisual { iIdEmpresa = RegistroSeleccionado.iIdEmpresa });
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => ConfiguracionSeleccionada = data ?? new ConfiguracionVisual { iIdEmpresa = RegistroSeleccionado.iIdEmpresa });
+            var response = await _httpService.Post<PostGetConfiguracionVisual, Response<ConfiguracionVisual>>(APIUrl, new PostGetConfiguracionVisual { iIdEmpresa = targetId });
+            return _validaServicioService.ValidadionServicio(response, onSuccess: data => ConfiguracionSeleccionada = data ?? new ConfiguracionVisual { iIdEmpresa = targetId });
         }
 
-        public async Task<SeverityMessage> PostSaveConfiguracionVisual()
+        public async Task<SeverityMessage> PostSaveConfiguracionVisual(ConfiguracionVisual? config = null, int? iIdEmpresa = null)
         {
+            var targetConfig = config ?? ConfiguracionSeleccionada;
+            int targetId = iIdEmpresa ?? (targetConfig.iIdEmpresa > 0 ? targetConfig.iIdEmpresa : RegistroSeleccionado.iIdEmpresa);
             var APIUrl = url + "/PostSaveConfiguracionVisual";
-            ConfiguracionSeleccionada.iIdEmpresa = RegistroSeleccionado.iIdEmpresa;
-            var request = new PostSaveConfiguracionVisual { ConfiguracionVisual = ConfiguracionSeleccionada };
+            targetConfig.iIdEmpresa = targetId;
+            var request = new PostSaveConfiguracionVisual { ConfiguracionVisual = targetConfig };
             var response = await _httpService.Post<PostSaveConfiguracionVisual, Response<ConfiguracionVisual>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => ConfiguracionSeleccionada = data);
+            return _validaServicioService.ValidadionServicio(response, onSuccess: data => 
+            {
+                if (data != null)
+                {
+                    targetConfig.iIdConfiguracion = data.iIdConfiguracion;
+                    targetConfig.iIdEmpresa = data.iIdEmpresa;
+                    targetConfig.iIdPlantillaBase = data.iIdPlantillaBase;
+                    targetConfig.vchColorFondoBody = data.vchColorFondoBody;
+                    targetConfig.vchColorTextoPrincipal = data.vchColorTextoPrincipal;
+                    targetConfig.vchColorTitulos = data.vchColorTitulos;
+                    targetConfig.vchColorBotones = data.vchColorBotones;
+                    targetConfig.vchColorMargenFotos = data.vchColorMargenFotos;
+                    targetConfig.vchTipografiaTitulos = data.vchTipografiaTitulos;
+                    targetConfig.vchTipografiaCuerpo = data.vchTipografiaCuerpo;
+                    targetConfig.vchEstiloBordes = data.vchEstiloBordes;
+                }
+                ConfiguracionSeleccionada = data ?? targetConfig;
+            });
         }
     }
 }

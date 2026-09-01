@@ -22,25 +22,29 @@ namespace SantiagoConectaIA.PWA.Areas.OficinasArea.Components
             ActualizarListaFiltrada();
         }
 
+        private Oficina CloneOficina(Oficina source)
+        {
+            if (source == null) return new Oficina();
+            var json = System.Text.Json.JsonSerializer.Serialize(source);
+            return System.Text.Json.JsonSerializer.Deserialize<Oficina>(json) ?? new Oficina();
+        }
+
         private void OnClickShowForm()
         {
-            Data.OficinaSelected = new Oficina();
-            AbrirFormularioOficina("Nueva Oficina", TipoEstadoControl.Alta);
+            AbrirFormularioOficina("Nueva Oficina", TipoEstadoControl.Alta, new Oficina());
         }
 
         private void OnViewOficina(Oficina oficina)
         {
-            Data.OficinaSelected = oficina;
-            AbrirFormularioOficina($"Oficina: {oficina.vchNombre}", TipoEstadoControl.Lectura);
+            AbrirFormularioOficina($"Oficina: {oficina.vchNombre}", TipoEstadoControl.Lectura, CloneOficina(oficina));
         }
 
         private void OnEditOficina(Oficina oficina)
         {
-            Data.OficinaSelected = oficina;
-            AbrirFormularioOficina($"Editar: {oficina.vchNombre}", TipoEstadoControl.Edicion);
+            AbrirFormularioOficina($"Editar: {oficina.vchNombre}", TipoEstadoControl.Edicion, CloneOficina(oficina));
         }
 
-        private void AbrirFormularioOficina(string titulo, TipoEstadoControl estado)
+        private void AbrirFormularioOficina(string titulo, TipoEstadoControl estado, Oficina oficinaModel)
         {
             var type = typeof(FormOficina);
             var tab = new WorkspaceTab
@@ -55,7 +59,7 @@ namespace SantiagoConectaIA.PWA.Areas.OficinasArea.Components
             tab.Componente = builder =>
             {
                 builder.OpenComponent(0, type);
-                builder.AddAttribute(1, "Data", Data);
+                builder.AddAttribute(1, "Model", oficinaModel);
                 builder.AddComponentReferenceCapture(2, instance =>
                 {
                     if (instance is EngramaWorkspaceComponent baseComponent)

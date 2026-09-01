@@ -1,60 +1,61 @@
 @using SantiagoConectaIA.PWA.Areas.OficinasArea.Utiles
 @using SantiagoConectaIA.PWA.Shared.Workspace
+@using SantiagoConectaIA.Share.Objects.OficinasModule
 @inherits EngramaWorkspaceComponent
 
-<EditForm Model="@Data.OficinaSelected" OnValidSubmit="OnSubmit">
+<EditForm Model="@Model" OnValidSubmit="OnSubmit">
     <DataAnnotationsValidator />
     <MudFocusTrap>
         <MudGrid>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="@Data.OficinaSelected.vchNombre"
+                <MudTextField @bind-Value="@Model.vchNombre"
                               Label="Nombre"
                               MaxLength="250"
                               Variant="Variant.Outlined"
                               ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="@Data.OficinaSelected.vchDireccion"
+                <MudTextField @bind-Value="@Model.vchDireccion"
                               Label="Dirección"
                               MaxLength="500"
                               Variant="Variant.Outlined"
                               ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="@Data.OficinaSelected.vchTelefono"
+                <MudTextField @bind-Value="@Model.vchTelefono"
                               Label="Teléfono"
                               MaxLength="50"
                               Variant="Variant.Outlined"
                               ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="@Data.OficinaSelected.vchEmail"
+                <MudTextField @bind-Value="@Model.vchEmail"
                               Label="Correo"
                               MaxLength="150"
                               Variant="Variant.Outlined"
                               ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="@Data.OficinaSelected.vchHorario"
+                <MudTextField @bind-Value="@Model.vchHorario"
                               Label="Horario"
                               MaxLength="250"
                               Variant="Variant.Outlined"
                               ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudNumericField @bind-Value="Data.OficinaSelected.flLatitud"
+                <MudNumericField @bind-Value="Model.flLatitud"
                                  Label="Latitud"
                                  Variant="Variant.Outlined"
                                  ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudNumericField @bind-Value="Data.OficinaSelected.flLongitud"
+                <MudNumericField @bind-Value="Model.flLongitud"
                                  Label="Longitud"
                                  Variant="Variant.Outlined"
                                  ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="@Data.OficinaSelected.vchNotas"
+                <MudTextField @bind-Value="@Model.vchNotas"
                               Label="Notas"
                               MaxLength="350"
                               Variant="Variant.Outlined"
@@ -62,7 +63,7 @@
                               ReadOnly="@(EstadoControl == TipoEstadoControl.Lectura)" />
             </MudItem>
             <MudItem xs="12">
-                <MudSwitch @bind-Value="Data.OficinaSelected.bActivo"
+                <MudSwitch @bind-Value="Model.bActivo"
                            Color="Color.Success"
                            Label="Activo"
                            Disabled="@(EstadoControl == TipoEstadoControl.Lectura)" />

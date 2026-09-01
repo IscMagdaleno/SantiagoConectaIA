@@ -60,34 +60,55 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
             return validation;
         }
 
-        public async Task<SeverityMessage> PostSaveNoticia()
+        public async Task<SeverityMessage> PostSaveNoticia(Noticia? noticia = null)
         {
+            var target = noticia ?? NoticiaSelected;
             var APIUrl = url + "/PostSaveNoticia";
-            // Map NoticiaSelected to PostSaveNoticia
-            var model = _mapper.Get<Noticia, PostSaveNoticia>(NoticiaSelected);
+            // Map target to PostSaveNoticia
+            var model = _mapper.Get<Noticia, PostSaveNoticia>(target);
             
             // Ensure child lists, cover and categories are included
-            model.vchImagenPortada = NoticiaSelected.vchImagenPortada;
-            model.Imagenes = NoticiaSelected.Imagenes;
-            model.Filas = NoticiaSelected.Filas;
-            model.iIdCategoria = NoticiaSelected.iIdCategoria;
+            model.vchImagenPortada = target.vchImagenPortada;
+            model.Imagenes = target.Imagenes;
+            model.Filas = target.Filas;
+            model.iIdCategoria = target.iIdCategoria;
 
             var response = await _httpService.Post<PostSaveNoticia, Response<Noticia>>(APIUrl, model);
             var validation = _validaServicioService.ValidadionServicio(response,
                 onSuccess: data =>
                 {
                     // Refresh list or update specific item
-                    PostGetNoticias(); 
-                    NoticiaSelected = data;
+                    _ = PostGetNoticias(); 
+                    if (data != null)
+                    {
+                        target.iIdNoticia = data.iIdNoticia;
+                        target.vchTitulo = data.vchTitulo;
+                        target.vchTituloEn = data.vchTituloEn;
+                        target.nvchContenido = data.nvchContenido;
+                        target.nvchContenidoEn = data.nvchContenidoEn;
+                        target.vchImagenPortada = data.vchImagenPortada;
+                        target.iIdCategoria = data.iIdCategoria;
+                        target.bActivo = data.bActivo;
+                        if (data.Filas != null && data.Filas.Any())
+                        {
+                            target.Filas = data.Filas;
+                        }
+                        if (data.Imagenes != null && data.Imagenes.Any())
+                        {
+                            target.Imagenes = data.Imagenes;
+                        }
+                    }
+                    NoticiaSelected = data ?? target;
                 });
             return validation;
         }
 
-        public async Task<Response<BlobSaved>> PostUploadPortada(IBrowserFile file)
+        public async Task<Response<BlobSaved>> PostUploadPortada(IBrowserFile file, string? titulo = null)
         {
             var urlAzureEndpoint = "api/AzureBlob/UploadImage-noticias";
 
-            var safeTitle = string.IsNullOrWhiteSpace(NoticiaSelected?.vchTitulo) ? "noticia" : NoticiaSelected.vchTitulo.Replace(" ", "_");
+            var rawTitle = !string.IsNullOrWhiteSpace(titulo) ? titulo : (!string.IsNullOrWhiteSpace(NoticiaSelected?.vchTitulo) ? NoticiaSelected.vchTitulo : "noticia");
+            var safeTitle = rawTitle.Replace(" ", "_");
             var nombreUnico = $"{safeTitle}_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
             using var memoryStream = new MemoryStream();
             await file.OpenReadStream(1024 * 1024 * 10).CopyToAsync(memoryStream);

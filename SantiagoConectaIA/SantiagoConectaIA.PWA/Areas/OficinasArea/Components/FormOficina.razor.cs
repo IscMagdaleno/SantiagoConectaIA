@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using SantiagoConectaIA.PWA.Areas.OficinasArea.Utiles;
 using SantiagoConectaIA.PWA.Shared.Workspace;
+using SantiagoConectaIA.Share.Objects.OficinasModule;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,18 +10,19 @@ namespace SantiagoConectaIA.PWA.Areas.OficinasArea.Components
 {
     public partial class FormOficina : EngramaWorkspaceComponent
     {
-        [Parameter] public MainOficinas Data { get; set; }
+        [Inject] public MainOficinas Data { get; set; }
+        [Parameter] public Oficina Model { get; set; } = new();
         [Parameter] public EventCallback OnSuccess { get; set; }
 
         private async Task OnSubmit()
         {
             Loading.Show();
-            var result = await Data.PostSaveOficina();
+            var result = await Data.PostSaveOficina(Model);
             ShowSnake(result);
             if (result.bResult)
             {
                 EstadoControl = TipoEstadoControl.Lectura;
-                SetNombreTab($"Oficina: {Data.OficinaSelected.vchNombre}");
+                SetNombreTab($"Oficina: {Model.vchNombre}");
                 TriggerMenuUpdate();
                 StateHasChanged();
                 await OnSuccess.InvokeAsync();

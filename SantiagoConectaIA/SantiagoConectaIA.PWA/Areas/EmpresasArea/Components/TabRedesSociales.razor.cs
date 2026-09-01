@@ -10,16 +10,27 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
     {
         [Inject] public MainEmpresas Data { get; set; }
         [Inject] public ISnackbar Snackbar { get; set; }
+        [Parameter] public Empresa EmpresaModel { get; set; } = default!;
 
         private bool dialogVisible = false;
         private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
         private EmpresaRedSocial redActual = new();
 
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+            var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
+            if (targetId > 0)
+            {
+                await Data.PostGetRedesSociales(targetId);
+            }
+        }
+
         private void AbrirDialogoNuevaRed()
         {
             redActual = new EmpresaRedSocial
             {
-                iIdEmpresa = Data.RegistroSeleccionado.iIdEmpresa,
+                iIdEmpresa = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa,
                 bActivo = true
             };
             dialogVisible = true;
@@ -54,7 +65,8 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
             var result = await Data.PostSaveRedSocial(redActual);
             if (result.bResult)
             {
-                await Data.PostGetRedesSociales();
+                var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
+                await Data.PostGetRedesSociales(targetId);
                 Snackbar.Add("Red social guardada exitosamente.", Severity.Success);
                 dialogVisible = false;
             }
