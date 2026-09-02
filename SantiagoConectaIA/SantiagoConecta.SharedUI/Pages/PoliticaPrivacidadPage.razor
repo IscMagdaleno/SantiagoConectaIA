@@ -1,0 +1,1019 @@
+@page "/politica-de-privacidad"
+@page "/politica-privacidad"
+@page "/privacy-policy"
+@page "/privacidad"
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<PageTitle>Política de Privacidad - Santiago Conecta</PageTitle>
+
+<div class="privacy-page-wrapper">
+    <!-- Hero Header con gradiente institucional y olas -->
+    <div class="custom-hero-header">
+        <div class="container relative z-10 mx-auto px-4 text-center">
+            <div class="hero-badge">
+                <MudIcon Icon="@Icons.Material.Filled.Security" Size="Size.Small" Class="mr-1" />
+                <span>Transparencia y Protección Ciudadana</span>
+            </div>
+            <h1 class="header-title mt-3">Política de Privacidad y Tratamiento de Datos</h1>
+            <p class="header-subtitle">
+                Conoce cómo protegemos tu información personal y garantizamos tus derechos al utilizar Santiago Conecta, 
+                incluyendo el acceso mediante cuentas de Google y Facebook.
+            </p>
+            <div class="last-updated-badge">
+                <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Size="Size.Small" Class="mr-1" />
+                <span>Última actualización: 2 de Septiembre de 2026</span>
+            </div>
+        </div>
+
+        <!-- Animated waves at bottom -->
+        <div class="waves-wrapper">
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                 viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                <defs>
+                    <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#f8fafc" />
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <div class="row">
+            <!-- Menú Rápido de Navegación (Sticky lateral en pantallas grandes) -->
+            <div class="col-lg-3 col-md-4 mb-4 quick-nav-col">
+                <div class="quick-nav-card shadow-sm">
+                    <h3 class="quick-nav-title">Contenido</h3>
+                    <ul class="quick-nav-list">
+                        <li><a href="/politica-de-privacidad#responsable">1. Responsable del Tratamiento</a></li>
+                        <li><a href="/politica-de-privacidad#datos-recopilados">2. Datos Recopilados</a></li>
+                        <li><a href="/politica-de-privacidad#finalidades">3. Finalidades del Uso</a></li>
+                        <li><a href="/politica-de-privacidad#google-oauth">4. Cumplimiento Google OAuth</a></li>
+                        <li><a href="/politica-de-privacidad#facebook-meta">5. Cumplimiento Meta / Facebook</a></li>
+                        <li><a href="/politica-de-privacidad#eliminacion-datos" class="highlight-link">6. Eliminación de Datos (Meta/Google)</a></li>
+                        <li><a href="/politica-de-privacidad#cookies">7. Cookies y Almacenamiento</a></li>
+                        <li><a href="/politica-de-privacidad#seguridad">8. Medidas de Seguridad</a></li>
+                        <li><a href="/politica-de-privacidad#derechos-arco">9. Derechos ARCO</a></li>
+                        <li><a href="/politica-de-privacidad#contacto">10. Contacto de Privacidad</a></li>
+                    </ul>
+
+                    <div class="quick-nav-action mt-4">
+                        <a href="/politica-de-privacidad#eliminacion-datos" class="btn-quick-action">
+                            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Size="Size.Small" Class="mr-1" />
+                            Eliminar mis datos
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido Detallado Legal -->
+            <div class="col-lg-9 col-md-8">
+                <div class="privacy-content shadow-sm">
+
+                    <!-- Resumen Ejecutivo para Verificación Rápida -->
+                    <div class="alert-executive-summary mb-5">
+                        <div class="d-flex align-items-center mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Class="mr-2 text-rose" />
+                            <h4 class="font-bold text-lg m-0" style="color: #880e4f;">Resumen de Compromiso de Privacidad</h4>
+                        </div>
+                        <p class="text-sm text-gray-700 m-0">
+                            <strong>Santiago Conecta</strong> es una plataforma cívica e informativa de Santiago Papasquiaro, Durango, México. 
+                            Respetamos rigurosamente tu privacidad. Solo solicitamos los permisos estrictamente indispensables (nombre, correo y foto de perfil) 
+                            para identificarte y darte acceso seguro. <strong>Nunca vendemos ni comercializamos tus datos personales</strong> con terceros, 
+                            ni los transferimos a redes publicitarias ni para entrenar modelos de Inteligencia Artificial generales. 
+                            Puedes solicitar la eliminación total de tu información en cualquier momento.
+                        </p>
+                    </div>
+
+                    <!-- 1. RESPONSABLE -->
+                    <section id="responsable" class="privacy-section">
+                        <div class="section-badge">Sección 1</div>
+                        <h2>1. Identidad y Domicilio del Responsable</h2>
+                        <p>
+                            La plataforma digital <strong>Santiago Conecta</strong> (en adelante, "la Plataforma" o "nosotros"), con domicilio de operación en 
+                            Santiago Papasquiaro, Estado de Durango, México, es la entidad responsable del tratamiento, uso, resguardo y protección de los 
+                            datos personales que proporciones al interactuar con nuestro sitio web, aplicaciones móvil  y servicios conexos.
+                        </p>
+                        <p>
+                            Para cualquier asunto relativo a la protección de datos personales o al ejercicio de tus derechos, ponemos a tu disposición 
+                            el correo electrónico oficial: 
+                            <a href="mailto:santiagoconecta01@gmail.com" class="text-link"><strong>santiagoconecta01@gmail.com</strong></a>.
+                        </p>
+                    </section>
+
+                    <hr class="section-divider" />
+
+                    <!-- 2. DATOS RECABADOS -->
+                    <section id="datos-recopilados" class="privacy-section">
+                        <div class="section-badge">Sección 2</div>
+                        <h2>2. Datos Personales que Recopilamos</h2>
+                        <p>
+                            Recopilamos únicamente los datos necesarios para brindar acceso a las funciones interactivas de la Plataforma 
+                            (consultas ciudadanas, comentarios, opiniones, registro de comercios y comunicación comunitaria). El tipo de datos recopilados depende 
+                            del método de acceso que elijas libremente:
+                        </p>
+
+                        <div class="feature-cards-grid mt-3">
+                            <div class="feature-card">
+                                <div class="card-icon google-bg">
+                                    <svg viewBox="0 0 24 24" width="22" height="22">
+                                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                                    </svg>
+                                </div>
+                                <div class="card-body">
+                                    <h3>A través de Google Sign-In</h3>
+                                    <p>Cuando eliges iniciar sesión con Google mediante OAuth 2.0, solicitamos exclusivamente los alcances (scopes) básicos <code>email</code>, <code>profile</code> y <code>openid</code>:</p>
+                                    <ul>
+                                        <li><strong>ID de usuario de Google:</strong> Identificador numérico único para asociar tu perfil de ciudadano.</li>
+                                        <li><strong>Nombre completo:</strong> Para mostrar tu nombre en tus aportaciones comunitarias y perfil.</li>
+                                        <li><strong>Correo electrónico verificado:</strong> Para notificaciones del sistema y recuperación de acceso.</li>
+                                        <li><strong>Fotografía de perfil:</strong> Como avatar de visualización en la comunidad.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="card-icon fb-bg">
+                                    <svg fill="#ffffff" viewBox="0 0 24 24" width="22" height="22">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                    </svg>
+                                </div>
+                                <div class="card-body">
+                                    <h3>A través de Facebook Login (Meta)</h3>
+                                    <p>Al iniciar sesión con Facebook SDK, solicitamos los permisos básicos <code>public_profile</code> y <code>email</code>:</p>
+                                    <ul>
+                                        <li><strong>Facebook User ID (App-Scoped):</strong> Identificador técnico para autenticación segura.</li>
+                                        <li><strong>Nombre completo:</strong> Para tu perfil de usuario dentro de la plataforma.</li>
+                                        <li><strong>Correo electrónico registrado:</strong> Para comunicación de servicio.</li>
+                                        <li><strong>Imagen de perfil pública:</strong> Mostrada como tu avatar ciudadano.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="card-icon phone-bg">
+                                    <MudIcon Icon="@Icons.Material.Filled.PhoneAndroid" Style="color: #0284c7;" />
+                                </div>
+                                <div class="card-body">
+                                    <h3>Registro Directo (Teléfono y Alias)</h3>
+                                    <p>Si optas por registrarte sin redes sociales:</p>
+                                    <ul>
+                                        <li><strong>Número de teléfono celular (10 dígitos):</strong> Para validación mediante código OTP por WhatsApp.</li>
+                                        <li><strong>Alias o nombre preferido:</strong> Tu identificador público en la plataforma.</li>
+                                        <li><strong>PIN de acceso:</strong> Cifrado de manera unidireccional para proteger tu sesión.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <hr class="section-divider" />
+
+                    <!-- 3. FINALIDADES -->
+                    <section id="finalidades" class="privacy-section">
+                        <div class="section-badge">Sección 3</div>
+                        <h2>3. Finalidades del Tratamiento de los Datos</h2>
+                        <p>Los datos personales recabados son utilizados estrictamente para las siguientes finalidades primarias y legítimas:</p>
+                        <ul class="styled-list">
+                            <li><strong>Autenticación y Control de Acceso:</strong> Validar tu identidad, prevenir accesos no autorizados y suplantación de identidad en la comunidad digital de Santiago Papasquiaro.</li>
+                            <li><strong>Participación Ciudadana:</strong> Permitir la publicación de comentarios, opiniones comunitarias, reseñas de comercios locales y reportes ciudadanos.</li>
+                            <li><strong>Gestión de Perfil:</strong> Visualizar tu nombre y foto de perfil en tus intervenciones para fomentar un entorno cívico confiable y transparente.</li>
+                            <li><strong>Comunicaciones Esenciales de Servicio:</strong> Notificaciones sobre actualizaciones de trámites, respuestas a inquietudes ciudadanas o alertas del municipio.</li>
+                        </ul>
+
+                        <div class="highlight-box-guarantee mt-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Lock" Class="mr-2 text-rose" />
+                            <div>
+                                <strong>Garantía de No Comercialización:</strong> Santiago Conecta <u>NO vende, NO alquila, NO transfiere y NO comparte</u> 
+                                tus datos personales ni la información obtenida a través de Google o Facebook con terceros, empresas publicitarias, 
+                                intermediarios de datos ni para prospección comercial.
+                            </div>
+                        </div>
+                    </section>
+
+                    <hr class="section-divider" />
+
+                    <!-- 4. GOOGLE OAUTH COMPLIANCE -->
+                    <section id="google-oauth" class="privacy-section">
+                        <div class="section-badge">Sección 4</div>
+                        <h2>4. Cumplimiento con la Política de Datos de Usuario de Google (Google API Services User Data Policy)</h2>
+                        <p>
+                            Santiago Conecta implementa el inicio de sesión con Google (Google Sign-In) siguiendo los más altos estándares 
+                            de privacidad y seguridad dictados por Alphabet Inc. y Google LLC.
+                        </p>
+                        
+                        <div class="google-policy-statement">
+                            <div class="quote-header">
+                                <MudIcon Icon="@Icons.Material.Filled.Gavel" Class="mr-2" />
+                                <strong>Declaración de Uso Limitado de Google (Google Limited Use Disclosure)</strong>
+                            </div>
+                            <blockquote class="google-quote">
+                                «El uso y la transferencia a cualquier otra aplicación de la información recibida de las API de Google 
+                                por parte de <strong>Santiago Conecta</strong> se apegarán a la 
+                                <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" class="text-link">
+                                    Política de Datos de Usuario de los Servicios de las API de Google (Google API Services User Data Policy)
+                                </a>, 
+                                incluidos los requisitos de <strong>Uso Limitado (Limited Use Requirements)</strong>.»
+                            </blockquote>
+                        </div>
+
+                        <p class="mt-3">Específicamente, declaramos que:</p>
+                        <ul class="styled-list">
+                            <li><strong>Principio de Mínimo Privilegio:</strong> No solicitamos acceso a Google Drive, Gmail, Contactos, Calendario ni ningún alcance sensible o restringido. Únicamente los datos de perfil básico e identidad.</li>
+                            <li><strong>No transferencia a terceros:</strong> La información obtenida de Google no es transferida a terceros salvo requerimiento legal expreso de autoridad judicial competente.</li>
+                            <li><strong>No uso en IA Generalista:</strong> Los datos personales provenientes de cuentas de Google no se utilizan para entrenar modelos de Inteligencia Artificial generales o de terceros sin consentimiento informado explícito.</li>
+                            <li><strong>Revocación Directa:</strong> Puedes revocar el acceso concedido a Santiago Conecta en cualquier momento desde tu cuenta de Google visitando: 
+                                <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" class="text-link">
+                                    myaccount.google.com/permissions
+                                </a>.
+                            </li>
+                        </ul>
+                    </section>
+
+                    <hr class="section-divider" />
+
+                    <!-- 5. FACEBOOK META COMPLIANCE -->
+                    <section id="facebook-meta" class="privacy-section">
+                        <div class="section-badge">Sección 5</div>
+                        <h2>5. Cumplimiento con las Condiciones de la Plataforma Meta (Facebook Login)</h2>
+                        <p>
+                            En apego a las <em>Condiciones de la Plataforma Meta</em> y las <em>Políticas para Desarrolladores de Meta</em>:
+                        </p>
+                        <ul class="styled-list">
+                            <li>Solo requerimos los permisos <code>public_profile</code> y <code>email</code> para autenticarte y enlazar tu cuenta de forma transparente.</li>
+                            <li>No solicitamos permisos adicionales invasivos como lista de amigos, feed, publicaciones, fotos privadas ni mensajes.</li>
+                            <li>Mantenemos medidas de seguridad robustas para evitar que los identificadores de usuario o tokens de Facebook sean expuestos o interceptados.</li>
+                            <li>Garantizamos mecanismos directos y expeditos para la eliminación inmediata de todos los datos personales obtenidos a través de Facebook.</li>
+                        </ul>
+                    </section>
+
+                    <hr class="section-divider" />
+
+                    <!-- 6. USER DATA DELETION INSTRUCTIONS (CRITICAL FOR FACEBOOK / GOOGLE APP REVIEW) -->
+                    <section id="eliminacion-datos" class="privacy-section highlight-target">
+                        <div class="section-badge badge-warning">Sección 6 • Requisito de Plataformas</div>
+                        <h2>6. Instrucciones para la Eliminación de Datos de Usuario (User Data Deletion Instructions)</h2>
+                        <p>
+                            En cumplimiento con los requisitos de la <strong>Plataforma Meta para Desarrolladores (Facebook)</strong>, 
+                            las directrices de <strong>Google Cloud Platform</strong> y la legislación mexicana en materia de protección de datos, 
+                            los usuarios tienen el derecho absoluto de solicitar la eliminación definitiva de su cuenta y de todos los datos asociados.
+                        </p>
+                        <p>
+                            Puedes ejecutar o solicitar la eliminación de tus datos personales mediante cualquiera de los siguientes dos métodos:
+                        </p>
+
+                        <div class="deletion-methods mt-4">
+                            <!-- MÉTODO A: DESDE FACEBOOK -->
+                            <div class="method-card">
+                                <div class="method-header">
+                                    <span class="method-step-num">Opción A</span>
+                                    <h3>Eliminación directa desde tu cuenta de Facebook</h3>
+                                </div>
+                                <div class="method-body">
+                                    <p>Si iniciaste sesión a través de Facebook Login y deseas desvincular la aplicación y solicitar la purga de datos:</p>
+                                    <ol class="step-list">
+                                        <li>Inicia sesión en tu cuenta personal de <strong>Facebook</strong>.</li>
+                                        <li>Dirígete a <strong>Configuración y privacidad</strong> y haz clic en <strong>Configuración</strong>.</li>
+                                        <li>En la barra lateral izquierda, selecciona la sección <strong>Apps y sitios web</strong> (Apps and Websites).</li>
+                                        <li>En la lista de aplicaciones activas, busca <strong>Santiago Conecta</strong>.</li>
+                                        <li>Haz clic en el botón <strong>Eliminar</strong> (Remove) junto a la aplicación.</li>
+                                        <li>Marca la casilla para confirmar la eliminación de la información y haz clic en <strong>Eliminar</strong>.</li>
+                                        <li>Opcionalmente, haz clic en el enlace <em>«Ver apps y sitios web eliminados»</em> y pulsa en <strong>Enviar solicitud</strong> para que nuestro servidor elimine todo rastro de tu identificador y datos personales.</li>
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <!-- MÉTODO B: SOLICITUD DIRECTA O POR CORREO -->
+                            <div class="method-card mt-4">
+                                <div class="method-header">
+                                    <span class="method-step-num">Opción B</span>
+                                    <h3>Solicitud directa a Santiago Conecta (Correo o Plataforma)</h3>
+                                </div>
+                                <div class="method-body">
+                                    <p>Si deseas que eliminemos de inmediato tu perfil, datos de Google, Facebook o teléfono de nuestros servidores:</p>
+                                    <ol class="step-list">
+                                        <li>
+                                            Envía un correo electrónico a 
+                                            <a href="mailto:santiagoconecta01@gmail.com?subject=Solicitud%20de%20Eliminacion%20de%20Datos%20-%20Santiago%20Conecta&body=Hola,%20deseo%20solicitar%20la%20eliminacion%20definitiva%20de%20mi%20cuenta%20y%20todos%20los%20datos%20asociados%20en%20Santiago%20Conecta.%0A%0ACorreo%20o%20Telefono%20registrado:%20%0ANombre%20o%20Alias:%20%0AProveedor%20(Google/Facebook/Telefono):%20" 
+                                               class="text-link font-bold">
+                                                santiagoconecta01@gmail.com
+                                            </a>.
+                                        </li>
+                                        <li>Indica en el asunto: <strong>«Solicitud de Eliminación de Datos - Santiago Conecta»</strong>.</li>
+                                        <li>Menciona en el mensaje tu nombre, correo electrónico o teléfono con el que te diste de alta en la plataforma.</li>
+                                        <li>
+                                            <strong>Plazo de Respuesta:</strong> Procesaremos tu solicitud y eliminaremos de manera permanente y no recuperable 
+                                            tu perfil, registros de acceso, correo, teléfono y tokens asociados en un plazo máximo de <strong>48 a 72 horas hábiles</strong>, 
+                                            enviándote una confirmación escrita por correo electrónico.
+                                        </li>
+                                    </ol>
+
+                                    <div class="direct-mail-action mt-3">
+                                        <a href="mailto:santiagoconecta01@gmail.com?subject=Solicitud%20de%20Eliminacion%20de%20Datos%20-%20Santiago%20Conecta&body=Hola,%20deseo%20solicitar%20la%20eliminacion%20definitiva%20de%20mi%20cuenta%20y%20todos%20los%20datos%20asociados%20en%20Santiago%20Conecta.%0A%0ACorreo%20o%20Telefono%20registrado:%20%0ANombre%20o%20Alias:%20%0AProveedor%20(Google/Facebook/Telefono):%20" 
+                                           class="btn-email-deletion">
+                                            <MudIcon Icon="@Icons.Material.Filled.Mail" Size="Size.Small" Class="mr-2" />
+                                            Redactar correo de eliminación automática
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <hr class="section-divider" />
+
+                    <!-- 7. COOKIES Y LOCALSTORAGE -->
+                    <section id="cookies" class="privacy-section">
+                        <div class="section-badge">Sección 7</div>
+                        <h2>7. Uso de Cookies y Almacenamiento Local (LocalStorage)</h2>
+                        <p>
+                            Santiago Conecta utiliza tecnologías de almacenamiento local en el navegador del usuario (LocalStorage) 
+                            con el único propósito técnico de:
+                        </p>
+                        <ul class="styled-list">
+                            <li>Mantener activa tu sesión iniciada de forma segura mediante un token de acceso criptográfico (JWT).</li>
+                            <li>Recordar preferencias visuales de accesibilidad e idioma seleccionadas por el ciudadano.</li>
+                            <li>Registrar métricas estadísticas de navegación anonimizadas (páginas visitadas, tipo de dispositivo) para mejorar la usabilidad del portal.</li>
+                        </ul>
+                        <p>
+                            <strong>No utilizamos cookies publicitarias de rastreo de terceros</strong> ni compartimos tus hábitos de navegación 
+                            con redes de anuncios comerciales. Puedes borrar las cookies y almacenamiento local en cualquier momento desde los ajustes de privacidad de tu navegador web.
+                        </p>
+                    </section>
+
+                    <hr class="section-divider" />
+
+                    <!-- 8. SEGURIDAD -->
+                    <section id="seguridad" class="privacy-section">
+                        <div class="section-badge">Sección 8</div>
+                        <h2>8. Medidas de Seguridad y Resguardo</h2>
+                        <p>
+                            Adoptamos rigurosas medidas técnicas, administrativas y físicas para salvaguardar tus datos personales contra daño, pérdida, 
+                            alteración, destrucción o el uso, acceso o tratamiento no autorizado:
+                        </p>
+                        <ul class="styled-list">
+                            <li><strong>Cifrado en tránsito (HTTPS / TLS 1.3):</strong> Toda la comunicación entre tu navegador o dispositivo y nuestros servidores viaja cifrada mediante certificados SSL/TLS modernos.</li>
+                            <li><strong>Protección de credenciales:</strong> Los números PIN o contraseñas se almacenan mediante funciones de derivación de claves criptográficas y hashing unidireccional de última generación. Nunca se guardan en texto plano.</li>
+                            <li><strong>Restricción de Acceso:</strong> Solo el personal técnico debidamente autorizado y sujeto a estrictos convenios de confidencialidad tiene acceso a los sistemas que resguardan la base de datos.</li>
+                        </ul>
+                    </section>
+
+                    <hr class="section-divider" />
+
+                    <!-- 9. DERECHOS ARCO -->
+                    <section id="derechos-arco" class="privacy-section">
+                        <div class="section-badge">Sección 9</div>
+                        <h2>9. Ejercicio de Derechos ARCO (Legislación Mexicana)</h2>
+                        <p>
+                            De conformidad con la <em>Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)</em> y la 
+                            normativa aplicable en los Estados Unidos Mexicanos, tienes en todo momento el derecho de:
+                        </p>
+                        <div class="arco-grid">
+                            <div class="arco-item">
+                                <strong>Acceso:</strong> Conocer qué datos personales tenemos sobre ti y para qué fines los utilizamos.
+                            </div>
+                            <div class="arco-item">
+                                <strong>Rectificación:</strong> Solicitar la corrección de tu información en caso de que esté desactualizada o sea inexacta.
+                            </div>
+                            <div class="arco-item">
+                                <strong>Cancelación:</strong> Pedir que tu información sea suprimida de nuestros registros y bases de datos.
+                            </div>
+                            <div class="arco-item">
+                                <strong>Oposición:</strong> Oponerte al tratamiento de tus datos para finalidades específicas.
+                            </div>
+                        </div>
+                        <p class="mt-3">
+                            Para ejercer cualquiera de tus derechos ARCO, basta con remitir una solicitud por escrito dirigida al Responsable de Privacidad 
+                            a la dirección <strong>santiagoconecta01@gmail.com</strong>, detallando el derecho que deseas ejercer y los datos asociados a tu cuenta.
+                        </p>
+                    </section>
+
+                    <hr class="section-divider" />
+
+                    <!-- 10. CONTACTO -->
+                    <section id="contacto" class="privacy-section">
+                        <div class="section-badge">Sección 10</div>
+                        <h2>10. Contacto y Modificaciones</h2>
+                        <p>
+                            Nos reservamos el derecho de actualizar o efectuar modificaciones a la presente Política de Privacidad para reflejar mejoras técnicas, 
+                            cambios en nuestras prácticas de tratamiento de datos o nuevos requerimientos normativos y de las plataformas Google y Meta. 
+                            Cualquier cambio sustancial será notificado oportunamente en la portada de nuestro portal web con la fecha de actualización correspondiente.
+                        </p>
+
+                        <div class="contact-card mt-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <MudIcon Icon="@Icons.Material.Filled.ContactMail" Class="mr-2 text-rose" />
+                                <h3 class="font-bold text-lg m-0" style="color: #880e4f;">Oficina de Privacidad y Soporte Ciudadano</h3>
+                            </div>
+                            <p class="m-0 text-sm text-gray-700">
+                                <strong>Proyecto:</strong> Santiago Conecta<br />
+                                <strong>Municipio:</strong> Santiago Papasquiaro, Durango, México.<br />
+                                <strong>Correo Electrónico Oficial:</strong> <a href="mailto:santiagoconecta01@gmail.com" class="text-link">santiagoconecta01@gmail.com</a><br />
+                                <strong>Página Web Oficial:</strong> <a href="/" class="text-link">https://santiagopapasquiaro.com.mx</a>
+                            </p>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .privacy-page-wrapper {
+        min-height: 100vh;
+        background-color: #f8fafc;
+        color: #1e293b;
+        font-family: inherit;
+    }
+
+    /* Hero Header */
+    .custom-hero-header {
+        position: relative;
+        background: linear-gradient(135deg, #5c1409 0%, #880e4f 55%, #4a148c 100%);
+        color: #ffffff;
+        padding-top: 110px;
+        padding-bottom: 70px;
+        overflow: hidden;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(8px);
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .header-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1.25;
+        letter-spacing: -0.5px;
+    }
+
+    @@media (min-width: 768px) {
+        .header-title {
+            font-size: 2.85rem;
+        }
+    }
+
+    .header-subtitle {
+        font-size: 1.05rem;
+        max-width: 700px;
+        margin: 12px auto 0;
+        opacity: 0.92;
+        line-height: 1.6;
+    }
+
+    .last-updated-badge {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 4px 14px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        margin-top: 16px;
+        color: #fef08a;
+    }
+
+    /* Waves */
+    .waves-wrapper {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        line-height: 0;
+    }
+
+    .waves {
+        position: relative;
+        width: 100%;
+        height: 48px;
+        margin-bottom: -7px;
+    }
+
+    .parallax > use {
+        animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
+    }
+    .parallax > use:nth-child(1) { animation-delay: -2s; animation-duration: 7s; }
+    .parallax > use:nth-child(2) { animation-delay: -3s; animation-duration: 10s; }
+    .parallax > use:nth-child(3) { animation-delay: -4s; animation-duration: 13s; }
+    .parallax > use:nth-child(4) { animation-delay: -5s; animation-duration: 20s; }
+
+    @@keyframes move-forever {
+        0% { transform: translate3d(-90px,0,0); }
+        100% { transform: translate3d(85px,0,0); }
+    }
+
+    /* Quick Nav Sticky */
+    .quick-nav-col {
+        position: relative;
+    }
+
+    .quick-nav-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        position: -webkit-sticky;
+        position: sticky;
+        top: 95px;
+        z-index: 20;
+        max-height: calc(100vh - 115px);
+        overflow-y: auto;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .quick-nav-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #880e4f;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .quick-nav-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .quick-nav-list li {
+        margin-bottom: 6px;
+    }
+
+    .quick-nav-list a {
+        color: #475569;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: all 0.25s ease;
+        display: block;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border-left: 3px solid transparent;
+        position: relative;
+    }
+
+    .quick-nav-list a:hover {
+        color: #880e4f;
+        background: #fdf2f8;
+        font-weight: 600;
+        padding-left: 12px;
+    }
+
+    .quick-nav-list a.highlight-link {
+        color: #dc2626;
+        font-weight: 600;
+    }
+
+    /* Indicador activo cuando el usuario se desplaza (ScrollSpy) */
+    .quick-nav-list a.active {
+        color: #880e4f !important;
+        background: #fce4ec !important;
+        font-weight: 700 !important;
+        border-left: 3px solid #880e4f !important;
+        padding-left: 12px !important;
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(136, 14, 79, 0.08);
+    }
+
+    .quick-nav-list a.highlight-link.active {
+        color: #991b1b !important;
+        background: #fee2e2 !important;
+        font-weight: 700 !important;
+        border-left: 3px solid #dc2626 !important;
+        padding-left: 12px !important;
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+    }
+
+    .btn-quick-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fee2e2;
+        color: #991b1b;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 10px 14px;
+        border-radius: 10px;
+        text-decoration: none;
+        border: 1px solid #fca5a5;
+        transition: all 0.2s ease;
+    }
+
+    .btn-quick-action:hover {
+        background: #fecaca;
+        color: #7f1d1d;
+        text-decoration: none;
+    }
+
+    /* Content */
+    .privacy-content {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 36px 32px;
+        border: 1px solid #e2e8f0;
+    }
+
+    @@media (max-width: 768px) {
+        .privacy-content {
+            padding: 24px 18px;
+        }
+    }
+
+    .privacy-section {
+        margin-bottom: 28px;
+        scroll-margin-top: 100px;
+    }
+
+    .section-badge {
+        display: inline-block;
+        background: #fdf2f8;
+        color: #880e4f;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        border: 1px solid #fbcfe8;
+    }
+
+    .section-badge.badge-warning {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fecaca;
+    }
+
+    .privacy-section h2 {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 14px;
+        letter-spacing: -0.3px;
+    }
+
+    .privacy-section p {
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: #334155;
+        margin-bottom: 12px;
+    }
+
+    .section-divider {
+        border: 0;
+        height: 1px;
+        background: #f1f5f9;
+        margin: 28px 0;
+    }
+
+    .text-link {
+        color: #880e4f;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+
+    .text-link:hover {
+        color: #d81b60;
+    }
+
+    .text-rose {
+        color: #880e4f;
+    }
+
+    .styled-list {
+        padding-left: 20px;
+        margin-bottom: 14px;
+    }
+
+    .styled-list li {
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+
+    /* Executive summary */
+    .alert-executive-summary {
+        background: linear-gradient(135deg, #fdf2f8 0%, #fff1f2 100%);
+        border: 1px solid #fbcfe8;
+        border-left: 5px solid #880e4f;
+        border-radius: 12px;
+        padding: 18px 20px;
+    }
+
+    /* Feature cards grid */
+    .feature-cards-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .feature-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 18px;
+    }
+
+    .card-icon {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .google-bg { background: #ffffff; border: 1px solid #e2e8f0; }
+    .fb-bg { background: #1877F2; }
+    .phone-bg { background: #e0f2fe; }
+
+    .card-body h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 6px;
+    }
+
+    .card-body p {
+        font-size: 0.9rem;
+        color: #475569;
+        margin-bottom: 8px;
+    }
+
+    .card-body ul {
+        padding-left: 18px;
+        margin: 0;
+    }
+
+    .card-body li {
+        font-size: 0.88rem;
+        line-height: 1.55;
+        color: #334155;
+        margin-bottom: 4px;
+    }
+
+    /* Highlight Guarantee Box */
+    .highlight-box-guarantee {
+        display: flex;
+        align-items: center;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-left: 4px solid #16a34a;
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 0.9rem;
+        color: #166534;
+    }
+
+    /* Google Policy Statement */
+    .google-policy-statement {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin: 16px 0;
+    }
+
+    .quote-header {
+        display: flex;
+        align-items: center;
+        color: #1e293b;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+    }
+
+    .google-quote {
+        margin: 0;
+        font-style: italic;
+        font-size: 0.93rem;
+        line-height: 1.65;
+        color: #334155;
+        border-left: 3px solid #4285F4;
+        padding-left: 14px;
+    }
+
+    /* Deletion Methods */
+    .highlight-target {
+        border: 2px dashed #fca5a5;
+        background: #fffafa;
+        border-radius: 16px;
+        padding: 22px;
+    }
+
+    .method-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px;
+    }
+
+    .method-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .method-step-num {
+        background: #880e4f;
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .method-header h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .step-list {
+        padding-left: 20px;
+        margin: 0;
+    }
+
+    .step-list li {
+        font-size: 0.92rem;
+        line-height: 1.65;
+        color: #334155;
+        margin-bottom: 6px;
+    }
+
+    .btn-email-deletion {
+        display: inline-flex;
+        align-items: center;
+        background: #880e4f;
+        color: #ffffff !important;
+        font-size: 0.88rem;
+        font-weight: 700;
+        padding: 10px 18px;
+        border-radius: 999px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 3px 8px rgba(136, 14, 79, 0.25);
+    }
+
+    .btn-email-deletion:hover {
+        background: #5c1409;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px rgba(136, 14, 79, 0.35);
+    }
+
+    /* ARCO Grid */
+    .arco-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    @@media (min-width: 640px) {
+        .arco-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .arco-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 0.9rem;
+        color: #334155;
+        line-height: 1.5;
+    }
+
+    /* Contact Card */
+    .contact-card {
+        background: #fdf2f8;
+        border: 1px solid #fbcfe8;
+        border-radius: 12px;
+        padding: 18px 20px;
+    }
+</style>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("eval", @"
+                    window.initPrivacyScrollSpy = function() {
+                        const sections = Array.from(document.querySelectorAll('.privacy-section'));
+                        const navLinks = Array.from(document.querySelectorAll('.quick-nav-list a'));
+                        if (!sections.length || !navLinks.length) return;
+
+                        function updateActiveSection() {
+                            const scrollY = window.scrollY || window.pageYOffset;
+                            const triggerPoint = scrollY + 160;
+                            let currentSectionId = '';
+
+                            const isAtBottom = (window.innerHeight + scrollY) >= (document.documentElement.scrollHeight - 60);
+                            if (isAtBottom) {
+                                currentSectionId = sections[sections.length - 1].id;
+                            } else {
+                                for (let i = 0; i < sections.length; i++) {
+                                    const section = sections[i];
+                                    const top = section.offsetTop;
+                                    const bottom = top + section.offsetHeight;
+
+                                    if (triggerPoint >= top && triggerPoint < bottom) {
+                                        currentSectionId = section.id;
+                                        break;
+                                    }
+                                }
+
+                                if (!currentSectionId && sections.length > 0 && triggerPoint >= (sections[0].offsetTop - 200)) {
+                                    currentSectionId = sections[0].id;
+                                }
+                            }
+
+                            navLinks.forEach(link => {
+                                const href = link.getAttribute('href') || '';
+                                if (currentSectionId && href.endsWith('#' + currentSectionId)) {
+                                    link.classList.add('active');
+                                } else {
+                                    link.classList.remove('active');
+                                }
+                            });
+                        }
+
+                        navLinks.forEach(link => {
+                            link.addEventListener('click', function(e) {
+                                const href = this.getAttribute('href');
+                                if (href && href.includes('#')) {
+                                    const id = href.split('#')[1];
+                                    const target = document.getElementById(id);
+                                    if (target) {
+                                        e.preventDefault();
+                                        const targetTop = target.getBoundingClientRect().top + window.pageYOffset - 90;
+                                        window.scrollTo({ top: targetTop, behavior: 'smooth' });
+                                        history.replaceState(null, null, '#' + id);
+                                        navLinks.forEach(l => l.classList.remove('active'));
+                                        this.classList.add('active');
+                                    }
+                                }
+                            });
+                        });
+
+                        if (window.__privacyScrollHandler) {
+                            window.removeEventListener('scroll', window.__privacyScrollHandler);
+                        }
+                        window.__privacyScrollHandler = updateActiveSection;
+                        window.addEventListener('scroll', updateActiveSection, { passive: true });
+                        updateActiveSection();
+                    };
+                    window.initPrivacyScrollSpy();
+                ");
+            }
+            catch { }
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("eval", @"
+                if (window.__privacyScrollHandler) {
+                    window.removeEventListener('scroll', window.__privacyScrollHandler);
+                    window.__privacyScrollHandler = null;
+                }
+            ");
+        }
+        catch { }
+    }
+}

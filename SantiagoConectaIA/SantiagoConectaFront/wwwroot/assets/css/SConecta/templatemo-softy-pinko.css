@@ -1,4 +1,4 @@
-﻿/*
+/*
 
 Softy Pinko
 
@@ -1553,6 +1553,61 @@ footer {
                     background-color: #e8c382;
                     color: #880e4f; /* Se cambia el color del texto para el contraste */
                 }
+
+    /* Enlaces Legales del Footer (Política de Privacidad y Eliminación de Datos) */
+    footer .footer-legal-links {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-top: 22px;
+        margin-bottom: -10px;
+        flex-wrap: wrap;
+        text-align: center;
+    }
+
+    footer .footer-legal-link {
+        color: rgba(255, 255, 255, 0.88) !important;
+        font-size: 13.5px !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.3px !important;
+        text-decoration: none !important;
+        padding: 7px 16px !important;
+        border-radius: 999px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        transition: all 0.25s ease-in-out !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    footer .footer-legal-link:hover {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.22) !important;
+        border-color: rgba(255, 255, 255, 0.45) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+        text-decoration: none !important;
+    }
+
+    footer .footer-legal-link svg {
+        margin-right: 7px;
+        opacity: 0.85;
+        transition: opacity 0.2s ease;
+    }
+
+    footer .footer-legal-link:hover svg {
+        opacity: 1;
+    }
+
+    footer .footer-legal-dot {
+        color: rgba(255, 255, 255, 0.35) !important;
+        font-size: 14px !important;
+        user-select: none;
+    }
 
     footer .copyright {
         text-align: center;
