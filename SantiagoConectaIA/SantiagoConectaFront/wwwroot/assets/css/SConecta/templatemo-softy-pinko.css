@@ -625,6 +625,10 @@ header
                 margin-left: 0px;
             }
 
+            .header-area .main-nav .nav.open {
+                display: block !important;
+            }
+
                 .header-area .main-nav .nav li:first-child {
                     border-top: 1px solid #eee;
                 }

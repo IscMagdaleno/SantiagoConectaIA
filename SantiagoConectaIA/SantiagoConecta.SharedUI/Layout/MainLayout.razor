@@ -15,11 +15,11 @@
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
-<header class="header-area header-sticky">
+<header class="header-area header-sticky @(IsMenuOpen ? "menu-open" : "")">
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <nav class="main-nav">
+                <nav class="main-nav @(IsMenuOpen ? "expanded" : "")">
                     <a href="/" class="logo d-flex align-center">
                         <img src="_content/SantiagoConecta.SharedUI/assets/images/LogoBuenoPNG.svg" style="height: 32px;" class="mr-2" alt="Logo" />
                         <span style="font-family: 'Montaser Arabic', sans-serif; font-weight: 700; font-size: clamp(16px, 4.5vw, 24px);">

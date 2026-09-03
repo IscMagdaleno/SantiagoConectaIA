@@ -230,3 +230,96 @@ main {
     user-select: none;
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MENÚ MÓVIL RESPONSIVO (SANTIAGO CONECTA)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media (max-width: 991px) {
+    .header-area {
+        height: auto !important;
+        min-height: 80px !important;
+    }
+
+    .header-area .main-nav {
+        overflow: hidden !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .header-area .main-nav.expanded {
+        border-radius: 28px !important;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.18) !important;
+        padding-bottom: 15px !important;
+    }
+
+    .header-area .main-nav .nav {
+        display: none !important;
+    }
+
+    .header-area .main-nav .nav.open {
+        display: flex !important;
+        flex-direction: column !important;
+        float: none !important;
+        width: 100% !important;
+        margin-top: 15px !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding: 10px 15px 5px 15px !important;
+        border-top: 1px solid #f0f0f0 !important;
+        background: #ffffff !important;
+        animation: fadeInMenu 0.25s ease-in-out forwards;
+    }
+
+    .header-area .main-nav .nav.open li {
+        display: block !important;
+        width: 100% !important;
+        background: transparent !important;
+        border-bottom: 1px solid #f7f7f7 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        text-align: center !important;
+    }
+
+    .header-area .main-nav .nav.open li:last-child {
+        border-bottom: none !important;
+    }
+
+    .header-area .main-nav .nav.open li a {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 46px !important;
+        line-height: 46px !important;
+        padding: 0 16px !important;
+        color: #2c3e50 !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        border-radius: 12px !important;
+        margin: 2px 0 !important;
+        background: transparent !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .header-area .main-nav .nav.open li a:hover,
+    .header-area .main-nav .nav.open li a.active {
+        color: #d81b60 !important;
+        background: #fdf2f7 !important;
+    }
+
+    .header-area .main-nav .nav.open li.mobile-lang-item {
+        display: flex !important;
+        justify-content: center !important;
+        padding: 8px 0 !important;
+        border-bottom: none !important;
+    }
+}
+
+@keyframes fadeInMenu {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+

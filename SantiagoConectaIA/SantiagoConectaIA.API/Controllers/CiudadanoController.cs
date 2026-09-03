@@ -71,5 +71,19 @@ namespace SantiagoConectaIA.API.Controllers
             }
             return BadRequest(result);
         }
+
+        /// <summary>
+        /// Obtiene el ClientId o AppId de un proveedor social (Google o Facebook).
+        /// </summary>
+        [HttpGet("GetSocialAuthId")]
+        public async Task<IActionResult> GetSocialAuthId([FromQuery] string proveedor)
+        {
+            var result = await _ciudadanoDomain.GetSocialAuthId(proveedor ?? string.Empty);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }
