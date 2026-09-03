@@ -26,6 +26,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.FeedModule
             public string vchImagenUrl { get; set; } = string.Empty;
             public DateTime? dtFecha { get; set; }
             public int iTotalRegistros { get; set; }
+            public string? nvchImagenesJson { get; set; }
         }
     }
 }

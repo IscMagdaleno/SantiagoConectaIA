@@ -8,6 +8,7 @@ namespace SantiagoConectaIA.Share.Objects.FeedModule
         public List<FeedCard> Noticias { get; set; } = new();
         public List<FeedCard> Eventos { get; set; } = new();
         public List<FeedCard> Capsulas { get; set; } = new();
+        public List<FeedCard> Publicaciones { get; set; } = new();
         public int iTotalRegistros { get; set; }
     }
 }

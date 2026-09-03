@@ -5,9 +5,44 @@
 
 <div class="feed-card">
     <div class="feed-card-media">
-        @if (!string.IsNullOrWhiteSpace(Card.vchImagenUrl))
+        @if (DisplayImages.Count > 1)
         {
-            <img src="@Card.vchImagenUrl" alt="@Card.vchTitulo" loading="lazy" />
+            <MudCarousel Class="feed-card-carousel"
+                         ShowArrows="true"
+                         ShowBullets="true"
+                         EnableSwipeGesture="true"
+                         AutoCycle="false"
+                         TData="object"
+                         Style="height: 100%; width: 100%;">
+                @for (int i = 0; i < DisplayImages.Count; i++)
+                {
+                    var imgUrl = DisplayImages[i];
+                    var imgIdx = i;
+                    <MudCarouselItem Transition="Transition.Slide">
+                        <div class="feed-carousel-slide" @onclick="() => OpenLightbox(imgIdx)" title="Clic para ampliar">
+                            <img src="@imgUrl" class="feed-blur-bg" alt="" aria-hidden="true" />
+                            <img src="@imgUrl" class="feed-media-main-img" alt="@Card.vchTitulo" loading="lazy" />
+                            <div class="feed-media-zoom-overlay">
+                                <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Style="font-size: 22px; color: #fff;" />
+                            </div>
+                        </div>
+                    </MudCarouselItem>
+                }
+            </MudCarousel>
+            <div class="feed-multi-indicator">
+                <MudIcon Icon="@Icons.Material.Filled.Collections" Style="font-size: 13px;" />
+                <span>@DisplayImages.Count</span>
+            </div>
+        }
+        else if (DisplayImages.Count == 1)
+        {
+            <div class="feed-single-media" @onclick="() => OpenLightbox(0)" title="Clic para ampliar">
+                <img src="@DisplayImages[0]" class="feed-blur-bg" alt="" aria-hidden="true" />
+                <img src="@DisplayImages[0]" class="feed-media-main-img" alt="@Card.vchTitulo" loading="lazy" />
+                <div class="feed-media-zoom-overlay">
+                    <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Style="font-size: 22px; color: #fff;" />
+                </div>
+            </div>
         }
         else
         {
@@ -71,6 +106,67 @@
     </div>
 </div>
 
+@if (_lightboxOpen && DisplayImages.Any())
+{
+    <div class="insta-lightbox-backdrop" @onclick="CloseLightbox">
+        <div class="insta-lightbox-container" @onclick:stopPropagation="true">
+            <!-- Header superior -->
+            <div class="insta-lightbox-header">
+                <div class="insta-lightbox-counter">
+                    @if (DisplayImages.Count > 1)
+                    {
+                        <span class="counter-pill">@(_activeImageIndex + 1) / @DisplayImages.Count</span>
+                    }
+                    else
+                    {
+                        <span class="counter-pill">@Card.vchTitulo</span>
+                    }
+                </div>
+                <button type="button" class="insta-lightbox-btn-close" @onclick="CloseLightbox" title="Cerrar">
+                    <MudIcon Icon="@Icons.Material.Filled.Close" Style="font-size: 26px; color: #fff;" />
+                </button>
+            </div>
+
+            <!-- Contenido central de imagen con flechas -->
+            <div class="insta-lightbox-body">
+                @if (DisplayImages.Count > 1)
+                {
+                    <button type="button" class="insta-nav-arrow arrow-left" @onclick="PrevImage" title="Anterior">
+                        <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Style="font-size: 36px; color: #fff;" />
+                    </button>
+                }
+
+                <div class="insta-image-box">
+                    <img src="@DisplayImages[_activeImageIndex]" 
+                         alt="@Card.vchTitulo" 
+                         class="insta-expanded-img" />
+                </div>
+
+                @if (DisplayImages.Count > 1)
+                {
+                    <button type="button" class="insta-nav-arrow arrow-right" @onclick="NextImage" title="Siguiente">
+                        <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="font-size: 36px; color: #fff;" />
+                    </button>
+                }
+            </div>
+
+            <!-- Dots inferiores en carrusel -->
+            @if (DisplayImages.Count > 1)
+            {
+                <div class="insta-lightbox-dots">
+                    @for (int d = 0; d < DisplayImages.Count; d++)
+                    {
+                        var dotIdx = d;
+                        <button type="button" 
+                                class="insta-dot @(dotIdx == _activeImageIndex ? "is-active" : "")"
+                                @onclick="() => SetActiveImage(dotIdx)"></button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
 <style>
     .feed-card {
         background: #fff;
@@ -86,17 +182,95 @@
     .feed-card-media {
         position: relative;
         width: 100%;
-        background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+        background: #111;
         overflow: hidden;
         flex: 0 0 auto;
-        height: 220px;
+        height: 240px;
+        cursor: pointer;
     }
 
-    .feed-card-media img {
+    .feed-single-media,
+    .feed-carousel-slide {
+        position: relative;
         width: 100%;
         height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: #000;
+        cursor: pointer;
+    }
+
+    .feed-blur-bg {
+        position: absolute;
+        top: -15%;
+        left: -15%;
+        width: 130%;
+        height: 130%;
         object-fit: cover;
+        filter: blur(24px);
+        opacity: 0.55;
+        z-index: 0;
+        transform: scale(1.1);
+    }
+
+    .feed-media-main-img {
+        position: relative;
+        z-index: 1;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
         display: block;
+        transition: transform 0.3s ease;
+    }
+
+    .feed-single-media:hover .feed-media-main-img,
+    .feed-carousel-slide:hover .feed-media-main-img {
+        transform: scale(1.02);
+    }
+
+    .feed-media-zoom-overlay {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(6px);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        z-index: 2;
+    }
+
+    .feed-single-media:hover .feed-media-zoom-overlay,
+    .feed-carousel-slide:hover .feed-media-zoom-overlay {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    .feed-multi-indicator {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(6px);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        z-index: 3;
+        pointer-events: none;
     }
 
     .feed-card-placeholder {
@@ -105,6 +279,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        background: linear-gradient(135deg, #fce4ec, #f8bbd0);
     }
 
     .feed-card-placeholder-icon {
@@ -125,6 +300,7 @@
         font-weight: 800;
         letter-spacing: 0.4px;
         text-transform: uppercase;
+        z-index: 4;
     }
 
     .feed-card-body {
@@ -186,6 +362,172 @@
         height: 40px;
     }
 
+    /* Instagram Lightbox Overlay */
+    .insta-lightbox-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 100000;
+        background: rgba(0, 0, 0, 0.93);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: instaFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .insta-lightbox-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+
+    .insta-lightbox-header {
+        width: 100%;
+        max-width: 1200px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 16px;
+        z-index: 10;
+    }
+
+    .counter-pill {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(6px);
+    }
+
+    .insta-lightbox-btn-close {
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .insta-lightbox-btn-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.08);
+    }
+
+    .insta-lightbox-body {
+        position: relative;
+        flex: 1;
+        width: 100%;
+        max-width: 1200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .insta-image-box {
+        max-width: 90vw;
+        max-height: 78vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .insta-expanded-img {
+        max-width: 90vw;
+        max-height: 78vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.85);
+        user-select: none;
+        animation: instaZoomIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .insta-nav-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(6px);
+        z-index: 5;
+    }
+
+    .insta-nav-arrow:hover {
+        background: rgba(255, 255, 255, 0.4);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .arrow-left {
+        left: 12px;
+    }
+
+    .arrow-right {
+        right: 12px;
+    }
+
+    .insta-lightbox-dots {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+        z-index: 10;
+    }
+
+    .insta-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .insta-dot.is-active {
+        width: 22px;
+        border-radius: 999px;
+        background: #e91e63;
+    }
+
+    @@keyframes instaFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes instaZoomIn {
+        from { transform: scale(0.94); opacity: 0.7; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
     /* Desktop: 2 large cards */
     @@media (min-width: 992px) {
         .feed-card {
@@ -234,6 +576,55 @@
 
     private IJSObjectReference? _shareModule;
     private bool _canNativeShare;
+    private bool _lightboxOpen = false;
+    private int _activeImageIndex = 0;
+
+    private List<string> DisplayImages
+    {
+        get
+        {
+            if (Card.ImagenesUrls != null && Card.ImagenesUrls.Any(u => !string.IsNullOrWhiteSpace(u)))
+            {
+                return Card.ImagenesUrls.Where(u => !string.IsNullOrWhiteSpace(u)).ToList();
+            }
+            if (!string.IsNullOrWhiteSpace(Card.vchImagenUrl))
+            {
+                return new List<string> { Card.vchImagenUrl };
+            }
+            return new List<string>();
+        }
+    }
+
+    private void OpenLightbox(int index)
+    {
+        _activeImageIndex = Math.Clamp(index, 0, Math.Max(0, DisplayImages.Count - 1));
+        _lightboxOpen = true;
+    }
+
+    private void CloseLightbox()
+    {
+        _lightboxOpen = false;
+    }
+
+    private void NextImage()
+    {
+        if (DisplayImages.Count <= 1) return;
+        _activeImageIndex = (_activeImageIndex + 1) % DisplayImages.Count;
+    }
+
+    private void PrevImage()
+    {
+        if (DisplayImages.Count <= 1) return;
+        _activeImageIndex = (_activeImageIndex - 1 + DisplayImages.Count) % DisplayImages.Count;
+    }
+
+    private void SetActiveImage(int index)
+    {
+        if (index >= 0 && index < DisplayImages.Count)
+        {
+            _activeImageIndex = index;
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -261,6 +652,7 @@
         "NOTICIA" => "Noticia",
         "EVENTO" => "Evento",
         "CAPSULA" => "Dato Curioso",
+        "PUBLICACION" => "Comunidad",
         _ => "Contenido"
     };
 
@@ -270,6 +662,7 @@
         "NOTICIA" => "Leer Noticia",
         "EVENTO" => "Ir al Evento",
         "CAPSULA" => "Ver Dato Curioso",
+        "PUBLICACION" => "Comunidad",
         _ => "Ver más"
     };
 
@@ -279,6 +672,7 @@
         "NOTICIA" => Icons.Material.Filled.Article,
         "EVENTO" => Icons.Material.Filled.Event,
         "CAPSULA" => Icons.Material.Filled.Lightbulb,
+        "PUBLICACION" => Icons.Material.Filled.Forum,
         _ => Icons.Material.Filled.Info
     };
 

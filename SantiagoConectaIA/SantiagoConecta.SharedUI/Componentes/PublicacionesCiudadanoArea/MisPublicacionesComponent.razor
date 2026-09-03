@@ -1,0 +1,157 @@
+@using SantiagoConecta.SharedUI.Data
+@using SantiagoConectaIA.Share.Objects.PublicacionCiudadanoModule
+@using SantiagoConectaIA.Share.PostModels.PublicacionCiudadanoModule
+@inject Data_PublicacionesCiudadano DataPublicaciones
+@inject CiudadanoSession Session
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<div class="mis-publicaciones-container">
+    @if (_isLoading)
+    {
+        <div class="d-flex justify-center py-5">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+    else if (!_misPublicaciones.Any())
+    {
+        <MudPaper Elevation="0" Class="pa-6 text-center" Style="background: #fafafa; border-radius: 16px; border: 1px dashed #e0e0e0;">
+            <MudIcon Icon="@Icons.Material.Filled.PostAdd" Style="font-size: 48px; color: #bdbdbd;" />
+            <MudText Typo="Typo.subtitle1" Class="mt-2" Style="font-weight: 700; color: #666;">Aún no has publicado nada</MudText>
+            <MudText Typo="Typo.body2" Style="color: #999;">Usa el formulario de arriba para compartir avisos, fotos o dudas con la comunidad.</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-3">
+            @foreach (var pub in _misPublicaciones)
+            {
+                <MudPaper Elevation="2" Class="pa-4" Style="border-radius: 16px; border-left: 4px solid #cd4472;">
+                    <div class="d-flex align-center justify-space-between mb-2">
+                        <div class="d-flex align-center gap-2">
+                            <span style="font-size: 11px; font-weight: 800; background: #fce4ec; color: #880e4f; padding: 3px 10px; border-radius: 999px; text-transform: uppercase;">
+                                @pub.vchCategoriaPublicacion
+                            </span>
+                            <span style="font-size: 12px; color: #888;">
+                                @pub.dtFechaCreacion.ToString("dd MMM yyyy HH:mm", new System.Globalization.CultureInfo("es-MX"))
+                            </span>
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="() => ConfirmarEliminar(pub)" />
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(pub.nvchTitulo))
+                    {
+                        <MudText Typo="Typo.subtitle1" Style="font-weight: 700; color: #333;" Class="mb-1">
+                            @pub.nvchTitulo
+                        </MudText>
+                    }
+
+                    <MudText Typo="Typo.body2" Style="color: #444; white-space: pre-line;" Class="mb-3">
+                        @pub.nvchContenidoTexto
+                    </MudText>
+
+                    @* GALERÍA DE IMÁGENES SI EXISTEN *@
+                    @if (pub.Imagenes != null && pub.Imagenes.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            @foreach (var img in pub.Imagenes)
+                            {
+                                <a href="@img.nvchUrlImagen" target="_blank" style="display: block; width: 80px; height: 80px; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1);">
+                                    <img src="@img.nvchUrlImagen" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto de publicación" loading="lazy" />
+                                </a>
+                            }
+                        </div>
+                    }
+
+                    <div class="d-flex align-center justify-space-between pt-2" style="border-top: 1px solid #f0f0f0;">
+                        <div class="d-flex align-center gap-1" style="color: #666; font-size: 13px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Forum" Style="font-size: 16px; color: #cd4472;" />
+                            <span>@(pub.iTotalComentarios == 1 ? "1 comentario" : $"{pub.iTotalComentarios} comentarios")</span>
+                        </div>
+                        <a href="/feed" style="font-size: 13px; font-weight: 700; color: #cd4472; text-decoration: none;">
+                            Ver en el Feed →
+                        </a>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isLoading = true;
+    private List<PublicacionCiudadano> _misPublicaciones = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarMisPublicacionesAsync();
+    }
+
+    public async Task RecargarAsync()
+    {
+        await CargarMisPublicacionesAsync();
+    }
+
+    private async Task CargarMisPublicacionesAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Session.Token))
+        {
+            _isLoading = false;
+            return;
+        }
+
+        _isLoading = true;
+        try
+        {
+            var req = new PostGetMisPublicacionesCiudadano { iPage = 1, iPageSize = 50 };
+            var res = await DataPublicaciones.PostGetMisPublicaciones(req, Session.Token);
+            if (res != null && res.IsSuccess && res.Data != null)
+            {
+                _misPublicaciones = res.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar mis publicaciones: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmarEliminar(PublicacionCiudadano pub)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Eliminar Publicación",
+            "¿Estás seguro de que deseas eliminar esta publicación? Ya no aparecerá en el feed de la comunidad.",
+            yesText: "Eliminar", cancelText: "Cancelar");
+
+        if (result == true)
+        {
+            try
+            {
+                var delReq = new PostDeletePublicacionCiudadano { iIdPublicacion = pub.iIdPublicacion };
+                var res = await DataPublicaciones.PostDeletePublicacion(delReq, Session.Token);
+                if (res != null && res.IsSuccess)
+                {
+                    Snackbar.Add("Publicación eliminada correctamente.", Severity.Success);
+                    _misPublicaciones.Remove(pub);
+                    StateHasChanged();
+                }
+                else
+                {
+                    Snackbar.Add(res?.Message ?? "No se pudo eliminar la publicación.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al eliminar: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}

@@ -36,6 +36,7 @@ builder.Services.AddScoped<Data_EmprendimientosFeed>();
 builder.Services.AddScoped<Data_Ciudadano>();
 builder.Services.AddScoped<CiudadanoSession>();
 builder.Services.AddScoped<Data_Opinion>();
+builder.Services.AddScoped<Data_PublicacionesCiudadano>();
 builder.Services.AddMudServices();
 
 

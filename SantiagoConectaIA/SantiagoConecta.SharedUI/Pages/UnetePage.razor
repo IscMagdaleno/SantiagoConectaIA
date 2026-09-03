@@ -1,6 +1,7 @@
 @page "/unete"
 @implements IDisposable
 @using SantiagoConecta.SharedUI.Data
+@using SantiagoConecta.SharedUI.Componentes.PublicacionesCiudadanoArea
 @using SantiagoConectaIA.Share.PostModels.CiudadanoModule
 @inject Data_Ciudadano DataCiudadano
 @inject CiudadanoSession Session
@@ -13,8 +14,12 @@
 <div class="custom-hero-header">
     <div class="container relative z-10 mx-auto px-4 text-center">
         <MudIcon Icon="@Icons.Material.Filled.Favorite" Style="font-size: 56px; color: #ffffff; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
-        <h1 class="header-title mt-2">Sé parte de Santiago Conecta</h1>
-        <p class="header-subtitle">Regístrate con tu celular y forma parte de esta comunidad. Pronto podrás dejar tu opinión en noticias, trámites y eventos.</p>
+        <h1 class="header-title mt-2">@(Session.IsLoggedIn ? "Tu Espacio Ciudadano" : "Sé parte de Santiago Conecta")</h1>
+        <p class="header-subtitle">
+            @(Session.IsLoggedIn
+                ? "Comparte avisos, fotos y dudas con tu comunidad o participa dejando tu opinión."
+                : "Regístrate con tu celular, Google o Facebook y forma parte de esta comunidad.")
+        </p>
     </div>
     <div class="waves-wrapper">
         <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -32,44 +37,74 @@
     </div>
 </div>
 
-<section class="section" style="padding: 40px 0 80px;">
-    <div class="container" style="max-width: 520px;">
+<section class="section" style="padding: 30px 0 80px;">
+    <div class="container" style="@(Session.IsLoggedIn ? "max-width: 720px;" : "max-width: 520px;")">
         @if (Session.IsLoggedIn)
         {
-            <MudPaper Elevation="4" Class="pa-6 text-center" Style="border-radius: 20px;">
-                @if (!string.IsNullOrEmpty(Session.AvatarUrl))
-                {
-                    <MudAvatar Size="Size.Large" Class="mx-auto mb-2" Style="width: 80px; height: 80px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                        <MudImage Src="@Session.AvatarUrl" />
-                    </MudAvatar>
-                }
-                else
-                {
-                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Style="font-size: 48px;" />
-                }
-                <div class="d-flex align-center justify-center gap-2 mt-2">
-                    <MudText Typo="Typo.h5" Style="font-weight: 700;">Hola, @Session.Alias</MudText>
-                    @if (Session.bCuentaVerificada)
-                    {
-                        <MudTooltip Text="Cuenta Verificada">
-                            <MudIcon Icon="@Icons.Material.Filled.Verified" Color="Color.Info" Style="font-size: 22px;" />
-                        </MudTooltip>
-                    }
+            @* TARJETA PERFIL Y ACCIONES *@
+            <MudPaper Elevation="3" Class="pa-5 mb-5" Style="border-radius: 20px; background: linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%); border: 1px solid #fce4ec;">
+                <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3">
+                    <div class="d-flex align-center gap-3">
+                        @if (!string.IsNullOrEmpty(Session.AvatarUrl))
+                        {
+                            <MudAvatar Size="Size.Large" Style="width: 56px; height: 56px; border: 2px solid #cd4472; box-shadow: 0 4px 10px rgba(0,0,0,0.12);">
+                                <MudImage Src="@Session.AvatarUrl" />
+                            </MudAvatar>
+                        }
+                        else
+                        {
+                            <MudAvatar Color="Color.Primary" Style="width: 56px; height: 56px; font-weight: 700; font-size: 22px; background: linear-gradient(135deg, #9b45c9, #cd4472);">
+                                @(string.IsNullOrWhiteSpace(Session.Alias) ? "C" : Session.Alias.Substring(0, 1).ToUpper())
+                            </MudAvatar>
+                        }
+                        <div>
+                            <div class="d-flex align-center gap-2">
+                                <MudText Typo="Typo.h6" Style="font-weight: 800; color: #333;">@Session.Alias</MudText>
+                                @if (Session.bCuentaVerificada)
+                                {
+                                    <MudTooltip Text="Ciudadano Verificado">
+                                        <MudIcon Icon="@Icons.Material.Filled.Verified" Color="Color.Info" Style="font-size: 20px;" />
+                                    </MudTooltip>
+                                }
+                            </div>
+                            <MudText Typo="Typo.caption" Style="color: #666;">
+                                Conectado vía <strong>@(Session.ProveedorAuth ?? "Santiago Conecta")</strong>
+                                @if (!string.IsNullOrEmpty(Session.Email))
+                                {
+                                    <span> • @Session.Email</span>
+                                }
+                            </MudText>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Href="/feed"
+                                   StartIcon="@Icons.Material.Filled.DynamicFeed"
+                                   Style="border-radius: 999px; text-transform: none; font-weight: 700;">
+                            Ver Feed
+                        </MudButton>
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Error"
+                                   Size="Size.Small"
+                                   Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                                   OnClick="SalirAsync">
+                            Cerrar sesión
+                        </MudButton>
+                    </div>
                 </div>
-                @if (!string.IsNullOrEmpty(Session.Email))
-                {
-                    <MudText Typo="Typo.caption" Style="color: #888;">@Session.Email</MudText>
-                }
-                <MudText Typo="Typo.body2" Class="mt-2 mb-4" Style="color: #666;">
-                    Ya eres parte de Santiago Conecta con tu cuenta de <strong>@(Session.ProveedorAuth ?? "Santiago Conecta")</strong>. Ya puedes dejar tu opinión en noticias, trámites y eventos.
-                </MudText>
-                <MudButton Variant="Variant.Outlined"
-                           Color="Color.Primary"
-                           Style="border-radius: 999px; text-transform: none; font-weight: 700;"
-                           OnClick="SalirAsync">
-                    Cerrar sesión
-                </MudButton>
             </MudPaper>
+
+            @* CREACIÓN DE PUBLICACIÓN *@
+            <CrearPublicacionComponent OnPublicacionGuardada="OnPublicacionCreada" />
+
+            @* MIS PUBLICACIONES *@
+            <div class="mt-4 mb-2 d-flex align-center justify-space-between">
+                <MudText Typo="Typo.h6" Style="font-weight: 800; color: #880e4f;">Tus Publicaciones</MudText>
+            </div>
+            <MisPublicacionesComponent @ref="_misPublicacionesRef" />
         }
         else
         {
@@ -416,6 +451,16 @@
     private void OnSessionChanged()
     {
         InvokeAsync(StateHasChanged);
+    }
+
+    private MisPublicacionesComponent? _misPublicacionesRef;
+
+    private async Task OnPublicacionCreada()
+    {
+        if (_misPublicacionesRef != null)
+        {
+            await _misPublicacionesRef.RecargarAsync();
+        }
     }
 
     private async Task SalirAsync()

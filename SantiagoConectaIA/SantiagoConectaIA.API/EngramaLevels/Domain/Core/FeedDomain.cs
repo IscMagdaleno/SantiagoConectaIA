@@ -1,4 +1,5 @@
 using EngramaCoreStandar.Results;
+using Newtonsoft.Json.Linq;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.FeedModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
@@ -24,30 +25,21 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
         {
             try
             {
+                var page = postModel?.iPage ?? 1;
+                var pageSize = postModel?.iPageSize ?? 10;
+                var filtro = NormalizeTipoFiltro(postModel?.vchTipoFiltro);
+
                 var request = new spGetFeed.Request
                 {
-                    iPage = postModel.iPage < 1 ? 1 : postModel.iPage,
-                    iPageSize = postModel.iPageSize < 1 ? 10 : postModel.iPageSize,
-                    vchSessionSeed = postModel.vchSessionSeed,
-                    vchTipoFiltro = NormalizeTipoFiltro(postModel.vchTipoFiltro)
+                    iPage = page,
+                    iPageSize = pageSize,
+                    vchSessionSeed = postModel?.vchSessionSeed,
+                    vchTipoFiltro = filtro
                 };
 
                 var results = (await _feedRepository.spGetFeed(request)).ToList();
-                var first = results.FirstOrDefault();
-
-                if (first != null && !first.bResult && first.iIdEntidad <= 0)
-                {
-                    // Empty feed is a valid state for the UI (not a hard failure).
-                    return new Response<IEnumerable<FeedCard>>
-                    {
-                        Data = new List<FeedCard>(),
-                        IsSuccess = true,
-                        Message = first.vchMessage
-                    };
-                }
-
                 var cards = results
-                    .Where(r => r.iIdEntidad > 0 && !string.IsNullOrWhiteSpace(r.vchTipoEntidad))
+                    .Where(r => r.iIdEntidad > 0)
                     .Select(MapGetResult)
                     .ToList();
 
@@ -60,7 +52,9 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             }
             catch (Exception ex)
             {
-                return Response<IEnumerable<FeedCard>>.BadResult(ex.Message, new List<FeedCard>());
+                return Response<IEnumerable<FeedCard>>.BadResult(
+                    $"Error al obtener feed: {ex.Message}",
+                    Enumerable.Empty<FeedCard>());
             }
         }
 
@@ -68,16 +62,19 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(postModel.vchTexto))
+                if (string.IsNullOrWhiteSpace(postModel?.vchTexto))
                 {
                     return Response<FeedSearchResult>.BadResult("Debe indicar un texto de búsqueda.", new FeedSearchResult());
                 }
 
+                var page = postModel?.iPage ?? 1;
+                var pageSize = postModel?.iPageSize ?? 50;
+
                 var request = new spSearchFeed.Request
                 {
                     vchTexto = postModel.vchTexto.Trim(),
-                    iPage = postModel.iPage < 1 ? 1 : postModel.iPage,
-                    iPageSize = postModel.iPageSize < 1 ? 50 : postModel.iPageSize
+                    iPage = page < 1 ? 1 : page,
+                    iPageSize = pageSize < 1 ? 50 : pageSize
                 };
 
                 var results = (await _feedRepository.spSearchFeed(request)).ToList();
@@ -104,6 +101,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                     Noticias = cards.Where(c => c.vchTipoEntidad == "NOTICIA").ToList(),
                     Eventos = cards.Where(c => c.vchTipoEntidad == "EVENTO").ToList(),
                     Capsulas = cards.Where(c => c.vchTipoEntidad == "CAPSULA").ToList(),
+                    Publicaciones = cards.Where(c => c.vchTipoEntidad == "PUBLICACION").ToList(),
                     iTotalRegistros = cards.FirstOrDefault()?.iTotalRegistros ?? 0
                 };
 
@@ -122,11 +120,11 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 
         private static FeedCard MapGetResult(spGetFeed.Result r) => MapCard(
             r.vchTipoEntidad, r.iIdEntidad, r.vchTitulo, r.nvchDescripcion,
-            r.nvchContenidoDetallado, r.vchImagenUrl, r.dtFecha, r.iTotalRegistros);
+            r.nvchContenidoDetallado, r.vchImagenUrl, r.dtFecha, r.iTotalRegistros, r.nvchImagenesJson);
 
         private static FeedCard MapSearchResult(spSearchFeed.Result r) => MapCard(
             r.vchTipoEntidad, r.iIdEntidad, r.vchTitulo, r.nvchDescripcion,
-            r.nvchContenidoDetallado, r.vchImagenUrl, r.dtFecha, r.iTotalRegistros);
+            r.nvchContenidoDetallado, r.vchImagenUrl, r.dtFecha, r.iTotalRegistros, r.nvchImagenesJson);
 
         private static FeedCard MapCard(
             string tipo,
@@ -136,9 +134,11 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             string? contenidoDetallado,
             string imagenUrl,
             DateTime? fecha,
-            int total)
+            int total,
+            string? imagenesJson = null)
         {
             var tipoNorm = (tipo ?? string.Empty).Trim().ToUpperInvariant();
+            var urls = ParseImagenesJson(imagenesJson, imagenUrl);
             return new FeedCard
             {
                 vchTipoEntidad = tipoNorm,
@@ -146,11 +146,48 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                 vchTitulo = titulo ?? string.Empty,
                 nvchDescripcion = descripcion ?? string.Empty,
                 nvchContenidoDetallado = contenidoDetallado,
-                vchImagenUrl = imagenUrl ?? string.Empty,
+                vchImagenUrl = urls.FirstOrDefault() ?? imagenUrl ?? string.Empty,
                 dtFecha = fecha,
                 iTotalRegistros = total,
-                vchRutaDetalle = ResolveRoute(tipoNorm, id)
+                vchRutaDetalle = ResolveRoute(tipoNorm, id),
+                nvchImagenesJson = imagenesJson,
+                ImagenesUrls = urls
             };
+        }
+
+        private static List<string> ParseImagenesJson(string? json, string singleFallback)
+        {
+            var list = new List<string>();
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                try
+                {
+                    var jToken = JToken.Parse(json);
+                    if (jToken is JArray arr)
+                    {
+                        foreach (var item in arr)
+                        {
+                            if (item.Type == JTokenType.String)
+                            {
+                                var s = item.ToString();
+                                if (!string.IsNullOrWhiteSpace(s)) list.Add(s);
+                            }
+                            else if (item is JObject obj)
+                            {
+                                var url = obj["vchUrlImagen"]?.ToString() ?? obj["nvchUrlImagen"]?.ToString() ?? obj["url"]?.ToString();
+                                if (!string.IsNullOrWhiteSpace(url)) list.Add(url);
+                            }
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            if (!list.Any() && !string.IsNullOrWhiteSpace(singleFallback))
+            {
+                list.Add(singleFallback);
+            }
+            return list;
         }
 
         private static string ResolveRoute(string tipo, int id) => tipo switch
@@ -159,6 +196,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             "NOTICIA" => $"/noticias/{id}",
             "EVENTO" => $"/eventos/{id}",
             "CAPSULA" => string.Empty,
+            "PUBLICACION" => string.Empty,
             _ => string.Empty
         };
 
@@ -167,7 +205,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             var value = (filtro ?? string.Empty).Trim().ToUpperInvariant();
             return value switch
             {
-                "TRAMITE" or "NOTICIA" or "EVENTO" or "CAPSULA" => value,
+                "TRAMITE" or "NOTICIA" or "EVENTO" or "CAPSULA" or "PUBLICACION" => value,
                 _ => "TODO"
             };
         }

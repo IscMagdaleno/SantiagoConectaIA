@@ -13,5 +13,7 @@ namespace SantiagoConectaIA.Share.Objects.FeedModule
         public DateTime? dtFecha { get; set; }
         public int iTotalRegistros { get; set; }
         public string vchRutaDetalle { get; set; } = string.Empty;
+        public string? nvchImagenesJson { get; set; }
+        public System.Collections.Generic.List<string> ImagenesUrls { get; set; } = new();
     }
 }

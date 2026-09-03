@@ -107,6 +107,16 @@
                         }
                     </div>
                 </MudExpansionPanel>
+                <MudExpansionPanel Text="@($"Comunidad ({_result.Publicaciones.Count})")" IsExpanded="@(_result.Publicaciones.Count > 0)" Disabled="@(_result.Publicaciones.Count == 0)">
+                    <div class="row">
+                        @foreach (var card in _result.Publicaciones)
+                        {
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <FeedCardComponent Card="card" />
+                            </div>
+                        }
+                    </div>
+                </MudExpansionPanel>
             </MudExpansionPanels>
         }
     </div>
@@ -124,7 +134,8 @@
         (_result?.Tramites.Count ?? 0)
         + (_result?.Noticias.Count ?? 0)
         + (_result?.Eventos.Count ?? 0)
-        + (_result?.Capsulas.Count ?? 0);
+        + (_result?.Capsulas.Count ?? 0)
+        + (_result?.Publicaciones.Count ?? 0);
 
     protected override async Task OnParametersSetAsync()
     {
