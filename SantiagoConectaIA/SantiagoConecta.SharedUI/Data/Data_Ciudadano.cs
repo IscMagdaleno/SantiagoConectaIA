@@ -26,8 +26,23 @@ namespace SantiagoConecta.SharedUI.Data
         public Task<Response<Ciudadano>?> PostLoginCiudadano(PostLoginCiudadano data)
             => PostAsync("/api/Ciudadano/PostLoginCiudadano", data);
 
+        public Task<Response<Ciudadano>?> PostExternalLogin(PostExternalLoginCiudadano data)
+            => PostAsync("/api/Ciudadano/PostExternalLogin", data);
+
         public Task<Response<string>?> PostEnviarCodigoWhatsApp(PostSendCodigoCiudadano data)
             => PostAsync<string, PostSendCodigoCiudadano>("/api/Ciudadano/PostEnviarCodigoWhatsApp", data);
+
+        public async Task<Response<string>?> GetSocialAuthId(string proveedor)
+        {
+            var respuesta = await _HttpClient.GetAsync($"/api/Ciudadano/GetSocialAuthId?proveedor={System.Uri.EscapeDataString(proveedor)}");
+            var json = await respuesta.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
+
+            return JsonConvert.DeserializeObject<Response<string>>(json);
+        }
 
         private Task<Response<Ciudadano>?> PostAsync<T>(string url, T data)
             => PostAsync<Ciudadano, T>(url, data);

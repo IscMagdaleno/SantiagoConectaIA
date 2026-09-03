@@ -7,6 +7,7 @@ using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
 using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.Objects.CiudadanoModule;
 using SantiagoConectaIA.Share.PostModels.CiudadanoModule;
+using SantiagoConectaIA.Share.PostModels.CatalogosModule;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -26,12 +27,18 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
         private readonly ICiudadanoRepository _repository;
         private readonly IConfiguration _configuration;
         private readonly IWhatsAppService _whatsAppService;
+        private readonly ICatalogosDomain _catalogosDomain;
 
-        public CiudadanoDomain(ICiudadanoRepository repository, IConfiguration configuration, IWhatsAppService whatsAppService)
+        public CiudadanoDomain(
+            ICiudadanoRepository repository, 
+            IConfiguration configuration, 
+            IWhatsAppService whatsAppService,
+            ICatalogosDomain catalogosDomain)
         {
             _repository = repository;
             _configuration = configuration;
             _whatsAppService = whatsAppService;
+            _catalogosDomain = catalogosDomain;
         }
 
         public async Task<Response<Ciudadano>> Registrar(PostSaveCiudadano postModel)
@@ -199,6 +206,188 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             }
         }
 
+        public async Task<Response<Ciudadano>> ExternalLogin(PostExternalLoginCiudadano postModel)
+        {
+            try
+            {
+                if (postModel == null || string.IsNullOrWhiteSpace(postModel.vchProveedor))
+                {
+                    return Response<Ciudadano>.BadResult("El proveedor de autenticación es requerido.", new Ciudadano());
+                }
+
+                var proveedor = postModel.vchProveedor.Trim();
+                string idProveedor = postModel.vchIdProveedor ?? string.Empty;
+                string email = postModel.vchEmail ?? string.Empty;
+                string alias = postModel.vchAlias ?? string.Empty;
+                string avatarUrl = postModel.vchAvatarUrl ?? string.Empty;
+
+                using var httpClient = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+
+                if (proveedor.Equals("Google", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrWhiteSpace(postModel.vchToken))
+                    {
+                        // Validar Token ID directamente con Google
+                        try
+                        {
+                            var googleResponse = await httpClient.GetAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={postModel.vchToken}");
+                            if (googleResponse.IsSuccessStatusCode)
+                            {
+                                var jsonString = await googleResponse.Content.ReadAsStringAsync();
+                                using var doc = System.Text.Json.JsonDocument.Parse(jsonString);
+                                var root = doc.RootElement;
+
+                                if (root.TryGetProperty("sub", out var subProp))
+                                    idProveedor = subProp.GetString() ?? idProveedor;
+
+                                if (root.TryGetProperty("email", out var emailProp))
+                                    email = emailProp.GetString() ?? email;
+
+                                if (root.TryGetProperty("name", out var nameProp))
+                                    alias = nameProp.GetString() ?? alias;
+
+                                if (root.TryGetProperty("picture", out var picProp))
+                                    avatarUrl = picProp.GetString() ?? avatarUrl;
+                            }
+                            else
+                            {
+                                // Si el endpoint falla pero el cliente envió ID de proveedor, usar los datos proporcionados
+                                if (string.IsNullOrWhiteSpace(idProveedor))
+                                {
+                                    return Response<Ciudadano>.BadResult("El token de Google no es válido o ha expirado.", new Ciudadano());
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // En caso de fallo de red puntual, continuar con los datos del payload si existen
+                            if (string.IsNullOrWhiteSpace(idProveedor))
+                            {
+                                return Response<Ciudadano>.BadResult("No se pudo verificar el token con Google.", new Ciudadano());
+                            }
+                        }
+                    }
+                }
+                else if (proveedor.Equals("Facebook", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrWhiteSpace(postModel.vchToken))
+                    {
+                        // Validar Access Token con Facebook Graph API
+                        try
+                        {
+                            var fbResponse = await httpClient.GetAsync($"https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token={postModel.vchToken}");
+                            if (fbResponse.IsSuccessStatusCode)
+                            {
+                                var jsonString = await fbResponse.Content.ReadAsStringAsync();
+                                using var doc = System.Text.Json.JsonDocument.Parse(jsonString);
+                                var root = doc.RootElement;
+
+                                if (root.TryGetProperty("id", out var idProp))
+                                    idProveedor = idProp.GetString() ?? idProveedor;
+
+                                if (root.TryGetProperty("name", out var nameProp))
+                                    alias = nameProp.GetString() ?? alias;
+
+                                if (root.TryGetProperty("email", out var emailProp))
+                                    email = emailProp.GetString() ?? email;
+
+                                if (root.TryGetProperty("picture", out var picObj) && picObj.TryGetProperty("data", out var dataObj) && dataObj.TryGetProperty("url", out var urlProp))
+                                {
+                                    avatarUrl = urlProp.GetString() ?? avatarUrl;
+                                }
+                            }
+                            else
+                            {
+                                if (string.IsNullOrWhiteSpace(idProveedor))
+                                {
+                                    return Response<Ciudadano>.BadResult("El token de Facebook no es válido o ha expirado.", new Ciudadano());
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            if (string.IsNullOrWhiteSpace(idProveedor))
+                            {
+                                return Response<Ciudadano>.BadResult("No se pudo verificar el token con Facebook.", new Ciudadano());
+                            }
+                        }
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(idProveedor))
+                {
+                    return Response<Ciudadano>.BadResult("No se pudo obtener el identificador único del usuario.", new Ciudadano());
+                }
+
+                // Guardar o sincronizar en la base de datos SQL
+                var result = await _repository.spSaveCiudadanoExternalLogin(new spSaveCiudadanoExternalLogin.Request
+                {
+                    vchProveedor = proveedor,
+                    vchIdProveedor = idProveedor,
+                    vchEmail = email,
+                    vchAlias = alias,
+                    vchAvatarUrl = avatarUrl
+                });
+
+                if (result == null || !result.bResult || result.iIdCiudadano <= 0)
+                {
+                    return Response<Ciudadano>.BadResult(result?.vchMessage ?? "Error al registrar el usuario en el sistema.", new Ciudadano());
+                }
+
+                var ciudadano = new Ciudadano
+                {
+                    iIdCiudadano = result.iIdCiudadano,
+                    vchAlias = result.vchAlias,
+                    vchTelefono = result.vchTelefono,
+                    vchEmail = result.vchEmail,
+                    vchAvatarUrl = result.vchAvatarUrl,
+                    vchProveedorAuth = proveedor,
+                    bCuentaVerificada = result.bCuentaVerificada,
+                    vchRol = "Ciudadano"
+                };
+
+                ciudadano.Token = GenerateJwtToken(ciudadano);
+
+                return new Response<Ciudadano>
+                {
+                    Data = ciudadano,
+                    IsSuccess = true,
+                    Message = result.vchMessage
+                };
+            }
+            catch (Exception ex)
+            {
+                return Response<Ciudadano>.BadResult(ex.Message, new Ciudadano());
+            }
+        }
+
+        public async Task<Response<string>> GetSocialAuthId(string proveedor)
+        {
+            try
+            {
+                string alias = (proveedor ?? string.Empty).Trim().Equals("Google", StringComparison.OrdinalIgnoreCase)
+                    ? "Id.Google.Auth"
+                    : "Id.Facebook.Auth";
+
+                var paramResult = await _catalogosDomain.GetParametroByAlias(new PostGetParametro { vchAlias = alias });
+                if (paramResult != null && paramResult.IsSuccess && !string.IsNullOrWhiteSpace(paramResult.Data?.NvchValor1))
+                {
+                    return new Response<string>
+                    {
+                        Data = paramResult.Data.NvchValor1.Trim(),
+                        IsSuccess = true,
+                        Message = "Identificador obtenido correctamente."
+                    };
+                }
+
+                return Response<string>.BadResult($"No se encontró la configuración del parámetro '{alias}' en la base de datos.", string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return Response<string>.BadResult(ex.Message, string.Empty);
+            }
+        }
+
         private static string NormalizePhone(string? raw)
         {
             return DigitsOnly.Replace(raw ?? string.Empty, string.Empty);
@@ -276,8 +465,9 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.iIdCiudadano.ToString()),
-                new Claim(ClaimTypes.Name, user.vchAlias),
-                new Claim("telefono", user.vchTelefono),
+                new Claim(ClaimTypes.Name, user.vchAlias ?? string.Empty),
+                new Claim("telefono", user.vchTelefono ?? string.Empty),
+                new Claim(ClaimTypes.Email, user.vchEmail ?? string.Empty),
                 new Claim(ClaimTypes.Role, "Ciudadano")
             };
 

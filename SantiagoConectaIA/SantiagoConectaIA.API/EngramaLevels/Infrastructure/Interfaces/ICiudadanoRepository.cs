@@ -9,5 +9,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces
         Task<spGetCiudadanoAuth.Result> spGetCiudadanoAuth(spGetCiudadanoAuth.Request daoModel);
         Task<spSaveCiudadanoCodigo.Result> spSaveCiudadanoCodigo(spSaveCiudadanoCodigo.Request daoModel);
         Task<spValidarCiudadanoCodigo.Result> spValidarCiudadanoCodigo(spValidarCiudadanoCodigo.Request daoModel);
+        Task<spSaveCiudadanoExternalLogin.Result> spSaveCiudadanoExternalLogin(spSaveCiudadanoExternalLogin.Request daoModel);
     }
 }

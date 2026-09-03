@@ -37,22 +37,78 @@
         @if (Session.IsLoggedIn)
         {
             <MudPaper Elevation="4" Class="pa-6 text-center" Style="border-radius: 20px;">
-                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Style="font-size: 48px;" />
-                <MudText Typo="Typo.h5" Class="mt-3" Style="font-weight: 700;">Hola, @Session.Alias</MudText>
+                @if (!string.IsNullOrEmpty(Session.AvatarUrl))
+                {
+                    <MudAvatar Size="Size.Large" Class="mx-auto mb-2" Style="width: 80px; height: 80px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <MudImage Src="@Session.AvatarUrl" />
+                    </MudAvatar>
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Style="font-size: 48px;" />
+                }
+                <div class="d-flex align-center justify-center gap-2 mt-2">
+                    <MudText Typo="Typo.h5" Style="font-weight: 700;">Hola, @Session.Alias</MudText>
+                    @if (Session.bCuentaVerificada)
+                    {
+                        <MudTooltip Text="Cuenta Verificada">
+                            <MudIcon Icon="@Icons.Material.Filled.Verified" Color="Color.Info" Style="font-size: 22px;" />
+                        </MudTooltip>
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(Session.Email))
+                {
+                    <MudText Typo="Typo.caption" Style="color: #888;">@Session.Email</MudText>
+                }
                 <MudText Typo="Typo.body2" Class="mt-2 mb-4" Style="color: #666;">
-                    Ya eres parte de Santiago Conecta. Pronto podrás dejar tu opinión en noticias, trámites y eventos.
+                    Ya eres parte de Santiago Conecta con tu cuenta de <strong>@(Session.ProveedorAuth ?? "Santiago Conecta")</strong>. Ya puedes dejar tu opinión en noticias, trámites y eventos.
                 </MudText>
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Primary"
                            Style="border-radius: 999px; text-transform: none; font-weight: 700;"
                            OnClick="SalirAsync">
-                    Salir
+                    Cerrar sesión
                 </MudButton>
             </MudPaper>
         }
         else
         {
         <MudPaper Elevation="4" Class="pa-6" Style="border-radius: 20px;">
+            @* BOTONES DE INICIO RÁPIDO CON GOOGLE Y FACEBOOK *@
+            <MudText Typo="Typo.subtitle1" Class="text-center mb-3" Style="font-weight: 800; color: #333;">
+                Inicia sesión o regístrate en 1 clic
+            </MudText>
+
+            <div class="d-flex flex-column gap-3 mb-2">
+                <button type="button" class="btn-social btn-google" @onclick="SignInWithGoogleAsync" disabled="@_isBusy">
+                    <svg class="social-icon" viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Continuar con Google</span>
+                </button>
+
+                <button type="button" class="btn-social btn-facebook" @onclick="SignInWithFacebookAsync" disabled="@_isBusy">
+                    <svg class="social-icon" fill="#ffffff" viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    <span>Continuar con Facebook</span>
+                </button>
+            </div>
+
+            <p class="text-center text-xs my-2" style="font-size: 0.76rem; color: #64748b; line-height: 1.4;">
+                Al continuar con Google o Facebook, confirmas que aceptas nuestra 
+                <a href="/politica-de-privacidad" target="_blank" style="color: #880e4f; font-weight: 600; text-decoration: underline;">Política de Privacidad</a>.
+            </p>
+
+            <div class="divider-container my-4">
+                <div class="divider-line"></div>
+                <span class="divider-text">o con tu teléfono celular</span>
+                <div class="divider-line"></div>
+            </div>
+
             <div class="unete-tab-switch">
                 <button type="button"
                         class="unete-tab @(_activeTab == 0 ? "active" : "")"
@@ -150,12 +206,9 @@
                                   Label="Código"
                                   Placeholder="6 dígitos"
                                   Variant="Variant.Outlined"
-                                  InputType="InputType.Telephone"
                                   MaxLength="6"
-                                  Immediate="true"
-                                  Required="true"
-                                  HelperText="Captura el código que recibiste por WhatsApp"
-                                  Class="mb-4" />
+                                  InputType="InputType.Number"
+                                  Class="mb-3" />
                 }
                 @if (!string.IsNullOrWhiteSpace(_regError))
                 {
@@ -164,16 +217,16 @@
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            FullWidth="true"
-                           Disabled="@_isBusy"
+                           Disabled="@(_isBusy || !_chatIniciado || !_codigoEnviado)"
                            Style="border-radius: 999px; text-transform: none; font-weight: 700;"
                            OnClick="RegistrarAsync">
-                    @(_isBusy ? "Uniendo..." : "Quiero ser parte")
+                    @(_isBusy ? "Guardando..." : "Completar Registro")
                 </MudButton>
             }
             else
             {
                 <MudText Typo="Typo.body2" Class="mb-4 mt-4" Style="color: #666;">
-                    Entra con tu celular y tu PIN.
+                    Ingresa con tu teléfono y tu PIN.
                 </MudText>
                 <MudTextField @bind-Value="_loginTelefono"
                               Label="Teléfono / Celular"
@@ -186,13 +239,14 @@
                               Class="mb-3" />
                 <MudTextField @bind-Value="_loginPin"
                               Label="PIN"
+                              Placeholder="Tu PIN"
                               Variant="Variant.Outlined"
                               InputType="@(_showLoginPin ? InputType.Text : InputType.Password)"
                               Adornment="Adornment.End"
                               AdornmentIcon="@(_showLoginPin ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
                               OnAdornmentClick="() => _showLoginPin = !_showLoginPin"
                               Required="true"
-                              Class="mb-4" />
+                              Class="mb-3" />
                 @if (!string.IsNullOrWhiteSpace(_loginError))
                 {
                     <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_loginError</MudAlert>
@@ -216,6 +270,74 @@
         0% { transform: translateY(0px); }
         50% { transform: translateY(-10px); }
         100% { transform: translateY(0px); }
+    }
+
+    .btn-social {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        border: 1px solid transparent;
+        text-decoration: none;
+    }
+
+    .btn-social:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .btn-social:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-google {
+        background-color: #ffffff;
+        color: #3c4043;
+        border: 1px solid #dadce0;
+    }
+
+    .btn-google:hover {
+        background-color: #f8f9fa;
+        border-color: #c6c9cc;
+    }
+
+    .btn-facebook {
+        background-color: #1877F2;
+        color: #ffffff;
+    }
+
+    .btn-facebook:hover {
+        background-color: #166fe5;
+    }
+
+    .divider-container {
+        display: flex;
+        align-items: center;
+        text-align: center;
+    }
+
+    .divider-line {
+        flex-grow: 1;
+        height: 1px;
+        background-color: #e0e0e0;
+    }
+
+    .divider-text {
+        padding: 0 14px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #888888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .unete-tab-switch {
@@ -540,4 +662,123 @@
 
     private static string DigitsOnly(string? value)
         => string.IsNullOrEmpty(value) ? string.Empty : new string(value.Where(char.IsDigit).ToArray());
+
+    private async Task SignInWithGoogleAsync()
+    {
+        _isBusy = true;
+        try
+        {
+            // Consultar el ClientId de Google a través de CiudadanoDomain
+            var authResponse = await DataCiudadano.GetSocialAuthId("Google");
+            string? googleClientId = authResponse?.Data;
+
+            if (string.IsNullOrWhiteSpace(googleClientId))
+            {
+                Snackbar.Add("No se pudo obtener el identificador de Google configurado en el servidor.", Severity.Error);
+                return;
+            }
+
+            var resultJson = await JS.InvokeAsync<string>("socialAuth.signInWithGoogle", googleClientId);
+            if (!string.IsNullOrWhiteSpace(resultJson))
+            {
+                var socialProfile = System.Text.Json.JsonSerializer.Deserialize<SocialProfilePayload>(resultJson);
+                if (socialProfile != null && !string.IsNullOrWhiteSpace(socialProfile.token))
+                {
+                    var response = await DataCiudadano.PostExternalLogin(new PostExternalLoginCiudadano
+                    {
+                        vchProveedor = "Google",
+                        vchToken = socialProfile.token,
+                        vchIdProveedor = socialProfile.id,
+                        vchEmail = socialProfile.email,
+                        vchAlias = socialProfile.name,
+                        vchAvatarUrl = socialProfile.picture
+                    });
+
+                    if (response != null && response.IsSuccess && response.Data != null)
+                    {
+                        await Session.SignInAsync(response.Data);
+                        Snackbar.Add($"¡Bienvenido {response.Data.vchAlias}!", Severity.Success);
+                        NavManager.NavigateTo("/");
+                        return;
+                    }
+                    else
+                    {
+                        Snackbar.Add(response?.Message ?? "Error al autenticar con Google.", Severity.Error);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"No se pudo completar el inicio de sesión con Google: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task SignInWithFacebookAsync()
+    {
+        _isBusy = true;
+        try
+        {
+            // Consultar el AppId de Facebook a través de CiudadanoDomain
+            var authResponse = await DataCiudadano.GetSocialAuthId("Facebook");
+            string? fbAppId = authResponse?.Data;
+
+            if (string.IsNullOrWhiteSpace(fbAppId))
+            {
+                Snackbar.Add("No se pudo obtener el identificador de Facebook configurado en el servidor.", Severity.Error);
+                return;
+            }
+
+            var resultJson = await JS.InvokeAsync<string>("socialAuth.signInWithFacebook", fbAppId);
+            if (!string.IsNullOrWhiteSpace(resultJson))
+            {
+                var socialProfile = System.Text.Json.JsonSerializer.Deserialize<SocialProfilePayload>(resultJson);
+                if (socialProfile != null && !string.IsNullOrWhiteSpace(socialProfile.token))
+                {
+                    var response = await DataCiudadano.PostExternalLogin(new PostExternalLoginCiudadano
+                    {
+                        vchProveedor = "Facebook",
+                        vchToken = socialProfile.token,
+                        vchIdProveedor = socialProfile.id,
+                        vchEmail = socialProfile.email,
+                        vchAlias = socialProfile.name,
+                        vchAvatarUrl = socialProfile.picture
+                    });
+
+                    if (response != null && response.IsSuccess && response.Data != null)
+                    {
+                        await Session.SignInAsync(response.Data);
+                        Snackbar.Add($"¡Bienvenido {response.Data.vchAlias}!", Severity.Success);
+                        NavManager.NavigateTo("/");
+                        return;
+                    }
+                    else
+                    {
+                        Snackbar.Add(response?.Message ?? "Error al autenticar con Facebook.", Severity.Error);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"No se pudo completar el inicio de sesión con Facebook: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private class SocialProfilePayload
+    {
+        public string token { get; set; } = string.Empty;
+        public string id { get; set; } = string.Empty;
+        public string email { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public string picture { get; set; } = string.Empty;
+    }
 }

@@ -57,5 +57,19 @@ namespace SantiagoConectaIA.API.Controllers
             }
             return BadRequest(result);
         }
+
+        /// <summary>
+        /// Inicia sesión o registra un ciudadano mediante Google o Facebook.
+        /// </summary>
+        [HttpPost("PostExternalLogin")]
+        public async Task<IActionResult> PostExternalLogin([FromBody] PostExternalLoginCiudadano postModel)
+        {
+            var result = await _ciudadanoDomain.ExternalLogin(postModel ?? new PostExternalLoginCiudadano());
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }
