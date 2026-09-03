@@ -1,5 +1,5 @@
 @page "/noticias"
-@page "/noticias/{Id:int?}"
+@page "/noticias/{Id:int}"
 @using SantiagoConecta.SharedUI.Data
 @using SantiagoConectaIA.Share.Objects.NoticiasModule
 @using SantiagoConectaIA.Share.PostModels.NoticiasModule
@@ -8,9 +8,54 @@
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 
-<PageTitle>Santiago Conecta - Noticias y Avisos</PageTitle>
+<PageTitle>Santiago Conecta - @(selectedNoticia?.vchTitulo ?? "Noticias y Avisos Oficiales")</PageTitle>
 
-@if (selectedNoticia == null)
+@if (loading && Id.HasValue && selectedNoticia == null)
+{
+    <!-- Loader elegante si se accede directo mediante /noticias/{Id} -->
+    <div class="d-flex flex-column align-items-center justify-content-center w-100" style="min-height: 80vh;">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        <p class="mt-4 text-muted" style="font-weight: 500; font-size: 1.1rem;">Cargando noticia...</p>
+    </div>
+}
+else if (!loading && Id.HasValue && selectedNoticia == null)
+{
+    <!-- Noticia no encontrada o inactiva -->
+    <div class="noticias-container pt-32 pb-8 px-4 px-md-8 text-center" style="min-height: 60vh;">
+        <MudIcon Icon="@Icons.Material.Filled.FolderOpen" Style="font-size: 72px; color: #bdbdbd;" />
+        <h2 class="mt-4 font-weight-bold" style="color: #616161;">Noticia no encontrada</h2>
+        <p class="text-muted mb-6">La noticia solicitada no existe o ya no se encuentra disponible.</p>
+        <button class="back-btn d-inline-flex align-items-center gap-2" style="color: #880e4f; font-weight: 700; border: none; background: transparent; cursor: pointer;" @onclick="VolverAlListado">
+            <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Medium" />
+            <span>Volver a Noticias y Avisos</span>
+        </button>
+    </div>
+}
+else if (selectedNoticia != null)
+{
+    <!-- Contenedor separado para el detalle para poder aplicar padding de separación superior de forma limpia -->
+    <div class="noticias-container pt-32 pb-8 px-4 px-md-8">
+        <!-- ================= VISTA DE DETALLE DE LA NOTICIA ================= -->
+        <div class="detail-view animate-slide-up">
+            <!-- Botón Volver -->
+            <button class="back-btn mb-6 d-flex align-center gap-2" @onclick="VolverAlListado">
+                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Medium" />
+                Volver a Noticias y Avisos
+            </button>
+
+            <div class="shadow-xl rounded-2xl overflow-hidden bg-white mb-8 border border-gray-100">
+                <PlantillaNoticia Noticia="selectedNoticia" OnImageClick="OpenImageModal" />
+            </div>
+
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-8">
+                <OpinionThread TipoEntidad="NOTICIA"
+                               IdEntidad="selectedNoticia.iIdNoticia"
+                               StartExpanded="true" />
+            </div>
+        </div>
+    </div>
+}
+else
 {
     <!-- Hero Section: Premium animated waves background -->
     <div class="custom-hero-header">
@@ -30,7 +75,7 @@
                     <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
                     <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
                     <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
-                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" /> <!-- matches bg of container perfectly! -->
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
                 </g>
             </svg>
         </div>
@@ -43,7 +88,6 @@
             <div class="row mb-8 justify-center">
                 <div class="col-12 col-md-8">
                     <div class="filter-glass-card p-4 d-flex flex-column gap-4">
-                        <!-- Barra de Búsqueda -->
                         <MudTextField @bind-Value="_searchQuery" 
                                       Placeholder="Buscar noticias por título o contenido..." 
                                       Adornment="Adornment.Start" 
@@ -53,7 +97,6 @@
                                       Immediate="true"
                                       Class="search-field" />
 
-                        <!-- Categorías Chips -->
                         <div class="d-flex flex-wrap gap-2 justify-center mt-2">
                             <button class="cat-chip @(selectedCategory == null ? "active-all" : "")" @onclick="() => FilterByCategory(null)">
                                 Todas
@@ -98,19 +141,28 @@
                             <div class="premium-news-card h-100 d-flex flex-column" @onclick="() => VerDetalle(noticia)">
                                 <!-- Portada -->
                                 <div class="card-image-wrapper">
-                                    <img src="@(string.IsNullOrEmpty(noticia.vchImagenPortada) ? "https://picsum.photos/600/400?sig=" + noticia.iIdNoticia : noticia.vchImagenPortada)" 
-                                         alt="@noticia.vchTitulo" 
-                                         class="news-card-image" />
+                                    @if (!string.IsNullOrEmpty(noticia.vchImagenPortada))
+                                    {
+                                        <img src="@noticia.vchImagenPortada" alt="@noticia.vchTitulo" class="card-news-image" />
+                                    }
+                                    else
+                                    {
+                                        <div class="card-news-placeholder">
+                                            <MudIcon Icon="@Icons.Material.Filled.Image" Style="font-size: 48px; color: #bdbdbd;" />
+                                        </div>
+                                    }
+
+                                    <!-- Badge Categoría -->
                                     @if (noticia.Categoria != null)
                                     {
-                                        <span class="category-badge shadow-sm" style="background-color: @noticia.Categoria.vchColorHex">
+                                        <div class="card-cat-badge" style="background-color: @(noticia.Categoria.vchColorHex ?? "#880e4f");">
                                             @noticia.Categoria.vchNombre
-                                        </span>
+                                        </div>
                                     }
                                 </div>
 
-                                <!-- Cuerpo de la tarjeta -->
-                                <div class="card-body p-5 d-flex flex-column flex-grow-1">
+                                <!-- Cuerpo de Tarjeta -->
+                                <div class="card-news-body p-4 d-flex flex-column flex-grow-1">
                                     <span class="card-date d-flex align-center gap-1">
                                         <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Style="color: #d81b60;" />
                                         @noticia.dtFechaPublicacion.ToString("dd MMMM, yyyy")
@@ -129,33 +181,6 @@
                             </div>
                         </div>
                     }
-                </div>
-            }
-        </div>
-    </div>
-}
-else
-{
-    <!-- Contenedor separado para el detalle para poder aplicar padding de separación superior de forma limpia -->
-    <div class="noticias-container pt-32 pb-8 px-4 px-md-8">
-        <!-- ================= VISTA DE DETALLE DE LA NOTICIA ================= -->
-        <div class="detail-view animate-slide-up">
-            <!-- Botón Volver -->
-            <button class="back-btn mb-6 d-flex align-center gap-2" @onclick="VolverAlListado">
-                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Medium" />
-                Volver a Noticias y Avisos
-            </button>
-
-            <div class="shadow-xl rounded-2xl overflow-hidden bg-white mb-8 border border-gray-100">
-                <PlantillaNoticia Noticia="selectedNoticia" OnImageClick="OpenImageModal" />
-            </div>
-
-            @if (selectedNoticia != null)
-            {
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-8">
-                    <OpinionThread TipoEntidad="NOTICIA"
-                                   IdEntidad="selectedNoticia.iIdNoticia"
-                                   StartExpanded="true" />
                 </div>
             }
         </div>
@@ -435,6 +460,33 @@ else
             font-size: 1.8rem;
         }
     }
+
+    /* =========================================
+       MODO CAPTURA INSTAGRAM (Proporción 4:5)
+       ========================================= */
+    @@media (aspect-ratio: 4/5) {
+        .header-area, footer { display: none !important; }
+        
+        .custom-hero-header { 
+            padding-top: 100px !important; 
+            padding-bottom: 150px !important; 
+        }
+        
+        .header-title { font-size: 5.5rem !important; line-height: 1.1 !important; margin-bottom: 35px !important; }
+        .header-subtitle { font-size: 2.4rem !important; line-height: 1.4 !important; max-width: 95% !important; margin: 0 auto !important; }
+        
+        .filter-glass-card { display: none !important; }
+        
+        .card-image-wrapper { height: 400px !important; }
+        .card-news-title { font-size: 2.5rem !important; }
+        .card-news-excerpt { font-size: 1.6rem !important; }
+        .card-date { font-size: 1.2rem !important; }
+        .read-more-text { font-size: 1.4rem !important; }
+        
+        /* Vista de Detalle */
+        .back-btn { display: none !important; }
+        .noticias-container.pt-32 { padding-top: 60px !important; }
+    }
 </style>
 
 @code {
@@ -465,11 +517,19 @@ else
 
     protected override void OnParametersSet()
     {
-        if (Id.HasValue && noticiasList.Any())
+        ActualizarSeleccionPorParametro();
+    }
+
+    private void ActualizarSeleccionPorParametro()
+    {
+        if (Id.HasValue)
         {
-            selectedNoticia = noticiasList.FirstOrDefault(x => x.iIdNoticia == Id.Value);
+            if (noticiasList != null && noticiasList.Any())
+            {
+                selectedNoticia = noticiasList.FirstOrDefault(x => x.iIdNoticia == Id.Value);
+            }
         }
-        else if (!Id.HasValue)
+        else
         {
             selectedNoticia = null;
         }
@@ -485,7 +545,7 @@ else
             {
                 noticiasList = response.Data.OrderByDescending(x => x.dtFechaPublicacion).ToList();
                 
-                // Extraer categorÃ­as Ãºnicas reales para la barra de filtros
+                // Extraer categorías únicas reales para la barra de filtros
                 categoriesList = noticiasList
                     .Where(x => x.Categoria != null)
                     .GroupBy(x => x.Categoria.iIdCategoria)
@@ -493,6 +553,7 @@ else
                     .ToList();
 
                 AplicarFiltros();
+                ActualizarSeleccionPorParametro();
             }
         }
         catch (Exception ex)
@@ -515,7 +576,7 @@ else
     {
         var temp = noticiasList.AsEnumerable();
 
-        // Filtro por categorÃ­a
+        // Filtro por categoría
         if (selectedCategory.HasValue)
         {
             temp = temp.Where(x => x.iIdCategoria == selectedCategory.Value);
@@ -536,20 +597,20 @@ else
         StateHasChanged();
     }
 
-    // Actualiza los resultados en tiempo real cuando cambia el campo de bÃºsqueda
+    // Actualiza los resultados en tiempo real cuando cambia el campo de búsqueda
     private string _searchQuery { get => searchQuery; set { searchQuery = value; AplicarFiltros(); } }
 
     private void VerDetalle(Noticia noticia)
     {
         selectedNoticia = noticia;
-        // Ir al inicio de la pÃ¡gina para comodidad del usuario
+        NavManager.NavigateTo($"/noticias/{noticia.iIdNoticia}");
         JS.InvokeVoidAsync("window.scrollTo", 0, 0);
     }
 
     private void VolverAlListado()
     {
         selectedNoticia = null;
-        NavManager.NavigateTo("/noticias", false);
+        NavManager.NavigateTo("/noticias");
     }
 
     private string GetExcerpt(Noticia noticia)
