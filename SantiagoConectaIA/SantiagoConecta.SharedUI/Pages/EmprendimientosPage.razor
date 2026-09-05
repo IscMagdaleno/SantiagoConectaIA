@@ -45,7 +45,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
     <!-- Buscador y Filtros -->
-    <MudPaper Elevation="0" Class="pa-4 mb-8" Style="background-color: transparent;">
+    <MudPaper Elevation="0" Class="pa-4 mb-8 search-filter-container" Style="background-color: transparent;">
         <MudGrid>
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="searchQuery" Placeholder="Buscar emprendimiento..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true" OnClearButtonClick="() => { searchQuery = string.Empty; StateHasChanged(); }" TextChanged="OnSearchChanged" Immediate="true" />
@@ -140,6 +140,40 @@
     
     .empresa-card:hover .empresa-logo-img {
         transform: scale(1.05);
+    }
+
+    /* =========================================
+       MODO CAPTURA INSTAGRAM (Proporción 4:5)
+       ========================================= */
+    @@media (aspect-ratio: 4/5) {
+        .header-area, footer { display: none !important; }
+        
+        .custom-hero-header { 
+            padding-top: 100px !important; 
+            padding-bottom: 150px !important; 
+        }
+        
+        .header-title { font-size: 4rem !important; line-height: 1.1 !important; margin-bottom: 30px !important; }
+        .header-subtitle { font-size: 1.8rem !important; line-height: 1.4 !important; max-width: 95% !important; margin: 0 auto !important; }
+        
+        /* Ocultar barra de búsqueda en captura */
+        .search-filter-container { display: none !important; }
+        
+        /* Ajustar grid de emprendimientos para captura (3 por fila) */
+        .mud-grid { padding-top: 20px !important; }
+        .mud-grid > .mud-item { 
+            flex: 0 0 31.5% !important; 
+            max-width: 31.5% !important; 
+            margin: 0.9% !important;
+        }
+        
+        /* Hacer más compactas las tarjetas */
+        .empresa-card { padding: 8px; }
+        .card-img-container { height: 160px !important; padding: 0.5rem !important; }
+        .mud-typography-h6 { font-size: 1.4rem !important; margin-bottom: 4px !important; }
+        .mud-typography-body2 { font-size: 1rem !important; }
+        .mud-button { font-size: 1.1rem !important; padding: 8px !important; margin-top: auto !important; }
+        .mud-chip { height: 24px !important; font-size: 0.85rem !important; margin-bottom: 8px !important; }
     }
 </style>
 

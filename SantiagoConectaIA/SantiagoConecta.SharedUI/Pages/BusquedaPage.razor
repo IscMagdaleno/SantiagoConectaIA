@@ -8,28 +8,42 @@
 
 <PageTitle>Búsqueda - Santiago Conecta</PageTitle>
 
-<section class="section" style="padding-top: 120px; padding-bottom: 60px; min-height: 70vh;">
-    <div class="container">
-        <div class="row mb-4 align-items-center">
-            <div class="col-md-8">
-                <h1 style="color: #880e4f; font-weight: 800; font-size: clamp(1.6rem, 4vw, 2.2rem); margin-bottom: 8px;">
-                    Resultados de búsqueda
-                </h1>
-                @if (!string.IsNullOrWhiteSpace(_query))
-                {
-                    <p style="color: #666; margin: 0;">Mostrando resultados para <strong>"@_query"</strong></p>
-                }
-            </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <MudButton Variant="Variant.Outlined"
-                           Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.ArrowBack"
-                           Style="border-radius: 999px; text-transform: none; font-weight: 700;"
-                           OnClick='() => NavManager.NavigateTo("/feed")'>
-                    Volver al Feed
-                </MudButton>
-            </div>
+<!-- Hero Section: Premium animated waves background -->
+<div class="custom-hero-header">
+    <div class="container relative z-10 mx-auto px-4 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.Search" Style="font-size: 56px; color: #ffffff; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
+        <h1 class="header-title mt-2">Búsqueda General</h1>
+        <p class="header-subtitle">
+            @(string.IsNullOrWhiteSpace(_query) ? "Encuentra trámites, noticias, eventos y cápsulas en Santiago Papasquiaro" : $"Resultados para: \"{_query}\"")
+        </p>
+        <div class="d-flex justify-center gap-3 mt-2">
+            <MudButton Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                       Class="hero-back-btn"
+                       Style="border-radius: 999px; text-transform: none; font-weight: 700; background: rgba(255, 255, 255, 0.95); color: #880e4f; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.2s ease;"
+                       OnClick='() => NavManager.NavigateTo("/feed")'>
+                Volver al Feed
+            </MudButton>
         </div>
+    </div>
+    <!-- Animated waves at bottom -->
+    <div class="waves-wrapper">
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+             viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </div>
+</div>
+
+<div class="container py-6" style="min-height: 70vh;">
 
         <div class="row mb-4">
             <div class="col-lg-8 col-md-10">
@@ -119,8 +133,15 @@
                 </MudExpansionPanel>
             </MudExpansionPanels>
         }
-    </div>
-</section>
+</div>
+
+<style>
+    .hero-back-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25) !important;
+        background: #ffffff !important;
+    }
+</style>
 
 @code {
     private string _query = string.Empty;

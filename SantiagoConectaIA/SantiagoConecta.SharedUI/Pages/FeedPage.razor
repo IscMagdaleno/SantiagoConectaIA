@@ -3,6 +3,30 @@
 
 <PageTitle>Feed - Santiago Conecta</PageTitle>
 
-<section class="section" style="padding-top: 100px; min-height: 70vh; background: linear-gradient(180deg, #fdf2f8 0%, #ffffff 180px);">
-    <FeedListComponent />
-</section>
+<!-- Hero Section: Premium animated waves background (idéntico al resto del portal) -->
+<div class="custom-hero-header">
+    <div class="container relative z-10 mx-auto px-4 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.DynamicFeed" Style="font-size: 56px; color: #ffffff; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
+        <h1 class="header-title mt-2">Explora Santiago</h1>
+        <p class="header-subtitle">Trámites, noticias, eventos y cápsulas del municipio en un solo feed</p>
+    </div>
+    <!-- Animated waves at bottom -->
+    <div class="waves-wrapper">
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+             viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255, 255, 255, 0.7)" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255, 255, 255, 0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255, 255, 255, 0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </div>
+</div>
+
+<div class="feed-wrapper" style="min-height: 70vh;">
+    <FeedListComponent ShowHeader="false" />
+</div>

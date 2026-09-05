@@ -7,14 +7,17 @@
 
 <section class="feed-area" style="padding: 24px 0 48px; position: relative; z-index: 10;">
     <div class="container">
-        <div class="row mb-4">
-            <div class="col-lg-12">
-                <div class="center-heading mb-3">
-                    <h2 class="section-title" style="color: #880e4f; font-weight: 800;">Explora Santiago</h2>
-                    <p style="color: #666; max-width: 640px; margin: 8px auto 0;">Trámites, noticias, eventos y cápsulas del municipio en un solo feed.</p>
+        @if (ShowHeader)
+        {
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="center-heading mb-3">
+                        <h2 class="section-title" style="color: #880e4f; font-weight: 800;">Explora Santiago</h2>
+                        <p style="color: #666; max-width: 640px; margin: 8px auto 0;">Trámites, noticias, eventos y cápsulas del municipio en un solo feed.</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
         <FeedSearchBar />
 
@@ -138,6 +141,9 @@
 </style>
 
 @code {
+    [Parameter]
+    public bool ShowHeader { get; set; } = false;
+
     private sealed record FilterOption(string Value, string Label);
 
     private static readonly FilterOption[] _filters =
