@@ -18,7 +18,7 @@
         <p class="header-subtitle">
             @(Session.IsLoggedIn
                 ? "Comparte avisos, fotos y dudas con tu comunidad o participa dejando tu opinión."
-                : "Regístrate con tu celular, Google o Facebook y forma parte de esta comunidad.")
+                : "Regístrate con tu celular o Google y forma parte de esta comunidad.")
         </p>
     </div>
     <div class="waves-wrapper">
@@ -109,7 +109,7 @@
         else
         {
         <MudPaper Elevation="4" Class="pa-6" Style="border-radius: 20px;">
-            @* BOTONES DE INICIO RÁPIDO CON GOOGLE Y FACEBOOK *@
+            @* BOTÓN DE INICIO RÁPIDO CON GOOGLE *@
             <MudText Typo="Typo.subtitle1" Class="text-center mb-3" Style="font-weight: 800; color: #333;">
                 Inicia sesión o regístrate en 1 clic
             </MudText>
@@ -124,17 +124,10 @@
                     </svg>
                     <span>Continuar con Google</span>
                 </button>
-
-                <button type="button" class="btn-social btn-facebook" @onclick="SignInWithFacebookAsync" disabled="@_isBusy">
-                    <svg class="social-icon" fill="#ffffff" viewBox="0 0 24 24" width="20" height="20">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    <span>Continuar con Facebook</span>
-                </button>
             </div>
 
             <p class="text-center text-xs my-2" style="font-size: 0.76rem; color: #64748b; line-height: 1.4;">
-                Al continuar con Google o Facebook, confirmas que aceptas nuestra 
+                Al continuar con Google, confirmas que aceptas nuestra 
                 <a href="/politica-de-privacidad" target="_blank" style="color: #880e4f; font-weight: 600; text-decoration: underline;">Política de Privacidad</a>.
             </p>
 
@@ -345,14 +338,7 @@
         border-color: #c6c9cc;
     }
 
-    .btn-facebook {
-        background-color: #1877F2;
-        color: #ffffff;
-    }
 
-    .btn-facebook:hover {
-        background-color: #166fe5;
-    }
 
     .divider-container {
         display: flex;
@@ -763,60 +749,7 @@
         }
     }
 
-    private async Task SignInWithFacebookAsync()
-    {
-        _isBusy = true;
-        try
-        {
-            // Consultar el AppId de Facebook a través de CiudadanoDomain
-            var authResponse = await DataCiudadano.GetSocialAuthId("Facebook");
-            string? fbAppId = authResponse?.Data;
 
-            if (string.IsNullOrWhiteSpace(fbAppId))
-            {
-                Snackbar.Add("No se pudo obtener el identificador de Facebook configurado en el servidor.", Severity.Error);
-                return;
-            }
-
-            var resultJson = await JS.InvokeAsync<string>("socialAuth.signInWithFacebook", fbAppId);
-            if (!string.IsNullOrWhiteSpace(resultJson))
-            {
-                var socialProfile = System.Text.Json.JsonSerializer.Deserialize<SocialProfilePayload>(resultJson);
-                if (socialProfile != null && !string.IsNullOrWhiteSpace(socialProfile.token))
-                {
-                    var response = await DataCiudadano.PostExternalLogin(new PostExternalLoginCiudadano
-                    {
-                        vchProveedor = "Facebook",
-                        vchToken = socialProfile.token,
-                        vchIdProveedor = socialProfile.id,
-                        vchEmail = socialProfile.email,
-                        vchAlias = socialProfile.name,
-                        vchAvatarUrl = socialProfile.picture
-                    });
-
-                    if (response != null && response.IsSuccess && response.Data != null)
-                    {
-                        await Session.SignInAsync(response.Data);
-                        Snackbar.Add($"¡Bienvenido {response.Data.vchAlias}!", Severity.Success);
-                        NavManager.NavigateTo("/");
-                        return;
-                    }
-                    else
-                    {
-                        Snackbar.Add(response?.Message ?? "Error al autenticar con Facebook.", Severity.Error);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"No se pudo completar el inicio de sesión con Facebook: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _isBusy = false;
-        }
-    }
 
     private class SocialProfilePayload
     {

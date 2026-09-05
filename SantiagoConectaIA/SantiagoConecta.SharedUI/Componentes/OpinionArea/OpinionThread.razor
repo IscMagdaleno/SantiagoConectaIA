@@ -102,16 +102,50 @@
             <div class="opinion-compose mt-3">
                 @if (!Session.IsLoggedIn)
                 {
-                    <MudAlert Severity="Severity.Info" Dense="true" Class="mb-2">
-                        <MudLink Href="/unete" Style="font-weight: 700;">Únete</MudLink> para opinar y abrir el debate.
-                    </MudAlert>
+                    <div class="opinion-login-prompt pa-4 rounded-xl mb-2 text-center" style="background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 100%); border: 1px solid #f8bbd0; border-radius: 16px;">
+                        <MudIcon Icon="@Icons.Material.Filled.Forum" Color="Color.Primary" Style="font-size: 28px;" />
+                        <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #880e4f;" Class="mt-1">
+                            Inicia sesión para opinar y abrir el debate
+                        </MudText>
+                        <MudText Typo="Typo.caption" Style="color: #666;" Class="mb-3 d-block">
+                            Únete con Google o tu teléfono celular en 1 clic.
+                        </MudText>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Href="/unete"
+                                   Style="border-radius: 999px; text-transform: none; font-weight: 700;"
+                                   StartIcon="@Icons.Material.Filled.AccountCircle">
+                            Únete o Inicia Sesión
+                        </MudButton>
+                    </div>
                 }
                 else
                 {
+                    <div class="d-flex align-center gap-2 mb-2">
+                        @if (!string.IsNullOrEmpty(Session.AvatarUrl))
+                        {
+                            <MudAvatar Size="Size.Small">
+                                <MudImage Src="@Session.AvatarUrl" />
+                            </MudAvatar>
+                        }
+                        else
+                        {
+                            <MudAvatar Color="Color.Primary" Size="Size.Small">@(Session.Alias.Length > 0 ? Session.Alias[0] : 'U')</MudAvatar>
+                        }
+                        <MudText Typo="Typo.caption" Style="font-weight: 700; color: #333;">@Session.Alias</MudText>
+                        @if (Session.bCuentaVerificada)
+                        {
+                            <MudTooltip Text="Cuenta Verificada">
+                                <MudIcon Icon="@Icons.Material.Filled.Verified" Color="Color.Info" Style="font-size: 16px;" />
+                            </MudTooltip>
+                        }
+                    </div>
+
                     <MudTextField @bind-Value="_newText"
                                   Variant="Variant.Outlined"
                                   Label="Tu opinión"
-                                  Placeholder="¿Qué opinas?"
+                                  Placeholder="¿Qué opinas sobre esto?"
                                   Lines="2"
                                   MaxLength="1000"
                                   Immediate="true"
