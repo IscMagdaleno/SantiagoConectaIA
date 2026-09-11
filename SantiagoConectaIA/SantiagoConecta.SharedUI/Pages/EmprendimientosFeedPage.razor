@@ -10,13 +10,20 @@
         <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 56px; color: #ffffff; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
         <h1 class="header-title mt-2">Emprendimientos Locales</h1>
         <p class="header-subtitle">Negocios y productos de Santiago Papasquiaro en un solo feed</p>
-        <div class="d-flex justify-center gap-3 mt-2">
+        <div class="d-flex justify-center flex-wrap gap-3 mt-2">
             <MudButton Variant="Variant.Filled"
                        StartIcon="@Icons.Material.Filled.GridView"
                        Class="hero-gallery-btn"
                        Style="border-radius: 999px; text-transform: none; font-weight: 700; background: rgba(255, 255, 255, 0.95); color: #880e4f; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.2s ease;"
                        OnClick='() => NavManager.NavigateTo("/emprendimientos/galeria")'>
                 Ver galería
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       StartIcon="@Icons.Material.Filled.AddBusiness"
+                       Class="hero-register-btn"
+                       Style="border-radius: 999px; text-transform: none; font-weight: 700; border: 2px solid rgba(255,255,255,0.95); color: #ffffff; background: rgba(255,255,255,0.12); box-shadow: 0 4px 15px rgba(0,0,0,0.12); transition: all 0.2s ease;"
+                       OnClick='() => NavManager.NavigateTo("/registro-emprendimiento")'>
+                Registrar negocio
             </MudButton>
         </div>
     </div>
@@ -42,6 +49,47 @@
         <EmprendimientosFeedSearchBar />
     </div>
 
+    <div class="container mb-4">
+        <div class="emp-invite" role="region" aria-label="Invitación a registrar tu negocio">
+            <div class="emp-invite-glow" aria-hidden="true"></div>
+            <div class="emp-invite-content">
+                <div class="emp-invite-copy">
+                    <span class="emp-invite-kicker">
+                        <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 16px;" />
+                        Catálogo digital oficial
+                    </span>
+                    <h2 class="emp-invite-title">¿Tienes un negocio en Santiago?</h2>
+                    <p class="emp-invite-text">
+                        Regístralo gratis, sube tus productos y llega a más vecinos desde Santiago Conecta.
+                    </p>
+                    <ul class="emp-invite-perks">
+                        <li>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="font-size: 18px;" />
+                            Perfil de tu negocio
+                        </li>
+                        <li>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="font-size: 18px;" />
+                            Productos con fotos
+                        </li>
+                        <li>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="font-size: 18px;" />
+                            Visible en el feed
+                        </li>
+                    </ul>
+                </div>
+                <div class="emp-invite-cta">
+                    <MudButton Variant="Variant.Filled"
+                               StartIcon="@Icons.Material.Filled.RocketLaunch"
+                               Class="emp-invite-btn"
+                               OnClick='() => NavManager.NavigateTo("/registro-emprendimiento")'>
+                        Únete y registra tu negocio
+                    </MudButton>
+                    <span class="emp-invite-note">Sin costo · En pocos minutos</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <EmprendimientosFeedListComponent />
 </div>
 
@@ -50,5 +98,161 @@
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0,0,0,0.25) !important;
         background: #ffffff !important;
+    }
+
+    .hero-register-btn:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: #880e4f !important;
+        border-color: #ffffff !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25) !important;
+    }
+
+    .emp-invite {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        padding: 28px 28px 26px;
+        background:
+            radial-gradient(1200px 280px at 10% -20%, rgba(255, 255, 255, 0.22), transparent 55%),
+            linear-gradient(135deg, #d81b60 0%, #880e4f 55%, #4a0072 100%);
+        color: #fff;
+        box-shadow: 0 16px 40px rgba(136, 14, 79, 0.28);
+    }
+
+    .emp-invite-glow {
+        position: absolute;
+        right: -40px;
+        top: -50px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.28), transparent 70%);
+        pointer-events: none;
+    }
+
+    .emp-invite-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    .emp-invite-copy {
+        flex: 1 1 280px;
+        min-width: 0;
+    }
+
+    .emp-invite-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+
+    .emp-invite-title {
+        margin: 0 0 8px;
+        font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+        font-weight: 800;
+        line-height: 1.25;
+        color: #fff;
+    }
+
+    .emp-invite-text {
+        margin: 0 0 14px;
+        max-width: 42rem;
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 1.02rem;
+        line-height: 1.5;
+        font-weight: 400;
+    }
+
+    .emp-invite-perks {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+    }
+
+    .emp-invite-perks li {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .emp-invite-cta {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .emp-invite-btn {
+        border-radius: 999px !important;
+        text-transform: none !important;
+        font-weight: 800 !important;
+        background: #ffffff !important;
+        color: #880e4f !important;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22) !important;
+        padding: 10px 22px !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    .emp-invite-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28) !important;
+    }
+
+    .emp-invite-note {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 500;
+    }
+
+    @@media (max-width: 767.98px) {
+        .emp-invite {
+            padding: 22px 18px 20px;
+            border-radius: 20px;
+        }
+
+        .emp-invite-content {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .emp-invite-kicker {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .emp-invite-perks {
+            justify-content: center;
+        }
+
+        .emp-invite-cta {
+            width: 100%;
+        }
+
+        .emp-invite-btn {
+            width: 100%;
+        }
     }
 </style>
