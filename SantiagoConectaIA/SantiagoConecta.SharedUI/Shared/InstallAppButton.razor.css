@@ -1,0 +1,196 @@
+.pwa-install-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.25;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.pwa-install-btn-hero {
+    max-width: 460px;
+    width: 100%;
+    padding: 13px 22px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+    font-size: clamp(0.92rem, 3.2vw, 1.05rem);
+}
+
+.pwa-install-btn-hero:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.24);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+.pwa-install-section {
+    position: relative;
+    overflow: hidden;
+    margin-top: 40px;
+    padding: 60px 0;
+}
+
+.pwa-install-section-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #4a148c, #880e4f 55%, #d81b60);
+    z-index: 1;
+}
+
+.pwa-install-section-inner {
+    position: relative;
+    z-index: 2;
+}
+
+.pwa-install-badge {
+    display: inline-block;
+    margin-bottom: 14px;
+    padding: 8px 15px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.pwa-install-title {
+    color: #ffffff;
+    font-weight: 800;
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    line-height: 1.2;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.pwa-install-copy {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 1.1rem;
+    font-weight: 300;
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+
+.pwa-install-btn-section,
+.pwa-install-btn-dialog {
+    background: #ffffff;
+    color: #880e4f;
+    padding: 14px 26px;
+    border-radius: 30px;
+    font-size: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+}
+
+.pwa-install-btn-section:hover,
+.pwa-install-btn-dialog:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+}
+
+.pwa-install-footer-btn {
+    background: none;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+}
+
+.pwa-help-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 4, 18, 0.55);
+    z-index: 12000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.pwa-help-card {
+    position: relative;
+    width: min(480px, 100%);
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 28px 24px 24px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+    text-align: center;
+}
+
+.pwa-help-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    line-height: 1;
+    color: #888;
+    cursor: pointer;
+}
+
+.pwa-help-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: #fce4ec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pwa-help-card h3 {
+    margin: 0 0 8px;
+    color: #880e4f;
+    font-weight: 800;
+    font-size: 1.35rem;
+}
+
+.pwa-help-lead {
+    color: #555;
+    margin-bottom: 18px;
+}
+
+.pwa-help-steps {
+    text-align: left;
+    margin: 0 0 14px;
+    padding-left: 20px;
+    color: #333;
+}
+
+.pwa-help-steps li {
+    margin-bottom: 8px;
+}
+
+.pwa-help-note {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 18px;
+}
+
+.pwa-help-share {
+    display: inline-block;
+    margin-left: 4px;
+    font-weight: 800;
+    color: #d81b60;
+}
+
+.pwa-install-btn-dialog {
+    width: 100%;
+}
+
+@media (max-width: 767px) {
+    .pwa-install-btn-section {
+        width: 100%;
+    }
+}

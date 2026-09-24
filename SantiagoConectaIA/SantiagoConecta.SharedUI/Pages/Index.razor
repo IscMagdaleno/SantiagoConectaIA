@@ -86,6 +86,7 @@
                         <button class="main-button-slider hero-btn" @onclick='() => NavManager.NavigateTo("/unete")'>
                             <i class="fa fa-heart mr-2"></i> Registrarse
                         </button>
+                        <InstallAppButton Variant="hero" />
                     </div>
                 </div>
             </div>
@@ -332,6 +333,8 @@
     </div>
 </section>
 <!-- ***** CTA Registro Emprendimiento End ***** -->
+
+<InstallAppButton Variant="section" />
 
 <!-- ***** Datos Curiosos (Informacion Local) - Diseño Edge-to-Edge ***** -->
 @if (datosCuriosos != null && datosCuriosos.Any())

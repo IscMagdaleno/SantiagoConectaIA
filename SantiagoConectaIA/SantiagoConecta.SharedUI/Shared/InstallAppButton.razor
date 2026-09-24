@@ -1,0 +1,191 @@
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@if (_visible)
+{
+    @if (IsHero)
+    {
+        <button type="button" class="pwa-install-btn pwa-install-btn-hero" @onclick="OnInstallClickAsync">
+            <MudIcon Icon="@Icons.Material.Filled.GetApp" Style="font-size: 22px;" />
+            Instalar en teléfono, tablet o computadora
+        </button>
+    }
+    else if (IsSection)
+    {
+        <section class="pwa-install-section">
+            <div class="pwa-install-section-bg"></div>
+            <div class="container pwa-install-section-inner">
+                <div class="row align-items-center">
+                    <div class="col-lg-8 col-md-12 text-lg-start text-center mb-lg-0 mb-4">
+                        <span class="pwa-install-badge">App instalable</span>
+                        <h2 class="pwa-install-title">Lleva Santiago Conecta en tu dispositivo</h2>
+                        <p class="pwa-install-copy">
+                            Instálala como una app. Aparece con su icono, se abre a pantalla completa y ya no muestra la barra del navegador.
+                        </p>
+                    </div>
+                    <div class="col-lg-4 col-md-12 text-lg-end text-center">
+                        <button type="button" class="pwa-install-btn pwa-install-btn-section" @onclick="OnInstallClickAsync">
+                            <MudIcon Icon="@Icons.Material.Filled.InstallMobile" />
+                            Instalar en teléfono, tablet o computadora
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+    else
+    {
+        <button type="button" class="footer-legal-link pwa-install-footer-btn" @onclick="OnInstallClickAsync">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Instalar app
+        </button>
+    }
+}
+
+@if (_showHelp)
+{
+    <div class="pwa-help-overlay" @onclick="CloseHelp">
+        <div class="pwa-help-card" @onclick:stopPropagation="true">
+            <button type="button" class="pwa-help-close" @onclick="CloseHelp" aria-label="Cerrar">×</button>
+            <div class="pwa-help-icon">
+                <MudIcon Icon="@Icons.Material.Filled.InstallMobile" Style="font-size: 36px; color: #d81b60;" />
+            </div>
+            <h3>Instalar Santiago Conecta</h3>
+            <p class="pwa-help-lead">Quedará en tu pantalla de inicio, con icono propio y sin la barra de internet.</p>
+
+            @if (_status.isIos)
+            {
+                <ol class="pwa-help-steps">
+                    <li>Toca el botón <strong>Compartir</strong> <span class="pwa-help-share" aria-hidden="true">□↑</span> en Safari.</li>
+                    <li>Elige <strong>Agregar a pantalla de inicio</strong>.</li>
+                    <li>Confirma con <strong>Agregar</strong>.</li>
+                </ol>
+                <p class="pwa-help-note">En iPhone y iPad la instalación se hace desde Safari, no desde Chrome.</p>
+            }
+            else
+            {
+                <ol class="pwa-help-steps">
+                    <li>Abre el menú del navegador <strong>⋮</strong> o <strong>⋯</strong>.</li>
+                    <li>Elige <strong>Instalar aplicación</strong> o <strong>Instalar Santiago Conecta</strong>.</li>
+                    <li>En computadora también puedes usar el icono de instalar en la barra de direcciones.</li>
+                </ol>
+                <p class="pwa-help-note">Funciona mejor en Chrome, Edge o Android. La página debe abrirse con HTTPS.</p>
+            }
+
+            <button type="button" class="pwa-install-btn pwa-install-btn-dialog" @onclick="CloseHelp">Entendido</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Variant { get; set; } = "hero";
+
+    private bool _visible;
+    private bool _showHelp;
+    private bool _canPrompt;
+    private int? _subscriptionId;
+    private PwaStatus _status = new();
+    private DotNetObjectReference<InstallAppButton>? _dotNetRef;
+
+    private bool IsHero => string.Equals(Variant, "hero", StringComparison.OrdinalIgnoreCase);
+    private bool IsSection => string.Equals(Variant, "section", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            _status = await JS.InvokeAsync<PwaStatus>("pwaInstall.getStatus");
+            _canPrompt = _status.canInstall;
+            _visible = !_status.isInstalled;
+            _dotNetRef = DotNetObjectReference.Create(this);
+            _subscriptionId = await JS.InvokeAsync<int>("pwaInstall.subscribe", _dotNetRef);
+            StateHasChanged();
+        }
+        catch
+        {
+            _visible = false;
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public void OnInstallAvailable()
+    {
+        _canPrompt = true;
+        _visible = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public void OnAppInstalled()
+    {
+        _visible = false;
+        _showHelp = false;
+        _canPrompt = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnInstallClickAsync()
+    {
+        if (_canPrompt)
+        {
+            try
+            {
+                var outcome = await JS.InvokeAsync<string>("pwaInstall.promptInstall");
+                if (string.Equals(outcome, "accepted", StringComparison.OrdinalIgnoreCase))
+                {
+                    _visible = false;
+                    _showHelp = false;
+                    return;
+                }
+
+                if (string.Equals(outcome, "unavailable", StringComparison.OrdinalIgnoreCase))
+                {
+                    _canPrompt = false;
+                    _showHelp = true;
+                }
+            }
+            catch
+            {
+                _showHelp = true;
+            }
+        }
+        else
+        {
+            _showHelp = true;
+        }
+    }
+
+    private void CloseHelp()
+    {
+        _showHelp = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_subscriptionId.HasValue)
+            {
+                await JS.InvokeVoidAsync("pwaInstall.unsubscribe", _subscriptionId.Value);
+            }
+        }
+        catch
+        {
+        }
+
+        _dotNetRef?.Dispose();
+    }
+
+    private sealed class PwaStatus
+    {
+        public bool isInstalled { get; set; }
+        public bool canInstall { get; set; }
+        public bool isIos { get; set; }
+    }
+}
