@@ -13,21 +13,27 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
         [Inject] public MainNoticias Noticias { get; set; } = default!;
         [Inject] public MainPublicaciones Publicaciones { get; set; } = default!;
         [Inject] public ISnackbar Snackbar { get; set; } = default!;
+        [Inject] public IDialogService DialogService { get; set; } = default!;
 
         public string FiltroTexto { get; set; } = string.Empty;
         public string Mensaje { get; set; } = string.Empty;
         public bool Cargando { get; set; } = true;
         public bool Mejorando { get; set; }
         public bool Publicando { get; set; }
+        public bool EditandoImagen { get; set; }
 
         public PublicacionAutomatica? Automatica { get; set; }
         public bool GuardandoAutomatica { get; set; }
 
         public Noticia? NoticiaSeleccionada { get; set; }
+        public List<string> Imagenes { get; set; } = new();
+        public string? ImagenSeleccionada { get; set; }
 
-        public bool TieneImagen => !string.IsNullOrWhiteSpace(NoticiaSeleccionada?.vchImagenPortada);
-        public bool PuedePublicar => NoticiaSeleccionada != null && TieneImagen && !string.IsNullOrWhiteSpace(Mensaje) && !Publicando && !Mejorando;
-        public bool PuedeMejorar => NoticiaSeleccionada != null && !Publicando && !Mejorando;
+        public bool Ocupado => Mejorando || Publicando || EditandoImagen;
+        public bool TieneImagen => !string.IsNullOrWhiteSpace(ImagenSeleccionada);
+        public bool PuedePublicar => NoticiaSeleccionada != null && TieneImagen && !string.IsNullOrWhiteSpace(Mensaje) && !Ocupado;
+        public bool PuedeMejorar => NoticiaSeleccionada != null && !Ocupado;
+        public bool PuedeEditarImagen => TieneImagen && !Ocupado;
 
         public IEnumerable<Noticia> NoticiasFiltradas =>
             (string.IsNullOrWhiteSpace(FiltroTexto)
@@ -73,6 +79,30 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
         {
             NoticiaSeleccionada = noticia;
             Mensaje = ArmarMensaje(noticia);
+            Imagenes = string.IsNullOrWhiteSpace(noticia.vchImagenPortada)
+                ? new List<string>()
+                : new List<string> { noticia.vchImagenPortada.Trim() };
+            ImagenSeleccionada = Imagenes.FirstOrDefault();
+        }
+
+        public void ElegirImagen(string url) => ImagenSeleccionada = url;
+
+        public async Task EditarImagen()
+        {
+            if (!PuedeEditarImagen)
+            {
+                return;
+            }
+
+            EditandoImagen = true;
+            var editada = await EditorImagenIaDialog.AbrirAsync(DialogService, ImagenSeleccionada!);
+            EditandoImagen = false;
+
+            if (!string.IsNullOrWhiteSpace(editada))
+            {
+                Imagenes.Add(editada);
+                ImagenSeleccionada = editada;
+            }
         }
 
         public async Task MejorarConIa()
@@ -110,7 +140,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
             }
 
             Publicando = true;
-            var result = await Publicaciones.PublicarFacebook(Mensaje.Trim(), NoticiaSeleccionada.vchImagenPortada.Trim());
+            var result = await Publicaciones.PublicarFacebook(Mensaje.Trim(), ImagenSeleccionada!.Trim());
             Publicando = false;
 
             if (result.IsSuccess)

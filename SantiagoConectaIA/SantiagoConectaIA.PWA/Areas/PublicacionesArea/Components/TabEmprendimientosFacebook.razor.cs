@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles;
 using SantiagoConectaIA.Share.Objects.EmpresasModulo;
+using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 using SantiagoConectaIA.Share.PostModels.PublicacionesModule;
 using SantiagoConectaIA.Share.Utilities;
 
@@ -11,6 +12,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
     {
         [Inject] public MainPublicaciones Publicaciones { get; set; } = default!;
         [Inject] public ISnackbar Snackbar { get; set; } = default!;
+        [Inject] public IDialogService DialogService { get; set; } = default!;
 
         public List<Empresa> LstEmprendimientos { get; set; } = new();
         public string FiltroTexto { get; set; } = string.Empty;
@@ -23,13 +25,17 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
         public bool GuardandoAutomatica { get; set; }
 
         public Empresa? EmprendimientoSeleccionado { get; set; }
+        public PostSaveEmprendimientoFull? Detalle { get; set; }
         public string Informacion { get; set; } = string.Empty;
         public string Mensaje { get; set; } = string.Empty;
         public List<string> Imagenes { get; set; } = new();
         public string? ImagenSeleccionada { get; set; }
+        public bool EditandoImagen { get; set; }
 
-        public bool PuedeMejorar => EmprendimientoSeleccionado != null && !CargandoDetalle && !string.IsNullOrWhiteSpace(Informacion) && !Mejorando && !Publicando;
-        public bool PuedePublicar => EmprendimientoSeleccionado != null && !string.IsNullOrWhiteSpace(ImagenSeleccionada) && !string.IsNullOrWhiteSpace(Mensaje) && !Mejorando && !Publicando;
+        public bool Ocupado => Mejorando || Publicando || EditandoImagen;
+        public bool PuedeMejorar => EmprendimientoSeleccionado != null && !CargandoDetalle && !string.IsNullOrWhiteSpace(Informacion) && !Ocupado;
+        public bool PuedeEditarImagen => !string.IsNullOrWhiteSpace(ImagenSeleccionada) && !Ocupado;
+        public bool PuedePublicar => EmprendimientoSeleccionado != null && !string.IsNullOrWhiteSpace(ImagenSeleccionada) && !string.IsNullOrWhiteSpace(Mensaje) && !Ocupado;
 
         public IEnumerable<Empresa> EmprendimientosFiltrados =>
             (string.IsNullOrWhiteSpace(FiltroTexto)
@@ -84,6 +90,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
         public async Task Seleccionar(Empresa empresa)
         {
             EmprendimientoSeleccionado = empresa;
+            Detalle = null;
             Informacion = string.Empty;
             Mensaje = string.Empty;
             Imagenes = new List<string>();
@@ -109,6 +116,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                 detalle.Empresa = empresa;
             }
 
+            Detalle = detalle;
             Informacion = EmprendimientoTextoBuilder.ArmarInformacion(detalle);
             Imagenes = EmprendimientoTextoBuilder.ArmarImagenes(detalle);
             ImagenSeleccionada = Imagenes.FirstOrDefault();
@@ -117,6 +125,24 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
         public void ElegirImagen(string url)
         {
             ImagenSeleccionada = url;
+        }
+
+        public async Task EditarImagen()
+        {
+            if (!PuedeEditarImagen)
+            {
+                return;
+            }
+
+            EditandoImagen = true;
+            var editada = await EditorImagenIaDialog.AbrirAsync(DialogService, ImagenSeleccionada!);
+            EditandoImagen = false;
+
+            if (!string.IsNullOrWhiteSpace(editada))
+            {
+                Imagenes.Add(editada);
+                ImagenSeleccionada = editada;
+            }
         }
 
         public async Task MejorarConIa()

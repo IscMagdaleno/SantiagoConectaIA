@@ -11,17 +11,20 @@ namespace SantiagoConectaIA.API.Controllers
     {
         private readonly IFacebookPublishService _facebookPublishService;
         private readonly IGeminiPublicacionService _geminiPublicacionService;
+        private readonly IGeminiImagenService _geminiImagenService;
         private readonly IPublicacionAutomaticaService _publicacionAutomaticaService;
         private readonly IEmprendimientoAutomaticoService _emprendimientoAutomaticoService;
 
         public PublicacionesController(
             IFacebookPublishService facebookPublishService,
             IGeminiPublicacionService geminiPublicacionService,
+            IGeminiImagenService geminiImagenService,
             IPublicacionAutomaticaService publicacionAutomaticaService,
             IEmprendimientoAutomaticoService emprendimientoAutomaticoService)
         {
             _facebookPublishService = facebookPublishService;
             _geminiPublicacionService = geminiPublicacionService;
+            _geminiImagenService = geminiImagenService;
             _publicacionAutomaticaService = publicacionAutomaticaService;
             _emprendimientoAutomaticoService = emprendimientoAutomaticoService;
         }
@@ -48,6 +51,36 @@ namespace SantiagoConectaIA.API.Controllers
         public async Task<IActionResult> PostMejorarEmprendimiento([FromBody] PostMejorarEmprendimiento postModel, CancellationToken cancellationToken)
         {
             var result = await _geminiPublicacionService.MejorarEmprendimientoAsync(postModel, cancellationToken);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        }
+
+        /// <summary>
+        /// Pide a Gemini un texto de Facebook que promocione un producto de un emprendimiento.
+        /// </summary>
+        [HttpPost("PostMejorarProducto")]
+        public async Task<IActionResult> PostMejorarProducto([FromBody] PostMejorarProducto postModel, CancellationToken cancellationToken)
+        {
+            var result = await _geminiPublicacionService.MejorarProductoAsync(postModel, cancellationToken);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        }
+
+        /// <summary>
+        /// Edita una imagen con Gemini según el prompt, la guarda en Azure Blob y devuelve su URL.
+        /// </summary>
+        [HttpPost("PostEditarImagenIa")]
+        public async Task<IActionResult> PostEditarImagenIa([FromBody] PostEditarImagen postModel, CancellationToken cancellationToken)
+        {
+            var result = await _geminiImagenService.EditarAsync(postModel, cancellationToken);
             if (result.IsSuccess)
             {
                 return Ok(result);

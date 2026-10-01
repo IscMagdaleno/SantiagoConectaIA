@@ -4,6 +4,8 @@ using Azure.Storage.Sas;
 
 using EngramaCoreStandar.Results;
 
+using Microsoft.AspNetCore.StaticFiles;
+
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
 using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.Objects.Common;
@@ -12,6 +14,16 @@ namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 {
 	public class AzureBlobRepository : IAzureBlobRepository
 	{
+		private static readonly FileExtensionContentTypeProvider ContentTypes = new()
+		{
+			Mappings =
+			{
+				[".heic"] = "image/heic",
+				[".heif"] = "image/heif",
+				[".webp"] = "image/webp"
+			}
+		};
+
 		private readonly IParametrosService _parametros;
 
 		public AzureBlobRepository(IParametrosService parametros)
@@ -46,8 +58,16 @@ namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 				// 3. Obtener la referencia al Blob (archivo)
 				var blobClient = containerClient.GetBlobClient(fileName);
 
-				// 4. Subir el Stream al Blob, sobrescribiendo si ya existe
-				await blobClient.UploadAsync(fileStream, overwrite: true);
+				// 4. Subir el Stream al Blob con su Content-Type, sobrescribiendo si ya existe
+				if (!ContentTypes.TryGetContentType(fileName, out var contentType))
+				{
+					contentType = "application/octet-stream";
+				}
+
+				await blobClient.UploadAsync(fileStream, new BlobUploadOptions
+				{
+					HttpHeaders = new BlobHttpHeaders { ContentType = contentType }
+				});
 
 				// 5. Generar la URL con token SAS (para visualización segura)
 				// Usaremos un token que es válido por un tiempo limitado (ej. Expira en 10  años)

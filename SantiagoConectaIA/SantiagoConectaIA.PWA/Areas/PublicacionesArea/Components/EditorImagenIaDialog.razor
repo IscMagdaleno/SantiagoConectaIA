@@ -1,0 +1,112 @@
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="2" Class="mb-3">
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2" Class="mb-1" Style="font-weight: 700;">Antes</MudText>
+                <MudImage Src="@ImagenUrl"
+                          Alt="Imagen original"
+                          ObjectFit="ObjectFit.Contain"
+                          Class="rounded"
+                          Style="width: 100%; height: 300px; background: #F8FAFC;" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2" Class="mb-1" Style="font-weight: 700;">Después</MudText>
+                @if (Editando)
+                {
+                    <div class="d-flex flex-column align-center justify-center rounded" style="width: 100%; height: 300px; background: #F8FAFC; gap: 12px;">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                        <MudText Typo="Typo.body2" Style="color: #64748B;">Gemini está editando la imagen, puede tardar hasta un minuto...</MudText>
+                    </div>
+                }
+                else if (!string.IsNullOrWhiteSpace(ImagenEditada))
+                {
+                    <MudImage Src="@ImagenEditada"
+                              Alt="Imagen editada"
+                              ObjectFit="ObjectFit.Contain"
+                              Class="rounded"
+                              Style="width: 100%; height: 300px; background: #F8FAFC;" />
+                }
+                else
+                {
+                    <div class="d-flex align-center justify-center rounded pa-4" style="width: 100%; height: 300px; background: #F8FAFC;">
+                        <MudText Typo="Typo.body2" Align="Align.Center" Style="color: #64748B;">
+                            Elige un estilo o escribe tu prompt y pulsa Editar con IA.
+                        </MudText>
+                    </div>
+                }
+            </MudItem>
+        </MudGrid>
+
+        <MudTextField @bind-Value="Prompt"
+                      Label="@(PromptSeleccionado != null ? $"Prompt {PromptSeleccionado.Comando}" : "Prompt")"
+                      Placeholder="Describe cómo quieres editar la imagen."
+                      Variant="Variant.Outlined"
+                      Lines="4"
+                      Immediate="true"
+                      MaxLength="2000"
+                      Disabled="Editando"
+                      Class="mb-2" />
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.AutoFixHigh"
+                   Disabled="@(!PuedeEditar)"
+                   OnClick="Editar"
+                   Class="mb-4">
+            @if (Editando)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Editando...</span>
+            }
+            else
+            {
+                <span>@(string.IsNullOrWhiteSpace(ImagenEditada) ? "Editar con IA" : "Volver a editar")</span>
+            }
+        </MudButton>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2" Style="font-weight: 700;">Estilos</MudText>
+        <div style="max-height: 320px; overflow-y: auto; padding: 4px;">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Class="pa-3"
+                              Elevation="@(PromptPropio ? 3 : 1)"
+                              Style="@Borde(PromptPropio)"
+                              @onclick="ElegirPromptPropio">
+                        <MudText Typo="Typo.subtitle2" Style="font-weight: 700;">
+                            <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="mr-1" />Escribir mi propio prompt
+                        </MudText>
+                        <MudText Typo="Typo.caption" Style="color: #64748B;">Describe con tus palabras la edición que quieres.</MudText>
+                    </MudPaper>
+                </MudItem>
+                @foreach (var prompt in Prompts)
+                {
+                    var elegido = PromptSeleccionado == prompt;
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudPaper Class="pa-3"
+                                  Elevation="@(elegido ? 3 : 1)"
+                                  Style="@Borde(elegido)"
+                                  @onclick="@(() => ElegirPrompt(prompt))">
+                            <MudText Typo="Typo.subtitle2" Style="font-weight: 700;">@prompt.Titulo</MudText>
+                            <MudText Typo="Typo.caption" Class="d-block" Style="color: #A50A3A; font-family: monospace;">@prompt.Comando</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #64748B;">@Extracto(prompt.Prompt)</MudText>
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancelar" Disabled="Editando">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(Editando || string.IsNullOrWhiteSpace(ImagenEditada))"
+                   OnClick="Usar">
+            Usar imagen editada
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string Borde(bool elegido) =>
+        $"cursor: pointer; height: 100%; border-radius: 12px; border: 2px solid {(elegido ? "#A50A3A" : "transparent")};";
+}

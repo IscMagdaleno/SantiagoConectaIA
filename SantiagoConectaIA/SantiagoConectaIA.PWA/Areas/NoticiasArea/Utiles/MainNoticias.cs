@@ -135,7 +135,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
             StreamContent? img = new StreamContent(memoryStream);
 
             // Using existing AzureBlobController
-            var response = await _httpService.PostWithFile<Response<BlobSaved>>(urlAzure, img);
+            var response = await _httpService.PostWithFile<Response<BlobSaved>>(urlAzure, img, fileName: SelectedImage.Name);
 
             var validation = _validaServicioService.ValidadionServicio(response, ContinueWarning: false, ContinueError: false,
             onSuccess: data =>
@@ -165,7 +165,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles
 
             StreamContent? img = new StreamContent(memoryStream);
 
-            var response = await _httpService.PostWithFile<Response<BlobSaved>>(urlAzure, img);
+            var response = await _httpService.PostWithFile<Response<BlobSaved>>(urlAzure, img, fileName: file.Name);
             string url = string.Empty;
             _validaServicioService.ValidadionServicio(response, ContinueWarning: false, ContinueError: false,
                 onSuccess: data =>

@@ -40,6 +40,29 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles
             return Post($"{Url}/PostMejorarEmprendimiento", model, string.Empty);
         }
 
+        public Task<Response<string>> MejorarProductoConIa(int idEmpresa, string nombreComercial, ProductoServicio producto, string informacion)
+        {
+            var model = new PostMejorarProducto
+            {
+                iIdEmpresa = idEmpresa,
+                iIdProducto = producto.iIdProducto,
+                vchNombreComercial = nombreComercial,
+                vchNombreProducto = producto.vchNombre ?? string.Empty,
+                nvchInformacion = informacion
+            };
+            return Post($"{Url}/PostMejorarProducto", model, string.Empty);
+        }
+
+        public Task<Response<string>> EditarImagenConIa(string imagenUrl, string prompt)
+        {
+            var model = new PostEditarImagen
+            {
+                vchImagenUrl = imagenUrl,
+                vchPrompt = prompt
+            };
+            return Post($"{Url}/PostEditarImagenIa", model, string.Empty);
+        }
+
         public Task<Response<string>> PublicarFacebook(string message, string imageUrl)
         {
             var model = new PostPublicarFacebook

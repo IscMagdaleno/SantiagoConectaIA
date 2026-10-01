@@ -5,6 +5,9 @@ namespace SantiagoConectaIA.API.Services
         /// <summary>Valor1 = modelo, Valor2 = API key.</summary>
         public const string Gemini = "key.gemini";
 
+        /// <summary>Valor1 = modelo de Gemini para editar imágenes. La API key se toma de key.gemini.</summary>
+        public const string GeminiImagen = "gemini.imagen";
+
         /// <summary>Valor1 = URL del webhook de Make que publica en Facebook.</summary>
         public const string MakeFacebookWebhook = "make.facebook.webhook";
 

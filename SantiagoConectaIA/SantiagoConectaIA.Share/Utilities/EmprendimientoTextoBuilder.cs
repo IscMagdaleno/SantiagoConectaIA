@@ -22,57 +22,8 @@ namespace SantiagoConectaIA.Share.Utilities
             AgregarCampo(sb, "Teléfono", empresa.vchTelefono);
             AgregarCampo(sb, "Correo", empresa.vchCorreo);
 
-            var redes = (detalle.RedesSociales ?? new List<EmpresaRedSocial>())
-                .Where(r => r.bActivo && !string.IsNullOrWhiteSpace(r.vchUrl))
-                .ToList();
-
-            if (!redes.Any(r => EsWhatsApp(r.vchPlataforma)))
-            {
-                var whatsapp = EnlaceWhatsApp(empresa.vchTelefono);
-                if (whatsapp != null)
-                {
-                    redes.Insert(0, new EmpresaRedSocial { vchPlataforma = "WhatsApp", vchUrl = whatsapp, bActivo = true });
-                }
-            }
-
-            if (redes.Any())
-            {
-                sb.AppendLine();
-                sb.AppendLine("Contacto y redes sociales:");
-                foreach (var red in redes)
-                {
-                    var plataforma = string.IsNullOrWhiteSpace(red.vchPlataforma) ? "Enlace" : red.vchPlataforma.Trim();
-                    sb.AppendLine($"- {plataforma}: {red.vchUrl!.Trim()}");
-                }
-            }
-
-            var ubicaciones = (detalle.Ubicaciones ?? new List<EmpresaUbicacion>())
-                .Where(u => u.bActivo && (!string.IsNullOrWhiteSpace(u.vchDireccion) || TieneCoordenadas(u)))
-                .ToList();
-
-            if (ubicaciones.Any())
-            {
-                sb.AppendLine();
-                sb.AppendLine("Ubicaciones:");
-                foreach (var ubicacion in ubicaciones)
-                {
-                    var linea = new StringBuilder("- ");
-                    if (!string.IsNullOrWhiteSpace(ubicacion.vchAlias))
-                    {
-                        linea.Append($"{ubicacion.vchAlias.Trim()}: ");
-                    }
-
-                    linea.Append(string.IsNullOrWhiteSpace(ubicacion.vchDireccion) ? "Sin dirección escrita" : ubicacion.vchDireccion.Trim());
-                    if (TieneCoordenadas(ubicacion))
-                    {
-                        var lat = ubicacion.flLatitud.ToString(CultureInfo.InvariantCulture);
-                        var lng = ubicacion.flLongitud.ToString(CultureInfo.InvariantCulture);
-                        linea.Append($" (Google Maps: https://www.google.com/maps?q={lat},{lng})");
-                    }
-
-                    sb.AppendLine(linea.ToString());
-                }
-            }
+            AgregarContacto(sb, detalle);
+            AgregarUbicaciones(sb, detalle);
 
             var categorias = (detalle.Categorias ?? new List<CategoriaCatalogoConProductos>())
                 .OrderBy(c => c.iOrdenAparicion)
@@ -107,6 +58,108 @@ namespace SantiagoConectaIA.Share.Utilities
             return sb.ToString().Trim();
         }
 
+        public static List<ProductoPublicable> ProductosPublicables(PostSaveEmprendimientoFull detalle)
+        {
+            return (detalle.Categorias ?? new List<CategoriaCatalogoConProductos>())
+                .OrderBy(c => c.iOrdenAparicion)
+                .SelectMany(c => (c.Productos ?? new List<ProductoServicio>())
+                    .Where(p => p.bEstatus && !string.IsNullOrWhiteSpace(p.vchNombre))
+                    .OrderBy(p => p.vchNombre)
+                    .Select(p => new ProductoPublicable(p, string.IsNullOrWhiteSpace(c.vchNombre) ? null : c.vchNombre.Trim())))
+                .ToList();
+        }
+
+        public static string ArmarInformacionProducto(PostSaveEmprendimientoFull detalle, ProductoPublicable publicable)
+        {
+            var empresa = detalle.Empresa ?? new Empresa();
+            var producto = publicable.Producto;
+            var sb = new StringBuilder();
+
+            sb.AppendLine("Producto:");
+            AgregarCampo(sb, "Nombre", producto.vchNombre);
+            AgregarCampo(sb, "Categoría", publicable.Categoria);
+            AgregarCampo(sb, "Descripción", TextoPublicacion.ATextoPlano(producto.nvchDescripcionCorta));
+            if (producto.mPrecio > 0)
+            {
+                AgregarCampo(sb, "Precio", Precio(producto.mPrecio));
+                if (TieneDescuento(producto))
+                {
+                    AgregarCampo(sb, "Precio con descuento", Precio(producto.mPrecioDescuento));
+                }
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("Emprendimiento:");
+            AgregarCampo(sb, "Nombre comercial", empresa.vchNombreComercial);
+            AgregarCampo(sb, "Slogan", empresa.vchSlogan);
+            AgregarCampo(sb, "Teléfono", empresa.vchTelefono);
+            AgregarCampo(sb, "Correo", empresa.vchCorreo);
+
+            AgregarContacto(sb, detalle);
+            AgregarUbicaciones(sb, detalle);
+
+            return sb.ToString().Trim();
+        }
+
+        private static void AgregarContacto(StringBuilder sb, PostSaveEmprendimientoFull detalle)
+        {
+            var empresa = detalle.Empresa ?? new Empresa();
+            var redes = (detalle.RedesSociales ?? new List<EmpresaRedSocial>())
+                .Where(r => r.bActivo && !string.IsNullOrWhiteSpace(r.vchUrl))
+                .ToList();
+
+            if (!redes.Any(r => EsWhatsApp(r.vchPlataforma)))
+            {
+                var whatsapp = EnlaceWhatsApp(empresa.vchTelefono);
+                if (whatsapp != null)
+                {
+                    redes.Insert(0, new EmpresaRedSocial { vchPlataforma = "WhatsApp", vchUrl = whatsapp, bActivo = true });
+                }
+            }
+
+            if (redes.Any())
+            {
+                sb.AppendLine();
+                sb.AppendLine("Contacto y redes sociales:");
+                foreach (var red in redes)
+                {
+                    var plataforma = string.IsNullOrWhiteSpace(red.vchPlataforma) ? "Enlace" : red.vchPlataforma.Trim();
+                    sb.AppendLine($"- {plataforma}: {red.vchUrl!.Trim()}");
+                }
+            }
+        }
+
+        private static void AgregarUbicaciones(StringBuilder sb, PostSaveEmprendimientoFull detalle)
+        {
+            var ubicaciones = (detalle.Ubicaciones ?? new List<EmpresaUbicacion>())
+                .Where(u => u.bActivo && (!string.IsNullOrWhiteSpace(u.vchDireccion) || TieneCoordenadas(u)))
+                .ToList();
+
+            if (ubicaciones.Any())
+            {
+                sb.AppendLine();
+                sb.AppendLine("Ubicaciones:");
+                foreach (var ubicacion in ubicaciones)
+                {
+                    var linea = new StringBuilder("- ");
+                    if (!string.IsNullOrWhiteSpace(ubicacion.vchAlias))
+                    {
+                        linea.Append($"{ubicacion.vchAlias.Trim()}: ");
+                    }
+
+                    linea.Append(string.IsNullOrWhiteSpace(ubicacion.vchDireccion) ? "Sin dirección escrita" : ubicacion.vchDireccion.Trim());
+                    if (TieneCoordenadas(ubicacion))
+                    {
+                        var lat = ubicacion.flLatitud.ToString(CultureInfo.InvariantCulture);
+                        var lng = ubicacion.flLongitud.ToString(CultureInfo.InvariantCulture);
+                        linea.Append($" (Google Maps: https://www.google.com/maps?q={lat},{lng})");
+                    }
+
+                    sb.AppendLine(linea.ToString());
+                }
+            }
+        }
+
         public static List<string> ArmarImagenes(PostSaveEmprendimientoFull detalle)
         {
             var imagenes = new List<string?> { detalle.Empresa?.vchLogoUrl };
@@ -135,7 +188,7 @@ namespace SantiagoConectaIA.Share.Utilities
             if (producto.mPrecio > 0)
             {
                 var precio = $"Precio: {Precio(producto.mPrecio)}";
-                if (producto.bAplicaDescuento && producto.mPrecioDescuento > 0 && producto.mPrecioDescuento < producto.mPrecio)
+                if (TieneDescuento(producto))
                 {
                     precio += $" (con descuento: {Precio(producto.mPrecioDescuento)})";
                 }
@@ -180,9 +233,16 @@ namespace SantiagoConectaIA.Share.Utilities
             return ubicacion.flLatitud != 0 && ubicacion.flLongitud != 0;
         }
 
-        private static string Precio(decimal valor)
+        public static bool TieneDescuento(ProductoServicio producto)
+        {
+            return producto.bAplicaDescuento && producto.mPrecioDescuento > 0 && producto.mPrecioDescuento < producto.mPrecio;
+        }
+
+        public static string Precio(decimal valor)
         {
             return $"${valor.ToString("#,0.##", CultureInfo.InvariantCulture)} MXN";
         }
     }
+
+    public sealed record ProductoPublicable(ProductoServicio Producto, string? Categoria);
 }

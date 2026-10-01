@@ -219,7 +219,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 
 			// Usar HttpService.PostFile (asumiendo que EngramaCoreStandard tiene este método)
 			// PostFile maneja el multipart/form-data
-			var response = await _httpService.PostWithFile<Response<BlobSaved>>(APIUrl, pdf);
+			var response = await _httpService.PostWithFile<Response<BlobSaved>>(APIUrl, pdf, fileName: SelectedFile.Name);
 
 			// Validar la respuesta del servicio. Si es exitoso, la URL estará en response.Response.Data
 			var validation = _validaServicioService.ValidadionServicio(response, ContinueWarning: false, ContinueError: false,

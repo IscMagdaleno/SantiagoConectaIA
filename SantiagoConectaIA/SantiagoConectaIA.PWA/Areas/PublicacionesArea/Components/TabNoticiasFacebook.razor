@@ -110,11 +110,36 @@ else
 
                     @if (TieneImagen)
                     {
-                        <MudImage Src="@NoticiaSeleccionada.vchImagenPortada"
+                        <MudImage Src="@ImagenSeleccionada"
                                   Alt="@NoticiaSeleccionada.vchTitulo"
-                                  ObjectFit="ObjectFit.Cover"
-                                  Class="rounded mb-4"
-                                  Style="width: 100%; max-height: 280px;" />
+                                  ObjectFit="ObjectFit.Contain"
+                                  Class="rounded mb-2"
+                                  Style="width: 100%; max-height: 280px; background: #F8FAFC;" />
+
+                        @if (Imagenes.Count > 1)
+                        {
+                            <MudText Typo="Typo.caption" Style="color: #64748B;">Imagen de la publicación (portada o editadas con IA):</MudText>
+                        }
+                        <div class="d-flex flex-wrap align-center mt-1 mb-4" style="gap: 8px;">
+                            @if (Imagenes.Count > 1)
+                            {
+                                @foreach (var url in Imagenes)
+                                {
+                                    var elegida = url == ImagenSeleccionada;
+                                    <img src="@url"
+                                         alt="Opción de imagen"
+                                         @onclick="@(() => ElegirImagen(url))"
+                                         style="@($"width: 64px; height: 64px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 3px solid {(elegida ? "#A50A3A" : "transparent")};")" />
+                                }
+                            }
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AutoFixHigh"
+                                       Disabled="@(!PuedeEditarImagen)"
+                                       OnClick="EditarImagen">
+                                Editar imagen
+                            </MudButton>
+                        </div>
                     }
                     else
                     {

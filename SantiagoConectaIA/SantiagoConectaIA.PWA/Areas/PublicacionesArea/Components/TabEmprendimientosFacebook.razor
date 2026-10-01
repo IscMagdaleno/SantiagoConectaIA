@@ -122,8 +122,10 @@ else
             else
             {
                 <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 16px;">
-                    <MudText Typo="Typo.h6" Class="mb-3" Style="font-weight: 700;">@EmprendimientoSeleccionado.vchNombreComercial</MudText>
+                    <MudText Typo="Typo.h6" Class="mb-1" Style="font-weight: 700;">@EmprendimientoSeleccionado.vchNombreComercial</MudText>
 
+                    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-4">
+                        <MudTabPanel Text="Post del emprendimiento" Icon="@Icons.Material.Filled.Storefront">
                     @if (Imagenes.Any())
                     {
                         <MudImage Src="@ImagenSeleccionada"
@@ -134,8 +136,11 @@ else
 
                         @if (Imagenes.Count > 1)
                         {
-                            <MudText Typo="Typo.caption" Style="color: #64748B;">Imagen de la publicación (logo o productos):</MudText>
-                            <div class="d-flex flex-wrap mt-1 mb-4" style="gap: 8px;">
+                            <MudText Typo="Typo.caption" Style="color: #64748B;">Imagen de la publicación (logo, productos o editadas con IA):</MudText>
+                        }
+                        <div class="d-flex flex-wrap align-center mt-1 mb-4" style="gap: 8px;">
+                            @if (Imagenes.Count > 1)
+                            {
                                 @foreach (var url in Imagenes)
                                 {
                                     var elegida = url == ImagenSeleccionada;
@@ -144,12 +149,15 @@ else
                                          @onclick="@(() => ElegirImagen(url))"
                                          style="@($"width: 64px; height: 64px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 3px solid {(elegida ? "#A50A3A" : "transparent")};")" />
                                 }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="mb-4"></div>
-                        }
+                            }
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AutoFixHigh"
+                                       Disabled="@(!PuedeEditarImagen)"
+                                       OnClick="EditarImagen">
+                                Editar imagen
+                            </MudButton>
+                        </div>
                     }
                     else
                     {
@@ -203,6 +211,11 @@ else
                             <span>Publicar en Facebook</span>
                         }
                     </MudButton>
+                        </MudTabPanel>
+                        <MudTabPanel Text="Post por producto" Icon="@Icons.Material.Filled.Inventory2">
+                            <PostProductoEmprendimiento Detalle="Detalle" />
+                        </MudTabPanel>
+                    </MudTabs>
                 </MudPaper>
             }
         </MudItem>

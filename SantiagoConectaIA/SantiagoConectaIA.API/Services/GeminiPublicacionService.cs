@@ -89,6 +89,31 @@ namespace SantiagoConectaIA.API.Services
             return Ok(texto);
         }
 
+        public async Task<Response<string>> MejorarProductoAsync(PostMejorarProducto post, CancellationToken cancellationToken = default)
+        {
+            if (post == null || post.iIdEmpresa <= 0 || string.IsNullOrWhiteSpace(post.nvchInformacion))
+            {
+                return Response<string>.BadResult("Selecciona un producto con información para mejorar el texto.", string.Empty);
+            }
+
+            var (sitio, _) = await ObtenerSitioAsync(cancellationToken);
+            var enlace = $"{sitio}/emprendimientos/{post.iIdEmpresa}";
+            var negocio = string.IsNullOrWhiteSpace(post.vchNombreComercial) ? "este emprendimiento" : post.vchNombreComercial.Trim();
+            var producto = string.IsNullOrWhiteSpace(post.vchNombreProducto) ? "este producto" : post.vchNombreProducto.Trim();
+            var prompt = PromptProducto(producto, negocio, Recortar(post.nvchInformacion.Trim()), enlace, sitio);
+
+            var generado = await GenerarAsync(prompt, cancellationToken);
+            if (!generado.IsSuccess)
+            {
+                return generado;
+            }
+
+            var texto = LimpiarBloques(generado.Data);
+            texto = AsegurarLinea(texto, enlace, $"👉 Conoce más de {negocio} en Santiago Conecta:\n{enlace}");
+            texto = AsegurarLinea(texto, "#SantiagoConecta", HashtagsEmprendimientos);
+            return Ok(texto);
+        }
+
         private async Task<Response<string>> GenerarAsync(string prompt, CancellationToken cancellationToken)
         {
             var (modelo, apiKey) = await ObtenerConfiguracionGeminiAsync(cancellationToken);
@@ -210,6 +235,31 @@ namespace SantiagoConectaIA.API.Services
                 {HashtagsEmprendimientos}
 
                 Información del emprendimiento:
+                {informacion}
+                """;
+        }
+
+        private static string PromptProducto(string producto, string negocio, string informacion, string enlace, string sitio)
+        {
+            return
+                $"""
+                Redacta UNA publicación de Facebook para promocionar un producto o servicio de un emprendimiento local. Devuelve solo el texto listo para copiar, sin comillas, sin bloques de código y sin formato Markdown (nada de asteriscos ni almohadillas para títulos).
+
+                Estructura obligatoria, en este orden:
+                1. Primera línea: una frase llamativa sobre {producto}, con 1 o 2 emojis relacionados.
+                2. Un párrafo que empiece con "En Santiago Conecta te presentamos" y presente {producto} de {negocio}: qué es y por qué vale la pena. Usa 1 o 2 emojis.
+                3. Una descripción breve del producto con los datos recibidos, sin inventar características.
+                4. Una línea con 💲 y el precio en formato $123 MXN. Si hay precio con descuento, muestra ambos y destaca el descuento. Omite esta línea si no hay precio.
+                5. Una línea con 📍 que diga dónde conseguirlo y, debajo, la dirección o direcciones tal como aparecen. Omite esta sección si no hay dirección.
+                6. Una sección "📲 Pide el tuyo:" con WhatsApp, teléfono, Facebook, Instagram u otras redes, copiando los enlaces exactamente como vienen. Omite los que no existan.
+                7. Esta línea tal cual:
+                👉 Conoce más de {negocio} en Santiago Conecta:
+                {enlace}
+                8. Cierre: "¿Tienes un negocio? Regístrate en {sitio} y da a conocer tus productos."
+                9. Última línea, exactamente estos hashtags:
+                {HashtagsEmprendimientos}
+
+                Información:
                 {informacion}
                 """;
         }

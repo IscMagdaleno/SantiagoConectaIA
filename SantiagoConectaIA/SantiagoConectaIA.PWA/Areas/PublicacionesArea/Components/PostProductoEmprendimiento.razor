@@ -1,0 +1,132 @@
+@if (!Productos.Any())
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+        Este emprendimiento no tiene productos o servicios activos en su catálogo.
+    </MudAlert>
+}
+else
+{
+    <MudText Typo="Typo.caption" Class="mb-2 d-block" Style="color: #64748B;">Elige el producto o servicio a publicar:</MudText>
+    <div style="max-height: 300px; overflow-y: auto; padding: 4px;" class="mb-4">
+        <MudGrid Spacing="2">
+            @foreach (var producto in Productos)
+            {
+                var seleccionado = ReferenceEquals(ProductoSeleccionado, producto);
+                <MudItem xs="6" sm="4">
+                    <MudPaper Elevation="@(seleccionado ? 3 : 1)"
+                              Style="@($"cursor: pointer; height: 100%; border-radius: 12px; overflow: hidden; border: 2px solid {(seleccionado ? "#A50A3A" : "transparent")};")"
+                              @onclick="@(() => Seleccionar(producto))">
+                        @if (TieneImagen(producto))
+                        {
+                            <img src="@producto.Producto.vchImagenUrl"
+                                 alt="@producto.Producto.vchNombre"
+                                 style="width: 100%; height: 110px; object-fit: cover; display: block;" />
+                        }
+                        else
+                        {
+                            <div class="d-flex align-center justify-center" style="width: 100%; height: 110px; background: #F1F5F9;">
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Sin imagen</MudChip>
+                            </div>
+                        }
+                        <div class="pa-2">
+                            <MudText Typo="Typo.body2" Style="font-weight: 700;">@producto.Producto.vchNombre</MudText>
+                            @if (!string.IsNullOrWhiteSpace(producto.Categoria))
+                            {
+                                <MudText Typo="Typo.caption" Class="d-block" Style="color: #64748B;">@producto.Categoria</MudText>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(PrecioTexto(producto)))
+                            {
+                                <MudText Typo="Typo.caption" Style="color: #A50A3A; font-weight: 600;">@PrecioTexto(producto)</MudText>
+                            }
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </div>
+
+    @if (ProductoSeleccionado != null)
+    {
+        @if (ImagenesPost.Any())
+        {
+            <MudImage Src="@ImagenSeleccionada"
+                      Alt="@ProductoSeleccionado.Producto.vchNombre"
+                      ObjectFit="ObjectFit.Contain"
+                      Class="rounded mb-2"
+                      Style="width: 100%; max-height: 280px; background: #F8FAFC;" />
+
+            <div class="d-flex flex-wrap align-center mt-1 mb-4" style="gap: 8px;">
+                @if (ImagenesPost.Count > 1)
+                {
+                    @foreach (var url in ImagenesPost)
+                    {
+                        var elegida = url == ImagenSeleccionada;
+                        <img src="@url"
+                             alt="Opción de imagen"
+                             @onclick="@(() => ElegirImagen(url))"
+                             style="@($"width: 64px; height: 64px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 3px solid {(elegida ? "#A50A3A" : "transparent")};")" />
+                    }
+                }
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Secondary"
+                           StartIcon="@Icons.Material.Filled.AutoFixHigh"
+                           Disabled="@(!PuedeEditarImagen)"
+                           OnClick="EditarImagen">
+                    Editar imagen
+                </MudButton>
+            </div>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+                Este producto no tiene imagen. Agrégala en el catálogo del emprendimiento para poder editarla y publicarlo.
+            </MudAlert>
+        }
+
+        <MudTextField @bind-Value="Informacion"
+                      Label="Información del producto (se envía a la IA)"
+                      Variant="Variant.Outlined"
+                      Lines="8"
+                      Class="mb-3" />
+
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.AutoAwesome"
+                   Disabled="@(!PuedeMejorar)"
+                   OnClick="MejorarConIa"
+                   Class="mb-4">
+            @if (Mejorando)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Mejorando...</span>
+            }
+            else
+            {
+                <span>Mejorar con IA</span>
+            }
+        </MudButton>
+
+        <MudTextField @bind-Value="Mensaje"
+                      Label="Vista previa de la publicación"
+                      Placeholder="Pulsa Mejorar con IA para generar el texto."
+                      Variant="Variant.Outlined"
+                      Lines="14"
+                      Class="mb-4" />
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Custom.Brands.Facebook"
+                   Disabled="@(!PuedePublicar)"
+                   OnClick="Publicar">
+            @if (Publicando)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Publicando...</span>
+            }
+            else
+            {
+                <span>Publicar en Facebook</span>
+            }
+        </MudButton>
+    }
+}
