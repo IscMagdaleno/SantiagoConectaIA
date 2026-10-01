@@ -1,20 +1,16 @@
 using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.AuthModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.AuthModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.AuthModule;
+using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.Objects.AuthModulo;
 using SantiagoConectaIA.Share.PostModels.AuthModulo;
 
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.AuthModule
@@ -24,14 +20,14 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.AuthModule
         private readonly IAuthRepository authRepository;
         private readonly MapperHelper mapperHelper;
         private readonly IResponseHelper responseHelper;
-        private readonly IConfiguration configuration;
+        private readonly IParametrosService parametros;
 
-        public AuthDomain(IAuthRepository authRepository, MapperHelper mapperHelper, IResponseHelper responseHelper, IConfiguration configuration)
+        public AuthDomain(IAuthRepository authRepository, MapperHelper mapperHelper, IResponseHelper responseHelper, IParametrosService parametros)
         {
             this.authRepository = authRepository;
             this.mapperHelper = mapperHelper;
             this.responseHelper = responseHelper;
-            this.configuration = configuration;
+            this.parametros = parametros;
         }
 
         public async Task<Response<UsuarioAuth>> Login(PostLoginUsuario daoModel)
@@ -45,7 +41,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.AuthModule
                 if (validation.IsSuccess)
                 {
                     // Generar JWT
-                    validation.Data.Token = GenerateJwtToken(validation.Data);
+                    validation.Data.Token = await GenerateJwtToken(validation.Data);
                 }
 
                 return validation;
@@ -82,14 +78,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.AuthModule
             }
         }
 
-        private string GenerateJwtToken(UsuarioAuth user)
+        private async Task<string> GenerateJwtToken(UsuarioAuth user)
         {
-            var keyStr = configuration["JwtConfig:Secret"];
-            if (string.IsNullOrEmpty(keyStr)) throw new Exception("JWT Secret not found in configuration.");
-            
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyStr));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.iIdUsuario.ToString()),
@@ -98,15 +88,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.AuthModule
                 new Claim(ClaimTypes.Role, user.vchRol ?? "User")
             };
 
-            var token = new JwtSecurityToken(
-                issuer: configuration["JwtConfig:Issuer"] ?? "SantiagoConectaIA",
-                audience: configuration["JwtConfig:Audience"] ?? "SantiagoConectaIA",
-                claims: claims,
-                expires: DateTime.Now.AddHours(24),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return JwtTokenFactory.Crear(await parametros.GetJwtAsync(), claims);
         }
     }
 }

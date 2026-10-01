@@ -68,6 +68,29 @@
             <div class="pulse-indicator"></div>
         </div>
 
+        <!-- 2x1: Publicaciones en Facebook -->
+        <div class="bento-item bento-2x1 glass-premium animate-fade-in-up delay-4" @onclick="WorkspaceService.RequestPublicaciones">
+            <div class="bento-header-flex">
+                <div>
+                    <MudText Typo="Typo.h5" Class="bento-title">Publicaciones</MudText>
+                    <MudText Typo="Typo.body2" Class="bento-desc">Publica en Facebook noticias y emprendimientos con ayuda de IA.</MudText>
+                </div>
+                <div class="icon-circle">
+                    <MudIcon Icon="@Icons.Custom.Brands.Facebook" />
+                </div>
+            </div>
+            <div class="news-preview-list">
+                <div class="news-item-mini">
+                    <div class="news-dot"></div>
+                    <MudText Typo="Typo.caption">Noticia diaria automática a las 11:00</MudText>
+                </div>
+                <div class="news-item-mini">
+                    <div class="news-dot"></div>
+                    <MudText Typo="Typo.caption">Presentación de emprendimientos locales</MudText>
+                </div>
+            </div>
+        </div>
+
         <!-- 1x1: Oficinas -->
         <div class="bento-item bento-1x1 glass-premium animate-fade-in-up delay-4" @onclick="WorkspaceService.RequestOficinas">
             <div class="icon-wrapper-bento secondary">

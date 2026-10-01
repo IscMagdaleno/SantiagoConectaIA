@@ -1,0 +1,22 @@
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inherits EngramaWorkspaceComponent
+
+<MudGrid Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudItem>
+        <MudText Typo="Typo.h4" Style="color: #A50A3A; font-weight: bold;">
+            Publicaciones
+        </MudText>
+        <MudText Typo="Typo.body2" Class="mt-1" Style="color: #64748B;">
+            Prepara con IA las publicaciones de Facebook de noticias y emprendimientos.
+        </MudText>
+    </MudItem>
+</MudGrid>
+
+<MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-4" KeepPanelsAlive="true">
+    <MudTabPanel Text="Noticias" Icon="@Icons.Material.Filled.Article">
+        <TabNoticiasFacebook />
+    </MudTabPanel>
+    <MudTabPanel Text="Emprendimientos" Icon="@Icons.Material.Filled.Storefront">
+        <TabEmprendimientosFacebook />
+    </MudTabPanel>
+</MudTabs>

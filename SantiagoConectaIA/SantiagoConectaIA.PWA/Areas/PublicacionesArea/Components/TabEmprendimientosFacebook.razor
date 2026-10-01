@@ -1,0 +1,210 @@
+@if (Cargando)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudPaper Class="pa-4 mb-4 d-flex align-center flex-wrap" Elevation="1" Style="border-radius: 16px; gap: 16px;">
+        <MudIcon Icon="@Icons.Material.Filled.Schedule" Color="@(Automatica?.bActivo == true ? Color.Success : Color.Default)" Size="Size.Large" />
+        <div style="flex: 1; min-width: 220px;">
+            <MudText Typo="Typo.subtitle1" Style="font-weight: 700;">Publicación automática diaria de emprendimientos</MudText>
+            @if (Automatica == null)
+            {
+                <MudText Typo="Typo.body2" Style="color: #EF4444;">No se pudo consultar el estado de la publicación automática.</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Style="color: #64748B;">
+                    Todos los días a las @($"{Automatica.iHora:00}:00") se publica con IA un emprendimiento activo con su logo, en orden de ID. Al llegar al último vuelve a empezar.
+                </MudText>
+                @if (!string.IsNullOrWhiteSpace(Automatica.vchSiguienteEmpresa))
+                {
+                    <MudText Typo="Typo.caption" Style="color: #64748B;">
+                        Siguiente: #@Automatica.iIdSiguienteEmpresa @Automatica.vchSiguienteEmpresa
+                    </MudText>
+                }
+                @if (Automatica.dtUltimaPublicacion.HasValue)
+                {
+                    <MudText Typo="Typo.caption" Class="d-block" Style="color: #64748B;">
+                        Último publicado: #@Automatica.iIdUltimaEmpresa @Automatica.vchUltimaEmpresa (@Automatica.dtUltimaPublicacion.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))
+                    </MudText>
+                }
+            }
+        </div>
+        @if (Automatica != null)
+        {
+            <MudSwitch T="bool"
+                       Value="Automatica.bActivo"
+                       ValueChanged="CambiarAutomatica"
+                       Disabled="GuardandoAutomatica"
+                       Color="Color.Success"
+                       Label="@(Automatica.bActivo ? "Activa" : "Inactiva")" />
+        }
+    </MudPaper>
+
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <MudTextField @bind-Value="FiltroTexto"
+                          Label="Buscar emprendimiento"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4" />
+
+            @if (!EmprendimientosFiltrados.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    @if (string.IsNullOrEmpty(FiltroTexto))
+                    {
+                        <text>No hay emprendimientos activos.</text>
+                    }
+                    else
+                    {
+                        <text>No se encontraron emprendimientos que coincidan con "@FiltroTexto".</text>
+                    }
+                </MudAlert>
+            }
+            else
+            {
+                <MudStack Spacing="2" Style="max-height: 70vh; overflow-y: auto;">
+                    @foreach (var empresa in EmprendimientosFiltrados)
+                    {
+                        var seleccionado = EmprendimientoSeleccionado?.iIdEmpresa == empresa.iIdEmpresa;
+                        <MudPaper Class="pa-3 d-flex align-center"
+                                  Elevation="@(seleccionado ? 3 : 1)"
+                                  Style="@($"cursor: pointer; border-radius: 12px; border: 2px solid {(seleccionado ? "#A50A3A" : "transparent")};")"
+                                  @onclick="@(() => Seleccionar(empresa))">
+                            @if (!string.IsNullOrWhiteSpace(empresa.vchLogoUrl))
+                            {
+                                <MudImage Src="@empresa.vchLogoUrl"
+                                          Alt="@empresa.vchNombreComercial"
+                                          Width="64"
+                                          Height="64"
+                                          ObjectFit="ObjectFit.Cover"
+                                          Class="rounded mr-3 flex-shrink-0" />
+                            }
+                            else
+                            {
+                                <MudAvatar Color="Color.Default" Variant="Variant.Outlined" Class="mr-3" Size="Size.Large">
+                                    <MudIcon Icon="@Icons.Material.Filled.Storefront" />
+                                </MudAvatar>
+                            }
+                            <div>
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 700;">#@empresa.iIdEmpresa @empresa.vchNombreComercial</MudText>
+                                @if (!string.IsNullOrWhiteSpace(empresa.vchSlogan))
+                                {
+                                    <MudText Typo="Typo.caption" Style="color: #64748B;">@empresa.vchSlogan</MudText>
+                                }
+                            </div>
+                        </MudPaper>
+                    }
+                </MudStack>
+            }
+        </MudItem>
+
+        <MudItem xs="12" md="7">
+            @if (EmprendimientoSeleccionado == null)
+            {
+                <MudPaper Class="pa-8" Elevation="0" Style="border-radius: 16px; background: #F8FAFC;">
+                    <MudText Typo="Typo.body1" Style="color: #64748B;">
+                        Selecciona un emprendimiento de la lista para preparar la publicación.
+                    </MudText>
+                </MudPaper>
+            }
+            else if (CargandoDetalle)
+            {
+                <MudPaper Class="pa-8 d-flex align-center" Elevation="0" Style="border-radius: 16px; background: #F8FAFC; gap: 12px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+                    <MudText Typo="Typo.body1" Style="color: #64748B;">Obteniendo la información de @EmprendimientoSeleccionado.vchNombreComercial...</MudText>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 16px;">
+                    <MudText Typo="Typo.h6" Class="mb-3" Style="font-weight: 700;">@EmprendimientoSeleccionado.vchNombreComercial</MudText>
+
+                    @if (Imagenes.Any())
+                    {
+                        <MudImage Src="@ImagenSeleccionada"
+                                  Alt="@EmprendimientoSeleccionado.vchNombreComercial"
+                                  ObjectFit="ObjectFit.Contain"
+                                  Class="rounded mb-2"
+                                  Style="width: 100%; max-height: 280px; background: #F8FAFC;" />
+
+                        @if (Imagenes.Count > 1)
+                        {
+                            <MudText Typo="Typo.caption" Style="color: #64748B;">Imagen de la publicación (logo o productos):</MudText>
+                            <div class="d-flex flex-wrap mt-1 mb-4" style="gap: 8px;">
+                                @foreach (var url in Imagenes)
+                                {
+                                    var elegida = url == ImagenSeleccionada;
+                                    <img src="@url"
+                                         alt="Opción de imagen"
+                                         @onclick="@(() => ElegirImagen(url))"
+                                         style="@($"width: 64px; height: 64px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 3px solid {(elegida ? "#A50A3A" : "transparent")};")" />
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-4"></div>
+                        }
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+                            Este emprendimiento no tiene logo ni imágenes de productos. Agrégalas en el catálogo de empresas antes de publicarlo.
+                        </MudAlert>
+                    }
+
+                    <MudTextField @bind-Value="Informacion"
+                                  Label="Información del emprendimiento (se envía a la IA)"
+                                  Variant="Variant.Outlined"
+                                  Lines="10"
+                                  Class="mb-3" />
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.AutoAwesome"
+                               Disabled="@(!PuedeMejorar)"
+                               OnClick="MejorarConIa"
+                               Class="mb-4">
+                        @if (Mejorando)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Mejorando...</span>
+                        }
+                        else
+                        {
+                            <span>Mejorar con IA</span>
+                        }
+                    </MudButton>
+
+                    <MudTextField @bind-Value="Mensaje"
+                                  Label="Vista previa de la publicación"
+                                  Placeholder="Pulsa Mejorar con IA para generar el texto."
+                                  Variant="Variant.Outlined"
+                                  Lines="16"
+                                  Class="mb-4" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Custom.Brands.Facebook"
+                               Disabled="@(!PuedePublicar)"
+                               OnClick="Publicar">
+                        @if (Publicando)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Publicando...</span>
+                        }
+                        else
+                        {
+                            <span>Publicar en Facebook</span>
+                        }
+                    </MudButton>
+                </MudPaper>
+            }
+        </MudItem>
+    </MudGrid>
+}

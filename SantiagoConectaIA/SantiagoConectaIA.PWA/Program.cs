@@ -14,6 +14,7 @@ using SantiagoConectaIA.PWA.Areas.MockupArea.Utiles;
 using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles;
 using SantiagoConectaIA.PWA.Areas.EventosArea.Utiles;
 using SantiagoConectaIA.PWA.Areas.PageVisitsArea.Utiles;
+using SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles;
 using SantiagoConectaIA.PWA.Helpers;
 using SantiagoConectaIA.PWA.Shared.Workspace;
 
@@ -46,6 +47,7 @@ builder.Services.AddScoped<MainEventos>();
 builder.Services.AddScoped<MainPageVisits>();
 builder.Services.AddScoped<MainAnalytics>();
 builder.Services.AddScoped<MainWhatsAppAnalytics>();
+builder.Services.AddScoped<MainPublicaciones>();
 
 builder.Services.AddEngramaDependenciesBlazor();
 

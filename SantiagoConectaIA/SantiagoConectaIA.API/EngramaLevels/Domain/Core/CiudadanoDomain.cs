@@ -28,17 +28,20 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
         private readonly IConfiguration _configuration;
         private readonly IWhatsAppService _whatsAppService;
         private readonly ICatalogosDomain _catalogosDomain;
+        private readonly IParametrosService _parametros;
 
         public CiudadanoDomain(
             ICiudadanoRepository repository, 
             IConfiguration configuration, 
             IWhatsAppService whatsAppService,
-            ICatalogosDomain catalogosDomain)
+            ICatalogosDomain catalogosDomain,
+            IParametrosService parametros)
         {
             _repository = repository;
             _configuration = configuration;
             _whatsAppService = whatsAppService;
             _catalogosDomain = catalogosDomain;
+            _parametros = parametros;
         }
 
         public async Task<Response<Ciudadano>> Registrar(PostSaveCiudadano postModel)
@@ -84,7 +87,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                 }
 
                 var ciudadano = Map(result.iIdCiudadano, result.vchAlias, result.vchTelefono);
-                ciudadano.Token = GenerateJwtToken(ciudadano);
+                ciudadano.Token = await GenerateJwtToken(ciudadano);
                 return new Response<Ciudadano>
                 {
                     Data = ciudadano,
@@ -123,7 +126,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                 }
 
                 var ciudadano = Map(result.iIdCiudadano, result.vchAlias, result.vchTelefono);
-                ciudadano.Token = GenerateJwtToken(ciudadano);
+                ciudadano.Token = await GenerateJwtToken(ciudadano);
                 return new Response<Ciudadano>
                 {
                     Data = ciudadano,
@@ -346,7 +349,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                     vchRol = "Ciudadano"
                 };
 
-                ciudadano.Token = GenerateJwtToken(ciudadano);
+                ciudadano.Token = await GenerateJwtToken(ciudadano);
 
                 return new Response<Ciudadano>
                 {
@@ -451,17 +454,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             vchRol = "Ciudadano"
         };
 
-        private string GenerateJwtToken(Ciudadano user)
+        private async Task<string> GenerateJwtToken(Ciudadano user)
         {
-            var keyStr = _configuration["JwtConfig:Secret"];
-            if (string.IsNullOrEmpty(keyStr))
-            {
-                throw new Exception("JWT Secret not found in configuration.");
-            }
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyStr));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.iIdCiudadano.ToString()),
@@ -471,15 +465,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                 new Claim(ClaimTypes.Role, "Ciudadano")
             };
 
-            var token = new JwtSecurityToken(
-                issuer: _configuration["JwtConfig:Issuer"] ?? "SantiagoConectaIA",
-                audience: _configuration["JwtConfig:Audience"] ?? "SantiagoConectaIA",
-                claims: claims,
-                expires: DateTime.Now.AddHours(24),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return JwtTokenFactory.Crear(await _parametros.GetJwtAsync(), claims);
         }
     }
 }

@@ -1,0 +1,169 @@
+@if (Cargando)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudPaper Class="pa-4 mb-4 d-flex align-center flex-wrap" Elevation="1" Style="border-radius: 16px; gap: 16px;">
+        <MudIcon Icon="@Icons.Material.Filled.Schedule" Color="@(Automatica?.bActivo == true ? Color.Success : Color.Default)" Size="Size.Large" />
+        <div style="flex: 1; min-width: 220px;">
+            <MudText Typo="Typo.subtitle1" Style="font-weight: 700;">Publicación automática diaria</MudText>
+            @if (Automatica == null)
+            {
+                <MudText Typo="Typo.body2" Style="color: #EF4444;">No se pudo consultar el estado de la publicación automática.</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Style="color: #64748B;">
+                    Todos los días a las @($"{Automatica.iHora:00}:00") se publica con IA la noticia más reciente.
+                </MudText>
+                @if (Automatica.dtUltimaPublicacion.HasValue)
+                {
+                    <MudText Typo="Typo.caption" Style="color: #64748B;">
+                        Última publicada: @Automatica.vchUltimaNoticia (@Automatica.dtUltimaPublicacion.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))
+                    </MudText>
+                }
+            }
+        </div>
+        @if (Automatica != null)
+        {
+            <MudSwitch T="bool"
+                       Value="Automatica.bActivo"
+                       ValueChanged="CambiarAutomatica"
+                       Disabled="GuardandoAutomatica"
+                       Color="Color.Success"
+                       Label="@(Automatica.bActivo ? "Activa" : "Inactiva")" />
+        }
+    </MudPaper>
+
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <MudTextField @bind-Value="FiltroTexto"
+                          Label="Buscar noticia"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4" />
+
+            @if (!NoticiasFiltradas.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    @if (string.IsNullOrEmpty(FiltroTexto))
+                    {
+                        <text>No hay noticias activas.</text>
+                    }
+                    else
+                    {
+                        <text>No se encontraron noticias que coincidan con "@FiltroTexto".</text>
+                    }
+                </MudAlert>
+            }
+            else
+            {
+                <MudStack Spacing="2" Style="max-height: 70vh; overflow-y: auto;">
+                    @foreach (var noticia in NoticiasFiltradas)
+                    {
+                        var seleccionada = NoticiaSeleccionada?.iIdNoticia == noticia.iIdNoticia;
+                        <MudPaper Class="pa-3 d-flex align-center"
+                                  Elevation="@(seleccionada ? 3 : 1)"
+                                  Style="@($"cursor: pointer; border-radius: 12px; border: 2px solid {(seleccionada ? "#A50A3A" : "transparent")};")"
+                                  @onclick="@(() => Seleccionar(noticia))">
+                            @if (!string.IsNullOrWhiteSpace(noticia.vchImagenPortada))
+                            {
+                                <MudImage Src="@noticia.vchImagenPortada"
+                                          Alt="@noticia.vchTitulo"
+                                          Width="72"
+                                          Height="72"
+                                          ObjectFit="ObjectFit.Cover"
+                                          Class="rounded mr-3 flex-shrink-0" />
+                            }
+                            else
+                            {
+                                <MudAvatar Color="Color.Default" Variant="Variant.Outlined" Class="mr-3" Size="Size.Large">
+                                    <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported" />
+                                </MudAvatar>
+                            }
+                            <div>
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 700;">@noticia.vchTitulo</MudText>
+                                <MudText Typo="Typo.caption" Style="color: #64748B;">@noticia.dtFechaPublicacion.ToShortDateString()</MudText>
+                            </div>
+                        </MudPaper>
+                    }
+                </MudStack>
+            }
+        </MudItem>
+
+        <MudItem xs="12" md="7">
+            @if (NoticiaSeleccionada == null)
+            {
+                <MudPaper Class="pa-8" Elevation="0" Style="border-radius: 16px; background: #F8FAFC;">
+                    <MudText Typo="Typo.body1" Style="color: #64748B;">
+                        Selecciona una noticia de la lista para preparar la publicación.
+                    </MudText>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 16px;">
+                    <MudText Typo="Typo.h6" Class="mb-3" Style="font-weight: 700;">@NoticiaSeleccionada.vchTitulo</MudText>
+
+                    @if (TieneImagen)
+                    {
+                        <MudImage Src="@NoticiaSeleccionada.vchImagenPortada"
+                                  Alt="@NoticiaSeleccionada.vchTitulo"
+                                  ObjectFit="ObjectFit.Cover"
+                                  Class="rounded mb-4"
+                                  Style="width: 100%; max-height: 280px;" />
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+                            Esta noticia no tiene imagen de portada. Agrégala en el catálogo de noticias antes de publicarla.
+                        </MudAlert>
+                    }
+
+                    <MudTextField @bind-Value="Mensaje"
+                                  Label="Vista previa de la publicación"
+                                  Variant="Variant.Outlined"
+                                  Lines="14"
+                                  Class="mb-4" />
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.AutoAwesome"
+                                   Disabled="@(!PuedeMejorar)"
+                                   OnClick="MejorarConIa">
+                            @if (Mejorando)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Mejorando...</span>
+                            }
+                            else
+                            {
+                                <span>Mejorar con IA</span>
+                            }
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Custom.Brands.Facebook"
+                                   Disabled="@(!PuedePublicar)"
+                                   OnClick="Publicar">
+                            @if (Publicando)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Publicando...</span>
+                            }
+                            else
+                            {
+                                <span>Publicar en Facebook</span>
+                            }
+                        </MudButton>
+                    </MudStack>
+                </MudPaper>
+            }
+        </MudItem>
+    </MudGrid>
+}

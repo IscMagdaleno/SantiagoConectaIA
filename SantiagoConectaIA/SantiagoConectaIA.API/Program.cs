@@ -2,7 +2,6 @@ using EngramaCoreStandar.Extensions;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.AuthModule;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Core.AuthModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.AuthModule;
@@ -49,21 +48,28 @@ builder.Services.AddEndpointsApiExplorer();
 // Ensure the AddEngramaDependenciesAPI method is defined in the above namespace
 builder.Services.AddEngramaDependenciesAPI();
 
-// JWT Config
-var jwtSecret = builder.Configuration["JwtConfig:Secret"] ?? "SuperSecretKeyForSantiagoConectaIA123!@#";
-var key = Encoding.ASCII.GetBytes(jwtSecret);
+// Parámetros de configuración (tabla Parametros)
+builder.Services.AddSingleton<IParametrosService, ParametrosService>();
 
+// JWT Config: secreto, issuer y audience desde los parámetros jwt.secret / jwt.config
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddJwtBearer();
+
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IParametrosService>((options, parametros) =>
     {
+        JwtParametros Jwt() => parametros.GetJwtAsync().GetAwaiter().GetResult();
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
+            IssuerSigningKeyResolver = (_, _, _, _) => new[] { JwtTokenFactory.Llave(Jwt()) },
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["JwtConfig:Issuer"] ?? "SantiagoConectaIA",
+            IssuerValidator = (issuer, _, _) => issuer == Jwt().Issuer
+                ? issuer
+                : throw new SecurityTokenInvalidIssuerException($"Issuer inválido: {issuer}"),
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["JwtConfig:Audience"] ?? "SantiagoConectaIA",
+            AudienceValidator = (audiences, _, _) => audiences.Contains(Jwt().Audience),
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
@@ -99,6 +105,16 @@ builder.Services.AddScoped<IPublicacionesCiudadanoDomain, PublicacionesCiudadano
 
 builder.Services.AddSingleton<WhatsAppMessageQueue>();
 builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
+builder.Services.AddHttpClient<IFacebookPublishService, FacebookPublishService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddHttpClient<IGeminiPublicacionService, GeminiPublicacionService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(60);
+});
+builder.Services.AddSingleton<IPublicacionAutomaticaService, PublicacionAutomaticaService>();
+builder.Services.AddScoped<IEmprendimientoAutomaticoService, EmprendimientoAutomaticoService>();
 builder.Services.AddHostedService<WhatsAppWorker>();
 
 builder.Services.AddScoped<ITramitesRepository, TramitesRepository>();
@@ -128,6 +144,8 @@ builder.Services.AddScoped<IPublicacionesCiudadanoRepository, PublicacionesCiuda
 	builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
 builder.Services.AddScoped<INoticiasScraperService, NoticiasScraperService>();
 builder.Services.AddHostedService<DailyScraperBackgroundService>();
+builder.Services.AddHostedService<DailyFacebookPublicacionBackgroundService>();
+builder.Services.AddHostedService<DailyEmprendimientoPublicacionBackgroundService>();
 
 
 builder.Services.AddScoped<KernelProvider>();

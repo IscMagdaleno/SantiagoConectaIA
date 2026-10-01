@@ -5,29 +5,18 @@ using Azure.Storage.Sas;
 using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
+using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.Objects.Common;
 
 namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 {
 	public class AzureBlobRepository : IAzureBlobRepository
 	{
-		private readonly string _connectionString;
-		private readonly IConfiguration _configuration;
-		private readonly BlobServiceClient _blobServiceClient;
+		private readonly IParametrosService _parametros;
 
-		public AzureBlobRepository(IConfiguration configuration)
+		public AzureBlobRepository(IParametrosService parametros)
 		{
-			_configuration = configuration;
-			// Obtener la cadena de conexión de Azure desde la configuración (ej. appsettings.json)
-			// Asegúrate de que esta clave coincide con la que usas en tu appsettings.json
-			_connectionString = _configuration["AzureBlobStorage:ConnectionString"];
-
-			// Inicializar el cliente de servicio
-			if (string.IsNullOrEmpty(_connectionString))
-			{
-				throw new InvalidOperationException("La cadena de conexión de Azure Blob Storage no está configurada.");
-			}
-			_blobServiceClient = new BlobServiceClient(_connectionString);
+			_parametros = parametros;
 		}
 
 		/// <summary>
@@ -40,8 +29,16 @@ namespace SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository
 
 			try
 			{
+				var connectionString = await _parametros.GetValor1Async(ParametrosAlias.AzureBlobStorage);
+				if (string.IsNullOrEmpty(connectionString))
+				{
+					response.IsSuccess = false;
+					response.Message = $"La cadena de conexión de Azure Blob Storage no está configurada (parámetro {ParametrosAlias.AzureBlobStorage}).";
+					return response;
+				}
+
 				// 1. Obtener la referencia al contenedor
-				var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+				var containerClient = new BlobServiceClient(connectionString).GetBlobContainerClient(containerName);
 
 				// 2. Crear el contenedor si no existe (opcional, pero seguro)
 				await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);

@@ -47,6 +47,11 @@
                                Class="nav-button mx-2">
                         Noticias
                     </MudButton>
+                    <MudButton OnClick="WorkspaceService.RequestPublicaciones"
+                               Color="Color.Inherit"
+                               Class="nav-button mx-2">
+                        Publicaciones
+                    </MudButton>
                     <MudButton OnClick="WorkspaceService.RequestOficinas"
                                Color="Color.Inherit"
                                Class="nav-button mx-2">
@@ -115,6 +120,13 @@
                            Style="color: white; justify-content: flex-start;">
                     <MudIcon Icon="Icons.Material.Filled.Article" Class="mr-3" />
                     Noticias
+                </MudButton>
+                <MudButton OnClick="WorkspaceService.RequestPublicaciones"
+                           Color="Color.Inherit"
+                           FullWidth="true"
+                           Style="color: white; justify-content: flex-start;">
+                    <MudIcon Icon="Icons.Custom.Brands.Facebook" Class="mr-3" />
+                    Publicaciones
                 </MudButton>
                 <MudButton OnClick="WorkspaceService.RequestOficinas"
                            Color="Color.Inherit"
@@ -241,6 +253,7 @@
         WorkspaceService.OnEmpresasRequest += AbrirEmpresasEnTab;
         WorkspaceService.OnEventosRequest += AbrirEventosEnTab;
         WorkspaceService.OnPageVisitsRequest += AbrirPageVisitsEnTab;
+        WorkspaceService.OnPublicacionesRequest += AbrirPublicacionesEnTab;
     }
 
     public void Dispose()
@@ -254,6 +267,7 @@
         WorkspaceService.OnEmpresasRequest -= AbrirEmpresasEnTab;
         WorkspaceService.OnEventosRequest -= AbrirEventosEnTab;
         WorkspaceService.OnPageVisitsRequest -= AbrirPageVisitsEnTab;
+        WorkspaceService.OnPublicacionesRequest -= AbrirPublicacionesEnTab;
     }
 
     private void RenameCurrentTab(string tabName, string iconText)
@@ -604,6 +618,39 @@
         {
             Icono = Icons.Material.Filled.Event,
             Text = "Eventos",
+            TipoControl = type,
+            Repetir = false
+        };
+
+        tab.Componente = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddComponentReferenceCapture(1, instance =>
+            {
+                if (instance is EngramaWorkspaceComponent baseComponent)
+                {
+                    tab.InstanciaComponente = baseComponent;
+                    baseComponent.IconoBase = tab.Icono ?? "";
+                    if (tabsList.Count > 0 && tabsList[tabsSelectedIndex].Id == tab.Id)
+                    {
+                        baseComponent.TriggerMenuUpdate();
+                    }
+                }
+            });
+            builder.CloseComponent();
+        };
+
+        WorkspaceService.AddComponenteTab(tab);
+    }
+
+    private void AbrirPublicacionesEnTab()
+    {
+        CloseMobileMenu();
+        var type = typeof(SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components.PagePublicaciones);
+        var tab = new WorkspaceTab
+        {
+            Icono = Icons.Custom.Brands.Facebook,
+            Text = "Publicaciones",
             TipoControl = type,
             Repetir = false
         };
