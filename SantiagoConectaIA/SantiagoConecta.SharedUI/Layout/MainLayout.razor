@@ -15,50 +15,37 @@
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
-<header class="header-area header-sticky @(IsMenuOpen ? "menu-open" : "")">
+<header class="header-area header-sticky">
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <nav class="main-nav @(IsMenuOpen ? "expanded" : "")">
-                    <a href="/" class="logo d-flex align-center">
-                        <img src="_content/SantiagoConecta.SharedUI/assets/images/LogoBuenoPNG.svg" style="height: 32px;" class="mr-2" alt="Logo" />
-                        <span class="logo-text" style="font-family: 'Montaser Arabic', sans-serif; font-weight: 700; font-size: clamp(16px, 4.5vw, 24px);">
+                <nav class="main-nav" aria-label="Encabezado">
+                    <a href="/" class="logo">
+                        <img src="_content/SantiagoConecta.SharedUI/assets/images/LogoBuenoPNG.svg" alt="Logo" />
+                        <span class="logo-text">
                             <span style="color: #9b45c9;">Santiago</span> <span style="color: #cd4472;">Conecta</span>
                         </span>
                     </a>
-                    <ul class="nav @(IsMenuOpen ? "open" : "")">
-                        <li><NavLink href="/" Match="NavLinkMatch.All" @onclick="CloseMenu">Inicio</NavLink></li>
-                        <li><NavLink href="feed" @onclick="CloseMenu">Feed</NavLink></li>
-                        <li><NavLink href="tramites" @onclick="CloseMenu">Trámites</NavLink></li>
-                        <li><NavLink href="noticias" @onclick="CloseMenu">Noticias</NavLink></li>
-                        <li><NavLink href="eventos" @onclick="CloseMenu">Eventos</NavLink></li>
-                        <li><a href="#contacto" @onclick="CloseMenu">Buzón Ciudadano</a></li>
-                        <li><NavLink href="emprendimientos" @onclick="CloseMenu">Emprendimientos</NavLink></li>
+                    <div class="header-actions">
+                        <a href="/buscar" class="header-icon-btn" title="Buscar" aria-label="Buscar">
+                            <MudIcon Icon="@Icons.Material.Rounded.Search" />
+                        </a>
+                        <div class="lang-item"><LanguageSwitcher /></div>
                         @if (CiudadanoSession.IsLoggedIn)
                         {
-                            <li class="user-chip-item">
-                                <a href="/unete" @onclick="CloseMenu" class="user-chip-link">
-                                    <span class="user-chip-dot"></span>
-                                    <span>@CiudadanoSession.Alias</span>
-                                </a>
-                            </li>
-                            <li class="logout-item">
-                                <a href="#" @onclick="SalirAsync" @onclick:preventDefault class="logout-link">
-                                    Salir
-                                </a>
-                            </li>
+                            <a href="/unete" class="user-chip-link" title="Mi cuenta">
+                                <span class="user-chip-dot"></span>
+                                <span class="user-chip-alias">@CiudadanoSession.Alias</span>
+                            </a>
+                            <button type="button" class="header-icon-btn logout-btn" @onclick="SalirAsync" title="Salir" aria-label="Salir">
+                                <MudIcon Icon="@Icons.Material.Rounded.Logout" />
+                            </button>
                         }
                         else
                         {
-                            <li class="unete-item">
-                                <NavLink href="unete" @onclick="CloseMenu" class="unete-link">Únete</NavLink>
-                            </li>
+                            <a href="/unete" class="unete-link">Únete</a>
                         }
-                        <li class="lang-item"><LanguageSwitcher /></li>
-                    </ul>
-                    <a class="menu-trigger @(IsMenuOpen ? "active" : "")" @onclick="ToggleMenu" @onclick:preventDefault>
-                        <span>Menu</span>
-                    </a>
+                    </div>
                 </nav>
             </div>
         </div>
@@ -68,7 +55,8 @@
     @Body
 </main>
 
-<ChatbotWidget />
+<FloatingNav />
+<ChatbotWidget ShowFab="false" />
 
 <footer>
     <div class="container">
@@ -113,19 +101,8 @@
         }
     };
 
-    private bool IsMenuOpen = false;
     private bool _firstRenderTracked;
     private string _visitorId = string.Empty;
-
-    private void ToggleMenu()
-    {
-        IsMenuOpen = !IsMenuOpen;
-    }
-
-    private void CloseMenu()
-    {
-        IsMenuOpen = false;
-    }
 
     protected override void OnInitialized()
     {
@@ -151,14 +128,12 @@
 
     private async Task SalirAsync()
     {
-        CloseMenu();
         await CiudadanoSession.SignOutAsync();
         NavManager.NavigateTo("/", replace: true);
     }
 
     private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        IsMenuOpen = false;
         StateHasChanged();
         await TrackPageVisitAsync();
     }

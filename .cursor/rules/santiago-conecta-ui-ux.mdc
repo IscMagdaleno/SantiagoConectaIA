@@ -1,0 +1,34 @@
+---
+description: Directrices de UI/UX, SEO técnico y accesibilidad para el sitio público de Santiago Conecta (Blazor WASM + MudBlazor)
+globs: SantiagoConectaIA/SantiagoConecta.SharedUI/**,SantiagoConectaIA/SantiagoConectaFront/**
+alwaysApply: false
+---
+
+# Santiago Conecta — UI/UX, SEO y accesibilidad
+
+Actúa como diseñador web senior de UI/UX y frontend (Blazor, CSS moderno, rendimiento, SEO técnico).
+
+## UI/UX minimalista
+- Prioriza el espacio en blanco y una jerarquía tipográfica clara. Una sola acción principal por sección; evita cajas flotantes que compitan, gradientes pesados y animaciones decorativas.
+- El ciudadano debe encontrar lo que busca en menos de 2 segundos: lo más usado arriba, textos cortos y etiquetas explícitas.
+- Navegación tipo app: el header es mínimo (logo, buscar, idioma, cuenta) y la navegación vive en `Shared/FloatingNav.razor`. No vuelvas a agregar enlaces al header.
+- Paleta: rosa `#d81b60` (acción), vino `#880e4f` (títulos/íconos), texto `#1f2937`/`#4b5563`, fondos blancos o `#f8f9fa`. Excepción decidida por el dueño del producto: el hero de la portada es vivo y llamativo (degradado animado rosa/magenta/morado, partículas que reaccionan al puntero y ondas blancas hacia el contenido); no lo apagues ni lo vuelvas plano. Fuera del hero, degradados solo en acentos puntuales (íconos, botón principal).
+
+## SEO técnico
+- Una sola `<h1>` por página; `h2`/`h3` en orden sin saltos. Usa `<section>`, `<nav>`, `<article>`, `<header>`, `<footer>` con su significado real.
+- Cada página con `@page` define `<PageTitle>` y `<HeadContent>` con `<meta name="description">` (≤160 caracteres) y Open Graph básico (`og:title`, `og:description`, `og:image`).
+- Toda `<img>` lleva `alt` descriptivo (`alt=""` si es decorativa), `width`/`height` o `aspect-ratio`, y `loading="lazy"` fuera del primer pantallazo.
+- Enlaces de navegación como `<a href>` reales (no `div` con `@onclick`) para que sean rastreables.
+
+## Accesibilidad
+- Contraste mínimo WCAG AA (4.5:1 texto normal, 3:1 texto grande e íconos).
+- Áreas táctiles de al menos 44×44 px; `:focus-visible` siempre visible; `aria-label` en botones solo con ícono.
+- Respeta `prefers-reduced-motion` y `env(safe-area-inset-*)` en elementos fijos.
+- Modales: `role="dialog"`, `aria-modal`, cierre con "X", Escape y clic fuera.
+
+## Código
+- Estilos en `.razor.css` aislado; nada de `style="..."` inline salvo valores dinámicos. Usa `::deep` para estilizar componentes MudBlazor.
+- Componentes pequeños y reutilizables en `Componentes/<Area>` o `Shared/`; los datos se cargan con los servicios `Data_*` existentes.
+- Mobile-first: diseña desde 360 px y escala con `min-width`; prueba también a 768 px y 1280 px.
+- Evita `IJSRuntime` `eval` en código nuevo cuando exista una alternativa en Blazor o un módulo JS.
+- Textos de la interfaz en español de México.

@@ -1,7 +1,10 @@
+@implements IDisposable
 @using System.Net.Http.Json
+@using SantiagoConecta.SharedUI.Data
 @using SantiagoConectaIA.Share.Objects.ConversationalModule
 @using SantiagoConectaIA.Share.PostModels.ConversationalModule
 @inject HttpClient Http
+@inject AsistenteIaService Asistente
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
 
@@ -97,7 +100,7 @@
             </div>
         </MudPaper>
     }
-    else
+    else if (ShowFab)
     {
         <div class="chatbot-fab">
             <MudFab Color="Color.Primary" Size="Size.Large" OnClick="ToggleChat" Class="pulse-animation custom-fab" StartIcon="@Icons.Material.Filled.AutoAwesome" />
@@ -442,7 +445,35 @@
 </style>
 
 @code {
+    /// <summary>
+    /// Muestra el botón flotante propio del chat. El layout lo oculta porque abre el chat desde la barra flotante.
+    /// </summary>
+    [Parameter] public bool ShowFab { get; set; } = true;
+
     private bool isOpen = false;
+
+    protected override void OnInitialized()
+    {
+        Asistente.AbrirSolicitado += AbrirAsync;
+    }
+
+    public void Dispose()
+    {
+        Asistente.AbrirSolicitado -= AbrirAsync;
+    }
+
+    public async Task AbrirAsync()
+    {
+        if (isOpen)
+        {
+            return;
+        }
+
+        isOpen = true;
+        await InvokeAsync(StateHasChanged);
+        await ScrollToBottom();
+        _ = InitParticlesAsync();
+    }
     private string currentMessage = "";
     private bool isLoading = false;
     private string threadId = "";

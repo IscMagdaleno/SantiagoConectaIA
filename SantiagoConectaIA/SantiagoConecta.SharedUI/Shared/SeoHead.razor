@@ -1,0 +1,100 @@
+@using System.Net
+@using System.Text.RegularExpressions
+@using SantiagoConecta.SharedUI.Data
+@inject NavigationManager NavManager
+@inject SitioInterop Sitio
+
+<PageTitle>@TituloCompleto</PageTitle>
+<HeadContent>
+    <meta name="description" content="@DescripcionFinal" />
+    <link rel="canonical" href="@UrlCanonica" />
+    <meta property="og:type" content="@Tipo" />
+    <meta property="og:site_name" content="@NombreSitio" />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:title" content="@TituloCompleto" />
+    <meta property="og:description" content="@DescripcionFinal" />
+    <meta property="og:url" content="@UrlCanonica" />
+    <meta property="og:image" content="@ImagenFinal" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@TituloCompleto" />
+    <meta name="twitter:description" content="@DescripcionFinal" />
+    <meta name="twitter:image" content="@ImagenFinal" />
+</HeadContent>
+
+@code {
+    public const string NombreSitio = "Santiago Conecta";
+    public const string DescripcionPorDefecto =
+        "Trámites municipales, noticias, eventos y negocios locales de Santiago Papasquiaro, Durango, en un solo lugar. Pregunta a la IA y evita filas.";
+
+    private const int MaxDescripcion = 160;
+    private static readonly Regex Etiquetas = new("<[^>]+>", RegexOptions.Compiled);
+    private static readonly Regex Espacios = new(@"\s+", RegexOptions.Compiled);
+
+    /// <summary>Título de la página; se le agrega " | Santiago Conecta" si no lo incluye.</summary>
+    [Parameter, EditorRequired] public string Titulo { get; set; } = string.Empty;
+
+    /// <summary>Texto libre o HTML; se limpia y recorta a 160 caracteres.</summary>
+    [Parameter] public string? Descripcion { get; set; }
+
+    /// <summary>URL absoluta o relativa al sitio. Sin valor usa el ícono de la app.</summary>
+    [Parameter] public string? Imagen { get; set; }
+
+    /// <summary>"website" para listados y "article" para detalles.</summary>
+    [Parameter] public string Tipo { get; set; } = "website";
+
+    private string TituloCompleto => string.IsNullOrWhiteSpace(Titulo)
+        ? NombreSitio
+        : Titulo.Contains(NombreSitio, StringComparison.OrdinalIgnoreCase) ? Titulo : $"{Titulo} | {NombreSitio}";
+
+    private string DescripcionFinal => Resumir(Descripcion) is { Length: > 0 } texto ? texto : DescripcionPorDefecto;
+
+    private string UrlCanonica
+    {
+        get
+        {
+            var relativa = NavManager.ToBaseRelativePath(NavManager.Uri);
+            var corte = relativa.IndexOfAny(new[] { '?', '#' });
+            return NavManager.BaseUri + (corte >= 0 ? relativa[..corte] : relativa);
+        }
+    }
+
+    private string ImagenFinal
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Imagen))
+            {
+                return NavManager.BaseUri + "icon-512.png";
+            }
+
+            return Uri.TryCreate(Imagen, UriKind.Absolute, out var absoluta)
+                ? absoluta.ToString()
+                : NavManager.BaseUri + Imagen.TrimStart('/');
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Sitio.QuitarSeoPorDefectoAsync();
+        }
+    }
+
+    private static string Resumir(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+        {
+            return string.Empty;
+        }
+
+        var limpio = Espacios.Replace(WebUtility.HtmlDecode(Etiquetas.Replace(texto, " ")), " ").Trim();
+        if (limpio.Length <= MaxDescripcion)
+        {
+            return limpio;
+        }
+
+        var corte = limpio.LastIndexOf(' ', MaxDescripcion - 1);
+        return limpio[..(corte > 80 ? corte : MaxDescripcion - 1)].TrimEnd(' ', ',', '.', ';', ':') + "…";
+    }
+}

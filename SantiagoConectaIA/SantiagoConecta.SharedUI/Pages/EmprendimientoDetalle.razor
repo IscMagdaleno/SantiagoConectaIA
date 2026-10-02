@@ -6,7 +6,10 @@
 @inject Data_Emprendimientos dataEmprendimientos
 @inject NavigationManager NavManager
 
-<PageTitle>Emprendimiento - @(empresa?.vchNombreComercial ?? "Cargando...")</PageTitle>
+<SeoHead Titulo="@(empresa?.vchNombreComercial ?? "Emprendimiento local")"
+         Descripcion="@(empresa?.nvchDescripcion ?? empresa?.vchSlogan ?? "Conoce este negocio local de Santiago Papasquiaro: productos, contacto y ubicación.")"
+         Imagen="@empresa?.vchLogoUrl"
+         Tipo="article" />
 
 @if (isLoading)
 {

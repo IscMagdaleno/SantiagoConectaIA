@@ -10,7 +10,8 @@
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
 @inject IStringLocalizer<App> Localizer
 
-<PageTitle>@Localizer["TramitesTitulo"]</PageTitle>
+<SeoHead Titulo="@(Localizer["TramitesTitulo"].Value)"
+         Descripcion="Catálogo de trámites municipales de Santiago Papasquiaro: requisitos, costos, oficinas y horarios en un solo lugar." />
 
 <div class="min-h-screen bg-gray-50">
 

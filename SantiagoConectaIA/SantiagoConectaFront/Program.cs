@@ -37,6 +37,8 @@ builder.Services.AddScoped<Data_Ciudadano>();
 builder.Services.AddScoped<CiudadanoSession>();
 builder.Services.AddScoped<Data_Opinion>();
 builder.Services.AddScoped<Data_PublicacionesCiudadano>();
+builder.Services.AddScoped<SitioInterop>();
+builder.Services.AddScoped<AsistenteIaService>();
 builder.Services.AddMudServices();
 
 

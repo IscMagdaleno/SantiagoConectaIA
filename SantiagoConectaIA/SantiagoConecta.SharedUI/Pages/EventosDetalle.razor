@@ -1,5 +1,8 @@
 @page "/eventos/{Id:int}"
-<PageTitle>Santiago Conecta - @(selectedEvento?.vchNombre ?? "Detalle del Evento")</PageTitle>
+<SeoHead Titulo="@(selectedEvento?.vchNombre ?? "Detalle del evento")"
+         Descripcion="@(selectedEvento?.nvchDescripcion ?? "Fecha, lugar, costo y detalles de este evento en Santiago Papasquiaro.")"
+         Imagen="@selectedEvento?.vchImagenPortada"
+         Tipo="article" />
 
 @if (selectedEvento == null)
 {

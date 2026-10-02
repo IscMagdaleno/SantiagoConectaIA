@@ -1,4 +1,6 @@
 @page "/"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
 @using SantiagoConecta.SharedUI.Data
 @using SantiagoConectaIA.Share.PostModels.BuzonCiudadanoModule
 @using SantiagoConectaIA.Share.Objects.NoticiasModule
@@ -7,598 +9,424 @@
 @using SantiagoConectaIA.Share.Objects.InformacionLocalModule
 @using SantiagoConectaIA.Share.PostClass.EventosModulo
 @using SantiagoConectaIA.Share.PostModels.InformacionLocalModule
-@using Microsoft.Extensions.Localization
+@implements IAsyncDisposable
 @inject NavigationManager NavManager
-@inject IStringLocalizer<App> Localizer
-@inject IJSRuntime JS
 @inject Data_BuzonCiudadano _dataBuzon
 @inject Data_Noticias dataNoticias
 @inject Data_Eventos dataEventos
-@inject ISnackbar Snackbar
 @inject Data_InformacionLocal dataInformacionLocal
+@inject AsistenteIaService Asistente
+@inject SitioInterop Sitio
 
-<PageTitle>Santiago Conecta - Inicio</PageTitle>
+<SeoHead Titulo="Santiago Conecta | Trámites, noticias y negocios de Santiago Papasquiaro"
+         Descripcion="@SeoHead.DescripcionPorDefecto" />
 
-<!-- ***** Hero Section (Bienvenida) ***** -->
-<div class="welcome-area js-dynamic-bg" id="welcome" style="min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; padding-top: 80px;">
-    
-    <!-- Efecto Glow que sigue al cursor -->
-    <div class="hero-glow" id="hero-glow"></div>
+<!-- Bienvenida: fondo animado con partículas que reaccionan al puntero -->
+<section class="home-hero" @ref="_hero" aria-labelledby="home-titulo">
+    <div class="home-hero-glow" @ref="_glow" aria-hidden="true"></div>
+    <canvas class="home-hero-canvas" @ref="_canvas" aria-hidden="true"></canvas>
 
-    <!-- Sistema interactivo de partículas en Canvas -->
-    <canvas id="hero-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.8;"></canvas>
+    <div class="container home-hero-capa">
+        <div class="home-hero-contenido">
+            <p class="home-eyebrow">
+                <MudIcon Icon="@Icons.Material.Rounded.LocationOn" /> Santiago Papasquiaro, Durango
+            </p>
+            <h1 id="home-titulo" class="home-h1">
+                Trámites, noticias y negocios de <span class="home-h1-destacado">Santiago</span> en un solo lugar
+            </h1>
+            <p class="home-subtitulo">Encuentra lo que necesitas en segundos o pregúntale a nuestro asistente con IA.</p>
 
-    <div class="header-text" style="width: 100%; position: relative !important; top: auto !important; transform: none !important; z-index: 5; padding-bottom: 12vh;">
-        <div class="container">
-            <div class="row">
-                <div class="col-xl-8 col-lg-10 col-md-12 col-sm-12 mx-auto text-center" style="display: flex; flex-direction: column; align-items: center;">
-                    
-                    <!-- Slider Glass -->
-                    <MudCarousel Class="mud-width-full" Style="height:180px; max-width:600px; margin-top: clamp(20px, 4vh, 40px); margin-bottom:20px; border-radius:28px; box-shadow:0 8px 32px rgba(0,0,0,0.15); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25);" ShowArrows="false" ShowBullets="false" AutoCycle="true" EnableSwipeGesture="true" TData="object">
-                        
-                        <!-- Slide WhatsApp -->
-                        <MudCarouselItem Transition="Transition.Slide">
-                            <div style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 12px 24px; gap: 16px; cursor: pointer; text-align: left;" @onclick="OpenWhatsAppInfo">
-                                <MudIcon Icon="@Icons.Material.Filled.Chat" Style="font-size: 50px; color: #ffb4a2; flex-shrink: 0;" />
-                                <div style="flex-grow: 1; overflow: hidden;">
-                                    <div style="background: linear-gradient(135deg, #ffb4a2, #ff8a65); color: #880e4f; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 6px;">
-                                        WhatsApp IA
-                                    </div>
-                                    <MudText Typo="Typo.body1" Style="color: white; font-weight: 600; font-size: 1rem; line-height: 1.3; text-shadow: 0 1px 2px rgba(0,0,0,0.2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">¡Resuelve tus dudas al instante con nuestro asistente virtual!</MudText>
-                                </div>
-                            </div>
-                        </MudCarouselItem>
+            <form class="home-busqueda" role="search" @onsubmit="Buscar">
+                <label for="home-q" class="visualmente-oculto">Buscar en Santiago Conecta</label>
+                <MudIcon Icon="@Icons.Material.Rounded.Search" Class="home-busqueda-icono" />
+                <input id="home-q" type="search" @bind="_busqueda" @bind:event="oninput"
+                       placeholder="Busca un trámite, noticia o negocio" autocomplete="off" enterkeyhint="search" />
+                <button type="submit" class="home-boton">Buscar</button>
+            </form>
 
-                        <!-- Slide Noticias -->
-                        @if (latestNoticia != null)
-                        {
-                            <MudCarouselItem Transition="Transition.Slide">
-                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 12px 24px; gap: 16px; cursor: pointer; text-align: left;" @onclick='() => NavManager.NavigateTo($"/noticias/{latestNoticia.iIdNoticia}")'>
-                                    <MudIcon Icon="@Icons.Material.Filled.Article" Style="font-size: 50px; color: #ffb4a2; flex-shrink: 0;" />
-                                    <div style="flex-grow: 1; overflow: hidden;">
-                                        <div style="background: linear-gradient(135deg, #ffb4a2, #ff8a65); color: #880e4f; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 6px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                            @(latestNoticia.Categoria?.vchNombre ?? "Noticia")
-                                        </div>
-                                        <MudText Typo="Typo.body1" Style="color: white; font-weight: 600; font-size: 1rem; line-height: 1.3; text-shadow: 0 1px 2px rgba(0,0,0,0.2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">@latestNoticia.vchTitulo</MudText>
-                                    </div>
-                                </div>
-                            </MudCarouselItem>
-                        }
-                    </MudCarousel>
-
-                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="font-size: 50px; color: #ffb4a2; margin-bottom: 10px; animation: float 3s ease-in-out infinite;" />
-                    <h1 style="color: white; font-weight: 800; font-size: clamp(2rem, 8vw, 3.5rem); line-height: 1.2; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -1px;">
-                        Bienvenido a <span style="color: #ffb4a2;">Santiago Conecta</span>
-                    </h1>
-                    <p style="color: rgba(255, 255, 255, 0.95); font-size: clamp(1rem, 4vw, 1.25rem); margin-bottom: 28px; font-weight: 300; line-height: 1.6; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
-                        Tu Asistente Virtual Inteligente 24/7. Santiago Conecta pone a tu disposición esta herramienta de nueva generación para resolver tus dudas, consultar trámites y evitar filas.
-                    </p>
-
-                    <div class="hero-register-invite">
-                        <div class="hero-opinion-bubble">
-                            <span class="hero-opinion-bubble-badge">Tu voz cuenta</span>
-                            <p>
-                                Únete y comparte tu opinión en <strong>noticias</strong>, <strong>trámites</strong> y <strong>eventos</strong>.
-                                Sé parte del debate de Santiago.
-                            </p>
-                            <span class="hero-opinion-bubble-tail" aria-hidden="true"></span>
-                        </div>
-                        <button class="main-button-slider hero-btn" @onclick='() => NavManager.NavigateTo("/unete")'>
-                            <i class="fa fa-heart mr-2"></i> Registrarse
-                        </button>
-                        <InstallAppButton Variant="hero" />
-                    </div>
-                </div>
+            <div class="home-atajos">
+                <button type="button" class="home-chip home-chip-ia" @onclick="Asistente.AbrirAsync">
+                    <MudIcon Icon="@Icons.Material.Rounded.AutoAwesome" /> Pregúntale a la IA
+                </button>
+                <a class="home-chip" href="@WhatsAppUrl" target="_blank" rel="noopener">
+                    <MudIcon Icon="@Icons.Material.Rounded.Chat" /> WhatsApp
+                </a>
+                <a class="home-chip" href="/unete">
+                    <MudIcon Icon="@Icons.Material.Rounded.Favorite" /> Únete a la comunidad
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Ondas Animadas SVG -->
-    <div class="waves-container">
-        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+    <div class="home-ondas" aria-hidden="true">
+        <svg class="home-ondas-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
             <defs>
-                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                <path id="home-onda" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
             </defs>
-            <g class="parallax">
-                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
-                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
-                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
-                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            <g class="home-ondas-capas">
+                <use xlink:href="#home-onda" x="48" y="0" fill="rgba(255,255,255,0.7)" />
+                <use xlink:href="#home-onda" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#home-onda" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                <use xlink:href="#home-onda" x="48" y="7" fill="#ffffff" />
             </g>
         </svg>
     </div>
-</div>
-<!-- ***** Hero Section End ***** -->
-
-<!-- ***** Búsqueda (el feed vive en /feed) ***** -->
-<section class="section" style="padding: 32px 0 8px; position: relative; z-index: 10;">
-    <div class="container">
-        <FeedSearchBar />
-    </div>
 </section>
-
-<!-- ***** Sección de Destacados (Noticias y Eventos) ***** -->
-<section class="section" style="padding-top: 40px; position: relative; z-index: 10;">
+<!-- Accesos rápidos -->
+<section class="home-seccion home-seccion-accesos" aria-labelledby="accesos-titulo">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="center-heading mb-4">
-                    <h2 class="section-title" style="color: #880e4f; font-weight: 800;">Lo Más Destacado</h2>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <!-- Slider Destacados -->
-            <div class="col-lg-6 mb-4">
-                <div class="destacado-card js-dynamic-bg custom-slider" style="border-radius: 20px; overflow: hidden; height: 100%; min-height: 380px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); position: relative;">
-                    <MudCarousel Class="mud-width-full" Style="height:100%; min-height: 380px; width: 100%;" ShowArrows="true" ShowBullets="true" AutoCycle="true" EnableSwipeGesture="true" TData="object">
-                        
-                        <!-- Slide 1: WhatsApp -->
-                        <MudCarouselItem Transition="Transition.Slide">
-                            <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 40px; position: relative; z-index: 2;">
-                                <span class="badge" style="background: white; color: #d81b60; padding: 8px 15px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: inline-block; width: max-content; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">¡Nuevo!</span>
-                                <MudIcon Icon="@Icons.Material.Filled.Chat" Style="font-size: 60px; color: white; margin-bottom: 15px;" />
-                                <h3 style="color: white; font-weight: 800; font-size: 1.8rem; line-height: 1.2; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Santiago Conecta por WhatsApp</h3>
-                                <p style="color: rgba(255,255,255,0.95); font-size: 1.05rem; line-height: 1.5; margin-bottom: 20px;">Resuelve tus dudas y reporta incidencias directo desde tu celular, las 24 horas.</p>
-                                <button @onclick="OpenWhatsAppInfo" class="slider-action-btn" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 10px 20px; border-radius: 30px; font-weight: 700; width: fit-content; transition: all 0.3s ease;">Ir a WhatsApp</button>
-                            </div>
-                        </MudCarouselItem>
-
-                        <!-- Slide 2: Noticias -->
-                        <MudCarouselItem Transition="Transition.Slide">
-                            <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 40px; position: relative; z-index: 2;">
-                                <span class="badge" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); color: white; padding: 8px 15px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: inline-block; width: max-content; border: 1px solid rgba(255,255,255,0.3);">Noticias</span>
-                                <MudIcon Icon="@Icons.Material.Filled.Article" Style="font-size: 60px; color: white; margin-bottom: 15px;" />
-                                <h3 style="color: white; font-weight: 800; font-size: 1.8rem; line-height: 1.2; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Conoce la sección de Noticias</h3>
-                                <p style="color: rgba(255,255,255,0.95); font-size: 1.05rem; line-height: 1.5; margin-bottom: 20px;">Mantente informado de los últimos comunicados, eventos y acontecimientos importantes en Santiago Papasquiaro.</p>
-                                <button @onclick='() => NavManager.NavigateTo("/noticias", forceLoad: true)' class="slider-action-btn" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 10px 20px; border-radius: 30px; font-weight: 700; width: fit-content; transition: all 0.3s ease;">Ver Noticias</button>
-                            </div>
-                        </MudCarouselItem>
-
-                        <!-- Slide 3: Emprendimientos -->
-                        <MudCarouselItem Transition="Transition.Slide">
-                            <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 40px; position: relative; z-index: 2;">
-                                <span class="badge" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); color: white; padding: 8px 15px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: inline-block; width: max-content; border: 1px solid rgba(255,255,255,0.3);">Emprendimientos</span>
-                                <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 60px; color: white; margin-bottom: 15px;" />
-                                <h3 style="color: white; font-weight: 800; font-size: 1.8rem; line-height: 1.2; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Apoya el Comercio Local</h3>
-                                <p style="color: rgba(255,255,255,0.95); font-size: 1.05rem; line-height: 1.5; margin-bottom: 20px;">Descubre y apoya a los negocios locales y emprendedores de nuestra comunidad en nuestro catálogo interactivo.</p>
-                                <button @onclick='() => NavManager.NavigateTo("/emprendimientos", forceLoad: true)' class="slider-action-btn" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 10px 20px; border-radius: 30px; font-weight: 700; width: fit-content; transition: all 0.3s ease;">Ver Emprendimientos</button>
-                            </div>
-                        </MudCarouselItem>
-
-                        <!-- Slide 4: Trámites -->
-                        <MudCarouselItem Transition="Transition.Slide">
-                            <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 40px; position: relative; z-index: 2;">
-                                <span class="badge" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); color: white; padding: 8px 15px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: inline-block; width: max-content; border: 1px solid rgba(255,255,255,0.3);">Trámites</span>
-                                <MudIcon Icon="@Icons.Material.Filled.Assignment" Style="font-size: 60px; color: white; margin-bottom: 15px;" />
-                                <h3 style="color: white; font-weight: 800; font-size: 1.8rem; line-height: 1.2; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Catálogo de Trámites</h3>
-                                <p style="color: rgba(255,255,255,0.95); font-size: 1.05rem; line-height: 1.5; margin-bottom: 20px;">Consulta requisitos, costos y ubicaciones de los trámites municipales en un solo lugar y de forma transparente.</p>
-                                <button @onclick='() => NavManager.NavigateTo("/tramites", forceLoad: true)' class="slider-action-btn" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 10px 20px; border-radius: 30px; font-weight: 700; width: fit-content; transition: all 0.3s ease;">Ver Trámites</button>
-                            </div>
-                        </MudCarouselItem>
-                    </MudCarousel>
-                </div>
-            </div>
-
-            <!-- Eventos Destacados -->
-            @if (destacados != null && destacados.Any())
+        <h2 id="accesos-titulo" class="home-h2" data-revelar>Accesos rápidos</h2>
+        <ul class="home-accesos">
+            @foreach (var acceso in Accesos)
             {
-                <div class="col-lg-6 mb-4">
-                    <MudCarousel Class="mud-width-full" Style="height: 100%; min-height: 420px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); color: white;" ShowArrows="@(destacados.Count > 1)" ShowBullets="@(destacados.Count > 1)" AutoCycle="true" EnableSwipeGesture="true" TData="object">
-                        @foreach (var ev in destacados)
-                        {
-                            <MudCarouselItem Transition="Transition.Slide">
-                                <div class="destacado-card evento-destacado" style="border-radius: 20px; overflow: hidden; height: 100%; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.3s ease; position: relative;" @onclick='() => NavManager.NavigateTo($"/eventos/{ev.iIdEvento}", forceLoad: true)'>
-                                    
-                                    <!-- Imagen de Fondo Absoluto -->
-                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;">
-                                        <img src="@(string.IsNullOrEmpty(ev.vchImagenPortada) ? "images/default-evento.jpg" : ev.vchImagenPortada)" alt="@ev.vchNombre" style="width: 100%; height: 100%; object-fit: cover; object-position: center 25%; transition: transform 0.5s ease;" />
-                                    </div>
-                                    
-                                    <!-- Gradiente para Texto -->
-                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.9) 100%); z-index: 2;"></div>
-
-                                    <!-- Etiqueta Fecha -->
-                                    @if (ev.dtFechaInicio != null && ev.dtFechaInicio != DateTime.MinValue)
-                                    {
-                                        <div style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); padding: 10px 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 3;">
-                                            <div style="color: #d81b60; font-weight: 900; font-size: 1.4rem; line-height: 1;">@ev.dtFechaInicio.Day</div>
-                                            <div style="color: #4a148c; font-weight: 800; font-size: 0.8rem; text-transform: uppercase;">@ev.dtFechaInicio.ToString("MMM", new System.Globalization.CultureInfo("es-MX"))</div>
-                                        </div>
-                                    }
-
-                                    <!-- Contenido Inferior -->
-                                    <div class="evento-info" style="padding: 30px 30px 45px 30px; display: flex; flex-direction: column; position: relative; z-index: 3; margin-top: auto;">
-                                        <span style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); color: white; padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: inline-block; width: max-content; border: 1px solid rgba(255,255,255,0.3);">Evento Destacado</span>
-                                        <h3 style="color: white; font-weight: 800; font-size: 1.4rem; line-height: 1.3; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">@ev.vchNombre</h3>
-                                        
-                                        <div style="margin-bottom: 8px; display: flex; align-items: flex-start; color: rgba(255,255,255,0.95); font-size: 0.95rem;">
-                                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Style="color: #ffb4a2; font-size: 18px; margin-right: 8px; margin-top: 2px;" />
-                                            <span style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">@(string.IsNullOrEmpty(ev.vchLugar) ? "Por confirmar" : ev.vchLugar)</span>
-                                        </div>
-                                        <div style="margin-bottom: 20px; display: flex; align-items: center; color: rgba(255,255,255,0.95); font-size: 0.95rem;">
-                                            <MudIcon Icon="@Icons.Material.Filled.ConfirmationNumber" Style="color: #ffb4a2; font-size: 18px; margin-right: 8px;" />
-                                            <span style="text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Costo: <strong style="color: white;">@(string.IsNullOrEmpty(ev.vchCostoTexto) ? "Entrada Libre" : ev.vchCostoTexto)</strong></span>
-                                        </div>
-                                        
-                                        <div>
-                                            <button style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 10px 25px; border-radius: 30px; width: 100%; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; gap: 8px; font-weight: 700;" class="slider-action-btn">
-                                                Ver Detalles <MudIcon Icon="@Icons.Material.Filled.Event" Style="font-size: 18px;" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </MudCarouselItem>
-                        }
-                    </MudCarousel>
-                </div>
+                <li data-revelar>
+                    <a href="@acceso.Href" class="home-acceso">
+                        <span class="home-acceso-icono"><MudIcon Icon="@acceso.Icono" /></span>
+                        <span class="home-acceso-texto">
+                            <span class="home-acceso-titulo">@acceso.Titulo</span>
+                            <span class="home-acceso-desc">@acceso.Descripcion</span>
+                        </span>
+                    </a>
+                </li>
             }
-        </div>
-    </div>
-</section>
-
-<!-- ***** Módulos Principales ***** -->
-<section class="section home-feature" style="margin-top: 40px; position: relative; z-index: 10;">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="row justify-content-center">
-                    <!-- Trámites -->
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/tramites", forceLoad: true)' style="cursor: pointer;">
-                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
-                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Large" />
-                            </div>
-                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Catálogo de Trámites</h5>
-                            <p>Consulta requisitos, costos y ubicaciones de los trámites municipales en un solo lugar y de forma transparente.</p>
-                        </div>
-                    </div>
-                    <!-- Noticias -->
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/noticias", forceLoad: true)' style="cursor: pointer;">
-                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
-                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                                <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Primary" Size="Size.Large" />
-                            </div>
-                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Noticias y Avisos</h5>
-                            <p>Mantente informado sobre los comunicados oficiales, eventos y noticias relevantes de Santiago Papasquiaro.</p>
-                        </div>
-                    </div>
-                    <!-- Chatbot Info -->
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick="OpenChatbot" style="cursor: pointer;">
-                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
-                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                                <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Primary" Size="Size.Large" />
-                            </div>
-                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Inteligencia Artificial</h5>
-                            <p>Nuestro chatbot responde al instante a tus preguntas mediante lenguaje natural. ¡Pruébalo ahora mismo!</p>
-                        </div>
-                    </div>
-                    <!-- Emprendimientos -->
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/emprendimientos", forceLoad: true)' style="cursor: pointer;">
-                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
-                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                                <MudIcon Icon="@Icons.Material.Filled.Storefront" Color="Color.Primary" Size="Size.Large" />
-                            </div>
-                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Emprendimientos</h5>
-                            <p>Descubre y apoya a los negocios locales y emprendedores de nuestra comunidad en nuestro catálogo interactivo.</p>
-                        </div>
-                    </div>
-                    <!-- WhatsApp -->
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick="OpenWhatsAppInfo" style="cursor: pointer;">
-                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
-                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                                <MudIcon Icon="@Icons.Material.Filled.Chat" Color="Color.Primary" Size="Size.Large" />
-                            </div>
-                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">WhatsApp Bot</h5>
-                            <p>Comunícate con nuestro asistente virtual directamente desde WhatsApp de forma rápida, sencilla y segura.</p>
-                        </div>
-                    </div>
-                    <!-- Eventos -->
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4" @onclick='() => NavManager.NavigateTo("/eventos", forceLoad: true)' style="cursor: pointer;">
-                        <div class="features-small-item" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
-                            <div class="icon" style="background: #fce4ec; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                                <MudIcon Icon="@Icons.Material.Filled.Event" Color="Color.Primary" Size="Size.Large" />
-                            </div>
-                            <h5 class="features-title" style="color: #880e4f; font-weight: 700;">Eventos</h5>
-                            <p>Descubre los próximos eventos, festivales y actividades culturales en Santiago Papasquiaro.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- ***** Módulos End ***** -->
-
-<!-- ***** CTA Registro Emprendimiento ***** -->
-<section class="section js-dynamic-bg" style="padding: 60px 0; position: relative; overflow: hidden; margin-top: 40px;">
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(216,27,96,0.9), rgba(136,14,79,0.9)); z-index: 1;"></div>
-    
-    <div class="container" style="position: relative; z-index: 2;">
-        <div class="row align-items-center">
-            <div class="col-lg-8 col-md-12 col-sm-12 text-lg-start text-center mb-lg-0 mb-4">
-                <span class="badge" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); color: white; padding: 8px 15px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: inline-block; border: 1px solid rgba(255,255,255,0.3);">¡Nuevo Servicio!</span>
-                <h2 style="color: white; font-weight: 800; font-size: clamp(1.8rem, 4vw, 2.5rem); line-height: 1.2; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">¿Tienes un negocio en Santiago Papasquiaro?</h2>
-                <p style="color: rgba(255,255,255,0.9); font-size: 1.15rem; font-weight: 300; line-height: 1.5; margin-bottom: 0; text-shadow: 0 1px 5px rgba(0,0,0,0.1);">
-                    Regístralo gratis en nuestro catálogo digital interactivo, sube tus productos y llega a más clientes a través de nuestra plataforma oficial.
-                </p>
-            </div>
-            <div class="col-lg-4 col-md-12 col-sm-12 text-lg-end text-center">
-                <button @onclick='() => NavManager.NavigateTo("/registro-emprendimiento")' style="background: white; color: #880e4f; padding: 15px 35px; border-radius: 30px; font-size: 1.15rem; font-weight: 700; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3); cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 10px;" class="cta-registro-btn">
-                    <MudIcon Icon="@Icons.Material.Filled.Storefront" />
-                    Registrar mi Negocio
+            <li data-revelar>
+                <button type="button" class="home-acceso" @onclick='() => Sitio.IrASeccionAsync("contacto")'>
+                    <span class="home-acceso-icono"><MudIcon Icon="@Icons.Material.Rounded.MarkunreadMailbox" /></span>
+                    <span class="home-acceso-texto">
+                        <span class="home-acceso-titulo">Buzón ciudadano</span>
+                        <span class="home-acceso-desc">Quejas y sugerencias</span>
+                    </span>
                 </button>
-            </div>
-        </div>
+            </li>
+        </ul>
     </div>
 </section>
-<!-- ***** CTA Registro Emprendimiento End ***** -->
 
-<InstallAppButton Variant="section" />
-
-<!-- ***** Datos Curiosos (Informacion Local) - Diseño Edge-to-Edge ***** -->
-@if (datosCuriosos != null && datosCuriosos.Any())
+<!-- Lo más reciente: noticias y eventos -->
+@if (_cargando || noticias.Any() || eventos.Any())
 {
-<section class="innovative-section position-relative py-0 overflow-hidden">
-    
-    <!-- Elementos decorativos animados en el fondo -->
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="noise-overlay"></div>
+    <section class="home-seccion home-seccion-rosa" aria-labelledby="recientes-titulo">
+        <div class="container">
+            <h2 id="recientes-titulo" class="home-h2" data-revelar>Lo más reciente</h2>
 
-    <!-- Contenedor principal que respeta el flujo de caja -->
-    <div class="container-fluid px-0 h-100 position-relative" style="z-index: 10; padding-top: 40px; padding-bottom: 20px;">
-        
-        <!-- Título Integrado (sin solapamiento en móvil) -->
-        <div class="row w-100 mx-0 mb-3">
-            <div class="col-12 px-4 px-lg-5 text-center text-lg-start">
-                <h2 class="hero-gradient-title mb-0" style="font-family: 'Montaser Arabic', sans-serif;">
-                    <span style="color: #9b45c9;">Descubre</span> <span style="color: #cd4472;">Nuestro Municipio</span>
-                </h2>
-            </div>
-        </div>
-
-        <MudCarousel Class="innovative-carousel" Style="height: auto; min-height: 650px; width: 100%; padding-bottom: 40px;" ShowArrows="true" ShowBullets="true" AutoCycle="true" EnableSwipeGesture="true" TData="object">
-            @foreach (var dato in datosCuriosos.Take(10))
+            @if (_cargando)
             {
-                <MudCarouselItem Transition="Transition.Slide">
-                    <div class="row g-0 h-100 w-100 align-items-center">
-                        
-                        <!-- Columna Izquierda: Espaciador en desktop -->
-                        <div class="col-xl-1 col-lg-1 d-none d-lg-block"></div>
-                        
-                        <!-- Columna de Contenido -->
-                        <div class="col-xl-5 col-lg-6 col-md-12 content-wrapper px-4 px-lg-0" style="z-index: 10;">
-                            <div class="glass-content-panel">
-                                <div class="d-flex align-items-center mb-4">
-                                    <div class="category-pill-neon">
-                                        <MudIcon Icon="@Icons.Material.Filled.Explore" Size="Size.Small" Class="mr-2" />
-                                        @dato.nvchCategoria
-                                    </div>
-                                </div>
-                                
-                                <h3 class="display-title">@dato.nvchTitulo</h3>
-                                
-                                <div class="divider-glow"></div>
-                                
-                                <p class="lead-desc">@dato.nvchDescripcionCorta</p>
-                                <p class="body-desc">@dato.nvchContenidoDetallado</p>
-                                
-                                <button @onclick="OpenChatbot" class="btn-cyber-action mt-4 group">
-                                    <span class="btn-text">Pregúntale a la IA</span>
-                                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Class="btn-icon-right ml-2" />
-                                    <div class="btn-glow"></div>
-                                </button>
+                <div class="home-tarjetas" aria-hidden="true">
+                    @for (var i = 0; i < 3; i++)
+                    {
+                        <div class="home-tarjeta home-esqueleto">
+                            <div class="home-tarjeta-imagen"></div>
+                            <div class="home-tarjeta-cuerpo">
+                                <span class="home-esqueleto-linea corta"></span>
+                                <span class="home-esqueleto-linea"></span>
+                                <span class="home-esqueleto-linea"></span>
                             </div>
                         </div>
-
-                        <!-- Arte Visual Derecho (Sale de la pantalla creando profundidad) -->
-                        <div class="col-xl-6 col-lg-5 d-none d-lg-flex position-relative h-100 align-items-center justify-content-end" style="z-index: 5;">
-                            <!-- Texto Gigante como Marca de Agua -->
-                            <div class="watermark-text">@dato.nvchCategoria</div>
-                            
-                            <!-- Icono Flotante que se desborda -->
-                            <div class="giant-icon-showcase">
-                                <MudIcon Icon="@GetCategoryIcon(dato.nvchCategoria)" Class="floating-giant-icon" />
-                            </div>
-                        </div>
-                        
-                    </div>
-                </MudCarouselItem>
+                    }
+                </div>
             }
-        </MudCarousel>
-    </div>
-</section>
 
-}
-<!-- ***** Datos Curiosos End ***** -->
-
-<!-- ***** Beneficios Section ***** -->
-<section class="section padding-top-70 padding-bottom-0" id="beneficios">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-5 col-md-12 col-sm-12 align-self-center">
-                <!-- Usaremos un icono grande o imagen representativa -->
-                <div style="background: linear-gradient(135deg, #fce4ec, #f8bbd0); border-radius: 20px; padding: 40px; text-align: center;">
-                    <MudIcon Icon="@Icons.Material.Filled.PhonelinkRing" Style="font-size: 150px; color: #d81b60;" />
+            @if (noticias.Any())
+            {
+                <div class="home-subencabezado" data-revelar>
+                    <h3 class="home-h3">Noticias</h3>
+                    <a href="/noticias" class="home-ver-todo">Ver todas <MudIcon Icon="@Icons.Material.Rounded.ArrowForward" /></a>
                 </div>
-            </div>
-            <div class="col-lg-1"></div>
-            <div class="col-lg-6 col-md-12 col-sm-12 align-self-center mobile-top-fix">
-                <div class="left-heading">
-                    <h2 class="section-title" style="color: #880e4f;">Cero Filas, Cero Complicaciones</h2>
-                </div>
-                <div class="left-text">
-                    <p>Santiago Papasquiaro está comprometido con la modernización de la atención ciudadana. Con <strong>Santiago Conecta</strong>, la administración municipal está al alcance de tu mano.</p>
-                    <ul style="list-style: none; padding-left: 0; margin-top: 20px;">
-                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Disponibilidad Total:</strong> Operativo 24 horas al día, 365 días al año.</li>
-                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Respuestas Inmediatas:</strong> Olvídate de los tiempos de espera telefónicos.</li>
-                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Lenguaje Natural:</strong> Pregunta como si hablaras con un humano.</li>
-                        <li style="margin-bottom: 15px;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Class="mr-2" /> <strong>Transparencia:</strong> Acceso equitativo a información actualizada de trámites.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="row mt-5">
-            <div class="col-lg-12">
-                <div class="hr"></div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- ***** Beneficios End ***** -->
-
-<!-- ***** Contact Us (Buzón Ciudadano) ***** -->
-<section class="section colored" id="contacto" style="background-color: #f8f9fa;">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="center-heading">
-                    <h2 class="section-title" style="color: #880e4f;">Buzón Ciudadano</h2>
-                </div>
-            </div>
-            <div class="offset-lg-3 col-lg-6">
-                <div class="center-text">
-                    <p>Tu opinión es importante para nosotros. Utiliza este espacio para enviarnos tus comentarios, sugerencias o reportes directos.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-lg-4 col-md-6 col-sm-12">
-                <h5 class="margin-bottom-30" style="color: #880e4f;">Información de Contacto</h5>
-                <div class="contact-text">
-                    <p>
-                        <strong>Dirección de correo:</strong><br>
-                        santiagoconecta01@gmail.com<br>
-                    </p>
-                    <p>
-                        <strong>Teléfonos Oficiales:</strong><br>
-                        674 106 5612 y 332 834 0146
-                    </p>
-                    <p><strong>Atención Ciudadana:</strong> Lunes a Viernes de 8:00 a 15:00 hrs.</p>
-                </div>
-            </div>
-            <div class="col-lg-8 col-md-6 col-sm-12">
-                <div class="contact-form" style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
-                    @if (!string.IsNullOrEmpty(_successMessage))
+                <div class="home-tarjetas">
+                    @for (var i = 0; i < noticias.Count; i++)
                     {
-                        <div class="alert alert-success" role="alert" style="border-radius: 12px; padding: 15px; margin-bottom: 20px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
-                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="mr-2" /> @_successMessage
-                        </div>
-                    }
-                    @if (!string.IsNullOrEmpty(_errorMessage))
-                    {
-                        <div class="alert alert-danger" role="alert" style="border-radius: 12px; padding: 15px; margin-bottom: 20px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
-                            <MudIcon Icon="@Icons.Material.Filled.Error" Class="mr-2" /> @_errorMessage
-                        </div>
-                    }
-                    <EditForm Model="@contactModel" OnValidSubmit="HandleSubmit">
-                        <DataAnnotationsValidator />
-                        <div class="row">
-                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
-                                <MudTextField @bind-Value="contactModel.Name" Label="Nombre Completo" Variant="Variant.Outlined" Required="true" />
-                            </div>
-                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
-                                <MudTextField @bind-Value="contactModel.Email" Label="Correo Electrónico" Variant="Variant.Outlined" Required="true" />
-                            </div>
-                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
-                                <MudTextField @bind-Value="contactModel.Phone" Label="Teléfono (opcional)" Variant="Variant.Outlined" />
-                            </div>
-                            <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
-                                <MudSelect T="string" @bind-Value="contactModel.Category" Label="Categoría" Variant="Variant.Outlined" Required="true">
-                                    <MudSelectItem Value="@("Queja")" />
-                                    <MudSelectItem Value="@("Sugerencia")" />
-                                    <MudSelectItem Value="@("Reporte")" />
-                                    <MudSelectItem Value="@("Solicitud")" />
-                                    <MudSelectItem Value="@("Otro")" />
-                                </MudSelect>
-                            </div>
-                            <div class="col-lg-12 mb-3">
-                                <MudTextField @bind-Value="contactModel.Message" Label="Tu Mensaje, Queja o Sugerencia" Variant="Variant.Outlined" Lines="5" Required="true" />
-                            </div>
-                            <div class="col-lg-12">
-                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" Style="border-radius: 30px;" Disabled="@_isSubmitting">
-                                    @if (_isSubmitting)
+                        var noticia = noticias[i];
+                        <article class="@(i == 0 ? "home-tarjeta home-tarjeta-destacada" : "home-tarjeta")" data-revelar>
+                            <a href="@($"/noticias/{noticia.iIdNoticia}")" class="home-tarjeta-enlace">
+                                <div class="home-tarjeta-imagen">
+                                    @if (!string.IsNullOrWhiteSpace(noticia.vchImagenPortada))
                                     {
-                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                        @("Enviando...")
+                                        <img src="@noticia.vchImagenPortada" alt="@noticia.vchTitulo" width="640" height="360" loading="lazy" decoding="async" />
                                     }
                                     else
                                     {
-                                        <MudIcon Icon="@Icons.Material.Filled.Send" Class="mr-2" />
-                                        @("Enviar Mensaje")
+                                        <MudIcon Icon="@Icons.Material.Rounded.Newspaper" Class="home-tarjeta-placeholder" />
                                     }
-                                </MudButton>
-                            </div>
-                        </div>
-                    </EditForm>
+                                    @if (i == 0)
+                                    {
+                                        <span class="home-insignia">Lo último</span>
+                                    }
+                                </div>
+                                <div class="home-tarjeta-cuerpo">
+                                    <span class="home-etiqueta">@(noticia.Categoria?.vchNombre ?? "Noticia")</span>
+                                    <h4 class="home-h4">@noticia.vchTitulo</h4>
+                                    <time class="home-meta" datetime="@noticia.dtFechaPublicacion.ToString("yyyy-MM-dd")">
+                                        @noticia.dtFechaPublicacion.ToString("d 'de' MMMM yyyy", EsMx)
+                                    </time>
+                                </div>
+                            </a>
+                        </article>
+                    }
                 </div>
+            }
+
+            @if (eventos.Any())
+            {
+                <div class="home-subencabezado" data-revelar>
+                    <h3 class="home-h3">Próximos eventos</h3>
+                    <a href="/eventos" class="home-ver-todo">Ver agenda <MudIcon Icon="@Icons.Material.Rounded.ArrowForward" /></a>
+                </div>
+                <div class="home-tarjetas">
+                    @for (var i = 0; i < eventos.Count; i++)
+                    {
+                        var evento = eventos[i];
+                        <article class="@(i == 0 ? "home-tarjeta home-tarjeta-destacada" : "home-tarjeta")" data-revelar>
+                            <a href="@($"/eventos/{evento.iIdEvento}")" class="home-tarjeta-enlace">
+                                <div class="home-tarjeta-imagen">
+                                    @if (!string.IsNullOrWhiteSpace(evento.vchImagenPortada))
+                                    {
+                                        <img src="@evento.vchImagenPortada" alt="@evento.vchNombre" width="640" height="360" loading="lazy" decoding="async" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Rounded.Event" Class="home-tarjeta-placeholder" />
+                                    }
+                                    @if (i == 0)
+                                    {
+                                        <span class="home-insignia">Próximo</span>
+                                    }
+                                    @if (evento.dtFechaInicio != DateTime.MinValue)
+                                    {
+                                        <span class="home-fecha" aria-hidden="true">
+                                            <span class="home-fecha-dia">@evento.dtFechaInicio.Day</span>
+                                            <span class="home-fecha-mes">@evento.dtFechaInicio.ToString("MMM", EsMx)</span>
+                                        </span>
+                                    }
+                                </div>
+                                <div class="home-tarjeta-cuerpo">
+                                    <span class="home-etiqueta">@(string.IsNullOrWhiteSpace(evento.vchCostoTexto) ? "Entrada libre" : evento.vchCostoTexto)</span>
+                                    <h4 class="home-h4">@evento.vchNombre</h4>
+                                    <p class="home-meta">
+                                        <time datetime="@evento.dtFechaInicio.ToString("yyyy-MM-ddTHH:mm")">@evento.dtFechaInicio.ToString("dddd d 'de' MMMM, HH:mm", EsMx)</time>
+                                        @if (!string.IsNullOrWhiteSpace(evento.vchLugar))
+                                        {
+                                            <span> · @evento.vchLugar</span>
+                                        }
+                                    </p>
+                                </div>
+                            </a>
+                        </article>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<!-- Invitación para negocios -->
+<section class="home-seccion home-seccion-blanca" aria-labelledby="negocio-titulo">
+    <div class="container" data-revelar>
+        <div class="home-negocio">
+            <div>
+                <h2 id="negocio-titulo" class="home-h2 sin-margen">¿Tienes un negocio en Santiago?</h2>
+                <p class="home-negocio-texto">Regístralo gratis en el catálogo digital, sube tus productos y llega a más clientes.</p>
+            </div>
+            <a href="/registro-emprendimiento" class="home-boton">
+                <MudIcon Icon="@Icons.Material.Rounded.AddBusiness" /> Registrar mi negocio
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Descubre el municipio (datos curiosos) -->
+@if (datosCuriosos.Any())
+{
+    <section class="home-seccion home-seccion-oscura" aria-labelledby="descubre-titulo">
+        <div class="container">
+            <h2 id="descubre-titulo" class="home-h2" data-revelar>Descubre Santiago Papasquiaro</h2>
+            <div class="home-tarjetas">
+                @foreach (var dato in datosCuriosos)
+                {
+                    <article class="home-dato" data-revelar>
+                        <div class="home-dato-tarjeta">
+                        <span class="home-acceso-icono"><MudIcon Icon="@IconoCategoria(dato.nvchCategoria)" /></span>
+                        <span class="home-etiqueta">@dato.nvchCategoria</span>
+                        <h3 class="home-h4">@dato.nvchTitulo</h3>
+                        <p class="home-dato-texto">@dato.nvchDescripcionCorta</p>
+                        <button type="button" class="home-enlace-accion" @onclick="Asistente.AbrirAsync">
+                            Pregúntale a la IA <MudIcon Icon="@Icons.Material.Rounded.AutoAwesome" />
+                        </button>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Buzón ciudadano -->
+<section class="home-seccion home-seccion-rosa" id="contacto" aria-labelledby="buzon-titulo">
+    <div class="container">
+        <div class="home-buzon">
+            <div class="home-buzon-info" data-revelar>
+                <h2 id="buzon-titulo" class="home-h2">Buzón ciudadano</h2>
+                <p class="home-buzon-texto">Envíanos tus comentarios, sugerencias o reportes. Te respondemos por correo.</p>
+                <ul class="home-contacto">
+                    <li>
+                        <MudIcon Icon="@Icons.Material.Rounded.Email" />
+                        <a href="mailto:santiagoconecta01@gmail.com">santiagoconecta01@gmail.com</a>
+                    </li>
+                    <li>
+                        <MudIcon Icon="@Icons.Material.Rounded.Phone" />
+                        <span><a href="tel:+526741065612">674 106 5612</a> · <a href="tel:+523328340146">332 834 0146</a></span>
+                    </li>
+                    <li>
+                        <MudIcon Icon="@Icons.Material.Rounded.Schedule" />
+                        <span>Lunes a viernes, 8:00 a 15:00 h</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="home-buzon-form" data-revelar>
+                @if (!string.IsNullOrEmpty(_successMessage))
+                {
+                    <p class="home-aviso exito" role="status">
+                        <MudIcon Icon="@Icons.Material.Rounded.CheckCircle" /> @_successMessage
+                    </p>
+                }
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <p class="home-aviso error" role="alert">
+                        <MudIcon Icon="@Icons.Material.Rounded.Error" /> @_errorMessage
+                    </p>
+                }
+                <EditForm Model="@contactModel" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="home-form-grid">
+                        <MudTextField @bind-Value="contactModel.Name" For="@(() => contactModel.Name)" Label="Nombre completo" Variant="Variant.Outlined" />
+                        <MudTextField @bind-Value="contactModel.Email" For="@(() => contactModel.Email)" Label="Correo electrónico" Variant="Variant.Outlined" InputType="InputType.Email" />
+                        <MudTextField @bind-Value="contactModel.Phone" Label="Teléfono (opcional)" Variant="Variant.Outlined" InputType="InputType.Telephone" />
+                        <MudSelect T="string" @bind-Value="contactModel.Category" Label="Categoría" Variant="Variant.Outlined">
+                            @foreach (var categoria in Categorias)
+                            {
+                                <MudSelectItem Value="@categoria">@categoria</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudTextField @bind-Value="contactModel.Message" For="@(() => contactModel.Message)" Label="Tu mensaje" Variant="Variant.Outlined" Lines="4" Class="home-form-completo" />
+                    </div>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                               FullWidth="true" Class="home-form-enviar" Disabled="@_isSubmitting">
+                        @if (_isSubmitting)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            @("Enviando...")
+                        }
+                        else
+                        {
+                            @("Enviar mensaje")
+                        }
+                    </MudButton>
+                </EditForm>
             </div>
         </div>
     </div>
 </section>
 
-@if (_showPromoBanner)
-{
-    <div class="promo-banner-bottom">
-        <div class="promo-content">
-            <div class="promo-text">
-                <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="vertical-align: middle; margin-right: 5px;" />
-                <strong>¡Únete a nuestra plataforma!</strong> Registra tu emprendimiento local totalmente gratis y llega a más clientes.
-            </div>
-            <div class="promo-actions">
-                <MudButton Variant="Variant.Filled" Color="Color.Warning" Size="Size.Small" OnClick='() => NavManager.NavigateTo("/registro-emprendimiento")' Style="font-weight: bold; border-radius: 20px; white-space: nowrap;">REGISTRAR AHORA</MudButton>
-                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="() => _showPromoBanner = false" />
-            </div>
-        </div>
-    </div>
-}
+<style>
+    /* Modo captura de Instagram (4:5): debe ser global para ocultar el header y el footer del MainLayout */
+    @@media (aspect-ratio: 4/5) {
+        .header-area, footer { display: none !important; }
+    }
+</style>
 
 @code {
-    private bool _showPromoBanner = true;
-    private ContactModel contactModel = new();
-    private bool _isSubmitting = false;
-    private string _successMessage = string.Empty;
-    private string _errorMessage = string.Empty;
-    private Noticia latestNoticia;
-    private List<Evento> destacados = new();
+    private ElementReference _hero;
+    private ElementReference _canvas;
+    private ElementReference _glow;
+    private const string WhatsAppUrl = "https://wa.me/5212206490951";
+    private static readonly CultureInfo EsMx = new("es-MX");
+    private static readonly string[] Categorias = { "Queja", "Sugerencia", "Reporte", "Solicitud", "Otro" };
+
+    private sealed record Acceso(string Titulo, string Descripcion, string Icono, string Href);
+
+    private static readonly Acceso[] Accesos =
+    {
+        new("Trámites", "Requisitos y costos", Icons.Material.Rounded.Description, "/tramites"),
+        new("Noticias", "Avisos oficiales", Icons.Material.Rounded.Newspaper, "/noticias"),
+        new("Eventos", "Agenda cultural", Icons.Material.Rounded.Event, "/eventos"),
+        new("Emprendimientos", "Negocios locales", Icons.Material.Rounded.Storefront, "/emprendimientos"),
+        new("Feed", "Lo más reciente", Icons.Material.Rounded.DynamicFeed, "/feed")
+    };
+
+    private string _busqueda = string.Empty;
+    private bool _cargando = true;
+    private List<Noticia> noticias = new();
+    private List<Evento> eventos = new();
     private List<InformacionLocal> datosCuriosos = new();
 
+    private ContactModel contactModel = new();
+    private bool _isSubmitting;
+    private string _successMessage = string.Empty;
+    private string _errorMessage = string.Empty;
+
     protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(CargarNoticiasAsync(), CargarEventosAsync(), CargarDatosCuriososAsync());
+        _cargando = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Sitio.IniciarParticulasAsync(_hero, _canvas, _glow);
+            await Sitio.IniciarReveladoAsync(_hero);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Sitio.DetenerParticulasAsync();
+        await Sitio.DetenerReveladoAsync();
+    }
+
+    private async Task CargarNoticiasAsync()
     {
         try
         {
             var response = await dataNoticias.PostGetAllNoticias(new PostGetNoticias { bActivo = true });
-            if (response != null && response.IsSuccess && response.Data != null)
+            if (response?.IsSuccess == true && response.Data != null)
             {
-                latestNoticia = response.Data.OrderByDescending(x => x.dtFechaPublicacion).FirstOrDefault();
+                noticias = response.Data.OrderByDescending(x => x.dtFechaPublicacion).Take(3).ToList();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error cargando última noticia: {ex.Message}");
+            Console.WriteLine($"Error cargando noticias: {ex.Message}");
         }
+    }
 
+    private async Task CargarEventosAsync()
+    {
         try
         {
-            var evResp = await dataEventos.PostGetEventos(new PostGetEventos { bDestacado = true, bEstatus = true });
-            if (evResp != null && evResp.IsSuccess && evResp.Data != null)
+            var response = await dataEventos.PostGetEventos(new PostGetEventos { bDestacado = true, bEstatus = true });
+            if (response?.IsSuccess == true && response.Data != null)
             {
-                destacados = evResp.Data.ToList();
+                var hoy = DateTime.Today;
+                var proximos = response.Data.Where(e => (e.dtFechaFin ?? e.dtFechaInicio) >= hoy).OrderBy(e => e.dtFechaInicio);
+                eventos = (proximos.Any() ? proximos : response.Data.OrderByDescending(e => e.dtFechaInicio)).Take(3).ToList();
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error cargando eventos destacados: {ex.Message}");
         }
+    }
 
+    private async Task CargarDatosCuriososAsync()
+    {
         try
         {
-            var infoResp = await dataInformacionLocal.PostGetInformacionLocal(new PostGetInformacionLocal { bActivo = true });
-            if (infoResp != null && infoResp.IsSuccess && infoResp.Data != null)
+            var response = await dataInformacionLocal.PostGetInformacionLocal(new PostGetInformacionLocal { bActivo = true });
+            if (response?.IsSuccess == true && response.Data != null)
             {
-                datosCuriosos = infoResp.Data.ToList();
+                datosCuriosos = response.Data.OrderBy(_ => Random.Shared.Next()).Take(3).ToList();
             }
         }
         catch (Exception ex)
@@ -607,158 +435,27 @@
         }
     }
 
-    private string GetCategoryIcon(string category)
+    private void Buscar()
     {
-    if (string.IsNullOrEmpty(category)) return Icons.Material.Filled.Lightbulb;
-    
-    var cat = category.ToLower();
-    
-    if (cat.Contains("historia")) return Icons.Material.Filled.HistoryEdu;
-    if (cat.Contains("gastronomía") || cat.Contains("comida")) return Icons.Material.Filled.Restaurant;
-    if (cat.Contains("leyenda") || cat.Contains("mito")) return Icons.Material.Filled.AutoStories;
-    if (cat.Contains("turismo") || cat.Contains("lugar")) return Icons.Material.Filled.Map;
-    if (cat.Contains("cultura") || cat.Contains("arte") || cat.Contains("tradición")) return Icons.Material.Filled.Palette;
-    if (cat.Contains("naturaleza") || cat.Contains("flora") || cat.Contains("fauna")) return Icons.Material.Filled.Forest;
-    
-    return Icons.Material.Filled.Lightbulb; // Icono por defecto
-        }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+        var q = (_busqueda ?? string.Empty).Trim();
+        if (!string.IsNullOrWhiteSpace(q))
         {
-            var initScript = @"
-                const hero = document.getElementById('welcome');
-                const glow = document.getElementById('hero-glow');
-                const canvas = document.getElementById('hero-canvas');
-                
-                if (hero && glow && canvas) {
-                    const ctx = canvas.getContext('2d');
-                    let width, height;
-                    let particles = [];
-                    let mouse = { x: -1000, y: -1000 };
-
-                    function resize() {
-                        width = hero.clientWidth;
-                        height = hero.clientHeight;
-                        canvas.width = width;
-                        canvas.height = height;
-                    }
-                    window.addEventListener('resize', resize);
-                    resize();
-
-                    // Swipe / Scroll Fix para MudCarousel en móviles
-                    let tsX = 0; let tsY = 0;
-                    document.addEventListener('touchstart', function(e) {
-                        tsX = e.changedTouches[0].screenX;
-                        tsY = e.changedTouches[0].screenY;
-                    }, {passive: true, capture: true});
-                    
-                    document.addEventListener('touchmove', function(e) {
-                        if (e.target.closest('.mud-carousel') || e.target.closest('.mud-swipearea')) {
-                            let cx = e.changedTouches[0].screenX;
-                            let cy = e.changedTouches[0].screenY;
-                            if (Math.abs(cy - tsY) > Math.abs(cx - tsX)) {
-                                e.stopPropagation();
-                            }
-                        }
-                    }, {passive: true, capture: true});
-
-                    // Partículas
-                    class Particle {
-                        constructor() {
-                            this.x = Math.random() * width;
-                            this.y = Math.random() * height;
-                            this.vx = (Math.random() - 0.5) * 1;
-                            this.vy = (Math.random() - 0.5) * 1;
-                            this.radius = Math.random() * 2 + 1;
-                        }
-                        update() {
-                            // Interacción con linterna (mouse)
-                            let dx = mouse.x - this.x;
-                            let dy = mouse.y - this.y;
-                            let distance = Math.sqrt(dx * dx + dy * dy);
-                            
-                            // Efecto repulsión suave
-                            if (distance < 150) {
-                                let force = (150 - distance) / 150;
-                                this.vx -= (dx / distance) * force * 0.5;
-                                this.vy -= (dy / distance) * force * 0.5;
-                            }
-
-                            // Fricción y límite de velocidad
-                            this.vx *= 0.98;
-                            this.vy *= 0.98;
-                            
-                            // Movimiento natural base
-                            this.vx += (Math.random() - 0.5) * 0.1;
-                            this.vy += (Math.random() - 0.5) * 0.1;
-
-                            this.x += this.vx;
-                            this.y += this.vy;
-
-                            // Rebote en bordes
-                            if (this.x < 0 || this.x > width) this.vx *= -1;
-                            if (this.y < 0 || this.y > height) this.vy *= -1;
-                        }
-                        draw() {
-                            ctx.beginPath();
-                            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-                            ctx.fill();
-                        }
-                    }
-
-                    for (let i = 0; i < 60; i++) particles.push(new Particle());
-
-                    function animate() {
-                        ctx.clearRect(0, 0, width, height);
-                        
-                        // Conexiones
-                        for(let i=0; i<particles.length; i++){
-                            particles[i].update();
-                            particles[i].draw();
-                            for(let j=i; j<particles.length; j++){
-                                let dx = particles[i].x - particles[j].x;
-                                let dy = particles[i].y - particles[j].y;
-                                let dist = Math.sqrt(dx*dx + dy*dy);
-                                if(dist < 100){
-                                    ctx.beginPath();
-                                    ctx.strokeStyle = `rgba(255,255,255,${0.2 - dist/500})`;
-                                    ctx.lineWidth = 1;
-                                    ctx.moveTo(particles[i].x, particles[i].y);
-                                    ctx.lineTo(particles[j].x, particles[j].y);
-                                    ctx.stroke();
-                                }
-                            }
-                        }
-                        requestAnimationFrame(animate);
-                    }
-                    animate();
-
-                    hero.addEventListener('mousemove', (e) => {
-                        const rect = hero.getBoundingClientRect();
-                        mouse.x = e.clientX - rect.left;
-                        mouse.y = e.clientY - rect.top;
-                        
-                        // Glow Linterna
-                        glow.style.left = mouse.x + 'px';
-                        glow.style.top = mouse.y + 'px';
-                        glow.style.opacity = '1';
-                        // Hacer la linterna más fuerte
-                        glow.style.background = 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 180, 162, 0.15) 30%, transparent 70%)';
-                    });
-                    hero.addEventListener('mouseleave', () => {
-                        glow.style.opacity = '0';
-                        mouse.x = -1000;
-                        mouse.y = -1000;
-                    });
-                }
-            ";
-            try {
-                await JS.InvokeVoidAsync("eval", initScript);
-            } catch { }
+            NavManager.NavigateTo($"/buscar?q={Uri.EscapeDataString(q)}");
         }
+    }
+
+    private static string IconoCategoria(string? categoria)
+    {
+        var cat = categoria?.ToLowerInvariant() ?? string.Empty;
+
+        if (cat.Contains("historia")) return Icons.Material.Rounded.HistoryEdu;
+        if (cat.Contains("gastronom") || cat.Contains("comida")) return Icons.Material.Rounded.Restaurant;
+        if (cat.Contains("leyenda") || cat.Contains("mito")) return Icons.Material.Rounded.AutoStories;
+        if (cat.Contains("turismo") || cat.Contains("lugar")) return Icons.Material.Rounded.Map;
+        if (cat.Contains("cultura") || cat.Contains("arte") || cat.Contains("tradici")) return Icons.Material.Rounded.Palette;
+        if (cat.Contains("naturaleza") || cat.Contains("flora") || cat.Contains("fauna")) return Icons.Material.Rounded.Forest;
+
+        return Icons.Material.Rounded.Lightbulb;
     }
 
     private async Task HandleSubmit()
@@ -766,7 +463,6 @@
         _isSubmitting = true;
         _successMessage = string.Empty;
         _errorMessage = string.Empty;
-        StateHasChanged();
 
         try
         {
@@ -783,56 +479,38 @@
 
             if (result != null && result.IsSuccess)
             {
-                _successMessage = "Tu mensaje ha sido enviado exitosamente. ¡Gracias por tus comentarios!";
+                _successMessage = "Tu mensaje fue enviado. ¡Gracias por tus comentarios!";
                 contactModel = new();
             }
             else
             {
-                _errorMessage = result?.Message ?? "Ocurrió un error al enviar tu mensaje. Intenta de nuevo.";
+                _errorMessage = result?.Message ?? "No se pudo enviar tu mensaje. Intenta de nuevo.";
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _errorMessage = "Error de conexión. Por favor, intenta más tarde.";
         }
         finally
         {
             _isSubmitting = false;
-            StateHasChanged();
         }
-    }
-
-    private async Task OpenChatbot()
-    {
-        try {
-            await JS.InvokeVoidAsync("eval", "document.querySelector('.chatbot-container .pulse-animation')?.click()");
-        } catch { }
-    }
-
-    private async Task OpenWhatsAppInfo()
-    {
-        try {
-            await JS.InvokeVoidAsync("window.open", "https://wa.me/5212206490951", "_blank");
-        } catch { }
     }
 
     public class ContactModel
     {
+        [Required(ErrorMessage = "Escribe tu nombre.")]
         public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Escribe tu correo.")]
+        [EmailAddress(ErrorMessage = "El correo no es válido.")]
         public string Email { get; set; } = string.Empty;
+
         public string Phone { get; set; } = string.Empty;
+
         public string Category { get; set; } = "Sugerencia";
+
+        [Required(ErrorMessage = "Escribe tu mensaje.")]
         public string Message { get; set; } = string.Empty;
     }
 }
-
-<style>
-    /* =========================================
-       MODO CAPTURA INSTAGRAM (Proporción 4:5)
-       Esto debe estar aquí y no en el CSS aislado para poder ocultar 
-       los elementos globales del MainLayout (header y footer)
-       ========================================= */
-    @@media (aspect-ratio: 4/5) {
-        .header-area, footer { display: none !important; }
-    }
-</style>

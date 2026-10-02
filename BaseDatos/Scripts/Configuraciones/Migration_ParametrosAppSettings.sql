@@ -1,5 +1,5 @@
 /*
-** Migration: configuración de appsettings.json a dbo.Parametros
+** Migration: configuración de appsettings.json a SCIA.Parametros
 ** Date: 2026-10-01
 **
 ** Alias                               Valor1                                   Valor2
@@ -63,28 +63,28 @@ VALUES
 
 BEGIN TRAN;
 
-IF COLUMNPROPERTY(OBJECT_ID('dbo.Parametros'), 'iIdParametro', 'IsIdentity') = 1
+IF COLUMNPROPERTY(OBJECT_ID('SCIA.Parametros'), 'iIdParametro', 'IsIdentity') = 1
 BEGIN
-    INSERT INTO dbo.Parametros (iIdParametroPadre, nvchAlias, nvchNombre, nvchNombreEN, nvchDescripcion, nvchDescripcionEN, iSecuencia, bTieneValores, nvchValor1, nvchValor2, bHabilitado)
+    INSERT INTO SCIA.Parametros (iIdParametroPadre, nvchAlias, nvchNombre, nvchNombreEN, nvchDescripcion, nvchDescripcionEN, iSecuencia, bTieneValores, nvchValor1, nvchValor2, bHabilitado)
     SELECT NULL, N.nvchAlias, N.nvchNombre, N.nvchNombreEN, N.nvchDescripcion, N.nvchDescripcionEN, N.iSecuencia, 1, N.nvchValor1, N.nvchValor2, 1
     FROM @Nuevos N
-    WHERE NOT EXISTS (SELECT 1 FROM dbo.Parametros P WITH (UPDLOCK, HOLDLOCK) WHERE P.nvchAlias = N.nvchAlias);
+    WHERE NOT EXISTS (SELECT 1 FROM SCIA.Parametros P WITH (UPDLOCK, HOLDLOCK) WHERE P.nvchAlias = N.nvchAlias);
 END
 ELSE
 BEGIN
-    DECLARE @MaxId INT = (SELECT ISNULL(MAX(iIdParametro), 0) FROM dbo.Parametros WITH (UPDLOCK, HOLDLOCK));
+    DECLARE @MaxId INT = (SELECT ISNULL(MAX(iIdParametro), 0) FROM SCIA.Parametros WITH (UPDLOCK, HOLDLOCK));
 
-    INSERT INTO dbo.Parametros (iIdParametro, iIdParametroPadre, nvchAlias, nvchNombre, nvchNombreEN, nvchDescripcion, nvchDescripcionEN, iSecuencia, bTieneValores, nvchValor1, nvchValor2, bHabilitado)
+    INSERT INTO SCIA.Parametros (iIdParametro, iIdParametroPadre, nvchAlias, nvchNombre, nvchNombreEN, nvchDescripcion, nvchDescripcionEN, iSecuencia, bTieneValores, nvchValor1, nvchValor2, bHabilitado)
     SELECT @MaxId + ROW_NUMBER() OVER (ORDER BY N.nvchAlias), NULL, N.nvchAlias, N.nvchNombre, N.nvchNombreEN, N.nvchDescripcion, N.nvchDescripcionEN, N.iSecuencia, 1, N.nvchValor1, N.nvchValor2, 1
     FROM @Nuevos N
-    WHERE NOT EXISTS (SELECT 1 FROM dbo.Parametros P WHERE P.nvchAlias = N.nvchAlias);
+    WHERE NOT EXISTS (SELECT 1 FROM SCIA.Parametros P WHERE P.nvchAlias = N.nvchAlias);
 END
 
 COMMIT TRAN;
 GO
 
 SELECT iIdParametro, nvchAlias, nvchNombre, bHabilitado
-FROM dbo.Parametros
+FROM SCIA.Parametros
 WHERE nvchAlias IN (N'make.facebook.webhook', N'publicaciones.sitio', N'publicaciones.auto.noticias',
                     N'publicaciones.auto.emprendimientos', N'azure.blob.storage', N'jwt.secret', N'jwt.config');
 GO

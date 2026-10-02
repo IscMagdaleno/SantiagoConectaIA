@@ -1,0 +1,248 @@
+@implements IDisposable
+@using SantiagoConecta.SharedUI.Data
+@inject NavigationManager NavManager
+@inject CiudadanoSession CiudadanoSession
+@inject AsistenteIaService Asistente
+@inject SitioInterop Sitio
+@inject IJSRuntime JS
+
+<nav class="floating-nav @(Expandido ? "expandido" : "contraido")" aria-label="Navegación principal">
+    @if (Expandido)
+    {
+        <div class="fn-bar">
+            <button type="button" class="fn-colapsar" @onclick="ContraerAsync" aria-label="Contraer menú" title="Contraer menú">
+                <MudIcon Icon="@Icons.Material.Rounded.KeyboardArrowDown" />
+            </button>
+
+            <button type="button" class="fn-item fn-ia" @onclick="AbrirAsistenteAsync" aria-label="Abrir asistente IA">
+                <span class="fn-ia-circulo"><MudIcon Icon="@Icons.Material.Rounded.AutoAwesome" /></span>
+                <span class="fn-label">IA</span>
+            </button>
+
+            <a href="/" class="fn-item @(EsInicio ? "activo" : "")" aria-current="@(EsInicio ? "page" : null)">
+                <span class="fn-icono"><MudIcon Icon="@Icons.Material.Rounded.Home" /></span>
+                <span class="fn-label">Inicio</span>
+            </a>
+
+            <button type="button" class="fn-item @(ModulosAbiertos ? "activo" : "")" @onclick="AbrirModulosAsync"
+                    aria-haspopup="dialog" aria-expanded="@(ModulosAbiertos ? "true" : "false")">
+                <span class="fn-icono"><MudIcon Icon="@Icons.Material.Rounded.Add" /></span>
+                <span class="fn-label">Más</span>
+            </button>
+        </div>
+    }
+    else
+    {
+        <button type="button" class="fn-hamburguesa" @onclick="ExpandirAsync" aria-label="Abrir menú" title="Abrir menú">
+            <MudIcon Icon="@Icons.Material.Rounded.Menu" />
+        </button>
+    }
+</nav>
+
+@if (ModulosAbiertos)
+{
+    <div class="fn-overlay" @onclick="CerrarModulosAsync"></div>
+    <div class="fn-panel" role="dialog" aria-modal="true" aria-labelledby="fn-panel-titulo" tabindex="-1"
+         @ref="_panel" @onkeydown="OnPanelKeyDownAsync">
+        <div class="fn-panel-asa" aria-hidden="true"></div>
+
+        <div class="fn-panel-header">
+            <h2 id="fn-panel-titulo">Módulos</h2>
+            <button type="button" class="fn-cerrar" @onclick="CerrarModulosAsync" aria-label="Cerrar" title="Cerrar">
+                <MudIcon Icon="@Icons.Material.Rounded.Close" />
+            </button>
+        </div>
+
+        <div class="fn-grid">
+            @foreach (var modulo in Modulos)
+            {
+                if (modulo.Href != null)
+                {
+                    <a href="@modulo.Href" class="fn-tile @(EsActivo(modulo) ? "activo" : "")" @onclick="CerrarModulosAsync">
+                        <span class="fn-tile-icono"><MudIcon Icon="@modulo.Icono" /></span>
+                        <span class="fn-tile-titulo">@modulo.Titulo</span>
+                    </a>
+                }
+                else
+                {
+                    <button type="button" class="fn-tile" @onclick="() => modulo.Accion!()">
+                        <span class="fn-tile-icono"><MudIcon Icon="@modulo.Icono" /></span>
+                        <span class="fn-tile-titulo">@modulo.Titulo</span>
+                    </button>
+                }
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private const string ClaveContraido = "scia_nav_contraido";
+
+    private bool Expandido = true;
+    private bool ModulosAbiertos;
+    private bool _enfocarPanel;
+    private ElementReference _panel;
+
+    private sealed record Modulo(string Titulo, string Icono, string? Href = null, Func<Task>? Accion = null);
+
+    private IEnumerable<Modulo> Modulos
+    {
+        get
+        {
+            yield return new Modulo("Feed", Icons.Material.Rounded.DynamicFeed, "/feed");
+            yield return new Modulo("Trámites", Icons.Material.Rounded.Description, "/tramites");
+            yield return new Modulo("Noticias", Icons.Material.Rounded.Newspaper, "/noticias");
+            yield return new Modulo("Eventos", Icons.Material.Rounded.Event, "/eventos");
+            yield return new Modulo("Emprendimientos", Icons.Material.Rounded.Storefront, "/emprendimientos");
+            yield return new Modulo("Registrar negocio", Icons.Material.Rounded.AddBusiness, "/registro-emprendimiento");
+            yield return new Modulo("Buzón ciudadano", Icons.Material.Rounded.MarkunreadMailbox, Accion: IrABuzonAsync);
+            yield return new Modulo("Asistente IA", Icons.Material.Rounded.AutoAwesome, Accion: AbrirAsistenteAsync);
+            yield return new Modulo("Buscar", Icons.Material.Rounded.Search, "/buscar");
+            yield return CiudadanoSession.IsLoggedIn
+                ? new Modulo("Mi cuenta", Icons.Material.Rounded.AccountCircle, "/unete")
+                : new Modulo("Únete", Icons.Material.Rounded.PersonAdd, "/unete");
+            yield return new Modulo("Privacidad", Icons.Material.Rounded.PrivacyTip, "/politica-de-privacidad");
+        }
+    }
+
+    private string RutaActual
+    {
+        get
+        {
+            var relativa = NavManager.ToBaseRelativePath(NavManager.Uri);
+            var corte = relativa.IndexOfAny(new[] { '?', '#' });
+            return corte >= 0 ? relativa[..corte] : relativa;
+        }
+    }
+
+    private bool EsInicio => string.IsNullOrEmpty(RutaActual);
+
+    private bool EsActivo(Modulo modulo)
+    {
+        var ruta = modulo.Href?.TrimStart('/');
+        return !string.IsNullOrEmpty(ruta)
+            && (RutaActual.Equals(ruta, StringComparison.OrdinalIgnoreCase)
+                || RutaActual.StartsWith(ruta + "/", StringComparison.OrdinalIgnoreCase));
+    }
+
+    protected override void OnInitialized()
+    {
+        NavManager.LocationChanged += OnLocationChanged;
+        CiudadanoSession.Changed += OnCiudadanoChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if (await JS.InvokeAsync<string?>("localStorage.getItem", ClaveContraido) == "1")
+                {
+                    Expandido = false;
+                    StateHasChanged();
+                }
+            }
+            catch
+            {
+                // Sin localStorage (prerender o modo privado) se queda expandido.
+            }
+        }
+
+        if (_enfocarPanel)
+        {
+            _enfocarPanel = false;
+            try { await _panel.FocusAsync(); } catch { }
+        }
+    }
+
+    private async Task ExpandirAsync()
+    {
+        Expandido = true;
+        await GuardarContraidoAsync(false);
+    }
+
+    private async Task ContraerAsync()
+    {
+        Expandido = false;
+        await GuardarContraidoAsync(true);
+    }
+
+    private async Task GuardarContraidoAsync(bool contraido)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", ClaveContraido, contraido ? "1" : "0");
+        }
+        catch { }
+    }
+
+    private async Task AbrirModulosAsync()
+    {
+        if (ModulosAbiertos)
+        {
+            await CerrarModulosAsync();
+            return;
+        }
+
+        ModulosAbiertos = true;
+        _enfocarPanel = true;
+        await Sitio.BloquearScrollAsync(true);
+    }
+
+    private async Task CerrarModulosAsync()
+    {
+        if (!ModulosAbiertos)
+        {
+            return;
+        }
+
+        ModulosAbiertos = false;
+        await Sitio.BloquearScrollAsync(false);
+    }
+
+    private async Task OnPanelKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await CerrarModulosAsync();
+        }
+    }
+
+    private async Task AbrirAsistenteAsync()
+    {
+        await CerrarModulosAsync();
+        await Asistente.AbrirAsync();
+    }
+
+    private async Task IrABuzonAsync()
+    {
+        await CerrarModulosAsync();
+        if (!EsInicio)
+        {
+            NavManager.NavigateTo("/");
+        }
+
+        await Sitio.IrASeccionAsync("contacto");
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await CerrarModulosAsync();
+            StateHasChanged();
+        });
+    }
+
+    private void OnCiudadanoChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NavManager.LocationChanged -= OnLocationChanged;
+        CiudadanoSession.Changed -= OnCiudadanoChanged;
+    }
+}

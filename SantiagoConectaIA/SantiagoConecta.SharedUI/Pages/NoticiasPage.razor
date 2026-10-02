@@ -8,7 +8,10 @@
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 
-<PageTitle>Santiago Conecta - @(selectedNoticia?.vchTitulo ?? "Noticias y Avisos Oficiales")</PageTitle>
+<SeoHead Titulo="@(selectedNoticia?.vchTitulo ?? "Noticias y avisos oficiales")"
+         Descripcion="@(selectedNoticia?.nvchContenido ?? "Comunicados oficiales, avisos y noticias de Santiago Papasquiaro, Durango.")"
+         Imagen="@selectedNoticia?.vchImagenPortada"
+         Tipo="@(selectedNoticia != null ? "article" : "website")" />
 
 @if (loading && Id.HasValue && selectedNoticia == null)
 {

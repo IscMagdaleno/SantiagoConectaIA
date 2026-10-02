@@ -7,7 +7,9 @@
 @using SantiagoConectaIA.Share.Objects.TramitesModule
 @using SantiagoConectaIA.Share.PostModels.TramitesModule
 
-<PageTitle>Detalle del trámite</PageTitle>
+<SeoHead Titulo="@(Tramite?.vchNombre ?? "Detalle del trámite")"
+         Descripcion="@(Tramite?.nvchDescripcion ?? "Requisitos, costo, oficinas y horarios de este trámite municipal en Santiago Papasquiaro.")"
+         Tipo="article" />
 
 <div class="min-h-screen bg-gray-50">
     @* ELIMINADO: <HeaderComponent /> *@
