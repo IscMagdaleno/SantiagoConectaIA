@@ -1,277 +1,443 @@
 @page "/"
+@using SantiagoConectaIA.PWA.Areas.PageVisitsArea.Utiles
+@using SantiagoConectaIA.Share.Objects.AnalyticsModule
+@using SantiagoConectaIA.Share.Objects.WhatsAppModule
 @inject SantiagoConectaIA.PWA.Shared.Workspace.WorkspaceService WorkspaceService
+@inject MainAnalytics AnalyticsService
+@inject MainWhatsAppAnalytics WhatsAppAnalyticsService
 
-<PageTitle>Santiago Conecta | Portal Municipal</PageTitle>
+<PageTitle>Santiago Conecta | Panel Central</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-10 pb-16">
-    <!-- Hero Section con Búsqueda Inteligente -->
-    <div class="hero-minimal animate-fade-in-up">
-        <MudText Typo="Typo.h2" Class="hero-title-main">
-            Santiago Papasquiaro <span class="gradient-text">Conecta</span>
-        </MudText>
-        <MudText Typo="Typo.h6" Class="hero-subtitle-minimal">
-            Panel centralizado para la administración y gestión de servicios digitales.
-        </MudText>
-    </div>
-
-    <!-- Bento Grid Layout -->
-    <div class="bento-grid mt-16">
-        <!-- 2x2: Servicios Principales (Hero Card) -->
-        <div class="bento-item bento-2x2 glass-premium animate-fade-in-up delay-1" @onclick="WorkspaceService.RequestTramites">
-            <div class="bento-header">
-                <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Text" Class="mb-2">Administración</MudChip>
-                <MudText Typo="Typo.h4" Class="bento-title">Catálogo de Trámites</MudText>
-                <MudText Typo="Typo.body1" Class="bento-desc-large">
-                    Administra y registra nuevos trámites, así como sus requisitos y pasos a seguir.
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-16">
+    <!-- Header de bienvenida minimalista -->
+    <div class="welcome-header mb-8 animate-fade-in-up">
+        <div class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between gap-4">
+            <div>
+                <div class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill mb-2 live-badge">
+                    <span class="live-dot"></span>
+                    <MudText Typo="Typo.caption" Style="font-weight: 700; color: #D81B60; letter-spacing: 0.5px;">SISTEMA ACTIVO</MudText>
+                </div>
+                <MudText Typo="Typo.h3" Style="font-weight: 900; color: #1F2937; letter-spacing: -0.03em;">
+                    Panel Central <span class="gradient-text">Santiago Conecta</span>
+                </MudText>
+                <MudText Typo="Typo.body1" Style="color: #64748B; font-weight: 500;">
+                    Resumen en tiempo real del tráfico ciudadano, interacciones de IA y servicios municipales.
                 </MudText>
             </div>
-            <div class="bento-illustration">
-                <img src="city_services_illustration_1778873977467.png" alt="City Services" class="illustration-img" />
-            </div>
-            <div class="bento-footer">
-                <MudButton EndIcon="@Icons.Material.Rounded.ArrowOutward" Color="Color.Primary" Class="px-0">Entrar al catálogo</MudButton>
-            </div>
-        </div>
-
-        <!-- 2x1: Noticias Recientes -->
-        <div class="bento-item bento-2x1 glass-premium animate-fade-in-up delay-2" @onclick="WorkspaceService.RequestNoticias">
-            <div class="bento-header-flex">
-                <div>
-                    <MudText Typo="Typo.h5" Class="bento-title">Catálogo de Noticias</MudText>
-                    <MudText Typo="Typo.body2" Class="bento-desc">Publica, edita y gestiona comunicados del municipio.</MudText>
-                </div>
-                <div class="icon-circle">
-                    <MudIcon Icon="@Icons.Material.Rounded.Newspaper" />
-                </div>
-            </div>
-            <div class="news-preview-list">
-                <div class="news-item-mini">
-                    <div class="news-dot"></div>
-                    <MudText Typo="Typo.caption">Administración de publicaciones activas</MudText>
-                </div>
-                <div class="news-item-mini">
-                    <div class="news-dot"></div>
-                    <MudText Typo="Typo.caption">Control de historial y categorías</MudText>
-                </div>
+            
+            <div class="d-flex align-center gap-2">
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Refresh" 
+                           OnClick="CargarMetricas" 
+                           Class="rounded-pill px-4"
+                           Disabled="@_cargando">
+                    Actualizar
+                </MudButton>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.BarChart" 
+                           OnClick="WorkspaceService.RequestPageVisits" 
+                           Class="rounded-pill px-5 shadow-sm">
+                    Ver Analítica Completa
+                </MudButton>
             </div>
         </div>
-
-        <!-- 1x1: ChatBot IA -->
-        <div class="bento-item bento-1x1 glass-premium animate-fade-in-up delay-3" @onclick="WorkspaceService.RequestChatbot">
-            <div class="icon-wrapper-bento">
-                <MudIcon Icon="@Icons.Material.Rounded.AutoAwesome" />
-            </div>
-            <div>
-                <MudText Typo="Typo.h6" Class="bento-title">Gestión de IA</MudText>
-                <MudText Typo="Typo.caption" Class="bento-desc">Configura comportamiento y respuestas.</MudText>
-            </div>
-            <div class="pulse-indicator"></div>
-        </div>
-
-        <!-- 2x1: Publicaciones en Facebook -->
-        <div class="bento-item bento-2x1 glass-premium animate-fade-in-up delay-4" @onclick="WorkspaceService.RequestPublicaciones">
-            <div class="bento-header-flex">
-                <div>
-                    <MudText Typo="Typo.h5" Class="bento-title">Publicaciones</MudText>
-                    <MudText Typo="Typo.body2" Class="bento-desc">Publica en Facebook noticias y emprendimientos con ayuda de IA.</MudText>
-                </div>
-                <div class="icon-circle">
-                    <MudIcon Icon="@Icons.Custom.Brands.Facebook" />
-                </div>
-            </div>
-            <div class="news-preview-list">
-                <div class="news-item-mini">
-                    <div class="news-dot"></div>
-                    <MudText Typo="Typo.caption">Noticia diaria automática a las 11:00</MudText>
-                </div>
-                <div class="news-item-mini">
-                    <div class="news-dot"></div>
-                    <MudText Typo="Typo.caption">Presentación de emprendimientos locales</MudText>
-                </div>
-            </div>
-        </div>
-
-        <!-- 1x1: Oficinas -->
-        <div class="bento-item bento-1x1 glass-premium animate-fade-in-up delay-4" @onclick="WorkspaceService.RequestOficinas">
-            <div class="icon-wrapper-bento secondary">
-                <MudIcon Icon="@Icons.Material.Rounded.Map" />
-            </div>
-            <div>
-                <MudText Typo="Typo.h6" Class="bento-title">Catálogo de Oficinas</MudText>
-                <MudText Typo="Typo.caption" Class="bento-desc">Controla ubicaciones y contactos de dependencias.</MudText>
-            </div>
-        </div>
-
-
     </div>
+
+    <!-- 4 Métricas Clave Principales (KPI Cards) -->
+    <MudGrid Spacing="3" Class="mb-8 animate-fade-in-up delay-1">
+        <MudItem xs="12" sm="6" lg="3">
+            <div class="stat-card-executive cursor-pointer" @onclick="WorkspaceService.RequestPageVisits">
+                <div class="d-flex align-center justify-space-between mb-3">
+                    <span class="stat-label">VISITAS TOTALES</span>
+                    <div class="stat-icon-wrap" style="background: rgba(216, 27, 96, 0.12); color: #D81B60;">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" />
+                    </div>
+                </div>
+                <div class="d-flex align-baseline gap-2">
+                    <MudText Typo="Typo.h4" Style="font-weight: 900; color: #1F2937;">
+                        @(_cargando ? "--" : _totalVisitas.ToString("N0"))
+                    </MudText>
+                    <span class="stat-badge-trend positive">+Semanal</span>
+                </div>
+                <MudText Typo="Typo.caption" Style="color: #94A3B8; font-weight: 500;" Class="mt-1 d-block">
+                    Ciudadanos accediendo al portal
+                </MudText>
+            </div>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" lg="3">
+            <div class="stat-card-executive cursor-pointer" @onclick="WorkspaceService.RequestPageVisits">
+                <div class="d-flex align-center justify-space-between mb-3">
+                    <span class="stat-label">USUARIOS ÚNICOS</span>
+                    <div class="stat-icon-wrap" style="background: rgba(16, 185, 129, 0.12); color: #059669;">
+                        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Small" />
+                    </div>
+                </div>
+                <div class="d-flex align-baseline gap-2">
+                    <MudText Typo="Typo.h4" Style="font-weight: 900; color: #1F2937;">
+                        @(_cargando ? "--" : _visitantesUnicos.ToString("N0"))
+                    </MudText>
+                    <span class="stat-badge-trend neutral">Dispositivos</span>
+                </div>
+                <MudText Typo="Typo.caption" Style="color: #94A3B8; font-weight: 500;" Class="mt-1 d-block">
+                    Nuevos y recurrentes
+                </MudText>
+            </div>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" lg="3">
+            <div class="stat-card-executive cursor-pointer" @onclick="WorkspaceService.RequestPageVisits">
+                <div class="d-flex align-center justify-space-between mb-3">
+                    <span class="stat-label">INTERACCIONES WHATSAPP</span>
+                    <div class="stat-icon-wrap" style="background: rgba(37, 211, 102, 0.15); color: #128C7E;">
+                        <MudIcon Icon="@Icons.Material.Filled.Chat" Size="Size.Small" />
+                    </div>
+                </div>
+                <div class="d-flex align-baseline gap-2">
+                    <MudText Typo="Typo.h4" Style="font-weight: 900; color: #1F2937;">
+                        @(_cargando ? "--" : _totalMsjsWhatsApp.ToString("N0"))
+                    </MudText>
+                    <span class="stat-badge-trend whatsapp">Bot IA</span>
+                </div>
+                <MudText Typo="Typo.caption" Style="color: #94A3B8; font-weight: 500;" Class="mt-1 d-block">
+                    Mensajes gestionados automáticamente
+                </MudText>
+            </div>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" lg="3">
+            <div class="stat-card-executive cursor-pointer" @onclick="WorkspaceService.RequestChatbot">
+                <div class="d-flex align-center justify-space-between mb-3">
+                    <span class="stat-label">ASISTENTE IA</span>
+                    <div class="stat-icon-wrap" style="background: rgba(142, 36, 170, 0.12); color: #8E24AA;">
+                        <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" />
+                    </div>
+                </div>
+                <div class="d-flex align-baseline gap-2">
+                    <MudText Typo="Typo.h4" Style="font-weight: 900; color: #1F2937;">
+                        Operativo
+                    </MudText>
+                    <span class="stat-badge-trend positive">Online</span>
+                </div>
+                <MudText Typo="Typo.caption" Style="color: #94A3B8; font-weight: 500;" Class="mt-1 d-block">
+                    Modelo de lenguaje conectado
+                </MudText>
+            </div>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Sección de Monitoreo Rápido & Páginas más Consultadas -->
+    <MudGrid Spacing="3" Class="animate-fade-in-up delay-2">
+        <!-- Páginas más consultadas por la gente -->
+        <MudItem xs="12" md="7">
+            <div class="dashboard-panel pa-6 h-100">
+                <div class="d-flex align-center justify-space-between mb-4">
+                    <div class="d-flex align-center gap-2">
+                        <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6" Style="font-weight: 800; color: #1F2937;">
+                            Páginas y Servicios más Consultados
+                        </MudText>
+                    </div>
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">Semana Actual</MudChip>
+                </div>
+
+                @if (_cargando)
+                {
+                    <div class="d-flex justify-center py-8">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </div>
+                }
+                else if (!_topPaginas.Any())
+                {
+                    <div class="text-center py-8 text-muted">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Large" Style="opacity: 0.5;" />
+                        <MudText Typo="Typo.body2" Class="mt-2">No hay visitas registradas para este periodo.</MudText>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var pag in _topPaginas.Take(5))
+                        {
+                            var pct = _totalVisitas > 0 ? (double)pag.TotalVisits / _totalVisitas * 100 : 0;
+                            <div class="top-page-row pa-3 rounded-xl">
+                                <div class="d-flex align-center justify-space-between mb-1">
+                                    <span class="top-page-title">
+                                        @(string.IsNullOrWhiteSpace(pag.vchPageName) ? pag.vchPageUrl : pag.vchPageName)
+                                    </span>
+                                    <div class="d-flex align-center gap-3">
+                                        <span class="top-page-count">@pag.TotalVisits visitas</span>
+                                        <span class="top-page-uniques text-muted">(@pag.UniqueVisitors únicos)</span>
+                                    </div>
+                                </div>
+                                <MudProgressLinear Color="Color.Primary" Value="@pct" Class="rounded-pill my-1" Style="height: 6px;" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </MudItem>
+
+        <!-- Accesos Rápidos de Gestión & Flujos Frecuentes -->
+        <MudItem xs="12" md="5">
+            <div class="dashboard-panel pa-6 h-100 d-flex flex-column justify-space-between">
+                <div>
+                    <div class="d-flex align-center gap-2 mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6" Style="font-weight: 800; color: #1F2937;">
+                            Acciones Frecuentes de Gestión
+                        </MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Style="color: #64748B;" Class="mb-4">
+                        Inicia tareas comunes del municipio con un solo clic:
+                    </MudText>
+
+                    <div class="d-flex flex-column gap-2">
+                        <div class="quick-action-item d-flex align-center justify-space-between pa-3 rounded-xl cursor-pointer"
+                             @onclick="WorkspaceService.RequestTramites">
+                            <div class="d-flex align-center gap-3">
+                                <div class="action-mini-icon" style="background: rgba(59, 130, 246, 0.12); color: #2563EB;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" />
+                                </div>
+                                <div>
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #1F2937;">Nuevo Trámite</MudText>
+                                    <MudText Typo="Typo.caption" Style="color: #94A3B8;">Crear o actualizar requisitos</MudText>
+                                </div>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="Color.Default" />
+                        </div>
+
+                        <div class="quick-action-item d-flex align-center justify-space-between pa-3 rounded-xl cursor-pointer"
+                             @onclick="WorkspaceService.RequestNoticias">
+                            <div class="d-flex align-center gap-3">
+                                <div class="action-mini-icon" style="background: rgba(216, 27, 96, 0.12); color: #D81B60;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Article" Size="Size.Small" />
+                                </div>
+                                <div>
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #1F2937;">Publicar Noticia</MudText>
+                                    <MudText Typo="Typo.caption" Style="color: #94A3B8;">Comunicado con bloques multimedia</MudText>
+                                </div>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="Color.Default" />
+                        </div>
+
+                        <div class="quick-action-item d-flex align-center justify-space-between pa-3 rounded-xl cursor-pointer"
+                             @onclick="WorkspaceService.RequestEventos">
+                            <div class="d-flex align-center gap-3">
+                                <div class="action-mini-icon" style="background: rgba(225, 29, 72, 0.12); color: #E11D48;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" />
+                                </div>
+                                <div>
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #1F2937;">Cartelera de Eventos</MudText>
+                                    <MudText Typo="Typo.caption" Style="color: #94A3B8;">Escanear volante con IA o agregar evento</MudText>
+                                </div>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="Color.Default" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hub-reminder mt-4 pa-3 rounded-xl d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Apps" Color="Color.Primary" Size="Size.Medium" />
+                    <div>
+                        <MudText Typo="Typo.caption" Style="font-weight: 700; color: #1F2937;" Class="d-block">¿Buscas otro módulo?</MudText>
+                        <MudText Typo="Typo.caption" Style="color: #64748B;">Usa el botón flotante en la esquina inferior derecha para ver todos los módulos del sistema.</MudText>
+                    </div>
+                </div>
+            </div>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
 <style>
-    .hero-minimal {
-        text-align: center;
-        max-width: 800px;
-        margin: 0 auto;
+    .live-badge {
+        background: rgba(216, 27, 96, 0.08);
+        border: 1px solid rgba(216, 27, 96, 0.2);
     }
 
-    .hero-title-main {
-        font-weight: 900 !important;
-        letter-spacing: -0.05em;
-        margin-bottom: 1rem;
-        color: #1E293B;
-    }
-
-    .hero-subtitle-minimal {
-        color: #64748B;
-        font-weight: 400;
-        opacity: 0.8;
-    }
-
-    /* Premium Search Bar */
-    .search-container-premium {
-        display: flex;
-        align-items: center;
-        padding: 8px 8px 8px 24px;
-        border-radius: 100px;
-        max-width: 650px;
-        margin: 0 auto;
-    }
-
-    .search-input-field {
-        flex-grow: 1;
-    }
-
-    .search-button-premium {
-        border-radius: 100px !important;
-        padding: 10px 32px !important;
-        text-transform: none !important;
-        font-weight: 600 !important;
-        box-shadow: 0 8px 16px rgba(165, 10, 58, 0.2) !important;
-    }
-
-    /* Bento Item Specifics */
-    .bento-header {
-        margin-bottom: 1rem;
-    }
-
-    .bento-title {
-        font-weight: 800 !important;
-        letter-spacing: -0.02em;
-        color: #1E293B;
-    }
-
-    .bento-desc-large {
-        color: #64748B;
-        line-height: 1.6;
-        max-width: 80%;
-    }
-
-    .bento-illustration {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 60%;
-        height: 60%;
-        display: flex;
-        align-items: flex-end;
-        justify-content: flex-end;
-        pointer-events: none;
-    }
-
-    .illustration-img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        transform: translate(10%, 10%);
-        opacity: 0.9;
-    }
-
-    .bento-header-flex {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-
-    .icon-circle {
-        width: 48px;
-        height: 48px;
-        background: rgba(165, 10, 58, 0.1);
-        color: var(--primary);
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        background: #D81B60;
         border-radius: 50%;
+    }
+
+    .stat-card-executive {
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 22px;
+        box-shadow: 0 10px 25px -4px rgba(136, 14, 79, 0.06);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        height: 100%;
+    }
+
+    .stat-card-executive:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 35px -6px rgba(216, 27, 96, 0.14);
+        border-color: rgba(216, 27, 96, 0.3);
+        background: #FFFFFF;
+    }
+
+    .stat-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #94A3B8;
+        letter-spacing: 0.06em;
+    }
+
+    .stat-icon-wrap {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
-    .news-preview-list {
-        margin-top: auto;
+    .stat-badge-trend {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
     }
 
-    .news-item-mini {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 4px;
-        color: #64748B;
+    .stat-badge-trend.positive {
+        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
     }
 
-    .news-dot {
-        width: 6px;
-        height: 6px;
-        background: var(--primary);
-        border-radius: 50%;
+    .stat-badge-trend.neutral {
+        background: rgba(59, 130, 246, 0.12);
+        color: #2563EB;
     }
 
-    .icon-wrapper-bento {
-        width: 56px;
-        height: 56px;
-        background: var(--primary);
-        color: white;
-        border-radius: 18px;
+    .stat-badge-trend.whatsapp {
+        background: rgba(37, 211, 102, 0.15);
+        color: #128C7E;
+    }
+
+    .dashboard-panel {
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid var(--glass-border);
+        border-radius: 28px;
+        box-shadow: 0 10px 30px -5px rgba(136, 14, 79, 0.06);
+    }
+
+    .top-page-row {
+        background: rgba(248, 250, 252, 0.7);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        transition: all 0.2s ease;
+    }
+
+    .top-page-row:hover {
+        background: #FFFFFF;
+        border-color: rgba(216, 27, 96, 0.25);
+    }
+
+    .top-page-title {
+        font-weight: 700;
+        color: #1F2937;
+        font-size: 0.92rem;
+    }
+
+    .top-page-count {
+        font-weight: 700;
+        color: #D81B60;
+        font-size: 0.85rem;
+    }
+
+    .top-page-uniques {
+        font-size: 0.8rem;
+    }
+
+    .quick-action-item {
+        background: rgba(248, 250, 252, 0.8);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .quick-action-item:hover {
+        background: #FFFFFF;
+        border-color: rgba(216, 27, 96, 0.35);
+        transform: translateX(4px);
+        box-shadow: 0 4px 14px rgba(216, 27, 96, 0.08);
+    }
+
+    .action-mini-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 1rem;
-        box-shadow: 0 8px 16px rgba(165, 10, 58, 0.15);
     }
 
-    .icon-wrapper-bento.secondary {
-        background: #1E293B;
-    }
-
-    .pulse-indicator {
-        position: absolute;
-        top: 32px;
-        right: 32px;
-        width: 12px;
-        height: 12px;
-        background: #10B981;
-        border-radius: 50%;
-        animation: pulse-soft 2s infinite;
-    }
-
-    .stats-grid-bento {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-top: auto;
-    }
-
-    .stat-num {
-        font-weight: 900 !important;
-        color: var(--primary);
-        letter-spacing: -0.03em;
-    }
-
-    .bento-item {
-        cursor: pointer;
+    .hub-reminder {
+        background: linear-gradient(135deg, rgba(216, 27, 96, 0.05) 0%, rgba(136, 14, 79, 0.08) 100%);
+        border: 1px dashed rgba(216, 27, 96, 0.25);
     }
 </style>
 
 @code {
-    private string _searchQuery = "";
+    private bool _cargando = true;
+    private int _totalVisitas = 0;
+    private int _visitantesUnicos = 0;
+    private int _totalMsjsWhatsApp = 0;
+    private List<PageVisitByPage> _topPaginas = new();
 
-    private void HandleSearch()
+    protected override async Task OnInitializedAsync()
     {
-        // Implementación futura de búsqueda
+        await CargarMetricas();
+    }
+
+    private async Task CargarMetricas()
+    {
+        _cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            var hoy = DateTime.Today;
+            var desde = hoy.AddDays(-7);
+            var hasta = hoy.AddDays(1).AddTicks(-1);
+
+            // Cargar resumen de visitas
+            var summaryTask = AnalyticsService.GetPageVisitsSummary(desde, hasta);
+            var pagesTask = AnalyticsService.GetPageVisitsByPage(desde, hasta);
+            var waStatsTask = WhatsAppAnalyticsService.GetStats();
+
+            await Task.WhenAll(summaryTask, pagesTask, waStatsTask);
+
+            var summary = (await summaryTask)?.FirstOrDefault();
+            if (summary != null)
+            {
+                _totalVisitas = summary.TotalVisits;
+                _visitantesUnicos = summary.UniqueVisitors;
+            }
+
+            var pages = await pagesTask;
+            if (pages != null)
+            {
+                _topPaginas = pages.OrderByDescending(p => p.TotalVisits).ToList();
+            }
+
+            var waResp = await waStatsTask;
+            if (waResp != null && waResp.IsSuccess && waResp.Data != null)
+            {
+                _totalMsjsWhatsApp = waResp.Data.iTotalMessages;
+            }
+        }
+        catch
+        {
+            // Continuar con valores por defecto si el backend no responde
+        }
+        finally
+        {
+            _cargando = false;
+            StateHasChanged();
+        }
     }
 }

@@ -1,0 +1,121 @@
+@using SantiagoConectaIA.PWA.Shared.Workspace
+@inject WorkspaceService WorkspaceService
+
+<MudDialog DefaultFocus="DefaultFocus.None" Class="glass-dialog-custom">
+    <DialogContent>
+        <div class="pa-2">
+            <!-- Header Modal -->
+            <div class="d-flex align-center justify-space-between mb-4">
+                <div class="d-flex align-center gap-3">
+                    <div class="d-flex align-center justify-center rounded-2xl" 
+                         style="width: 48px; height: 48px; background: linear-gradient(135deg, rgba(216,27,96,0.15) 0%, rgba(136,14,79,0.2) 100%); color: #D81B60;">
+                        <MudIcon Icon="@Icons.Material.Filled.Apps" Size="Size.Medium" />
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.h6" Style="font-weight: 800; color: #1F2937; line-height: 1.1;">
+                            Módulos del Sistema
+                        </MudText>
+                        <MudText Typo="Typo.caption" Style="color: #6B7280; font-weight: 500;">
+                            Selecciona una sección para acceder directamente
+                        </MudText>
+                    </div>
+                </div>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                               Size="Size.Small" 
+                               Class="rounded-circle pa-2" 
+                               OnClick="Cerrar" />
+            </div>
+
+            <!-- Grid de Módulos estilo Glass Cards -->
+            <MudGrid Spacing="2">
+                @foreach (var item in MenuItems)
+                {
+                    <MudItem xs="6" sm="4">
+                        <div class="menu-hub-card d-flex flex-column align-center justify-center pa-4 text-center cursor-pointer"
+                             @onclick="@(() => SeleccionarModulo(item.Accion))">
+                            <div class="menu-hub-icon-wrap mb-2" style="background: @item.BgColor; color: @item.IconColor;">
+                                <MudIcon Icon="@item.Icono" Size="Size.Medium" />
+                            </div>
+                            <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #1F2937; line-height: 1.2;">
+                                @item.Titulo
+                            </MudText>
+                            <MudText Typo="Typo.caption" Style="color: #6B7280; font-size: 0.72rem; line-height: 1.1;" Class="mt-1 text-truncate" title="@item.Descripcion">
+                                @item.Descripcion
+                            </MudText>
+                        </div>
+                    </MudItem>
+                }
+            </MudGrid>
+        </div>
+    </DialogContent>
+</MudDialog>
+
+<style>
+    .glass-dialog-custom {
+        background: rgba(255, 255, 255, 0.94) !important;
+        backdrop-filter: blur(28px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+        border: 1px solid #ECE4E8 !important;
+        border-radius: 28px !important;
+        box-shadow: 0 25px 60px -15px rgba(136, 14, 79, 0.15), 0 0 0 1px rgba(236, 228, 232, 0.8) !important;
+        max-width: 680px !important;
+        width: 95% !important;
+    }
+
+    .menu-hub-card {
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid #ECE4E8;
+        border-radius: 20px;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        height: 100%;
+        min-height: 120px;
+    }
+
+    .menu-hub-card:hover {
+        transform: translateY(-4px) scale(1.02);
+        background: #FFFFFF;
+        border-color: rgba(216, 27, 96, 0.35);
+        box-shadow: 0 12px 24px -6px rgba(216, 27, 96, 0.15);
+    }
+
+    .menu-hub-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.25s ease;
+    }
+
+    .menu-hub-card:hover .menu-hub-icon-wrap {
+        transform: scale(1.1) rotate(4deg);
+    }
+</style>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private void Cerrar() => MudDialog.Close();
+
+    private void SeleccionarModulo(Action accion)
+    {
+        accion();
+        MudDialog.Close();
+    }
+
+    private record MenuItemDef(string Titulo, string Descripcion, string Icono, string BgColor, string IconColor, Action Accion);
+
+    private List<MenuItemDef> MenuItems => new()
+    {
+        new("Trámites", "Catálogo y requisitos", Icons.Material.Filled.Description, "rgba(59, 130, 246, 0.12)", "#2563EB", () => WorkspaceService.RequestTramites()),
+        new("Noticias", "Comunicados del municipio", Icons.Material.Filled.Article, "rgba(165, 10, 58, 0.12)", "#A50A3A", () => WorkspaceService.RequestNoticias()),
+        new("Publicaciones", "Facebook e IA", Icons.Custom.Brands.Facebook, "rgba(37, 99, 235, 0.12)", "#1877F2", () => WorkspaceService.RequestPublicaciones()),
+        new("Oficinas", "Dependencias y sedes", Icons.Material.Filled.Business, "rgba(16, 185, 129, 0.12)", "#059669", () => WorkspaceService.RequestOficinas()),
+        new("ChatBot IA", "Asistente inteligente", Icons.Material.Filled.AutoAwesome, "rgba(139, 92, 246, 0.12)", "#7C3AED", () => WorkspaceService.RequestChatbot()),
+        new("Empresas", "Directorio y talento", Icons.Material.Filled.Storefront, "rgba(245, 158, 11, 0.12)", "#D97706", () => WorkspaceService.RequestEmpresas()),
+        new("Eventos", "Agenda municipal y cartelera", Icons.Material.Filled.Event, "rgba(225, 29, 72, 0.12)", "#E11D48", () => WorkspaceService.RequestEventos()),
+        new("Estadísticas", "Tráfico y WhatsApp", Icons.Material.Filled.BarChart, "rgba(14, 165, 233, 0.12)", "#0284C7", () => WorkspaceService.RequestPageVisits()),
+        new("Mockup", "Ejemplos y vistas previas", Icons.Material.Filled.Extension, "rgba(100, 116, 139, 0.12)", "#475569", () => WorkspaceService.RequestMockup())
+    };
+}

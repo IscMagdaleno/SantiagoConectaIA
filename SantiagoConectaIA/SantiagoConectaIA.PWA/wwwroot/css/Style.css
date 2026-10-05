@@ -1,200 +1,505 @@
 :root {
-    --primary: #A50A3A;
-    --primary-light: #C4124B;
-    --primary-dark: #80082E;
-    --accent: #FFD700;
-    --bg-main: #F8FAFC;
-    --text-main: #1E293B;
-    --text-muted: #64748B;
-    --glass: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.3);
-    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --primary: #D81B60;
+    --primary-light: #FF5C8D;
+    --primary-dark: #AD1457;
+    --vino: #880E4F;
+    --accent: #E91E63;
+    --accent-purple: #8E24AA;
+    --accent-gold: #F59E0B;
+    
+    /* Fondo limpio y suave como en Front */
+    --bg-main: #FAF7F8;
+    
+    /* Glassmorphism con ALTA OPACIDAD y DESENFOQUE PROFUNDO (frosted glass visible, no transparente) */
+    --bg-card: rgba(255, 255, 255, 0.92);
+    --bg-card-hover: rgba(255, 255, 255, 0.98);
+    
+    /* Textos nítidos idénticos al front */
+    --text-main: #1F2937;
+    --text-muted: #4B5563;
+    --text-light: #6B7280;
+    
+    /* Bordes y sombras estilo Front & Glass */
+    --glass-border: #ECE4E8;
+    --glass-border-subtle: rgba(236, 228, 232, 0.8);
+    --glass-shadow: 0 10px 25px -4px rgba(136, 14, 79, 0.08), 0 4px 10px -2px rgba(136, 14, 79, 0.04);
+    --glass-shadow-hover: 0 18px 36px -6px rgba(216, 27, 96, 0.18), 0 8px 16px -4px rgba(216, 27, 96, 0.08);
 }
 
 body {
-    font-family: 'Outfit', sans-serif !important;
+    font-family: 'Inter', 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     background-color: var(--bg-main);
     color: var(--text-main);
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
 }
 
-/* Glassmorphism Utilities */
-.glass-effect {
-    background: var(--glass);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: var(--card-shadow);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.glass-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 20px 30px -10px rgba(165, 10, 58, 0.2);
-}
-
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-15px); }
-    100% { transform: translateY(0px); }
-}
-
-@keyframes pulse-soft {
-    0% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.05); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.8; }
-}
-
-.animate-fade-in-up {
-    animation: fadeInUp 0.8s ease-out forwards;
-}
-
-.animate-float {
-    animation: float 6s ease-in-out infinite;
-}
-
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-dark);
-}
-
-/* Innovative Navbar */
-.modern-appbar {
-    background: rgba(165, 10, 58, 0.85) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.nav-button {
-    position: relative;
-    font-weight: 500 !important;
-    letter-spacing: 0.5px !important;
-    transition: all 0.3s ease !important;
-}
-
-.nav-button::after {
-    content: '';
-    position: absolute;
-    bottom: 5px;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background: white;
-    transition: all 0.3s ease;
-    transform: translateX(-50%);
-}
-
-.nav-button:hover::after {
-    width: 70%;
-}
-
-/* Service Card Icons */
-.icon-wrapper {
-    width: 70px;
-    height: 70px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    color: white;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 15px rgba(165, 10, 58, 0.2);
-    transition: all 0.3s ease;
-}
-
-.glass-card:hover .icon-wrapper {
-    transform: rotate(10deg) scale(1.1);
-    box-shadow: 0 12px 20px rgba(165, 10, 58, 0.3);
-}
-
-/* Mesh Gradients for Background (Aurora Effect) */
+/* ========================================================
+   FONDO AURORA / MESH GRADIENT VIBRANTE Y LLAMATIVO
+   ======================================================== */
 .mesh-bg {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     z-index: -1;
-    background: #f8fafc;
-    overflow: hidden;
+    background: radial-gradient(circle at 10% 10%, rgba(255, 180, 205, 0.55) 0%, transparent 45%),
+                radial-gradient(circle at 90% 12%, rgba(216, 27, 96, 0.22) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(254, 237, 243, 0.9) 0%, transparent 65%),
+                radial-gradient(circle at 85% 85%, rgba(255, 205, 220, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 15% 90%, rgba(136, 14, 79, 0.12) 0%, transparent 45%),
+                #FAF7F8;
+    pointer-events: none;
+    animation: meshPulse 12s ease-in-out infinite alternate;
 }
 
-.mesh-bg::before, .mesh-bg::after {
-    content: '';
+@keyframes meshPulse {
+    0% {
+        filter: hue-rotate(0deg) saturate(105%);
+    }
+    100% {
+        filter: hue-rotate(-8deg) saturate(125%);
+    }
+}
+
+/* ========================================================
+   GLASSMORPHISM CORE COMPONENTS (MENOS TRANSPARENTE, MÁS BLUR)
+   ======================================================== */
+.glass-effect,
+.mud-paper-outlined {
+    background: var(--bg-card) !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+.mud-card, 
+.service-card {
+    background: var(--bg-card) !important;
+    backdrop-filter: blur(26px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(26px) saturate(190%) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 20px !important;
+    box-shadow: var(--glass-shadow) !important;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    overflow: hidden !important;
+}
+
+.mud-card:hover, 
+.service-card:hover {
+    transform: translateY(-6px) scale(1.01) !important;
+    background: var(--bg-card-hover) !important;
+    border-color: rgba(216, 27, 96, 0.35) !important;
+    box-shadow: var(--glass-shadow-hover) !important;
+}
+
+/* Encabezados y títulos con degradado sutil */
+.gradient-text {
+    background: linear-gradient(135deg, #880E4F 0%, #D81B60 60%, #FF5C8D 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+/* ========================================================
+   APPBAR Y HEADER MODERNO GLASS FLOTANTE (CENTRADO)
+   ======================================================== */
+.modern-appbar {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    box-shadow: 0 4px 20px rgba(136, 14, 79, 0.05) !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Identidad centrada en AppBar */
+.header-center-brand {
     position: absolute;
-    width: 150%;
-    height: 150%;
-    top: -25%;
-    left: -25%;
-    background: radial-gradient(circle at 50% 50%, rgba(165, 10, 58, 0.25) 0%, transparent 50%),
-                radial-gradient(circle at 100% 0%, rgba(255, 215, 0, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 0% 100%, rgba(165, 10, 58, 0.2) 0%, transparent 50%);
-    animation: aurora 20s linear infinite;
-    transform-origin: center;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: transform 0.25s ease;
+    white-space: nowrap;
 }
 
-.mesh-bg::after {
-    animation: aurora 15s linear infinite reverse;
-    opacity: 0.5;
+.header-center-brand:hover {
+    transform: translateX(-50%) scale(1.02);
 }
 
-@keyframes aurora {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.2); }
-    100% { transform: rotate(360deg) scale(1); }
+.brand-logo-img {
+    height: 38px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(136, 14, 79, 0.15));
 }
 
-/* Bento Grid Utilities */
+.brand-title {
+    font-weight: 800 !important;
+    color: var(--text-main) !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.02em !important;
+    font-size: 1.15rem !important;
+}
+
+.brand-title-accent {
+    color: var(--primary);
+    background: linear-gradient(135deg, #D81B60 0%, #880E4F 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.brand-subtitle {
+    color: var(--text-muted) !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+}
+
+.header-home-wrap {
+    z-index: 10;
+}
+
+.header-spacer-right {
+    min-width: 44px;
+}
+
+.nav-button-clean {
+    font-weight: 700 !important;
+    border-radius: 999px !important;
+    padding: 6px 16px !important;
+    letter-spacing: -0.01em !important;
+    transition: all 0.25s ease !important;
+    text-transform: none !important;
+    color: var(--text-main) !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: 0 2px 6px rgba(136, 14, 79, 0.04) !important;
+}
+
+.nav-button-clean:hover {
+    background: #FFFFFF !important;
+    color: var(--primary) !important;
+    transform: translateY(-2px);
+    border-color: rgba(216, 27, 96, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(216, 27, 96, 0.15) !important;
+}
+
+/* ========================================================
+   BOTÓN FLOTANTE FIJO (FAB) EN ESQUINA INFERIOR DERECHA
+   ======================================================== */
+.floating-menu-fab {
+    position: fixed !important;
+    bottom: 28px !important;
+    right: 28px !important;
+    z-index: 1200 !important;
+    background: linear-gradient(135deg, #D81B60 0%, #880E4F 100%) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 10px 25px rgba(216, 27, 96, 0.42), 0 0 0 4px rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    border-radius: 999px !important;
+    padding: 14px 22px !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    animation: fabFloat 3.5s ease-in-out infinite alternate;
+}
+
+.floating-menu-fab:hover {
+    transform: translateY(-5px) scale(1.06) !important;
+    box-shadow: 0 16px 35px rgba(216, 27, 96, 0.55), 0 0 0 5px rgba(255, 255, 255, 0.98) !important;
+}
+
+@keyframes fabFloat {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-6px);
+    }
+}
+
+/* ========================================================
+   MENÚ MÓVIL EN HOJA LATERAL / FLOATING GLASS
+   ======================================================== */
+.mobile-glass-menu {
+    background: rgba(165, 10, 58, 0.95) !important;
+    backdrop-filter: blur(24px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: none;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
+}
+
+.mobile-nav-item {
+    border-radius: 14px !important;
+    padding: 10px 16px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    color: white !important;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item:active {
+    background: rgba(255, 255, 255, 0.22) !important;
+    transform: translateX(4px);
+}
+
+/* ========================================================
+   WORKSPACE TABS MODERNO (PESTAÑAS FLOTANTES GLASS)
+   ======================================================== */
+.mud-tabs.glass-tabs {
+    background: transparent !important;
+}
+
+.glass-tabs .mud-tabs-tabbar {
+    background: rgba(255, 255, 255, 0.90) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 999px !important;
+    padding: 6px !important;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05) !important;
+}
+
+.glass-tabs .mud-tab {
+    border-radius: 999px !important;
+    min-height: 40px !important;
+    margin: 0 4px !important;
+    padding: 6px 20px !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    font-weight: 600 !important;
+    color: #64748B !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.glass-tabs .mud-tab:hover {
+    color: var(--primary) !important;
+    background: rgba(216, 27, 96, 0.05) !important;
+}
+
+/* Pestaña activa: fondo limpio blanco/perla con borde sutil, y texto + ícono con protagonismo */
+.glass-tabs .mud-tab.mud-tab-active {
+    background: #FFFFFF !important;
+    border: 1.5px solid rgba(216, 27, 96, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(216, 27, 96, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    color: var(--primary) !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.01em !important;
+}
+
+.glass-tabs .mud-tab.mud-tab-active .mud-icon-root {
+    color: var(--primary) !important;
+}
+
+.glass-tabs .mud-tab.mud-tab-active .tab-label-text {
+    color: #880E4F !important;
+    font-weight: 800 !important;
+}
+
+.glass-tabs .mud-tab:not(.mud-tab-active) .tab-label-text {
+    color: #64748B !important;
+    font-weight: 600 !important;
+}
+
+.glass-tabs .mud-tab:not(.mud-tab-active) .mud-icon-root {
+    color: #880E4F !important;
+    opacity: 0.75;
+}
+
+.tab-close-btn {
+    color: #94A3B8 !important;
+    transition: all 0.2s ease !important;
+}
+
+.tab-close-btn:hover {
+    color: #EF4444 !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+    transform: scale(1.15);
+}
+
+/* Panel contenedor dentro de cada Tab */
+.glass-tab-panel {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 28px !important;
+    box-shadow: 0 14px 35px -8px rgba(136, 14, 79, 0.08), 0 0 0 1px rgba(236, 228, 232, 0.6) !important;
+    margin-top: 14px !important;
+}
+
+/* ========================================================
+   TOOLBAR SUPERIOR CON BOTONES PÍLDORA Y SOMBRAS FRONT
+   ======================================================== */
+.modern-toolbar {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 8px 24px -4px rgba(136, 14, 79, 0.08) !important;
+    margin: 8px 16px 16px 16px !important;
+    padding: 8px 20px !important;
+}
+
+.workspace-action-btn {
+    border-radius: 999px !important;
+    padding: 6px 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    text-transform: none !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.workspace-action-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14) !important;
+}
+
+.close-tab-toolbar-btn {
+    background: rgba(241, 245, 249, 0.8) !important;
+    transition: all 0.2s ease !important;
+}
+
+.close-tab-toolbar-btn:hover {
+    background: #FEE2E2 !important;
+    color: #EF4444 !important;
+    transform: rotate(90deg);
+}
+
+/* ========================================================
+   BOTONES E INPUTS CON ESTILO MODERNO FRONT
+   ======================================================== */
+.mud-button-filled.mud-button-filled-primary {
+    background: linear-gradient(135deg, #D81B60 0%, #FF5C8D 100%) !important;
+    box-shadow: 0 4px 14px rgba(216, 27, 96, 0.3) !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    transition: all 0.25s ease !important;
+}
+
+.mud-button-filled.mud-button-filled-primary:hover {
+    box-shadow: 0 6px 20px rgba(216, 27, 96, 0.45) !important;
+    transform: translateY(-2px);
+}
+
+.mud-button-filled.mud-button-filled-success {
+    background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3) !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+}
+
+.mud-button-filled.mud-button-filled-error {
+    background: linear-gradient(135deg, #EF4444 0%, #F87171 100%) !important;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3) !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+}
+
+.mud-button-outlined {
+    border-radius: 999px !important;
+    border-width: 1.5px !important;
+    font-weight: 700 !important;
+}
+
+/* Inputs y Selects */
+.mud-input-outlined {
+    background: rgba(255, 255, 255, 0.90) !important;
+    border-radius: 16px !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid var(--glass-border) !important;
+}
+
+.mud-input-outlined:focus-within {
+    background: #FFFFFF !important;
+    border-color: rgba(216, 27, 96, 0.5) !important;
+    box-shadow: 0 0 0 3.5px rgba(216, 27, 96, 0.12) !important;
+}
+
+/* Tabs internos dentro de formularios y cards */
+.mud-tabs .mud-tabs-tabbar {
+    background: transparent !important;
+    border-bottom: 1.5px solid var(--glass-border) !important;
+}
+
+.mud-tabs:not(.glass-tabs) .mud-tab {
+    color: #64748B !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    letter-spacing: -0.01em !important;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 10px 20px !important;
+    transition: all 0.2s ease !important;
+    background: transparent !important;
+}
+
+.mud-tabs:not(.glass-tabs) .mud-tab:hover {
+    color: var(--primary) !important;
+    background: rgba(216, 27, 96, 0.04) !important;
+}
+
+.mud-tabs:not(.glass-tabs) .mud-tab.mud-tab-active {
+    color: #880E4F !important;
+    font-weight: 800 !important;
+    background: rgba(216, 27, 96, 0.06) !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.mud-tabs:not(.glass-tabs) .mud-tab.mud-tab-active .mud-icon-root {
+    color: var(--primary) !important;
+}
+
+.mud-tab-slider {
+    background: linear-gradient(90deg, #D81B60, #FF5C8D) !important;
+    height: 3px !important;
+    border-radius: 3px !important;
+}
+
+/* Chips modernos */
+.mud-chip {
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+}
+
+/* ========================================================
+   BENTO GRID HERO HOME MODERNO
+   ======================================================== */
 .bento-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-auto-rows: 240px;
-    gap: 24px;
+    gap: 20px;
 }
 
 .bento-item {
-    border-radius: 32px;
-    padding: 32px;
+    border-radius: 24px;
+    padding: 26px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     overflow: hidden;
     position: relative;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-item:hover {
+    transform: translateY(-8px) scale(1.015);
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(165, 10, 58, 0.3);
+    box-shadow: var(--glass-shadow-hover);
 }
 
 .bento-2x2 { grid-column: span 2; grid-row: span 2; }
@@ -205,6 +510,8 @@ body {
 @media (max-width: 960px) {
     .bento-grid {
         grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: 210px;
+        gap: 16px;
     }
 }
 
@@ -212,41 +519,163 @@ body {
     .bento-grid {
         grid-template-columns: 1fr;
         grid-auto-rows: auto;
+        gap: 14px;
     }
-    .bento-2x2, .bento-2x1, .bento-1x2 { grid-column: span 1; grid-row: span 1; }
+    .bento-2x2, .bento-2x1, .bento-1x2, .bento-1x1 {
+        grid-column: span 1;
+        grid-row: span 1;
+        min-height: 180px;
+    }
 }
 
-/* Solid Premium Bento Cards */
-.glass-premium {
-    background: #FCF5F7; /* Solid pale rose/grey */
-    border: none;
-    box-shadow: 0 4px 15px rgba(165, 10, 58, 0.03);
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+/* Iconos de Bento */
+.icon-wrapper-bento {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(165, 10, 58, 0.12) 0%, rgba(225, 29, 72, 0.2) 100%);
+    color: var(--primary);
+    box-shadow: 0 4px 10px rgba(165, 10, 58, 0.08);
+    transition: all 0.3s ease;
 }
 
-.bento-2x2.glass-premium {
-    background: #F8EDF0; /* Slightly darker blush for the main card */
-}
-
-.bento-2x1.glass-premium {
-    background: #FAFAFA; /* Off-white for news */
-}
-
-.bento-1x1.glass-premium:nth-of-type(3) {
-    background: #F8EDF0; /* Blush for ChatBot */
-}
-
-.bento-1x1.glass-premium:nth-of-type(4) {
-    background: #FAFAFA; /* Off-white for locations */
-}
-
-.glass-premium:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(165, 10, 58, 0.08);
-}
-
-.gradient-text {
+.bento-item:hover .icon-wrapper-bento {
+    transform: rotate(6deg) scale(1.1);
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: white;
+}
+
+/* ========================================================
+   ANIMACIONES SUAVES
+   ======================================================== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.delay-1 { animation-delay: 0.08s; }
+.delay-2 { animation-delay: 0.15s; }
+.delay-3 { animation-delay: 0.22s; }
+.delay-4 { animation-delay: 0.28s; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(165, 10, 58, 0.3);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* ========================================================
+   OPTIMIZACIÓN RESPONSIVA PARA DISPOSITIVOS MÓVILES (<600px)
+   ======================================================== */
+@media (max-width: 600px) {
+    /* Header compacto sin colisión de logo */
+    .modern-appbar {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+    
+    .brand-logo-img {
+        height: 32px !important;
+    }
+    
+    .brand-title {
+        font-size: 1.05rem !important;
+    }
+
+    /* Pestañas de Workspace compactas: solo ícono en inactivas, texto conciso en activa */
+    .glass-tabs .mud-tabs-tabbar {
+        padding: 4px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .glass-tabs .mud-tab {
+        padding: 4px 10px !important;
+        min-height: 36px !important;
+        margin: 0 2px !important;
+    }
+
+    .glass-tabs .mud-tab:not(.mud-tab-active) .tab-label-text {
+        display: none !important; /* Oculta texto en tabs no activas para ahorrar espacio */
+    }
+
+    .glass-tabs .mud-tab.mud-tab-active {
+        padding: 4px 14px !important;
+    }
+
+    .glass-tabs .mud-tab.mud-tab-active .tab-label-text {
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.85rem !important;
+    }
+
+    /* Pestañas internas de formularios */
+    .mud-tabs:not(.glass-tabs) .mud-tab {
+        padding: 8px 12px !important;
+        font-size: 0.85rem !important;
+    }
+
+    .mud-tabs:not(.glass-tabs) .mud-tab:not(.mud-tab-active) .mud-tab-text {
+        display: none !important; /* En celular solo muestra el icono de la sección si está inactiva */
+    }
+
+    /* Toolbar superior compacto en móvil */
+    .modern-toolbar {
+        margin: 4px 8px 10px 8px !important;
+        padding: 6px 12px !important;
+        border-radius: 20px !important;
+    }
+
+    .workspace-action-btn {
+        padding: 4px 12px !important;
+        font-size: 0.82rem !important;
+    }
+
+    /* Rediseño responsivo para TabMetadatosNoticias (lienzo/sidebar) */
+    .pb-app {
+        grid-template-columns: 1fr !important;
+        min-height: auto !important;
+    }
+
+    .pb-sidebar {
+        border-right: none !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        max-height: 280px !important;
+    }
+
+    .pb-canvas-area {
+        padding: 14px !important;
+    }
+
+    /* Botón flotante FAB en móvil un poco más compacto */
+    .floating-menu-fab {
+        bottom: 18px !important;
+        right: 18px !important;
+        padding: 12px !important;
+        border-radius: 50% !important;
+    }
 }

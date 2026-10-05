@@ -71,11 +71,7 @@ namespace SantiagoConectaIA.API.Controllers
                 }
 
                 stream.Position = 0;
-                var aiResult = await _geminiEventoService.ExtraerEventoDesdeImagenAsync(
-                    stream, 
-                    formato.MimeType, 
-                    blobResult.Data.URL, 
-                    cancellationToken);
+                var aiResult = await _geminiEventoService.ExtraerEventoDesdeImagenAsync(stream, formato.MimeType, blobResult.Data.URL,cancellationToken);
 
                 if (aiResult.IsSuccess)
                 {

@@ -2,7 +2,7 @@
 @implements IDisposable
 @inject WorkspaceService WorkspaceService
 
-<MudToolBar Class="bg-gray-100 border-b border-gray-200">
+<MudToolBar Class="modern-toolbar d-flex align-center flex-wrap gap-2">
 	<MudSpacer />
 	@foreach (var menuItem in WorkspaceService.CurrentMenuItems)
 	{
@@ -10,7 +10,7 @@
 				   Color="@menuItem.Color" 
 				   StartIcon="@menuItem.Icon" 
 				   OnClick="@menuItem.Action" 
-				   Class="mr-2">
+				   Class="workspace-action-btn">
 			@menuItem.Text
 		</MudButton>
 	}
@@ -18,7 +18,7 @@
 		<MudIconButton Icon="@Icons.Material.Filled.Close" 
 					   Color="Color.Default" 
 					   OnClick="@(() => WorkspaceService.SetCloseCurrentTab(true))" 
-					   Class="ml-2" />
+					   Class="rounded-circle pa-2 ml-1 close-tab-toolbar-btn" />
 	</MudTooltip>
 </MudToolBar>
 

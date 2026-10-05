@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace SantiagoConectaIA.PWA.Pages
 {
@@ -13,15 +13,6 @@ namespace SantiagoConectaIA.PWA.Pages
 		private void NavigateToPage(string url)
 		{
 			Navigation.NavigateTo(url);
-		}
-
-		/// <summary>
-		/// Se ejecuta cuando el componente se inicializa
-		/// </summary>
-		protected override async Task OnInitializedAsync()
-		{
-			await base.OnInitializedAsync();
-			// Aquí se pueden cargar datos iniciales si es necesario
 		}
 	}
 }

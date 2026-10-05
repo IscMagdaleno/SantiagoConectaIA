@@ -1,20 +1,26 @@
 @using SantiagoConectaIA.Share.Objects.NoticiasModule
 @inherits EngramaComponent
 
-<MudCard Elevation="3" Class="d-flex flex-column" Style="height:100%; width:100%;">
-    <MudCardMedia Image="@Noticia.vchImagenPortada" Height="200" />
-    <MudCardContent>
-        <MudText Typo="Typo.h6">@Noticia.vchTitulo</MudText>
-        <MudText Typo="Typo.body2">@Noticia.dtFechaPublicacion.ToShortDateString()</MudText>
-        <MudText Typo="Typo.body2" Class="mt-2" Style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+<MudCard Class="service-card" Style="height:100%; width:100%; display: flex; flex-direction: column;">
+    <div style="position: relative; overflow: hidden;">
+        <MudCardMedia Image="@Noticia.vchImagenPortada" Height="200" Style="transition: transform 0.4s ease;" />
+        <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 500;">
+            @Noticia.dtFechaPublicacion.ToString("dd MMM yyyy")
+        </div>
+    </div>
+    <MudCardContent Style="padding: 1.25rem; flex-grow: 1;">
+        <MudText Typo="Typo.h6" Style="font-weight: 700; color: #0F172A; line-height: 1.3; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+            @Noticia.vchTitulo
+        </MudText>
+        <MudText Typo="Typo.body2" Style="color: #64748B; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
             @Noticia.nvchContenido
         </MudText>
     </MudCardContent>
-    <MudCardActions Style="padding: 1rem; margin-top: auto;">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickVer">Ver</MudButton>
-        <MudButton Variant="Variant.Outlined" Style="border-color: #A50A3A; color: #A50A3A;" Class="ml-2" OnClick="OnClickEditar">Editar</MudButton>
+    <MudCardActions Style="padding: 1rem 1.25rem; margin-top: auto; border-top: 1px solid rgba(226, 232, 240, 0.6);">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Class="rounded-lg px-3" OnClick="OnClickVer">Ver</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Class="ml-2 rounded-lg px-3" OnClick="OnClickEditar">Editar</MudButton>
         <MudSpacer />
-        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => OnClickEliminarNoticia(Noticia))">Eliminar</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Class="rounded-lg" OnClick="@(() => OnClickEliminarNoticia(Noticia))">Eliminar</MudButton>
     </MudCardActions>
 </MudCard>
 
