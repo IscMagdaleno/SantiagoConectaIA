@@ -140,6 +140,26 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Utiles
 			return response.Response ?? Response<BlobSaved>.BadResult("Error al subir la imagen al servidor.", new BlobSaved());
 		}
 
+		public async Task<Response<EventoExtraidoDto>> PostEscanearEventoConIA(IBrowserFile file)
+		{
+			var urlApi = url + "/PostEscanearEventoConIA";
+			var uniqueName = $"flyer_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+
+			using var memoryStream = new MemoryStream();
+			await file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 15).CopyToAsync(memoryStream);
+			memoryStream.Position = 0;
+
+			using var imgContent = new StreamContent(memoryStream);
+
+			var response = await _httpService.PostWithImage<Response<EventoExtraidoDto>>(
+				urlApi,
+				imgContent,
+				uniqueName
+			);
+
+			return response.Response ?? Response<EventoExtraidoDto>.BadResult("Error al procesar la imagen con IA.", new EventoExtraidoDto());
+		}
+
 		public async Task<SeverityMessage> PostGetSucursales(int iIdEvento)
         {
             var APIUrl = url + "/PostGetEventosSucursales";

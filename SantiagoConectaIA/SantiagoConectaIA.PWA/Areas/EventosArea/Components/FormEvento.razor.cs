@@ -84,6 +84,57 @@ namespace SantiagoConectaIA.PWA.Areas.EventosArea.Components
             }
         }
 
+        private bool _isScanningIA;
+
+        private async Task EscanearFlyerConIA(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
+        {
+            if (file == null) return;
+
+            try
+            {
+                _isScanningIA = true;
+                StateHasChanged();
+
+                var response = await Data.PostEscanearEventoConIA(file);
+                if (response != null && response.IsSuccess && response.Data != null)
+                {
+                    var extraido = response.Data;
+                    
+                    if (!string.IsNullOrWhiteSpace(extraido.vchNombre)) Model.vchNombre = extraido.vchNombre;
+                    if (!string.IsNullOrWhiteSpace(extraido.nvchDescripcion)) Model.nvchDescripcion = extraido.nvchDescripcion;
+                    if (extraido.dtFechaInicio != DateTime.MinValue) Model.dtFechaInicio = extraido.dtFechaInicio;
+                    if (extraido.dtFechaFin.HasValue) Model.dtFechaFin = extraido.dtFechaFin;
+                    if (!string.IsNullOrWhiteSpace(extraido.vchLugar)) Model.vchLugar = extraido.vchLugar;
+                    if (!string.IsNullOrWhiteSpace(extraido.vchDireccion)) Model.vchDireccion = extraido.vchDireccion;
+                    if (!string.IsNullOrWhiteSpace(extraido.vchCostoTexto)) Model.vchCostoTexto = extraido.vchCostoTexto;
+                    if (!string.IsNullOrWhiteSpace(extraido.vchOrganizador)) Model.vchOrganizador = extraido.vchOrganizador;
+                    if (!string.IsNullOrWhiteSpace(extraido.vchTelefono)) Model.vchTelefono = extraido.vchTelefono;
+                    if (!string.IsNullOrWhiteSpace(extraido.vchCorreo)) Model.vchCorreo = extraido.vchCorreo;
+                    if (!string.IsNullOrWhiteSpace(extraido.vchUrlOficial)) Model.vchUrlOficial = extraido.vchUrlOficial;
+                    if (!string.IsNullOrWhiteSpace(extraido.vchImagenPortada)) Model.vchImagenPortada = extraido.vchImagenPortada;
+                    if (extraido.flLatitud != 0) Model.flLatitud = extraido.flLatitud;
+                    if (extraido.flLongitud != 0) Model.flLongitud = extraido.flLongitud;
+
+                    SetNombreTab($"Evento: {Model.vchNombre}");
+                    TriggerMenuUpdate();
+                    Snackbar.Add("¡Datos extraídos con éxito y portada asignada!", MudBlazor.Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add(response?.Message ?? "No se pudo extraer la información del flyer.", MudBlazor.Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al analizar el cartel: {ex.Message}", MudBlazor.Severity.Error);
+            }
+            finally
+            {
+                _isScanningIA = false;
+                StateHasChanged();
+            }
+        }
+
         private async Task Submit()
         {
             var result = await Data.PostSaveRegistro(Model);

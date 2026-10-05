@@ -7,7 +7,43 @@
     <MudTabPanel Text="Datos del Evento" Icon="@Icons.Material.Filled.Info">
         <MudCard Elevation="0">
             <MudCardContent>
-                <MudText Typo="Typo.h6" Class="mb-4">Información del Evento</MudText>
+                <div class="d-flex justify-space-between align-center mb-4 flex-wrap gap-2">
+                    <MudText Typo="Typo.h6">Información del Evento</MudText>
+                    
+                    @if (EstadoControl != TipoEstadoControl.Lectura)
+                    {
+                        <MudFileUpload T="IBrowserFile" Accept=".png, .jpg, .jpeg, .webp" FilesChanged="EscanearFlyerConIA" Disabled="@_isScanningIA">
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Filled" 
+                                           Color="Color.Secondary" 
+                                           StartIcon="@(_isScanningIA ? Icons.Material.Filled.HourglassTop : Icons.Material.Filled.AutoAwesome)"
+                                           Disabled="@_isScanningIA">
+                                    @(_isScanningIA ? "Analizando Cartel con IA..." : "Autocompletar con IA desde Cartel")
+                                </MudButton>
+                            </ActivatorContent>
+                        </MudFileUpload>
+                    }
+                </div>
+
+                @if (_isScanningIA)
+                {
+                    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Class="my-3" />
+                    <MudAlert Severity="Severity.Info" Class="mb-4">
+                        Analizando la imagen del evento con Gemini Vision: extrayendo fechas, lugar, precios y redactando la descripción...
+                    </MudAlert>
+                }
+
+                @if (!string.IsNullOrEmpty(Model?.vchImagenPortada))
+                {
+                    <MudPaper Class="pa-3 mb-4 d-flex align-center gap-4" Elevation="1" Outlined="true">
+                        <MudImage Src="@Model.vchImagenPortada" Height="100" Width="140" ObjectFit="ObjectFit.Cover" Class="rounded-lg" Elevation="1" />
+                        <div>
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Imagen de Portada Configurada</MudText>
+                            <MudText Typo="Typo.caption" Class="text-truncate" Style="max-width: 450px;">@Model.vchImagenPortada</MudText>
+                        </div>
+                    </MudPaper>
+                }
+
                 @if (Model != null)
                 {
                     <MudGrid>

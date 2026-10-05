@@ -117,6 +117,10 @@ builder.Services.AddHttpClient<IGeminiImagenService, GeminiImagenService>(client
 {
     client.Timeout = TimeSpan.FromSeconds(120);
 });
+builder.Services.AddHttpClient<IGeminiEventoService, GeminiEventoService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(90);
+});
 builder.Services.AddSingleton<IPublicacionAutomaticaService, PublicacionAutomaticaService>();
 builder.Services.AddScoped<IEmprendimientoAutomaticoService, EmprendimientoAutomaticoService>();
 builder.Services.AddHostedService<WhatsAppWorker>();
