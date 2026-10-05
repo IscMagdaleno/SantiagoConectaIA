@@ -50,7 +50,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
                 var currentNewsResponse = await _noticiasDomain.GetNoticias(new PostGetNoticias { bActivo = null });
                 var existingTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                if (currentNewsResponse.IsSuccess && currentNewsResponse.Data != null)
+                if (currentNewsResponse?.Data != null)
                 {
                     foreach (var n in currentNewsResponse.Data)
                     {
@@ -61,6 +61,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
                     }
                 }
 
+                _logger.LogInformation($"Total de noticias existentes en memoria para descartar duplicados: {existingTitles.Count}");
+
                 foreach (var nota in apiResponse.Data)
                 {
                     try
@@ -68,6 +70,11 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
                         var title = nota.Destino_Encabezado?.Trim() ?? "";
                         var contentHtml = nota.Destino_Contenido ?? "";
                         var imageUrl = nota.Img_Principal_Url ?? "";
+
+                        if (string.IsNullOrWhiteSpace(title))
+                        {
+                            continue;
+                        }
                         
                         // Comprobar si el título ya existe
                         if (existingTitles.Contains(title))
@@ -75,6 +82,9 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
                             _logger.LogInformation($"La noticia ya existe en la BD, saltando: {title}");
                             continue;
                         }
+
+                        // Agregar inmediatamente al conjunto para prevenir duplicados dentro del mismo lote
+                        existingTitles.Add(title);
 
                         _logger.LogInformation($"Procesando Noticia Nueva (Geo: {nota.Destino_Geografia_Nombre}): {title}");
 

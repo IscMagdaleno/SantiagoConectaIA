@@ -47,9 +47,9 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                 var newsResults = newsTask.Result;
                 var metaResults = metaTask.Result;
 
-                // Validar error en resultados base
+                // Validar si el procedimiento devolvió explícitamente un error de BD
                 var firstNews = newsResults.FirstOrDefault();
-                if (firstNews != null && !firstNews.bResult)
+                if (firstNews != null && !firstNews.bResult && !string.IsNullOrWhiteSpace(firstNews.vchMessage) && firstNews.iIdNoticia == 0)
                 {
                     return Response<IEnumerable<NoticiaDto>>.BadResult(firstNews.vchMessage, new List<NoticiaDto>());
                 }

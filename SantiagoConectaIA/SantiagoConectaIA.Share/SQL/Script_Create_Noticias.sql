@@ -34,6 +34,8 @@ BEGIN
     SET NOCOUNT ON;
 
     SELECT 
+        CAST(1 AS BIT) AS bResult,
+        'Ok' AS vchMessage,
         n.iIdNoticia,
         n.vchTitulo,
         n.vchTituloEn,
