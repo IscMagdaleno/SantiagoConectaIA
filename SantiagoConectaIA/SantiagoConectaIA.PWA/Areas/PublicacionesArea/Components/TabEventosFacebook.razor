@@ -1,0 +1,229 @@
+@using SantiagoConectaIA.Share.Objects.EventosModulo
+
+@if (Cargando)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudGrid>
+        <!-- COLUMNA IZQUIERDA: LISTA DE EVENTOS -->
+        <MudItem xs="12" md="5">
+            <MudTextField @bind-Value="FiltroTexto"
+                          Label="Buscar evento"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4" />
+
+            @if (!EventosFiltrados.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    @if (string.IsNullOrEmpty(FiltroTexto))
+                    {
+                        <text>No hay eventos registrados disponibles.</text>
+                    }
+                    else
+                    {
+                        <text>No se encontraron eventos con el término "@FiltroTexto".</text>
+                    }
+                </MudAlert>
+            }
+            else
+            {
+                <MudPaper Class="pa-2 overflow-auto glass-effect" Style="max-height: 720px; border-radius: 16px;">
+                    <MudList T="Evento" Clickable="true">
+                        @foreach (var ev in EventosFiltrados)
+                        {
+                            var seleccionado = ev.iIdEvento == EventoSeleccionado?.iIdEvento;
+                            <MudListItem Value="@ev"
+                                         OnClick="@(() => Seleccionar(ev))"
+                                         Class="@(seleccionado ? "mud-theme-primary" : "")"
+                                         Style="border-radius: 12px; margin-bottom: 6px;">
+                                <div class="d-flex align-center justify-space-between w-100">
+                                    <div class="d-flex align-center" style="gap: 12px; min-width: 0;">
+                                        @if (!string.IsNullOrWhiteSpace(ev.vchImagenPortada))
+                                        {
+                                            <img src="@ev.vchImagenPortada"
+                                                 alt="@ev.vchNombre"
+                                                 style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; flex-shrink: 0;" />
+                                        }
+                                        else
+                                        {
+                                            <div style="width: 50px; height: 50px; border-radius: 10px; background: #FFF1F5; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;">
+                                                🎭
+                                            </div>
+                                        }
+                                        <div style="min-width: 0;">
+                                            <MudText Typo="Typo.subtitle2" Style="font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                @ev.vchNombre
+                                            </MudText>
+                                            <MudText Typo="Typo.caption" Class="d-block" Style="color: #64748B;">
+                                                📅 @ev.dtFechaInicio.ToString("dd MMM yyyy, hh:mm tt")
+                                            </MudText>
+                                            <MudText Typo="Typo.caption" Class="d-block" Style="color: #64748B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                📍 @(!string.IsNullOrWhiteSpace(ev.vchLugar) ? ev.vchLugar : "Santiago Papasquiaro")
+                                            </MudText>
+                                        </div>
+                                    </div>
+                                    @if (ev.bDestacado)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Class="ml-2">Destacado</MudChip>
+                                    }
+                                </div>
+                            </MudListItem>
+                        }
+                    </MudList>
+                </MudPaper>
+            }
+        </MudItem>
+
+        <!-- COLUMNA DERECHA: EDICIÓN, MEJORA CON IA Y PUBLICACIÓN -->
+        <MudItem xs="12" md="7">
+            @if (EventoSeleccionado == null)
+            {
+                <MudPaper Class="pa-8 d-flex flex-column align-center justify-center text-center glass-effect"
+                          Style="min-height: 400px; border-radius: 16px;">
+                    <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+                    <MudText Typo="Typo.h6" Style="font-weight: 700;">Selecciona un evento</MudText>
+                    <MudText Typo="Typo.body2" Style="color: #64748B;">
+                        Elige un evento de la lista para preparar su diseño de post (1080×1360), redactarlo con IA y publicarlo en redes.
+                    </MudText>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Class="pa-4 glass-effect" Style="border-radius: 16px;">
+                    <div class="d-flex align-center justify-space-between mb-3">
+                        <MudText Typo="Typo.h6" Style="font-weight: 700;">
+                            #@EventoSeleccionado.iIdEvento - @EventoSeleccionado.vchNombre
+                        </MudText>
+                    </div>
+
+                    <!-- SELECTOR DE FORMATO DE IMAGEN: POST 1080x1360 VS ORIGINAL -->
+                    <MudPaper Class="pa-3 mb-3 d-flex align-center justify-space-between" Elevation="0" Style="background: #FFF1F5; border: 1px solid #FCE7F3; border-radius: 12px;">
+                        <div class="d-flex align-center" style="gap: 10px;">
+                            <MudIcon Icon="@Icons.Material.Filled.CameraAlt" Color="Color.Primary" />
+                            <div>
+                                <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #880E4F;">Formato de Imagen para el Post</MudText>
+                                <MudText Typo="Typo.caption" Style="color: #64748B;">
+                                    @(UsarCapturaPost ? "Post Vertical Oficial (1080×1360 px) con portada, fecha, lugar y costo" : "Foto original del evento")
+                                </MudText>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-center" style="gap: 12px;">
+                            <MudSwitch T="bool"
+                                       Value="UsarCapturaPost"
+                                       ValueChanged="OnUsarCapturaPostChanged"
+                                       Color="Color.Primary"
+                                       Label="@(UsarCapturaPost ? "Captura Post (1080x1360)" : "Foto Original")" />
+                            
+                            @if (UsarCapturaPost)
+                            {
+                                <MudButton Variant="Variant.Outlined"
+                                           Size="Size.Small"
+                                           Color="Color.Primary"
+                                           Disabled="@GenerandoCaptura"
+                                           StartIcon="@Icons.Material.Filled.Refresh"
+                                           OnClick="GenerarCapturaPostAsync">
+                                    @(GenerandoCaptura ? "Generando..." : "Regenerar")
+                                </MudButton>
+                            }
+                        </div>
+                    </MudPaper>
+
+                    <!-- PREVIEW DE LA IMAGEN EFECTIVA -->
+                    @if (TieneImagen)
+                    {
+                        <div class="position-relative mb-2">
+                            <MudImage Src="@ImagenEfectiva"
+                                      Alt="@EventoSeleccionado.vchNombre"
+                                      ObjectFit="ObjectFit.Contain"
+                                      Class="rounded"
+                                      Style="width: 100%; max-height: 380px; background: #FFFFFF; border: 1.5px solid #F1F5F9;" />
+
+                            @if (GenerandoCaptura)
+                            {
+                                <div class="position-absolute d-flex flex-column align-center justify-center rounded"
+                                     style="top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 5;">
+                                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" Class="mb-2" />
+                                    <MudText Typo="Typo.body2" Style="font-weight: 600; color: #880E4F;">Generando captura 1080×1360...</MudText>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex flex-wrap align-center mt-1 mb-4" style="gap: 8px;">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AutoFixHigh"
+                                       Disabled="@(!PuedeEditarImagen)"
+                                       OnClick="EditarImagen">
+                                Editar con IA
+                            </MudButton>
+                        </div>
+                    }
+
+                    <!-- CONTENEDOR OCULTO OFFSCREEN PARA CAPTURA HTML2CANVAS 1080x1360 -->
+                    @if (EventoSeleccionado != null)
+                    {
+                        <div style="position: absolute; left: -9999px; top: 0; pointer-events: none; opacity: 1;">
+                            <CardEventoPostPreview ElementId="post-card-evento-capture"
+                                                   Evento="@EventoSeleccionado"
+                                                   ImagenPortadaBase64="@ImagenPortadaBase64" />
+                        </div>
+                    }
+
+                    <!-- DETALLES DEL EVENTO -->
+                    <MudTextField @bind-Value="Informacion"
+                                  Label="Información del evento (se envía a la IA)"
+                                  Variant="Variant.Outlined"
+                                  Lines="8"
+                                  Class="mb-3" />
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.AutoAwesome"
+                               Disabled="@(!PuedeMejorar)"
+                               OnClick="MejorarConIa"
+                               Class="mb-4">
+                        @if (Mejorando)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Mejorando...</span>
+                        }
+                        else
+                        {
+                            <span>Mejorar con IA</span>
+                        }
+                    </MudButton>
+
+                    <MudTextField @bind-Value="Mensaje"
+                                  Label="Texto que se publicará en Facebook e Instagram"
+                                  Variant="Variant.Outlined"
+                                  Lines="12"
+                                  Class="mb-4" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Custom.Brands.Facebook"
+                               Disabled="@(!PuedePublicar)"
+                               OnClick="Publicar"
+                               FullWidth="true"
+                               Size="Size.Large">
+                        @if (Publicando)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Publicando en Facebook...</span>
+                        }
+                        else
+                        {
+                            <span>Publicar evento en Facebook</span>
+                        }
+                    </MudButton>
+                </MudPaper>
+            }
+        </MudItem>
+    </MudGrid>
+}

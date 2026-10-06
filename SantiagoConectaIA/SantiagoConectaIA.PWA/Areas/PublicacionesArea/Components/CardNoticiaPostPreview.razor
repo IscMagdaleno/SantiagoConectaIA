@@ -1,0 +1,147 @@
+@using SantiagoConectaIA.Share.Objects.NoticiasModule
+@using SantiagoConectaIA.Share.Utilities
+
+<div id="@ElementId" class="instagram-post-container" style="width: 1080px; min-width: 1080px; max-width: 1080px; height: 1360px; min-height: 1360px; max-height: 1360px; background-color: #FAFAFA; box-sizing: border-box; font-family: 'Outfit', sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column;">
+    
+    <!-- BARRA SUPERIOR INSTITUCIONAL (Igual al Header del Portal) -->
+    <div style="background: #ffffff; padding: 24px 44px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #F1F5F9; z-index: 2;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <img src="icons/logo-scia.png" alt="Logo" style="width: 60px; height: 60px; object-fit: contain;" />
+            <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 32px; font-weight: 800; color: #880E4F; letter-spacing: -0.5px; line-height: 1.1;">
+                    Santiago<span style="color: #D81B60;">Conecta</span>
+                </span>
+                <span style="font-size: 15px; font-weight: 700; color: #64748B; letter-spacing: 0.3px;">
+                    Más Cerca, Más Rápido, Más Fácil
+                </span>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; background: #FFF1F5; padding: 10px 22px; border-radius: 999px; border: 1px solid #FCE7F3;">
+            <span style="font-size: 18px; font-weight: 700; color: #D81B60;">
+                @(GetCategoriaTexto())
+            </span>
+        </div>
+    </div>
+
+    <!-- CUERPO PRINCIPAL CON LA TARJETA ESTILO PORTAL -->
+    <div style="padding: 36px 44px 28px 44px; flex: 1; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden;">
+        
+        <!-- TARJETA BLANCA PRINCIPAL -->
+        <div style="background: #ffffff; border-radius: 28px; box-shadow: 0 16px 40px rgba(0,0,0,0.06); border: 1px solid #E2E8F0; overflow: hidden; display: flex; flex-direction: column; flex: 1;">
+            
+            <!-- FRANJA SUPERIOR DISTINTIVA SI ES POLICIACA / ALERTA -->
+            @if (EsAlerta)
+            {
+                <div style="background: #B91C1C; color: #ffffff; padding: 14px 24px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;">
+                    <span>⚠️ COMUNICADO DE SEGURIDAD / SECCIÓN POLICIACA</span>
+                </div>
+            }
+            else
+            {
+                <div style="background: linear-gradient(90deg, #880E4F, #D81B60); height: 8px; width: 100%;"></div>
+            }
+
+            <div style="padding: 36px 40px; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+                
+                <!-- PARTE ARRIBA: TÍTULO, FECHA Y FOTO -->
+                <div>
+                    <!-- CATEGORÍA / BADGE SUPERIOR -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                        <span style="font-size: 16px; font-weight: 800; color: @(EsAlerta ? "#B91C1C" : "#D81B60"); text-transform: uppercase; letter-spacing: 1.5px;">
+                            @(EsAlerta ? "Alerta Inmediata" : "Boletín Informativo")
+                        </span>
+                        <span style="font-size: 18px; color: #64748B; font-weight: 600;">
+                            📅 @(Noticia?.dtFechaPublicacion.ToString("dd MMMM, yyyy") ?? DateTime.Now.ToString("dd MMMM, yyyy"))
+                        </span>
+                    </div>
+
+                    <!-- TÍTULO ENORME Y CLARO -->
+                    <h1 style="font-size: 42px; font-weight: 800; color: #0F172A; line-height: 1.22; margin: 0 0 24px 0; text-transform: uppercase; letter-spacing: -0.5px;">
+                        @(Noticia?.vchTitulo ?? "Título de la Noticia")
+                    </h1>
+
+                    <!-- IMAGEN PRINCIPAL DE PORTADA -->
+                    @if (!string.IsNullOrWhiteSpace(ImagenPortada))
+                    {
+                        <div style="width: 100%; height: 420px; border-radius: 20px; overflow: hidden; margin-bottom: 24px; position: relative; background: #F1F5F9; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+                            <img src="@ImagenPortada" alt="Portada" style="width: 100%; height: 100%; object-fit: cover;" />
+                            <div style="position: absolute; bottom: 14px; left: 16px; background: rgba(15, 23, 42, 0.75); color: #ffffff; padding: 6px 16px; border-radius: 999px; font-size: 15px; font-weight: 600; backdrop-filter: blur(8px);">
+                                📸 Santiago Papasquiaro, Dgo.
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- CONTENIDO RESUMIDO DE LA NOTICIA -->
+                <div style="background: #F8FAFC; border-radius: 20px; padding: 24px 28px; border: 1px solid #EDF2F7; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="font-size: 15px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px;">
+                            📌 Contenido Principal
+                        </span>
+                    </div>
+                    <p style="font-size: 22px; color: #334155; line-height: 1.48; margin: 0; font-weight: 400; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;">
+                        @GetContenidoLimpio()
+                    </p>
+                </div>
+
+                <!-- FOOTER DE LA TARJETA: LLAMADO A LA ACCIÓN -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 2px dashed #E2E8F0;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="display: inline-block; width: 14px; height: 14px; background: #10B981; border-radius: 50%;"></span>
+                        <span style="font-size: 18px; font-weight: 700; color: #1E293B;">
+                            Lee la nota completa en: <span style="color: #D81B60;">santiagopapasquiaro.com.mx</span>
+                        </span>
+                    </div>
+                    <span style="font-size: 17px; font-weight: 800; color: #880E4F; background: #FCE7F3; padding: 8px 18px; border-radius: 999px;">
+                        #SantiagoConecta
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+    [Parameter] public string ElementId { get; set; } = "post-card-noticia-capture";
+    [Parameter] public Noticia? Noticia { get; set; }
+    [Parameter] public string? ImagenPortada { get; set; }
+
+    private bool EsAlerta => Noticia != null && (
+        Noticia.iIdCategoria == 4 || 
+        (Noticia.vchTitulo?.Contains("choque", StringComparison.OrdinalIgnoreCase) ?? false) ||
+        (Noticia.vchTitulo?.Contains("alerta", StringComparison.OrdinalIgnoreCase) ?? false) ||
+        (Noticia.vchTitulo?.Contains("seguridad", StringComparison.OrdinalIgnoreCase) ?? false) ||
+        (Noticia.vchTitulo?.Contains("polic", StringComparison.OrdinalIgnoreCase) ?? false)
+    );
+
+    private string GetCategoriaTexto()
+    {
+        if (Noticia == null) return "Noticias y Avisos";
+        return Noticia.iIdCategoria switch
+        {
+            1 => "Gobierno Municipal",
+            2 => "Cultura y Tradición",
+            3 => "Deportes",
+            4 => "Seguridad y Vialidad",
+            5 => "Obras Públicas",
+            _ => "Noticias de Santiago"
+        };
+    }
+
+    private string GetContenidoLimpio()
+    {
+        if (Noticia == null || string.IsNullOrWhiteSpace(Noticia.nvchContenido))
+            return "Mantente informado con los avisos y comunicados oficiales en el portal municipal.";
+
+        var plano = TextoPublicacion.ATextoPlano(Noticia.nvchContenido);
+        if (plano.Length > 340)
+        {
+            return plano.Substring(0, 337).Trim() + "...";
+        }
+        return plano;
+    }
+}

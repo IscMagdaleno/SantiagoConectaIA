@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles;
 using SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles;
@@ -14,6 +15,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
         [Inject] public MainPublicaciones Publicaciones { get; set; } = default!;
         [Inject] public ISnackbar Snackbar { get; set; } = default!;
         [Inject] public IDialogService DialogService { get; set; } = default!;
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
         public string FiltroTexto { get; set; } = string.Empty;
         public string Mensaje { get; set; } = string.Empty;
@@ -21,6 +23,12 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
         public bool Mejorando { get; set; }
         public bool Publicando { get; set; }
         public bool EditandoImagen { get; set; }
+        public bool GenerandoCaptura { get; set; }
+
+        // Switch para activar captura formato Instagram/Facebook 1080x1360
+        public bool UsarCapturaPost { get; set; } = true;
+        public string? ImagenCapturadaUrl { get; set; }
+        public string? ImagenPortadaBase64 { get; set; }
 
         public PublicacionAutomatica? Automatica { get; set; }
         public bool GuardandoAutomatica { get; set; }
@@ -29,11 +37,15 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
         public List<string> Imagenes { get; set; } = new();
         public string? ImagenSeleccionada { get; set; }
 
-        public bool Ocupado => Mejorando || Publicando || EditandoImagen;
-        public bool TieneImagen => !string.IsNullOrWhiteSpace(ImagenSeleccionada);
+        public bool Ocupado => Mejorando || Publicando || EditandoImagen || GenerandoCaptura;
+        public bool TieneImagen => !string.IsNullOrWhiteSpace(ImagenEfectiva);
+        public string? ImagenEfectiva => (UsarCapturaPost && !string.IsNullOrWhiteSpace(ImagenCapturadaUrl)) 
+            ? ImagenCapturadaUrl 
+            : ImagenSeleccionada;
+
         public bool PuedePublicar => NoticiaSeleccionada != null && TieneImagen && !string.IsNullOrWhiteSpace(Mensaje) && !Ocupado;
         public bool PuedeMejorar => NoticiaSeleccionada != null && !Ocupado;
-        public bool PuedeEditarImagen => TieneImagen && !Ocupado;
+        public bool PuedeEditarImagen => !string.IsNullOrWhiteSpace(ImagenSeleccionada) && !Ocupado;
 
         public IEnumerable<Noticia> NoticiasFiltradas =>
             (string.IsNullOrWhiteSpace(FiltroTexto)
@@ -75,7 +87,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
             }
         }
 
-        public void Seleccionar(Noticia noticia)
+        public async Task Seleccionar(Noticia noticia)
         {
             NoticiaSeleccionada = noticia;
             Mensaje = ArmarMensaje(noticia);
@@ -83,9 +95,88 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                 ? new List<string>()
                 : new List<string> { noticia.vchImagenPortada.Trim() };
             ImagenSeleccionada = Imagenes.FirstOrDefault();
+            ImagenCapturadaUrl = null;
+
+            if (UsarCapturaPost && !string.IsNullOrWhiteSpace(ImagenSeleccionada))
+            {
+                await GenerarCapturaPostAsync();
+            }
         }
 
-        public void ElegirImagen(string url) => ImagenSeleccionada = url;
+        public async Task OnUsarCapturaPostChanged(bool valor)
+        {
+            UsarCapturaPost = valor;
+            if (UsarCapturaPost && string.IsNullOrWhiteSpace(ImagenCapturadaUrl) && NoticiaSeleccionada != null)
+            {
+                await GenerarCapturaPostAsync();
+            }
+        }
+
+        public async Task GenerarCapturaPostAsync()
+        {
+            if (NoticiaSeleccionada == null) return;
+
+            GenerandoCaptura = true;
+            StateHasChanged();
+
+            try
+            {
+                // Si la imagen seleccionada es una URL http/https remota, descargarla como Base64 mediante el proxy del backend para evitar error de CORS en html2canvas
+                if (!string.IsNullOrWhiteSpace(ImagenSeleccionada) && ImagenSeleccionada.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    var proxyResp = await Publicaciones.ProxyImageBase64(ImagenSeleccionada.Trim());
+                    if (proxyResp.IsSuccess && !string.IsNullOrWhiteSpace(proxyResp.Data))
+                    {
+                        ImagenPortadaBase64 = proxyResp.Data;
+                    }
+                    else
+                    {
+                        ImagenPortadaBase64 = ImagenSeleccionada;
+                    }
+                }
+                else
+                {
+                    ImagenPortadaBase64 = ImagenSeleccionada;
+                }
+
+                // Renderizar el DOM con la imagen en base64
+                StateHasChanged();
+                await Task.Delay(350);
+
+                var base64 = await JSRuntime.InvokeAsync<string?>("postCapture.captureElementAsBase64", "post-card-noticia-capture");
+                if (!string.IsNullOrWhiteSpace(base64))
+                {
+                    var uploadResult = await Publicaciones.GuardarImagenBase64(base64, NoticiaSeleccionada.vchTitulo ?? "noticia");
+                    if (uploadResult.IsSuccess && !string.IsNullOrWhiteSpace(uploadResult.Data))
+                    {
+                        ImagenCapturadaUrl = uploadResult.Data;
+                        Snackbar.Add("Captura estilo Post (1080x1360) generada con éxito.", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Se capturó el post pero hubo error al subirla: " + uploadResult.Message, Severity.Warning);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add("No se pudo generar la captura: " + ex.Message, Severity.Error);
+            }
+            finally
+            {
+                GenerandoCaptura = false;
+                StateHasChanged();
+            }
+        }
+
+        public async void ElegirImagen(string url)
+        {
+            ImagenSeleccionada = url;
+            if (UsarCapturaPost)
+            {
+                await GenerarCapturaPostAsync();
+            }
+        }
 
         public async Task EditarImagen()
         {
@@ -102,6 +193,10 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
             {
                 Imagenes.Add(editada);
                 ImagenSeleccionada = editada;
+                if (UsarCapturaPost)
+                {
+                    await GenerarCapturaPostAsync();
+                }
             }
         }
 
@@ -140,12 +235,13 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
             }
 
             Publicando = true;
-            var result = await Publicaciones.PublicarFacebook(Mensaje.Trim(), ImagenSeleccionada!.Trim());
+            var imagenParaPublicar = ImagenEfectiva!;
+            var result = await Publicaciones.PublicarFacebook(Mensaje.Trim(), imagenParaPublicar.Trim());
             Publicando = false;
 
             if (result.IsSuccess)
             {
-                Snackbar.Add("La noticia se envió a Facebook.", Severity.Success);
+                Snackbar.Add("La noticia se envió a Facebook con éxito.", Severity.Success);
             }
             else
             {

@@ -8,5 +8,6 @@ namespace SantiagoConectaIA.API.Services
         Task<Response<string>> MejorarAsync(PostMejorarPublicacion post, CancellationToken cancellationToken = default);
         Task<Response<string>> MejorarEmprendimientoAsync(PostMejorarEmprendimiento post, CancellationToken cancellationToken = default);
         Task<Response<string>> MejorarProductoAsync(PostMejorarProducto post, CancellationToken cancellationToken = default);
+        Task<Response<string>> MejorarEventoAsync(PostMejorarEvento post, CancellationToken cancellationToken = default);
     }
 }

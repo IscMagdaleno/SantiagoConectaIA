@@ -108,17 +108,64 @@ else
                 <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 16px;">
                     <MudText Typo="Typo.h6" Class="mb-3" Style="font-weight: 700;">@NoticiaSeleccionada.vchTitulo</MudText>
 
+                    <!-- TOGGLE Y CONTROL DE CAPTURA ESTILO POST (1080x1360) VS ORIGINAL -->
+                    <MudPaper Elevation="0" Class="pa-3 mb-4 rounded-lg" Style="background: #FFF1F5; border: 1px solid #FCE7F3;">
+                        <div class="d-flex align-center justify-space-between flex-wrap" style="gap: 12px;">
+                            <div class="d-flex align-center" style="gap: 10px;">
+                                <MudIcon Icon="@Icons.Material.Filled.CameraEnhance" Color="Color.Primary" />
+                                <div>
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #880E4F;">
+                                        Formato de imagen para Facebook / Instagram
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Style="color: #64748B;">
+                                        @(UsarCapturaPost ? "Post diseñado 1080x1360 con cabecera y tipografía oficial" : "Foto original seleccionada sin marco")
+                                    </MudText>
+                                </div>
+                            </div>
+                            <div class="d-flex align-center" style="gap: 8px;">
+                                <MudSwitch T="bool"
+                                           Value="UsarCapturaPost"
+                                           ValueChanged="OnUsarCapturaPostChanged"
+                                           Color="Color.Primary"
+                                           Label="@(UsarCapturaPost ? "Captura Post (1080x1360)" : "Foto Original")" />
+                                
+                                @if (UsarCapturaPost)
+                                {
+                                    <MudButton Variant="Variant.Outlined"
+                                               Size="Size.Small"
+                                               Color="Color.Primary"
+                                               Disabled="@GenerandoCaptura"
+                                               StartIcon="@Icons.Material.Filled.Refresh"
+                                               OnClick="GenerarCapturaPostAsync">
+                                        @(GenerandoCaptura ? "Generando..." : "Regenerar")
+                                    </MudButton>
+                                }
+                            </div>
+                        </div>
+                    </MudPaper>
+
                     @if (TieneImagen)
                     {
-                        <MudImage Src="@ImagenSeleccionada"
-                                  Alt="@NoticiaSeleccionada.vchTitulo"
-                                  ObjectFit="ObjectFit.Contain"
-                                  Class="rounded mb-2"
-                                  Style="width: 100%; max-height: 280px; background: #F8FAFC;" />
+                        <div class="position-relative mb-2">
+                            <MudImage Src="@ImagenEfectiva"
+                                      Alt="@NoticiaSeleccionada.vchTitulo"
+                                      ObjectFit="ObjectFit.Contain"
+                                      Class="rounded"
+                                      Style="width: 100%; max-height: 380px; background: #F8FAFC; border: 1px solid #E2E8F0;" />
+
+                            @if (GenerandoCaptura)
+                            {
+                                <div class="position-absolute d-flex flex-column align-center justify-center rounded"
+                                     style="top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 5;">
+                                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" Class="mb-2" />
+                                    <MudText Typo="Typo.body2" Style="font-weight: 600; color: #880E4F;">Generando captura 1080×1360...</MudText>
+                                </div>
+                            }
+                        </div>
 
                         @if (Imagenes.Count > 1)
                         {
-                            <MudText Typo="Typo.caption" Style="color: #64748B;">Imagen de la publicación (portada o editadas con IA):</MudText>
+                            <MudText Typo="Typo.caption" Style="color: #64748B;">Foto base de la noticia (portada o editadas con IA):</MudText>
                         }
                         <div class="d-flex flex-wrap align-center mt-1 mb-4" style="gap: 8px;">
                             @if (Imagenes.Count > 1)
@@ -137,7 +184,7 @@ else
                                        StartIcon="@Icons.Material.Filled.AutoFixHigh"
                                        Disabled="@(!PuedeEditarImagen)"
                                        OnClick="EditarImagen">
-                                Editar imagen
+                                Editar con IA
                             </MudButton>
                         </div>
                     }
@@ -146,6 +193,16 @@ else
                         <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
                             Esta noticia no tiene imagen de portada. Agrégala en el catálogo de noticias antes de publicarla.
                         </MudAlert>
+                    }
+
+                    <!-- CONTENEDOR OCULTO OFFSREEN PARA CAPTURA HTML2CANVAS 1080x1360 -->
+                    @if (NoticiaSeleccionada != null)
+                    {
+                        <div style="position: absolute; left: -9999px; top: 0; pointer-events: none; opacity: 1;">
+                            <CardNoticiaPostPreview ElementId="post-card-noticia-capture"
+                                                    Noticia="@NoticiaSeleccionada"
+                                                    ImagenPortada="@(ImagenPortadaBase64 ?? ImagenSeleccionada)" />
+                        </div>
                     }
 
                     <MudTextField @bind-Value="Mensaje"

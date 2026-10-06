@@ -114,6 +114,64 @@ namespace SantiagoConectaIA.API.Services
             return Ok(texto);
         }
 
+        public async Task<Response<string>> MejorarEventoAsync(PostMejorarEvento post, CancellationToken cancellationToken = default)
+        {
+            if (post == null || post.iIdEvento <= 0 || string.IsNullOrWhiteSpace(post.vchNombre))
+            {
+                return Response<string>.BadResult("Selecciona un evento para mejorar el texto.", string.Empty);
+            }
+
+            var (sitio, _) = await ObtenerSitioAsync(cancellationToken);
+            var enlace = $"{sitio}/eventos/{post.iIdEvento}";
+            var nombre = post.vchNombre.Trim();
+            var prompt = PromptEvento(nombre, post, enlace);
+
+            var generado = await GenerarAsync(prompt, cancellationToken);
+            if (!generado.IsSuccess)
+            {
+                return generado;
+            }
+
+            var texto = LimpiarBloques(generado.Data);
+            texto = AsegurarLinea(texto, enlace, $"👉 {enlace}");
+            return Ok(texto);
+        }
+
+        private static string PromptEvento(string nombre, PostMejorarEvento post, string enlace)
+        {
+            return
+                $"""
+                Redacta UNA publicación de Facebook/Instagram para promocionar este evento en Santiago Papasquiaro. Devuelve solo el texto listo para copiar, sin comillas, sin bloques de código y sin asteriscos de Markdown (* o **).
+
+                Sigue EXACTAMENTE esta estructura y estilo que la audiencia ama:
+                1. Título inicial impactante con emojis temáticos según el tipo de evento (ej. 🎸 ¡Noche de rock en español en Santiago Papasquiaro! 🤘✨ o 🎨 ¡Llamado a todos los artistas de nuestra región! ✨).
+                2. Un párrafo atractivo y cálido que invite a la comunidad a asistir o participar, destacando quién presenta/organiza, la esencia del evento y por qué no se lo pueden perder.
+                3. Bloque de datos clave con emojis:
+                🗓️ Fecha: (Día y mes del evento o fecha límite)
+                ⏰ Hora: (Horario si aplica)
+                📍 Lugar o Registro: (Ubicación, recinto o dirección)
+                🎟️ Boletos o Acceso: (Precios de preventa/taquilla o Entrada libre si aplica)
+                4. Llamado a la acción entusiasta (ej. ¡Asegura tus entradas con tiempo y no te quedes fuera de esta gran velada! 🔥).
+                5. Línea de enlace oficial:
+                🔗 Consulta todos los detalles y bases en:
+                👉 {enlace}
+                6. Pregunta de IA:
+                💬 ¿Dudas? ¡Pregúntale a nuestra IA para que te dé todos los detalles del evento al instante! 🤖✨
+                .
+                .
+                7. Hashtags finales relevantes: #SantiagoPapasquiaro #{Regex.Replace(nombre, @"\s+", "")} #SantiagoConecta #EventosSantiago
+
+                Datos del evento:
+                - Nombre: {nombre}
+                - Descripción: {post.nvchDescripcion}
+                - Fecha/Hora: {post.dtFechaInicio}
+                - Lugar: {post.vchLugar}
+                - Dirección: {post.vchDireccion}
+                - Costo/Boletos: {post.vchCostoTexto}
+                - Organizador: {post.vchOrganizador}
+                """;
+        }
+
         private async Task<Response<string>> GenerarAsync(string prompt, CancellationToken cancellationToken)
         {
             var (modelo, apiKey) = await ObtenerConfiguracionGeminiAsync(cancellationToken);

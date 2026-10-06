@@ -53,6 +53,29 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles
             return Post($"{Url}/PostMejorarProducto", model, string.Empty);
         }
 
+        public Task<Response<string>> MejorarEventoConIa(PostMejorarEvento evento)
+        {
+            return Post($"{Url}/PostMejorarEvento", evento, string.Empty);
+        }
+
+        public async Task<Response<List<SantiagoConectaIA.Share.Objects.EventosModulo.Evento>>> GetEventos()
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/Eventos/PostGetEventos", new SantiagoConectaIA.Share.PostClass.EventosModulo.PostGetEventos { bEstatus = true });
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<Response<List<SantiagoConectaIA.Share.Objects.EventosModulo.Evento>>>();
+                    if (result != null) return result;
+                }
+                return Response<List<SantiagoConectaIA.Share.Objects.EventosModulo.Evento>>.BadResult("No se pudieron consultar los eventos.", new List<SantiagoConectaIA.Share.Objects.EventosModulo.Evento>());
+            }
+            catch (Exception ex)
+            {
+                return Response<List<SantiagoConectaIA.Share.Objects.EventosModulo.Evento>>.BadResult("Error: " + ex.Message, new List<SantiagoConectaIA.Share.Objects.EventosModulo.Evento>());
+            }
+        }
+
         public Task<Response<string>> EditarImagenConIa(string imagenUrl, string prompt)
         {
             var model = new PostEditarImagen
@@ -61,6 +84,34 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles
                 vchPrompt = prompt
             };
             return Post($"{Url}/PostEditarImagenIa", model, string.Empty);
+        }
+
+        public Task<Response<string>> GuardarImagenBase64(string base64Data, string titulo)
+        {
+            var model = new PostGuardarImagenGenerada
+            {
+                Base64Data = base64Data,
+                Titulo = titulo
+            };
+            return Post($"{Url}/PostGuardarImagenBase64", model, string.Empty);
+        }
+
+        public Task<Response<string>> ProxyImageBase64(string imagenUrl)
+        {
+            var model = new PostEditarImagen
+            {
+                vchImagenUrl = imagenUrl
+            };
+            return Post($"{Url}/PostProxyImageBase64", model, string.Empty);
+        }
+
+        public Task<Response<Dictionary<string, string>>> ProxyBatchImagesBase64(List<string> urls)
+        {
+            var model = new PostProxyBatchImages
+            {
+                Urls = urls
+            };
+            return Post($"{Url}/PostProxyBatchImagesBase64", model, new Dictionary<string, string>());
         }
 
         public Task<Response<string>> PublicarFacebook(string message, string imageUrl)
