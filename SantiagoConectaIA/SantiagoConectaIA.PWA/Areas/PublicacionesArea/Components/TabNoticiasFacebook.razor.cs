@@ -116,7 +116,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                 result.IsSuccess ? Severity.Success : Severity.Warning);
         }
         
-        public void Seleccionar(Noticia noticia)
+        public async Task SeleccionarAsync(Noticia noticia)
         {
             NoticiaSeleccionada = noticia;
             Mensaje = ArmarMensaje(noticia);

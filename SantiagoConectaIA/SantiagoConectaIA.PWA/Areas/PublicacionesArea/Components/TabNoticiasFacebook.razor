@@ -83,7 +83,7 @@ else
                         <MudPaper Class="pa-3 d-flex align-center"
                                   Elevation="@(seleccionada ? 3 : 1)"
                                   Style="@($"cursor: pointer; border-radius: 12px; border: 2px solid {(seleccionada ? "#A50A3A" : "transparent")};")"
-                                  @onclick="@(() => Seleccionar(noticia))">
+                                  @onclick="@(() => SeleccionarAsync(noticia))">
                             @if (!string.IsNullOrWhiteSpace(noticia.vchImagenPortada))
                             {
                                 <MudImage Src="@noticia.vchImagenPortada"
