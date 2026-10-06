@@ -303,12 +303,24 @@ namespace SantiagoConectaIA.API.Controllers
         }
 
         /// <summary>
-        /// Publica ahora la noticia activa más reciente, siempre que no se haya publicado ya.
+        /// Noticia que toca publicar (la más reciente), validando que no se haya publicado ya.
         /// </summary>
-        [HttpPost("PostPublicarSiguienteNoticia")]
-        public async Task<IActionResult> PostPublicarSiguienteNoticia(CancellationToken cancellationToken)
+        [HttpPost("PostGetSiguienteNoticia")]
+        public async Task<IActionResult> PostGetSiguienteNoticia(CancellationToken cancellationToken)
         {
-            var resultado = await _noticiaAutomaticaService.PublicarMasRecienteAsync(manual: true, cancellationToken);
+            var resultado = await _noticiaAutomaticaService.GetSiguienteAsync(cancellationToken);
+            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
+        }
+
+        /// <summary>
+        /// Publica la noticia siguiente con el texto y el post (imagen) ya generados en el navegador.
+        /// </summary>
+        [HttpPost("PostPublicarNoticiaGenerada")]
+        public async Task<IActionResult> PostPublicarNoticiaGenerada([FromBody] PostPublicarGenerada postModel, CancellationToken cancellationToken)
+        {
+            var resultado = postModel == null
+                ? Response<string>.BadResult("No se recibieron los datos de la publicación.", string.Empty)
+                : await _noticiaAutomaticaService.PublicarGeneradaAsync(postModel.iIdRegistro, postModel.Message, postModel.ImageUrl, cancellationToken);
             var respuesta = new Response<PublicacionAutomatica>
             {
                 IsSuccess = resultado.IsSuccess,
@@ -320,12 +332,24 @@ namespace SantiagoConectaIA.API.Controllers
         }
 
         /// <summary>
-        /// Publica ahora el siguiente emprendimiento de la rotación y avanza el puntero al que sigue.
+        /// Emprendimiento que toca publicar según la rotación, validando que no se acabe de publicar.
         /// </summary>
-        [HttpPost("PostPublicarSiguienteEmprendimiento")]
-        public async Task<IActionResult> PostPublicarSiguienteEmprendimiento(CancellationToken cancellationToken)
+        [HttpPost("PostGetSiguienteEmprendimiento")]
+        public async Task<IActionResult> PostGetSiguienteEmprendimiento(CancellationToken cancellationToken)
         {
-            var resultado = await _emprendimientoAutomaticoService.PublicarSiguienteAsync(manual: true, cancellationToken);
+            var resultado = await _emprendimientoAutomaticoService.ObtenerSiguienteAsync(cancellationToken);
+            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
+        }
+
+        /// <summary>
+        /// Publica el emprendimiento siguiente con el texto y el post (imagen) ya generados en el navegador.
+        /// </summary>
+        [HttpPost("PostPublicarEmprendimientoGenerado")]
+        public async Task<IActionResult> PostPublicarEmprendimientoGenerado([FromBody] PostPublicarGenerada postModel, CancellationToken cancellationToken)
+        {
+            var resultado = postModel == null
+                ? Response<string>.BadResult("No se recibieron los datos de la publicación.", string.Empty)
+                : await _emprendimientoAutomaticoService.PublicarGeneradoAsync(postModel.iIdRegistro, postModel.Message, postModel.ImageUrl, cancellationToken);
             var estado = await EstadoEmprendimientosAsync(await _publicacionAutomaticaService.GetEmprendimientosAsync(cancellationToken), cancellationToken);
             var respuesta = new Response<PublicacionAutomaticaEmprendimientos>
             {

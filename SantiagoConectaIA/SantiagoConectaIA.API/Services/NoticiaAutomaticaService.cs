@@ -1,5 +1,6 @@
 using EngramaCoreStandar.Results;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.Share.Objects.NoticiasModule;
 using SantiagoConectaIA.Share.PostModels.NoticiasModule;
 using SantiagoConectaIA.Share.PostModels.PublicacionesModule;
 
@@ -12,6 +13,18 @@ namespace SantiagoConectaIA.API.Services
         /// ignora el interruptor de la publicación diaria (lo usa el botón "Publicar siguiente").
         /// </summary>
         Task<Response<string>> PublicarMasRecienteAsync(bool manual = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Devuelve la noticia que toca publicar (la activa más reciente) validando que no se haya publicado ya
+        /// y que tenga imagen de portada. El navegador la usa para preparar el post antes de publicarlo.
+        /// </summary>
+        Task<Response<Noticia>> GetSiguienteAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Publica una noticia con el texto y la imagen ya preparados (post capturado). Solo acepta la noticia
+        /// que devuelve GetSiguienteAsync y la registra como publicada.
+        /// </summary>
+        Task<Response<string>> PublicarGeneradaAsync(int idNoticia, string mensaje, string imagenUrl, CancellationToken cancellationToken = default);
     }
 
     public class NoticiaAutomaticaService : INoticiaAutomaticaService
@@ -68,38 +81,13 @@ namespace SantiagoConectaIA.API.Services
                 return Falla("Desactivada: no se publicó.");
             }
 
-            var respuesta = await _noticiasDomain.GetNoticias(new PostGetNoticias { bActivo = true });
-            if (!respuesta.IsSuccess || respuesta.Data == null)
+            var candidata = await CandidataAsync(estado, cancellationToken);
+            if (candidata.Error != null)
             {
-                _logger.LogWarning("No se pudo consultar las noticias para la publicación automática: {Mensaje}", respuesta.Message);
-                return Falla($"No se pudieron consultar las noticias: {respuesta.Message}");
+                return Falla(candidata.Error);
             }
 
-            var noticia = respuesta.Data
-                .OrderByDescending(n => n.dtFechaPublicacion)
-                .ThenByDescending(n => n.iIdNoticia)
-                .FirstOrDefault();
-
-            if (noticia == null)
-            {
-                _logger.LogInformation("No hay noticias activas para publicar en Facebook.");
-                return Falla("No hay noticias activas.");
-            }
-
-            if (estado.iIdUltimaNoticia == noticia.iIdNoticia)
-            {
-                _logger.LogInformation(
-                    "La noticia más reciente ({Id} - {Titulo}) ya se publicó en Facebook. No se envía de nuevo.",
-                    noticia.iIdNoticia,
-                    noticia.vchTitulo);
-                return Falla($"La noticia más reciente ya se publicó: #{noticia.iIdNoticia} {noticia.vchTitulo}. No hay una nueva.");
-            }
-
-            if (string.IsNullOrWhiteSpace(noticia.vchImagenPortada))
-            {
-                _logger.LogWarning("La noticia {Id} no tiene imagen de portada. No se publicó en Facebook.", noticia.iIdNoticia);
-                return Falla($"La noticia #{noticia.iIdNoticia} no tiene imagen de portada; no se puede publicar.");
-            }
+            var noticia = candidata.Noticia!;
 
             _logger.LogInformation(
                 "Redactando con IA la noticia {Id} ({Fecha:dd/MM/yyyy} - {Titulo}).",
@@ -137,6 +125,92 @@ namespace SantiagoConectaIA.API.Services
             return Exito($"Noticia #{noticia.iIdNoticia} ({noticia.vchTitulo}) publicada en Facebook.");
         }
 
+        public async Task<Response<Noticia>> GetSiguienteAsync(CancellationToken cancellationToken = default)
+        {
+            var estado = await _automatica.GetAsync(cancellationToken);
+            var candidata = await CandidataAsync(estado, cancellationToken);
+            return candidata.Error == null
+                ? new Response<Noticia> { IsSuccess = true, Data = candidata.Noticia!, Message = "Ok" }
+                : Response<Noticia>.BadResult(candidata.Error, new Noticia());
+        }
+
+        public async Task<Response<string>> PublicarGeneradaAsync(int idNoticia, string mensaje, string imagenUrl, CancellationToken cancellationToken = default)
+        {
+            if (!await Candado.WaitAsync(0, cancellationToken))
+            {
+                return Anotar(Falla("Ya hay una publicación de noticias en curso. Espera a que termine."));
+            }
+
+            try
+            {
+                var estado = await _automatica.GetAsync(cancellationToken);
+                var candidata = await CandidataAsync(estado, cancellationToken);
+                if (candidata.Error != null)
+                {
+                    return Anotar(Falla(candidata.Error));
+                }
+
+                var noticia = candidata.Noticia!;
+                if (noticia.iIdNoticia != idNoticia)
+                {
+                    return Anotar(Falla($"La noticia #{idNoticia} no es la que toca publicar (toca la #{noticia.iIdNoticia}). Vuelve a intentarlo."));
+                }
+
+                var publicado = await _facebook.PublicarAsync(new PostPublicarFacebook { Message = mensaje, ImageUrl = imagenUrl }, cancellationToken);
+                if (!publicado.IsSuccess)
+                {
+                    _logger.LogWarning("Make no aceptó la noticia {Id}: {Mensaje}", noticia.iIdNoticia, publicado.Message);
+                    return Anotar(Falla($"Make no aceptó la noticia {noticia.iIdNoticia}: {publicado.Message}"));
+                }
+
+                await _automatica.RegistrarPublicacionAsync(noticia.iIdNoticia, noticia.vchTitulo, cancellationToken);
+                _logger.LogInformation("Noticia {Id} publicada en Facebook con el post diseñado.", noticia.iIdNoticia);
+                return Anotar(Exito($"Noticia #{noticia.iIdNoticia} ({noticia.vchTitulo}) publicada en Facebook."));
+            }
+            finally
+            {
+                Candado.Release();
+            }
+        }
+
+        /// <summary>La noticia activa más reciente, o el motivo por el que no se puede publicar.</summary>
+        private async Task<(Noticia? Noticia, string? Error)> CandidataAsync(PublicacionAutomatica estado, CancellationToken cancellationToken)
+        {
+            var respuesta = await _noticiasDomain.GetNoticias(new PostGetNoticias { bActivo = true });
+            if (!respuesta.IsSuccess || respuesta.Data == null)
+            {
+                _logger.LogWarning("No se pudo consultar las noticias para la publicación automática: {Mensaje}", respuesta.Message);
+                return (null, $"No se pudieron consultar las noticias: {respuesta.Message}");
+            }
+
+            var noticia = respuesta.Data
+                .OrderByDescending(n => n.dtFechaPublicacion)
+                .ThenByDescending(n => n.iIdNoticia)
+                .FirstOrDefault();
+
+            if (noticia == null)
+            {
+                _logger.LogInformation("No hay noticias activas para publicar en Facebook.");
+                return (null, "No hay noticias activas.");
+            }
+
+            if (estado.iIdUltimaNoticia == noticia.iIdNoticia)
+            {
+                _logger.LogInformation(
+                    "La noticia más reciente ({Id} - {Titulo}) ya se publicó en Facebook. No se envía de nuevo.",
+                    noticia.iIdNoticia,
+                    noticia.vchTitulo);
+                return (null, $"La noticia más reciente ya se publicó: #{noticia.iIdNoticia} {noticia.vchTitulo}. No hay una nueva.");
+            }
+
+            if (string.IsNullOrWhiteSpace(noticia.vchImagenPortada))
+            {
+                _logger.LogWarning("La noticia {Id} no tiene imagen de portada. No se publicó en Facebook.", noticia.iIdNoticia);
+                return (null, $"La noticia #{noticia.iIdNoticia} no tiene imagen de portada; no se puede publicar.");
+            }
+
+            return (noticia, null);
+        }
         private Response<string> Anotar(Response<string> resultado)
         {
             _bitacora.Registrar(PublicacionesBitacora.Noticias, resultado.Message);
