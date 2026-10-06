@@ -102,6 +102,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
                     Eventos = cards.Where(c => c.vchTipoEntidad == "EVENTO").ToList(),
                     Capsulas = cards.Where(c => c.vchTipoEntidad == "CAPSULA").ToList(),
                     Publicaciones = cards.Where(c => c.vchTipoEntidad == "PUBLICACION").ToList(),
+                    Emprendimientos = cards.Where(c => c.vchTipoEntidad == "EMPRENDIMIENTO").ToList(),
+                    Productos = cards.Where(c => c.vchTipoEntidad == "PRODUCTO").ToList(),
                     iTotalRegistros = cards.FirstOrDefault()?.iTotalRegistros ?? 0
                 };
 
@@ -139,17 +141,29 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
         {
             var tipoNorm = (tipo ?? string.Empty).Trim().ToUpperInvariant();
             var urls = ParseImagenesJson(imagenesJson, imagenUrl);
+            var ruta = ResolveRoute(tipoNorm, id, contenidoDetallado, imagenesJson);
+
+            // Si es un producto y no tiene descripción detallada real (o traía un id numérico), lo dejamos en null
+            string? detalleLimpio = contenidoDetallado;
+            if (tipoNorm == "PRODUCTO")
+            {
+                if (string.IsNullOrWhiteSpace(detalleLimpio) || int.TryParse(detalleLimpio, out _))
+                {
+                    detalleLimpio = null;
+                }
+            }
+
             return new FeedCard
             {
                 vchTipoEntidad = tipoNorm,
                 iIdEntidad = id,
                 vchTitulo = titulo ?? string.Empty,
                 nvchDescripcion = descripcion ?? string.Empty,
-                nvchContenidoDetallado = contenidoDetallado,
+                nvchContenidoDetallado = detalleLimpio,
                 vchImagenUrl = urls.FirstOrDefault() ?? imagenUrl ?? string.Empty,
                 dtFecha = fecha,
                 iTotalRegistros = total,
-                vchRutaDetalle = ResolveRoute(tipoNorm, id),
+                vchRutaDetalle = ruta,
                 nvchImagenesJson = imagenesJson,
                 ImagenesUrls = urls
             };
@@ -190,22 +204,51 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
             return list;
         }
 
-        private static string ResolveRoute(string tipo, int id) => tipo switch
+        private static string ResolveRoute(string tipo, int id, string? contenidoDetallado = null, string? imagenesJson = null)
         {
-            "TRAMITE" => $"/tramites/{id}",
-            "NOTICIA" => $"/noticias/{id}",
-            "EVENTO" => $"/eventos/{id}",
-            "CAPSULA" => string.Empty,
-            "PUBLICACION" => string.Empty,
-            _ => string.Empty
-        };
+            if (tipo == "PRODUCTO")
+            {
+                // 1. Intentar leer iIdEmpresa de imagenesJson / metadata JSON
+                if (!string.IsNullOrWhiteSpace(imagenesJson))
+                {
+                    try
+                    {
+                        var jObj = JObject.Parse(imagenesJson);
+                        if (jObj["iIdEmpresa"] != null && int.TryParse(jObj["iIdEmpresa"]?.ToString(), out var idEmp) && idEmp > 0)
+                        {
+                            return $"/emprendimientos/{idEmp}";
+                        }
+                    }
+                    catch { }
+                }
+
+                // 2. Si vino en contenidoDetallado
+                if (int.TryParse(contenidoDetallado, out var idEmpresa) && idEmpresa > 0)
+                {
+                    return $"/emprendimientos/{idEmpresa}";
+                }
+
+                return "/emprendimientos";
+            }
+
+            return tipo switch
+            {
+                "TRAMITE" => $"/tramites/{id}",
+                "NOTICIA" => $"/noticias/{id}",
+                "EVENTO" => $"/eventos/{id}",
+                "EMPRENDIMIENTO" => $"/emprendimientos/{id}",
+                "CAPSULA" => string.Empty,
+                "PUBLICACION" => string.Empty,
+                _ => string.Empty
+            };
+        }
 
         private static string NormalizeTipoFiltro(string? filtro)
         {
             var value = (filtro ?? string.Empty).Trim().ToUpperInvariant();
             return value switch
             {
-                "TRAMITE" or "NOTICIA" or "EVENTO" or "CAPSULA" or "PUBLICACION" => value,
+                "TRAMITE" or "NOTICIA" or "EVENTO" or "CAPSULA" or "PUBLICACION" or "EMPRENDIMIENTO" => value,
                 _ => "TODO"
             };
         }

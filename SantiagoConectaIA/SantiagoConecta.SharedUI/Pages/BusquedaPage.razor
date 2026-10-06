@@ -5,6 +5,7 @@
 @using SantiagoConectaIA.Share.PostModels.FeedModule
 @inject Data_Feed DataFeed
 @inject NavigationManager NavManager
+@implements IDisposable
 
 <SeoHead Titulo="Búsqueda"
          Descripcion="Busca trámites, noticias, eventos y negocios de Santiago Papasquiaro desde un solo lugar." />
@@ -15,7 +16,7 @@
         <MudIcon Icon="@Icons.Material.Filled.Search" Style="font-size: 56px; color: #ffffff; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
         <h1 class="header-title mt-2">Búsqueda General</h1>
         <p class="header-subtitle">
-            @(string.IsNullOrWhiteSpace(_query) ? "Encuentra trámites, noticias, eventos y cápsulas en Santiago Papasquiaro" : $"Resultados para: \"{_query}\"")
+            @(string.IsNullOrWhiteSpace(_query) ? "Encuentra trámites, noticias, eventos, emprendimientos y datos curiosos en Santiago Papasquiaro" : $"Resultados para: \"{_query}\"")
         </p>
         <div class="d-flex justify-center gap-3 mt-2">
             <MudButton Variant="Variant.Filled"
@@ -82,6 +83,26 @@
         else
         {
             <MudExpansionPanels MultiExpansion="true">
+                <MudExpansionPanel Text="@($"Emprendimientos ({_result.Emprendimientos.Count})")" IsExpanded="@(_result.Emprendimientos.Count > 0)" Disabled="@(_result.Emprendimientos.Count == 0)">
+                    <div class="row">
+                        @foreach (var card in _result.Emprendimientos)
+                        {
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <FeedCardComponent Card="card" />
+                            </div>
+                        }
+                    </div>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="@($"Productos de Emprendimientos ({_result.Productos.Count})")" IsExpanded="@(_result.Productos.Count > 0)" Disabled="@(_result.Productos.Count == 0)">
+                    <div class="row">
+                        @foreach (var card in _result.Productos)
+                        {
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <FeedCardComponent Card="card" />
+                            </div>
+                        }
+                    </div>
+                </MudExpansionPanel>
                 <MudExpansionPanel Text="@($"Trámites ({_result.Tramites.Count})")" IsExpanded="@(_result.Tramites.Count > 0)" Disabled="@(_result.Tramites.Count == 0)">
                     <div class="row">
                         @foreach (var card in _result.Tramites)
@@ -112,7 +133,7 @@
                         }
                     </div>
                 </MudExpansionPanel>
-                <MudExpansionPanel Text="@($"Cápsulas de Santiago ({_result.Capsulas.Count})")" IsExpanded="@(_result.Capsulas.Count > 0)" Disabled="@(_result.Capsulas.Count == 0)">
+                <MudExpansionPanel Text="@($"Datos Curiosos ({_result.Capsulas.Count})")" IsExpanded="@(_result.Capsulas.Count > 0)" Disabled="@(_result.Capsulas.Count == 0)">
                     <div class="row">
                         @foreach (var card in _result.Capsulas)
                         {
@@ -151,23 +172,61 @@
     private string _errorMessage = string.Empty;
     private FeedSearchResult? _result;
     private string? _lastQuery;
+    private bool _subscribed;
 
     private int TotalCount =>
         (_result?.Tramites.Count ?? 0)
         + (_result?.Noticias.Count ?? 0)
         + (_result?.Eventos.Count ?? 0)
         + (_result?.Capsulas.Count ?? 0)
-        + (_result?.Publicaciones.Count ?? 0);
+        + (_result?.Publicaciones.Count ?? 0)
+        + (_result?.Emprendimientos.Count ?? 0)
+        + (_result?.Productos.Count ?? 0);
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        _query = GetQueryParam("q");
-        _searchInput = _query;
-
-        if (!string.IsNullOrWhiteSpace(_query) && !string.Equals(_query, _lastQuery, StringComparison.Ordinal))
+        if (!_subscribed)
         {
-            _lastQuery = _query;
-            await SearchAsync(_query);
+            NavManager.LocationChanged += OnLocationChanged;
+            _subscribed = true;
+        }
+
+        await ApplyQueryFromUriAsync();
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        try
+        {
+            await ApplyQueryFromUriAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Search location change error: {ex.Message}");
+        }
+    }
+
+    private async Task ApplyQueryFromUriAsync()
+    {
+        var q = GetQueryParam("q");
+        if (string.Equals(q, _lastQuery, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _query = q;
+        _searchInput = q;
+        _lastQuery = q;
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            await SearchAsync(q);
+        }
+        else
+        {
+            _result = null;
+            _errorMessage = string.Empty;
         }
     }
 
@@ -200,16 +259,27 @@
         }
     }
 
-    private Task RunSearchFromInput()
+    private async Task RunSearchFromInput()
     {
         var q = (_searchInput ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(q))
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        NavManager.NavigateTo($"/buscar?q={Uri.EscapeDataString(q)}");
-        return Task.CompletedTask;
+        _query = q;
+        _lastQuery = q;
+
+        var target = $"/buscar?q={Uri.EscapeDataString(q)}";
+        var currentRelative = NavManager.ToBaseRelativePath(NavManager.Uri);
+        var targetRelative = target.TrimStart('/');
+
+        if (!string.Equals(currentRelative, targetRelative, StringComparison.OrdinalIgnoreCase))
+        {
+            NavManager.NavigateTo(target, replace: true);
+        }
+
+        await SearchAsync(q);
     }
 
     private async Task SearchAsync(string texto)
@@ -217,7 +287,7 @@
         _isLoading = true;
         _errorMessage = string.Empty;
         _result = null;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
 
         try
         {
@@ -251,6 +321,15 @@
         finally
         {
             _isLoading = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_subscribed)
+        {
+            NavManager.LocationChanged -= OnLocationChanged;
+            _subscribed = false;
         }
     }
 }

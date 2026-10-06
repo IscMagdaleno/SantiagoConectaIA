@@ -139,6 +139,8 @@ namespace SantiagoConecta.SharedUI.Componentes.FeedArea
             "EVENTO" => "Evento",
             "CAPSULA" => "Dato Curioso",
             "PUBLICACION" => "Comunidad",
+            "EMPRENDIMIENTO" => "Emprendimiento",
+            "PRODUCTO" => "Producto",
             _ => "Contenido"
         };
 
@@ -149,6 +151,8 @@ namespace SantiagoConecta.SharedUI.Componentes.FeedArea
             "EVENTO" => "Ir al Evento",
             "CAPSULA" => "Ver Dato Curioso",
             "PUBLICACION" => "Comunidad",
+            "EMPRENDIMIENTO" => "Ver Negocio",
+            "PRODUCTO" => "Ver Producto",
             _ => "Ver más"
         };
 
@@ -159,6 +163,8 @@ namespace SantiagoConecta.SharedUI.Componentes.FeedArea
             "EVENTO" => Icons.Material.Filled.Event,
             "CAPSULA" => Icons.Material.Filled.Lightbulb,
             "PUBLICACION" => Icons.Material.Filled.Forum,
+            "EMPRENDIMIENTO" => Icons.Material.Filled.Storefront,
+            "PRODUCTO" => Icons.Material.Filled.ShoppingBag,
             _ => Icons.Material.Filled.Info
         };
 
