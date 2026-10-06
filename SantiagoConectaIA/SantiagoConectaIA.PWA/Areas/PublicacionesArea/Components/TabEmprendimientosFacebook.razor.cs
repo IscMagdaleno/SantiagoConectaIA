@@ -30,6 +30,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
 
         public PublicacionAutomaticaEmprendimientos? Automatica { get; set; }
         public bool GuardandoAutomatica { get; set; }
+        public bool PublicandoSiguiente { get; set; }
 
         public Empresa? EmprendimientoSeleccionado { get; set; }
         public PostSaveEmprendimientoFull? Detalle { get; set; }
@@ -99,6 +100,36 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
             }
         }
 
+        public async Task PublicarSiguiente()
+        {
+            var siguiente = Automatica != null && !string.IsNullOrWhiteSpace(Automatica.vchSiguienteEmpresa)
+                ? $"#{Automatica.iIdSiguienteEmpresa} {Automatica.vchSiguienteEmpresa}"
+                : "el siguiente emprendimiento";
+
+            var confirmar = await DialogService.ShowMessageBox(
+                "Publicar siguiente emprendimiento",
+                $"Se publicará en Facebook: {siguiente}. Después la rotación avanza al que sigue. ¿Continuar?",
+                yesText: "Publicar",
+                cancelText: "Cancelar");
+            if (confirmar != true)
+            {
+                return;
+            }
+
+            PublicandoSiguiente = true;
+            var result = await Publicaciones.PublicarSiguienteEmprendimiento();
+            PublicandoSiguiente = false;
+
+            // El API devuelve el estado actualizado (cuál sigue) aun cuando no publica
+            if (result.Data != null)
+            {
+                Automatica = result.Data;
+            }
+
+            Snackbar.Add(
+                string.IsNullOrWhiteSpace(result.Message) ? "No se pudo publicar el emprendimiento." : result.Message,
+                result.IsSuccess ? Severity.Success : Severity.Warning);
+        }
         public async Task Seleccionar(Empresa empresa)
         {
             EmprendimientoSeleccionado = empresa;

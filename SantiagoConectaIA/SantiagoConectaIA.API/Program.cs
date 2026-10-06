@@ -121,8 +121,10 @@ builder.Services.AddHttpClient<IGeminiEventoService, GeminiEventoService>(client
 {
     client.Timeout = TimeSpan.FromSeconds(90);
 });
+builder.Services.AddSingleton<PublicacionesBitacora>();
 builder.Services.AddSingleton<IPublicacionAutomaticaService, PublicacionAutomaticaService>();
 builder.Services.AddScoped<IEmprendimientoAutomaticoService, EmprendimientoAutomaticoService>();
+builder.Services.AddScoped<INoticiaAutomaticaService, NoticiaAutomaticaService>();
 builder.Services.AddHostedService<WhatsAppWorker>();
 
 builder.Services.AddScoped<ITramitesRepository, TramitesRepository>();

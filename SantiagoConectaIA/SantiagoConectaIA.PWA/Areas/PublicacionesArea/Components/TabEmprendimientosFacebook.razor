@@ -31,6 +31,21 @@ else
                 }
             }
         </div>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.SkipNext"
+                   Disabled="@(PublicandoSiguiente || Ocupado)"
+                   OnClick="PublicarSiguiente">
+            @if (PublicandoSiguiente)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Publicando...</span>
+            }
+            else
+            {
+                <span>Publicar siguiente</span>
+            }
+        </MudButton>
         @if (Automatica != null)
         {
             <MudSwitch T="bool"

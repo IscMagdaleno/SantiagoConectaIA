@@ -32,6 +32,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
 
         public PublicacionAutomatica? Automatica { get; set; }
         public bool GuardandoAutomatica { get; set; }
+        public bool PublicandoSiguiente { get; set; }
 
         public Noticia? NoticiaSeleccionada { get; set; }
         public List<string> Imagenes { get; set; } = new();
@@ -87,7 +88,35 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
             }
         }
 
-        public async Task Seleccionar(Noticia noticia)
+        
+        public async Task PublicarSiguiente()
+        {
+            var confirmar = await DialogService.ShowMessageBox(
+                "Publicar siguiente noticia",
+                "Se publicará en Facebook la noticia más reciente, siempre que todavía no se haya publicado. ¿Continuar?",
+                yesText: "Publicar",
+                cancelText: "Cancelar");
+            if (confirmar != true)
+            {
+                return;
+            }
+
+            PublicandoSiguiente = true;
+            var result = await Publicaciones.PublicarSiguienteNoticia();
+            PublicandoSiguiente = false;
+
+            // El API devuelve el estado actualizado (última noticia publicada) aun cuando no publica
+            if (result.Data != null)
+            {
+                Automatica = result.Data;
+            }
+
+            Snackbar.Add(
+                string.IsNullOrWhiteSpace(result.Message) ? "No se pudo publicar la noticia." : result.Message,
+                result.IsSuccess ? Severity.Success : Severity.Warning);
+        }
+        
+        public void Seleccionar(Noticia noticia)
         {
             NoticiaSeleccionada = noticia;
             Mensaje = ArmarMensaje(noticia);
