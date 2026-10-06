@@ -93,6 +93,16 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles
             return Post($"{Url}/PostSavePublicacionAutomaticaEmprendimientos", new PublicacionAutomaticaEmprendimientos { bActivo = activo }, new PublicacionAutomaticaEmprendimientos());
         }
 
+        public Task<Response<PublicacionAutomatica>> PublicarSiguienteNoticia()
+        {
+            return Post($"{Url}/PostPublicarSiguienteNoticia", new { }, new PublicacionAutomatica());
+        }
+
+        public Task<Response<PublicacionAutomaticaEmprendimientos>> PublicarSiguienteEmprendimiento()
+        {
+            return Post($"{Url}/PostPublicarSiguienteEmprendimiento", new { }, new PublicacionAutomaticaEmprendimientos());
+        }
+
         public Task<Response<List<Empresa>>> GetEmprendimientos()
         {
             return Post("api/Empresas/PostGetEmpresas", new PostGetEmpresas { bEstatus = true }, new List<Empresa>());
