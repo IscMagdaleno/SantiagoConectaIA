@@ -1,5 +1,6 @@
 @using SantiagoConectaIA.PWA.Areas.EventosArea.Utiles
 @using SantiagoConectaIA.PWA.Shared.Workspace
+@using SantiagoConectaIA.Share.Utilities
 @inherits EngramaWorkspaceComponent
 
 <MudGrid Justify="Justify.SpaceBetween" Class="mb-4">
@@ -63,7 +64,7 @@
 
                         <div class="d-flex align-center gap-1 mb-1" style="color: #64748B; font-size: 0.85rem;">
                             <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Primary" />
-                            <span>@registro.dtFechaInicio.ToString("dd MMM yyyy - HH:mm")</span>
+                            <span>@registro.dtFechaInicio.ToUsuarioLocal().ToString("dd MMM yyyy - HH:mm")</span>
                         </div>
 
                         @if (!string.IsNullOrWhiteSpace(registro.vchLugar))

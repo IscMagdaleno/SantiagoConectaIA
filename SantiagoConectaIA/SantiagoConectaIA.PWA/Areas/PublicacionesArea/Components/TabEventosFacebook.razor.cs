@@ -4,6 +4,7 @@ using MudBlazor;
 using SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles;
 using SantiagoConectaIA.Share.Objects.EventosModulo;
 using SantiagoConectaIA.Share.PostModels.PublicacionesModule;
+using SantiagoConectaIA.Share.Utilities;
 
 namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
 {
@@ -47,7 +48,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                 : LstEventos.Where(e =>
                     (e.vchNombre?.Contains(FiltroTexto, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     (e.vchLugar?.Contains(FiltroTexto, StringComparison.OrdinalIgnoreCase) ?? false)))
-            .OrderByDescending(e => e.dtFechaInicio);
+            .OrderByDescending(e => e.dtFechaInicio.ToUsuarioLocal());
 
         protected override async Task OnInitializedAsync()
         {
@@ -79,13 +80,14 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
 
         private static string ArmarInformacionEvento(Evento e)
         {
-            return $"Evento: {e.vchNombre}\n" +
-                   $"Descripción: {e.nvchDescripcion}\n" +
-                   $"Fecha: {e.dtFechaInicio:dd 'de' MMMM, yyyy}\n" +
-                   $"Hora: {e.dtFechaInicio:hh:mm tt}\n" +
-                   $"Lugar: {(!string.IsNullOrWhiteSpace(e.vchLugar) ? e.vchLugar : "Santiago Papasquiaro")}\n" +
-                   $"Dirección: {e.vchDireccion}\n" +
-                   $"Costo / Boletos: {(!string.IsNullOrWhiteSpace(e.vchCostoTexto) ? e.vchCostoTexto : "Entrada libre")}\n" +
+            var fechaLocal = e.dtFechaInicio.ToUsuarioLocal();
+            return $"Evento: {e.vchNombre}\r\n" +
+                   $"Descripción: {e.nvchDescripcion}\r\n" +
+                   $"Fecha: {fechaLocal:dd 'de' MMMM, yyyy}\r\n" +
+                   $"Hora: {fechaLocal:hh:mm tt}\r\n" +
+                   $"Lugar: {(!string.IsNullOrWhiteSpace(e.vchLugar) ? e.vchLugar : "Santiago Papasquiaro")}\r\n" +
+                   $"Dirección: {e.vchDireccion}\r\n" +
+                   $"Costo / Boletos: {(!string.IsNullOrWhiteSpace(e.vchCostoTexto) ? e.vchCostoTexto : "Entrada libre")}\r\n" +
                    $"Organizador: {e.vchOrganizador}";
         }
 

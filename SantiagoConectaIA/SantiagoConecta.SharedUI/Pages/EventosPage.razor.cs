@@ -10,6 +10,7 @@ using SantiagoConecta.SharedUI.Data;
 
 using SantiagoConectaIA.Share.PostClass.EventosModulo;
 using SantiagoConectaIA.Share.Objects.EventosModulo;
+using SantiagoConectaIA.Share.Utilities;
 namespace SantiagoConecta.SharedUI.Pages
 {
     public partial class EventosPage : ComponentBase
@@ -92,7 +93,7 @@ namespace SantiagoConecta.SharedUI.Pages
                                          (e.nvchDescripcion != null && e.nvchDescripcion.ToLower().Contains(lowerQuery)));
             }
 
-            filteredEventos = query.OrderByDescending(e => e.bDestacado).ThenBy(e => e.dtFechaInicio).ToList();
+            filteredEventos = query.OrderByDescending(e => e.bDestacado).ThenBy(e => e.dtFechaInicio.ToUsuarioLocal()).ToList();
             StateHasChanged();
         }
 

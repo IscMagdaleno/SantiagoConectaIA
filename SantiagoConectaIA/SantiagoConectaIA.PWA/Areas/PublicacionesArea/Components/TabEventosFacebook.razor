@@ -1,4 +1,5 @@
 @using SantiagoConectaIA.Share.Objects.EventosModulo
+@using SantiagoConectaIA.Share.Utilities
 
 @if (Cargando)
 {
@@ -60,7 +61,7 @@ else
                                                 @ev.vchNombre
                                             </MudText>
                                             <MudText Typo="Typo.caption" Class="d-block" Style="color: #64748B;">
-                                                📅 @ev.dtFechaInicio.ToString("dd MMM yyyy, hh:mm tt")
+                                                📅 @ev.dtFechaInicio.ToUsuarioLocal().ToString("dd MMM yyyy, hh:mm tt")
                                             </MudText>
                                             <MudText Typo="Typo.caption" Class="d-block" Style="color: #64748B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                                 📍 @(!string.IsNullOrWhiteSpace(ev.vchLugar) ? ev.vchLugar : "Santiago Papasquiaro")
