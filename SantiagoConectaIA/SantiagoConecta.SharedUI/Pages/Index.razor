@@ -9,6 +9,7 @@
 @using SantiagoConectaIA.Share.Objects.InformacionLocalModule
 @using SantiagoConectaIA.Share.PostClass.EventosModulo
 @using SantiagoConectaIA.Share.PostModels.InformacionLocalModule
+@using SantiagoConectaIA.Share.Utilities
 @implements IAsyncDisposable
 @inject NavigationManager NavManager
 @inject Data_BuzonCiudadano _dataBuzon
@@ -192,9 +193,10 @@
                                     }
                                     @if (evento.dtFechaInicio != DateTime.MinValue)
                                     {
+                                        var fechaLocal = evento.dtFechaInicio.ToUsuarioLocal();
                                         <span class="home-fecha" aria-hidden="true">
-                                            <span class="home-fecha-dia">@evento.dtFechaInicio.Day</span>
-                                            <span class="home-fecha-mes">@evento.dtFechaInicio.ToString("MMM", EsMx)</span>
+                                            <span class="home-fecha-dia">@fechaLocal.Day</span>
+                                            <span class="home-fecha-mes">@fechaLocal.ToString("MMM", EsMx)</span>
                                         </span>
                                     }
                                 </div>
@@ -202,7 +204,7 @@
                                     <span class="home-etiqueta">@(string.IsNullOrWhiteSpace(evento.vchCostoTexto) ? "Entrada libre" : evento.vchCostoTexto)</span>
                                     <h4 class="home-h4">@evento.vchNombre</h4>
                                     <p class="home-meta">
-                                        <time datetime="@evento.dtFechaInicio.ToString("yyyy-MM-ddTHH:mm")">@evento.dtFechaInicio.ToString("dddd d 'de' MMMM, HH:mm", EsMx)</time>
+                                        <time datetime="@evento.dtFechaInicio.ToUsuarioLocal().ToString("yyyy-MM-ddTHH:mm")">@evento.dtFechaInicio.ToUsuarioLocal().ToString("dddd d 'de' MMMM, HH:mm", EsMx)</time>
                                         @if (!string.IsNullOrWhiteSpace(evento.vchLugar))
                                         {
                                             <span> · @evento.vchLugar</span>
@@ -409,8 +411,8 @@
             if (response?.IsSuccess == true && response.Data != null)
             {
                 var hoy = DateTime.Today;
-                var proximos = response.Data.Where(e => (e.dtFechaFin ?? e.dtFechaInicio) >= hoy).OrderBy(e => e.dtFechaInicio);
-                eventos = (proximos.Any() ? proximos : response.Data.OrderByDescending(e => e.dtFechaInicio)).Take(3).ToList();
+                var proximos = response.Data.Where(e => (e.dtFechaFin?.ToUsuarioLocal() ?? e.dtFechaInicio.ToUsuarioLocal()) >= hoy).OrderBy(e => e.dtFechaInicio.ToUsuarioLocal());
+                eventos = (proximos.Any() ? proximos : response.Data.OrderByDescending(e => e.dtFechaInicio.ToUsuarioLocal())).Take(3).ToList();
             }
         }
         catch (Exception ex)

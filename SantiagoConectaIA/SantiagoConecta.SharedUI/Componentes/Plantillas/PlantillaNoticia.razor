@@ -116,6 +116,42 @@ else
             </div>
             break;
 
+        case CategoriaNoticiaEnum.ApoyoCausas:
+            <!-- ================= PLANTILLA 6: CAUSA SOLIDARIA & APOYO SOCIAL (Categoría 6) ================= -->
+            <div class="template-solidarity animate-fade-in">
+                <div class="solidarity-header">
+                    <div class="solidarity-badge-container d-flex align-center gap-2 mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.VolunteerActivism" Class="solidarity-heart-icon" />
+                        <span class="solidarity-badge-text">CAUSA SOLIDARIA • COMUNIDAD SANTIAGO</span>
+                    </div>
+                    <h1 class="solidarity-title">@Noticia.vchTitulo</h1>
+                    <div class="solidarity-meta d-flex flex-wrap align-center gap-3 mt-3">
+                        <span class="d-flex align-center gap-1">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" /> 
+                            @Noticia.dtFechaPublicacion.ToString("dd MMMM, yyyy")
+                        </span>
+                        <span>•</span>
+                        <span class="d-flex align-center gap-1">
+                            <MudIcon Icon="@Icons.Material.Filled.Handshake" Size="Size.Small" /> 
+                            Apoyo a la Ciudadanía
+                        </span>
+                    </div>
+                </div>
+
+                <div class="solidarity-banner my-6 position-relative" style="cursor: pointer; border-radius: 16px; overflow: hidden;" @onclick='() => HandleCoverClick("https://picsum.photos/1200/500?help")'>
+                    <img src="@GetCoverImage("https://picsum.photos/1200/500?help")" class="solidarity-hero-img" alt="Causa Solidaria" />
+                    <div class="cover-zoom-overlay">
+                        <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Class="me-2" Style="vertical-align: sub; font-size: 1.3rem;" />
+                        <span>Haz clic para ver la imagen completa</span>
+                    </div>
+                </div>
+
+                <div class="solidarity-body p-4">
+                    <NoticiaRenderer Noticia="@this.Noticia" OnImageClick="OnImageClick" />
+                </div>
+            </div>
+            break;
+
         case CategoriaNoticiaEnum.ComunicadoOficial:
         default:
             <!-- ================= PLANTILLA 1: CLÁSICA MUNICIPAL / COMUNICADO OFICIAL (Categoría 1) ================= -->
@@ -483,6 +519,74 @@ else
         to { transform: scale(1.15); opacity: 1; }
     }
 
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PLANTILLA 6: CAUSA SOLIDARIA & APOYO SOCIAL
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .template-solidarity {
+        background: #ffffff;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 2px solid #fed7d7;
+        box-shadow: 0 10px 30px rgba(229, 62, 62, 0.06);
+        padding: 3rem 4rem;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+    @@media (max-width: 768px) {
+        .template-solidarity {
+            padding: 1.5rem 1.2rem;
+        }
+    }
+    .solidarity-header {
+        border-bottom: 2px dashed #feb2b2;
+        padding-bottom: 1.5rem;
+    }
+    .solidarity-heart-icon {
+        color: #e53e3e;
+        font-size: 1.8rem;
+        animation: heartBeat 1.8s ease-in-out infinite;
+    }
+    @@keyframes heartBeat {
+        0%, 100% { transform: scale(1); }
+        15% { transform: scale(1.18); }
+        30% { transform: scale(1); }
+        45% { transform: scale(1.12); }
+    }
+    .solidarity-badge-text {
+        background: #fff5f5;
+        color: #c53030;
+        border: 1px solid #fed7d7;
+        font-size: 0.85rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        padding: 4px 14px;
+        border-radius: 999px;
+        text-transform: uppercase;
+    }
+    .solidarity-title {
+        font-size: 2.3rem;
+        font-weight: 850;
+        color: #1a202c;
+        line-height: 1.25;
+        letter-spacing: -0.5px;
+        margin: 0;
+    }
+    .solidarity-meta {
+        font-size: 0.95rem;
+        color: #718096;
+        font-weight: 600;
+    }
+    .solidarity-hero-img {
+        width: 100%;
+        max-height: 480px;
+        object-fit: cover;
+        border-radius: 16px;
+        border: 1px solid #fee2e2;
+    }
+    .solidarity-body {
+        color: #2d3748;
+        line-height: 1.7;
+    }
+
     @@keyframes glowPulse {
         0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
         70% { box-shadow: 0 0 0 10px rgba(6, 182, 212, 0); }
@@ -598,7 +702,7 @@ else
         if (Noticia == null) return CategoriaNoticiaEnum.ComunicadoOficial;
 
         // Si ya cuenta con una categoría ID que coincida con las categorías de base de datos
-        if (Noticia.iIdCategoria.HasValue && Noticia.iIdCategoria.Value >= 1 && Noticia.iIdCategoria.Value <= 5)
+        if (Noticia.iIdCategoria.HasValue && Noticia.iIdCategoria.Value >= 1 && Noticia.iIdCategoria.Value <= 6)
         {
             return (CategoriaNoticiaEnum)Noticia.iIdCategoria.Value;
         }
@@ -606,10 +710,13 @@ else
         // Búsqueda inteligente fallback basada en texto del título o categoría
         var textToSearch = (Noticia.vchTitulo + " " + (Noticia.Categoria?.vchNombre ?? "")).ToLower();
         
+        if (textToSearch.Contains("ayud") || textToSearch.Contains("apoyo") || textToSearch.Contains("solidar") || textToSearch.Contains("causa") || textToSearch.Contains("donac") || textToSearch.Contains("cirug") || textToSearch.Contains("corazón") || textToSearch.Contains("corazon") || textToSearch.Contains("recaud"))
+            return CategoriaNoticiaEnum.ApoyoCausas;
+
         if (textToSearch.Contains("deporte") || textToSearch.Contains("futbol") || textToSearch.Contains("torneo") || textToSearch.Contains("carrera"))
             return CategoriaNoticiaEnum.Deportes;
 
-        if (textToSearch.Contains("alerta") || textToSearch.Contains("policia") || textToSearch.Contains("urgente") || textToSearch.Contains("peligro") || textToSearch.Contains("clima"))
+        if (textToSearch.Contains("policia") || textToSearch.Contains("policí") || textToSearch.Contains("seguridad") || textToSearch.Contains("detenido") || textToSearch.Contains("delito") || textToSearch.Contains("choque") || textToSearch.Contains("balacera") || textToSearch.Contains("fiscalia") || textToSearch.Contains("fiscalía"))
             return CategoriaNoticiaEnum.Policiaca;
 
         if (textToSearch.Contains("cultura") || textToSearch.Contains("teatro") || textToSearch.Contains("musica") || textToSearch.Contains("social") || textToSearch.Contains("arte"))
