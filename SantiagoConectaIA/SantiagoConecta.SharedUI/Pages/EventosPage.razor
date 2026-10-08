@@ -1,5 +1,4 @@
 @page "/eventos"
-@using SantiagoConectaIA.Share.Utilities
 @using SantiagoConectaIA.Share.Objects.EventosModulo
 @using SantiagoConectaIA.Share.PostClass.EventosModulo
 <SeoHead Titulo="Agenda de eventos"
@@ -79,7 +78,7 @@
                                 <div class="card-body p-4" style="flex: 1; display: flex; flex-direction: column;">
                                     <div class="d-flex align-items-center mb-2" style="color: #e91e63; display: flex; align-items: center;">
                                         <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Class="me-1" />
-                                        <span style="font-weight: 600; font-size: 0.9rem; margin-left: 5px;">@evento.dtFechaInicio.ToUsuarioLocal().ToString("dd MMM yyyy, HH:mm")</span>
+                                        <span style="font-weight: 600; font-size: 0.9rem; margin-left: 5px;">@evento.dtFechaInicio.ToString("dd MMM yyyy, HH:mm")</span>
                                     </div>
                                     <h4 class="card-title font-weight-bold mb-3" style="font-size: 1.25rem;">@evento.vchNombre</h4>
                                     <div class="d-flex align-items-center mb-2 text-muted" style="display: flex; align-items: center;">
