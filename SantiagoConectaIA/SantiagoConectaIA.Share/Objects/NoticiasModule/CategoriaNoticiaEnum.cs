@@ -6,6 +6,7 @@ namespace SantiagoConectaIA.Share.Objects.NoticiasModule
         Cultura = 2,
         Deportes = 3,
         Policiaca = 4,
-        ObrasPublicas = 5
+        ObrasPublicas = 5,
+        ApoyoCausas = 6
     }
 }
