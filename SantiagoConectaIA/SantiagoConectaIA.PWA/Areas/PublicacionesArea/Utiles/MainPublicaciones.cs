@@ -144,6 +144,27 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles
             return Post($"{Url}/PostSavePublicacionAutomaticaEmprendimientos", new PublicacionAutomaticaEmprendimientos { bActivo = activo }, new PublicacionAutomaticaEmprendimientos());
         }
 
+        public Task<Response<SantiagoConectaIA.Share.Objects.NoticiasModule.Noticia>> GetSiguienteNoticia()
+        {
+            return Post($"{Url}/PostGetSiguienteNoticia", new { }, new SantiagoConectaIA.Share.Objects.NoticiasModule.Noticia());
+        }
+
+        public Task<Response<PublicacionAutomatica>> PublicarNoticiaGenerada(int idNoticia, string message, string imageUrl)
+        {
+            var model = new PostPublicarGenerada { iIdRegistro = idNoticia, Message = message, ImageUrl = imageUrl };
+            return Post($"{Url}/PostPublicarNoticiaGenerada", model, new PublicacionAutomatica());
+        }
+
+        public Task<Response<Empresa>> GetSiguienteEmprendimiento()
+        {
+            return Post($"{Url}/PostGetSiguienteEmprendimiento", new { }, new Empresa());
+        }
+
+        public Task<Response<PublicacionAutomaticaEmprendimientos>> PublicarEmprendimientoGenerado(int idEmpresa, string message, string imageUrl)
+        {
+            var model = new PostPublicarGenerada { iIdRegistro = idEmpresa, Message = message, ImageUrl = imageUrl };
+            return Post($"{Url}/PostPublicarEmprendimientoGenerado", model, new PublicacionAutomaticaEmprendimientos());
+        }
         public Task<Response<List<Empresa>>> GetEmprendimientos()
         {
             return Post("api/Empresas/PostGetEmpresas", new PostGetEmpresas { bEstatus = true }, new List<Empresa>());

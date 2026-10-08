@@ -32,6 +32,8 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
 
         public PublicacionAutomatica? Automatica { get; set; }
         public bool GuardandoAutomatica { get; set; }
+        public bool PublicandoSiguiente { get; set; }
+        public string EstadoSiguiente { get; set; } = "Publicando...";
 
         public Noticia? NoticiaSeleccionada { get; set; }
         public List<string> Imagenes { get; set; } = new();
@@ -87,7 +89,90 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
             }
         }
 
-        public async Task Seleccionar(Noticia noticia)
+        
+        /// <summary>
+        /// Publica la siguiente noticia con el mismo proceso que al seleccionarla a mano: se prepara el registro,
+        /// se genera el post (imagen 1080x1360) y el texto con IA, y con la imagen nueva se publica en Facebook.
+        /// </summary>
+        public async Task PublicarSiguiente()
+        {
+            var confirmar = await DialogService.ShowMessageBox(
+                "Publicar siguiente noticia",
+                "Se tomará la noticia más reciente que todavía no se haya publicado, se generará su post (1080x1360) y el texto con IA, y se publicará en Facebook. ¿Continuar?",
+                yesText: "Publicar",
+                cancelText: "Cancelar");
+            if (confirmar != true)
+            {
+                return;
+            }
+
+            PublicandoSiguiente = true;
+            try
+            {
+                // 1. Cuál toca (el servidor valida que no esté publicada ya)
+                EstadoSiguiente = "Buscando noticia...";
+                var siguiente = await Publicaciones.GetSiguienteNoticia();
+                if (!siguiente.IsSuccess || siguiente.Data == null || siguiente.Data.iIdNoticia <= 0)
+                {
+                    Snackbar.Add(string.IsNullOrWhiteSpace(siguiente.Message) ? "No hay una noticia pendiente de publicar." : siguiente.Message, Severity.Warning);
+                    return;
+                }
+
+                // 2. Mismo proceso que al seleccionar: texto base, imagen y captura del post
+                EstadoSiguiente = "Generando post...";
+                StateHasChanged();
+                UsarCapturaPost = true;
+                await SeleccionarAsync(siguiente.Data);
+                if (string.IsNullOrWhiteSpace(ImagenCapturadaUrl))
+                {
+                    Snackbar.Add("No se pudo generar la imagen del post, así que no se publicó.", Severity.Error);
+                    return;
+                }
+
+                // 3. Texto con IA
+                EstadoSiguiente = "Redactando con IA...";
+                Mejorando = true;
+                StateHasChanged();
+                var texto = await Publicaciones.MejorarConIa(
+                    siguiente.Data.iIdNoticia,
+                    siguiente.Data.vchTitulo ?? string.Empty,
+                    siguiente.Data.nvchContenido ?? string.Empty);
+                Mejorando = false;
+                if (!texto.IsSuccess || string.IsNullOrWhiteSpace(texto.Data))
+                {
+                    Snackbar.Add(string.IsNullOrWhiteSpace(texto.Message) ? "No se pudo redactar el texto con IA, así que no se publicó." : texto.Message, Severity.Error);
+                    return;
+                }
+
+                Mensaje = texto.Data;
+
+                // 4. Con la imagen nueva, a Facebook (el servidor valida y registra la publicación)
+                EstadoSiguiente = "Publicando...";
+                StateHasChanged();
+                var result = await Publicaciones.PublicarNoticiaGenerada(siguiente.Data.iIdNoticia, Mensaje.Trim(), ImagenCapturadaUrl);
+
+                // El API devuelve el estado actualizado (última noticia publicada) aun cuando no publica
+                if (result.Data != null)
+                {
+                    Automatica = result.Data;
+                }
+
+                Snackbar.Add(
+                    string.IsNullOrWhiteSpace(result.Message) ? "No se pudo publicar la noticia." : result.Message,
+                    result.IsSuccess ? Severity.Success : Severity.Warning);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add("No se pudo publicar la siguiente noticia: " + ex.Message, Severity.Error);
+            }
+            finally
+            {
+                Mejorando = false;
+                PublicandoSiguiente = false;
+                StateHasChanged();
+            }
+        }
+        public async Task SeleccionarAsync(Noticia noticia)
         {
             NoticiaSeleccionada = noticia;
             Mensaje = ArmarMensaje(noticia);

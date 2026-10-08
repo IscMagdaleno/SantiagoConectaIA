@@ -30,6 +30,8 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
 
         public PublicacionAutomaticaEmprendimientos? Automatica { get; set; }
         public bool GuardandoAutomatica { get; set; }
+        public bool PublicandoSiguiente { get; set; }
+        public string EstadoSiguiente { get; set; } = "Publicando...";
 
         public Empresa? EmprendimientoSeleccionado { get; set; }
         public PostSaveEmprendimientoFull? Detalle { get; set; }
@@ -99,6 +101,100 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
             }
         }
 
+        /// <summary>
+        /// Publica el siguiente emprendimiento de la rotación con el mismo proceso que al seleccionarlo a mano:
+        /// se carga su detalle, se genera el post (imagen 1080x1360) y el texto con IA, y con la imagen nueva
+        /// se publica en Facebook.
+        /// </summary>
+        public async Task PublicarSiguiente()
+        {
+            var siguiente = Automatica != null && !string.IsNullOrWhiteSpace(Automatica.vchSiguienteEmpresa)
+                ? $"#{Automatica.iIdSiguienteEmpresa} {Automatica.vchSiguienteEmpresa}"
+                : "el siguiente emprendimiento";
+
+            var confirmar = await DialogService.ShowMessageBox(
+                "Publicar siguiente emprendimiento",
+                $"Se generará el post (1080x1360) y el texto con IA de {siguiente}, y se publicará en Facebook. Después la rotación avanza al que sigue. ¿Continuar?",
+                yesText: "Publicar",
+                cancelText: "Cancelar");
+            if (confirmar != true)
+            {
+                return;
+            }
+
+            PublicandoSiguiente = true;
+            try
+            {
+                // 1. Cuál toca según el ID donde se quedó la rotación (el servidor valida)
+                EstadoSiguiente = "Buscando emprendimiento...";
+                var toca = await Publicaciones.GetSiguienteEmprendimiento();
+                if (!toca.IsSuccess || toca.Data == null || toca.Data.iIdEmpresa <= 0)
+                {
+                    Snackbar.Add(string.IsNullOrWhiteSpace(toca.Message) ? "No hay un emprendimiento pendiente de publicar." : toca.Message, Severity.Warning);
+                    return;
+                }
+
+                // 2. Mismo proceso que al seleccionar: detalle, información, imágenes y captura del post
+                EstadoSiguiente = "Generando post...";
+                StateHasChanged();
+                var empresa = LstEmprendimientos.FirstOrDefault(e => e.iIdEmpresa == toca.Data.iIdEmpresa) ?? toca.Data;
+                UsarCapturaPost = true;
+                await Seleccionar(empresa);
+                if (Detalle == null || EmprendimientoSeleccionado?.iIdEmpresa != empresa.iIdEmpresa)
+                {
+                    Snackbar.Add("No se pudo cargar la información del emprendimiento, así que no se publicó.", Severity.Error);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(ImagenCapturadaUrl))
+                {
+                    Snackbar.Add("No se pudo generar la imagen del post, así que no se publicó.", Severity.Error);
+                    return;
+                }
+
+                // 3. Texto con IA
+                EstadoSiguiente = "Redactando con IA...";
+                Mejorando = true;
+                StateHasChanged();
+                var texto = await Publicaciones.MejorarEmprendimientoConIa(
+                    empresa.iIdEmpresa,
+                    empresa.vchNombreComercial ?? string.Empty,
+                    Informacion);
+                Mejorando = false;
+                if (!texto.IsSuccess || string.IsNullOrWhiteSpace(texto.Data))
+                {
+                    Snackbar.Add(string.IsNullOrWhiteSpace(texto.Message) ? "No se pudo redactar el texto con IA, así que no se publicó." : texto.Message, Severity.Error);
+                    return;
+                }
+
+                Mensaje = texto.Data;
+
+                // 4. Con la imagen nueva, a Facebook (el servidor valida y avanza la rotación)
+                EstadoSiguiente = "Publicando...";
+                StateHasChanged();
+                var result = await Publicaciones.PublicarEmprendimientoGenerado(empresa.iIdEmpresa, Mensaje.Trim(), ImagenCapturadaUrl);
+
+                // El API devuelve el estado actualizado (cuál sigue) aun cuando no publica
+                if (result.Data != null)
+                {
+                    Automatica = result.Data;
+                }
+
+                Snackbar.Add(
+                    string.IsNullOrWhiteSpace(result.Message) ? "No se pudo publicar el emprendimiento." : result.Message,
+                    result.IsSuccess ? Severity.Success : Severity.Warning);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add("No se pudo publicar el siguiente emprendimiento: " + ex.Message, Severity.Error);
+            }
+            finally
+            {
+                Mejorando = false;
+                PublicandoSiguiente = false;
+                StateHasChanged();
+            }
+        }
         public async Task Seleccionar(Empresa empresa)
         {
             EmprendimientoSeleccionado = empresa;
