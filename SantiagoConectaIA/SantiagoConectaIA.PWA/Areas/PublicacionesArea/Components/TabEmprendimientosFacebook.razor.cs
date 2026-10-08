@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles;
@@ -130,7 +130,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                 var toca = await Publicaciones.GetSiguienteEmprendimiento();
                 if (!toca.IsSuccess || toca.Data == null || toca.Data.iIdEmpresa <= 0)
                 {
-                    Snackbar.Add(string.IsNullOrWhiteSpace(toca.Message) ? "No hay un emprendimiento pendiente de publicar." : toca.Message, Severity.Warning);
+                    Fallo("Paso 1/4 (buscar siguiente)", string.IsNullOrWhiteSpace(toca.Message) ? "No hay un emprendimiento pendiente de publicar." : toca.Message);
                     return;
                 }
 
@@ -142,13 +142,13 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                 await Seleccionar(empresa);
                 if (Detalle == null || EmprendimientoSeleccionado?.iIdEmpresa != empresa.iIdEmpresa)
                 {
-                    Snackbar.Add("No se pudo cargar la información del emprendimiento, así que no se publicó.", Severity.Error);
+                    Fallo("Paso 2/4 (cargar detalle)", "No se pudo cargar la información del emprendimiento, así que no se publicó.");
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(ImagenCapturadaUrl))
                 {
-                    Snackbar.Add("No se pudo generar la imagen del post, así que no se publicó.", Severity.Error);
+                    Fallo("Paso 2/4 (generar imagen del post)", "No se pudo generar o subir la imagen del post, así que no se publicó. Revisa la consola del navegador (F12) y la pestaña Network.");
                     return;
                 }
 
@@ -163,7 +163,7 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                 Mejorando = false;
                 if (!texto.IsSuccess || string.IsNullOrWhiteSpace(texto.Data))
                 {
-                    Snackbar.Add(string.IsNullOrWhiteSpace(texto.Message) ? "No se pudo redactar el texto con IA, así que no se publicó." : texto.Message, Severity.Error);
+                    Fallo("Paso 3/4 (texto con IA)", string.IsNullOrWhiteSpace(texto.Message) ? "No se pudo redactar el texto con IA, así que no se publicó." : texto.Message);
                     return;
                 }
 
@@ -180,13 +180,18 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                     Automatica = result.Data;
                 }
 
-                Snackbar.Add(
-                    string.IsNullOrWhiteSpace(result.Message) ? "No se pudo publicar el emprendimiento." : result.Message,
-                    result.IsSuccess ? Severity.Success : Severity.Warning);
+                if (result.IsSuccess)
+                {
+                    Snackbar.Add(string.IsNullOrWhiteSpace(result.Message) ? "Emprendimiento publicado." : result.Message, Severity.Success);
+                }
+                else
+                {
+                    Fallo("Paso 4/4 (publicar en Facebook)", string.IsNullOrWhiteSpace(result.Message) ? "No se pudo publicar el emprendimiento." : result.Message);
+                }
             }
             catch (Exception ex)
             {
-                Snackbar.Add("No se pudo publicar el siguiente emprendimiento: " + ex.Message, Severity.Error);
+                Fallo("Error inesperado", ex.ToString());
             }
             finally
             {
@@ -195,6 +200,12 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                 StateHasChanged();
             }
         }
+        private void Fallo(string paso, string mensaje)
+        {
+            Console.WriteLine($"[Publicar siguiente] {paso}: {mensaje}");
+            Snackbar.Add($"{paso}: {mensaje}", Severity.Error, config => config.RequireInteraction = true);
+        }
+
         public async Task Seleccionar(Empresa empresa)
         {
             EmprendimientoSeleccionado = empresa;
@@ -317,6 +328,10 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Components
                     {
                         Snackbar.Add("Se capturó el emprendimiento pero hubo error al subirla: " + uploadResult.Message, Severity.Warning);
                     }
+                }
+                else
+                {
+                    Snackbar.Add("html2canvas no devolvió imagen (elemento 'post-card-emprendimiento-capture' no encontrado o falló la captura).", Severity.Warning);
                 }
             }
             catch (Exception ex)

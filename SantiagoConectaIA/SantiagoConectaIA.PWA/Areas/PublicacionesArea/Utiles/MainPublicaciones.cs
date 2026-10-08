@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using EngramaCoreStandar.Results;
 using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
@@ -185,12 +185,37 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles
             try
             {
                 var response = await _httpClient.PostAsJsonAsync(url, model);
-                var result = await response.Content.ReadFromJsonAsync<Response<T>>();
-                return result ?? Response<T>.BadResult("No se recibió respuesta del servidor.", fallback);
+                var texto = await response.Content.ReadAsStringAsync();
+
+                if (!string.IsNullOrWhiteSpace(texto))
+                {
+                    try
+                    {
+                        var result = System.Text.Json.JsonSerializer.Deserialize<Response<T>>(texto, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (result != null)
+                        {
+                            return result;
+                        }
+                    }
+                    catch (System.Text.Json.JsonException)
+                    {
+                        // La respuesta no es el formato esperado: se reporta abajo con el código HTTP.
+                    }
+                }
+
+                var detalle = (int)response.StatusCode switch
+                {
+                    401 => "no autorizado (401)",
+                    404 => "el servicio no existe en el API publicado (404): probablemente falta publicar la última versión del API",
+                    405 => "método no permitido (405)",
+                    >= 500 => $"error interno del servidor ({(int)response.StatusCode})",
+                    _ => $"respuesta inesperada ({(int)response.StatusCode})"
+                };
+                return Response<T>.BadResult($"{url}: {detalle}.", fallback);
             }
             catch (Exception ex)
             {
-                return Response<T>.BadResult(ex.Message, fallback);
+                return Response<T>.BadResult($"{url}: {ex.Message}", fallback);
             }
         }
     }
