@@ -50,12 +50,20 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
                 ).ToList();
             }
 
-            var resultado = eventos.OrderByDescending(e => e.dtFechaInicio).Take(limit).Select(e => new
+            // Priorizar eventos vigentes o futuros (dtFechaFin o dtFechaInicio >= hoy)
+            var hoy = DateTime.Today;
+            var vigentes = eventos.Where(e => (e.dtFechaFin ?? e.dtFechaInicio).Date >= hoy)
+                                  .OrderBy(e => e.dtFechaInicio)
+                                  .ToList();
+
+            var eventosAFiltrar = vigentes.Any() ? vigentes : eventos.OrderByDescending(e => e.dtFechaInicio).ToList();
+
+            var resultado = eventosAFiltrar.Take(limit).Select(e => new
             {
                 e.iIdEvento,
                 e.vchNombre,
-                FechaInicio = e.dtFechaInicio.ToString("dd/MM/yyyy"),
-                FechaFin = e.dtFechaFin?.ToString("dd/MM/yyyy"),
+                FechaInicio = e.dtFechaInicio.ToString("dd/MM/yyyy HH:mm"),
+                FechaFin = e.dtFechaFin?.ToString("dd/MM/yyyy HH:mm"),
                 e.vchLugar,
                 e.vchDireccion,
                 Costo = e.vchCostoTexto,
@@ -125,11 +133,19 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
                 return $"No se encontraron eventos para la categoría con ID {idCategoria}.";
             }
 
-            var resultado = result.Data.OrderByDescending(e => e.dtFechaInicio).Take(limit).Select(e => new
+            var hoy = DateTime.Today;
+            var vigentes = result.Data.Where(e => (e.dtFechaFin ?? e.dtFechaInicio).Date >= hoy)
+                                      .OrderBy(e => e.dtFechaInicio)
+                                      .ToList();
+
+            var eventosAFiltrar = vigentes.Any() ? vigentes : result.Data.OrderByDescending(e => e.dtFechaInicio).ToList();
+
+            var resultado = eventosAFiltrar.Take(limit).Select(e => new
             {
                 e.iIdEvento,
                 e.vchNombre,
-                FechaInicio = e.dtFechaInicio.ToString("dd/MM/yyyy"),
+                FechaInicio = e.dtFechaInicio.ToString("dd/MM/yyyy HH:mm"),
+                FechaFin = e.dtFechaFin?.ToString("dd/MM/yyyy HH:mm"),
                 e.vchLugar,
                 Costo = e.vchCostoTexto
             }).ToList();

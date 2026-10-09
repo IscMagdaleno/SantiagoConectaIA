@@ -128,6 +128,10 @@ namespace SantiagoConectaIA.API.SemanticKernel.Agentes
 			}
 		}
 
-		public string GetSystemPrompt() => SystemPrompt;
+		public string GetSystemPrompt()
+		{
+			var fechaHoraActual = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy, hh:mm tt", new System.Globalization.CultureInfo("es-MX"));
+			return $"{SystemPrompt}\n\n--- FECHA Y HORA ACTUAL ---\nHoy es: {fechaHoraActual}. Toma en cuenta esta fecha y hora para responder sobre eventos o actividades 'de hoy', 'de este fin de semana', 'de esta semana' o 'próximos'.";
+		}
 	}
 }

@@ -6,6 +6,8 @@ using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 using SantiagoConectaIA.Share.Objects.EventosModulo;
 
+using SantiagoConectaIA.Share.Utilities;
+
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EventosModule
 {
     public class EventosDomain : IEventosDomain
@@ -27,7 +29,18 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EventosModule
             {
                 var request = _mapperHelper.Get<PostGetEventos, spGetEventos.Request>(postModel);
                 var result = await _eventosRepository.spGetEventos(request);
-                return _responseHelper.Validacion<spGetEventos.Result, Evento>(result);
+                var validation = _responseHelper.Validacion<spGetEventos.Result, Evento>(result);
+
+                if (validation.IsSuccess && validation.Data != null)
+                {
+                    foreach (var ev in validation.Data)
+                    {
+                        ev.dtFechaInicio = ev.dtFechaInicio.ToUsuarioLocal();
+                        ev.dtFechaFin = ev.dtFechaFin.ToUsuarioLocal();
+                    }
+                }
+
+                return validation;
             }
             catch (Exception ex)
             {
@@ -47,6 +60,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EventosModule
                 {
                     postModel.iIdEvento = validation.Data.iIdEvento;
                     validation.Data = _mapperHelper.Get<PostSaveEvento, Evento>(postModel);
+                    validation.Data.dtFechaInicio = validation.Data.dtFechaInicio.ToUsuarioLocal();
+                    validation.Data.dtFechaFin = validation.Data.dtFechaFin.ToUsuarioLocal();
                 }
 
                 return validation;
@@ -165,8 +180,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EventosModule
                     vchCategoriaNombre = first.vchCategoriaNombre,
                     vchNombre = first.vchNombre,
                     nvchDescripcion = first.nvchDescripcion,
-                    dtFechaInicio = first.dtFechaInicio,
-                    dtFechaFin = first.dtFechaFin,
+                    dtFechaInicio = first.dtFechaInicio.ToUsuarioLocal(),
+                    dtFechaFin = first.dtFechaFin.ToUsuarioLocal(),
                     vchLugar = first.vchLugar,
                     vchDireccion = first.vchDireccion,
                     flLatitud = first.flLatitud,
