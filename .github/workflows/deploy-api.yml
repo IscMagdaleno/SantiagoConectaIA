@@ -24,7 +24,7 @@ jobs:
           # Busca específicamente el proyecto de la API dentro del monorepo
           $projFile = Get-ChildItem -Recurse -Filter "SantiagoConectaAI.API.csproj" | Select-Object -First 1
           if (-not $projFile) {
-              Write-Error "No se encontró el archivo de proyecto SantiagoConectaA.API.csproj"
+              Write-Error "No se encontró el archivo de proyecto SantiagoConectaAI.API.csproj"
               exit 1
           }
           Write-Host "Proyecto encontrado: $($projFile.FullName)"
