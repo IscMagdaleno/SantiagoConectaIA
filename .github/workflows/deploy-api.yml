@@ -20,7 +20,7 @@ jobs:
 
       - name: Build and Publish
         run: |
-          dotnet publish "SantiagoConectaAAPI/SantiagoConectaAAPI.csproj" -c Release -o ./publish_output
+          dotnet publish "SantiagoConectaAI/SantiagoConectaAI/SantiagoConectaAI.API/SantiagoConectaAI.API.csproj" -c Release -o ./publish_output
 
       - name: Login to Azure
         uses: azure/login@v2
