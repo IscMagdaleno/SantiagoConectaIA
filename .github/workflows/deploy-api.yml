@@ -38,5 +38,5 @@ jobs:
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'SantiagoConectaAAPI'
+          app-name: 'SantiagoConectaIA.API'
           package: ./publish_output
