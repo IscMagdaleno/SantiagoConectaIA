@@ -22,7 +22,7 @@ jobs:
         shell: pwsh
         run: |
           # Busca específicamente el proyecto de la API dentro del monorepo
-          $projFile = Get-ChildItem -Recurse -Filter "SantiagoConectaA.API.csproj" | Select-Object -First 1
+          $projFile = Get-ChildItem -Recurse -Filter "SantiagoConectaAI.API.csproj" | Select-Object -First 1
           if (-not $projFile) {
               Write-Error "No se encontró el archivo de proyecto SantiagoConectaA.API.csproj"
               exit 1
