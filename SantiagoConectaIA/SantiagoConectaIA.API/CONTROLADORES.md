@@ -299,3 +299,5 @@ Puntos por revisar antes de endurecer la API:
 - CORS permite cualquier origen con credenciales.
 
 Recomendación: agregar `[Authorize]` a los controladores de administración (el PWA tendría que enviar el JWT), restringir CORS a los dominios del PWA y del sitio público, y deshabilitar los endpoints de prueba fuera de `Development`.
+
+--Prueba 1 de publicacion
