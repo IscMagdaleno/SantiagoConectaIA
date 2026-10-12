@@ -210,23 +210,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule
 			catch (Exception ex) { return Response<ConfiguracionVisual>.BadResult(ex.Message, new ConfiguracionVisual()); }
 		}
 
-		public async Task<Response<Propietario>> SavePropietario(Propietario postModel)
-		{
-			try
-			{
-				var request = _mapperHelper.Get<Propietario, spSavePropietario.Request>(postModel);
-				var result = await _empresasRepository.spSavePropietario(request);
-				var validation = _responseHelper.Validacion<spSavePropietario.Result, Propietario>(result);
-				if (validation.IsSuccess)
-				{
-					postModel.iIdPropietario = validation.Data.iIdPropietario;
-					validation.Data = postModel;
-				}
-				return validation;
-			}
-			catch (Exception ex) { return Response<Propietario>.BadResult(ex.Message, new Propietario()); }
-		}
-
 		public async Task<Response<IEnumerable<Propietario>>> GetPropietario(PostGetPropietario postModel)
 		{
 			try

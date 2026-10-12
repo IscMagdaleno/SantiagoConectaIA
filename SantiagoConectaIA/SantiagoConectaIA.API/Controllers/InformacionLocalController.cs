@@ -12,7 +12,7 @@ namespace SantiagoConectaIA.API.Controllers
 	/// </summary>
 	[ApiController]
 	[Route("api/[controller]")]
-	public class InformacionLocalController : ControllerBase
+	public class InformacionLocalController : ApiControllerBase
 	{
 		private readonly IInformacionLocalDomain _informacionLocalDomain;
 
@@ -21,31 +21,11 @@ namespace SantiagoConectaIA.API.Controllers
 			_informacionLocalDomain = informacionLocalDomain;
 		}
 
-		[HttpPost("PostGetAllInformacionLocal")]
-		public async Task<IActionResult> PostGetAllInformacionLocal()
-		{
-			var result = await _informacionLocalDomain.GetInformacionLocal();
-			if (result.IsSuccess)
-				return Ok(result);
-			return BadRequest(result);
-		}
-
 		[HttpPost("PostGetInformacionLocalByID")]
 		public async Task<IActionResult> PostGetInformacionLocalByID([FromBody] PostGetInformacionLocalByID postModel)
 		{
 			var result = await _informacionLocalDomain.GetInformacionLocalById(postModel.iIdInformacionLocal);
-			if (result.IsSuccess)
-				return Ok(result);
-			return BadRequest(result);
-		}
-
-		[HttpPost("PostGetformacionLocalByText")]
-		public async Task<IActionResult> PostGetformacionLocalByText([FromBody] PostGetInformacionLocal postModel)
-		{
-			var result = await _informacionLocalDomain.PostGetformacionLocalByText(postModel);
-			if (result.IsSuccess)
-				return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostSaveInformacionLocal")]
@@ -53,9 +33,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveInformacionLocal([FromBody] PostSaveInformacionLocal postModel)
 		{
 			var result = await _informacionLocalDomain.SaveInformacionLocal(postModel);
-			if (result.IsSuccess)
-				return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -67,11 +45,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetInformacionLocal([FromBody] PostGetInformacionLocal postModel)
 		{
 			var result = await _informacionLocalDomain.GetInformacionLocal(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

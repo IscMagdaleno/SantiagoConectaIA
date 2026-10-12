@@ -1,354 +1,137 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
-using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.Objects.WhatsAppModule;
-using SantiagoConectaIA.Share.PostModels.WhatsAppModule;
 
+using System.Text;
 using System.Text.Json;
+
 namespace SantiagoConectaIA.API.Controllers
 {
-
+	/// <summary>
+	/// Webhook de WhatsApp Cloud API. Solo valida la petición, normaliza el teléfono y encola el mensaje;
+	/// el guardado en base de datos y la respuesta del agente los hace <see cref="WhatsAppWorker"/>.
+	/// </summary>
 	[ApiController]
 	[Route("api/[controller]")]
 	public class WhatsAppController : ControllerBase
 	{
 		private readonly IWhatsAppService _whatsappService;
-		private readonly IWhatsAppDomain _whatsAppDomain;
-		private readonly IAgentOrchestrationService _orchestrationService;
 		private readonly WhatsAppMessageQueue _queue;
+		private readonly IConfiguration _configuration;
 		private readonly ILogger<WhatsAppController> _logger;
 
-
 		public WhatsAppController(
-		IWhatsAppService whatsappService,
-		IWhatsAppDomain whatsAppDomain,
-		IAgentOrchestrationService orchestrationService,
-		WhatsAppMessageQueue queue,
-		ILogger<WhatsAppController> logger)
+			IWhatsAppService whatsappService,
+			WhatsAppMessageQueue queue,
+			IConfiguration configuration,
+			ILogger<WhatsAppController> logger)
 		{
 			_whatsappService = whatsappService;
-			_whatsAppDomain = whatsAppDomain;
-			_orchestrationService = orchestrationService;
 			_queue = queue;
+			_configuration = configuration;
 			_logger = logger;
 		}
 
 		/// <summary>
-		/// Webhook verification endpoint. Meta sends a GET request to verify the webhook.
+		/// Verificación del webhook: Meta manda un GET para comprobar el token.
 		/// </summary>
 		[HttpGet("webhook")]
+		[DisableRateLimiting]
 		public IActionResult VerifyWebhook(
-		[FromQuery(Name = "hub.mode")] string mode,
-		[FromQuery(Name = "hub.verify_token")] string token,
-		[FromQuery(Name = "hub.challenge")] string challenge)
+			[FromQuery(Name = "hub.mode")] string mode,
+			[FromQuery(Name = "hub.verify_token")] string token,
+			[FromQuery(Name = "hub.challenge")] string challenge)
 		{
-			_logger.LogInformation("Webhook verification requested: mode={Mode}, token={Token}", mode, token);
-
 			if (mode == "subscribe" && _whatsappService.VerifyWebhookToken(token))
 			{
-				_logger.LogInformation("Webhook verified successfully.");
+				_logger.LogInformation("Webhook de WhatsApp verificado.");
 				return Content(challenge, "text/plain");
 			}
 
-			_logger.LogWarning("Webhook verification failed.");
+			_logger.LogWarning("Falló la verificación del webhook de WhatsApp (mode={Mode}).", mode);
 			return Forbid();
 		}
 
 		/// <summary>
-		/// Webhook message receiver. Meta sends POST requests when users send messages.
-		/// Must return 200 OK immediately to avoid Meta retries.
+		/// Recibe los mensajes de Meta. Exige la firma <c>X-Hub-Signature-256</c> calculada con el App Secret
+		/// (se puede desactivar solo en una emergencia con la configuración <c>WhatsApp:ValidarFirma=false</c>)
+		/// y responde 200 de inmediato para que Meta no reintente.
 		/// </summary>
 		[HttpPost("webhook")]
-		public IActionResult ReceiveMessage([FromBody] object body)
+		[DisableRateLimiting]
+		public async Task<IActionResult> ReceiveMessage(CancellationToken cancellationToken)
 		{
 			try
 			{
-				var rawBody = JsonSerializer.Serialize(body);
-				_logger.LogInformation("Webhook received: {Body}", rawBody);
+				Request.EnableBuffering();
+				using var reader = new StreamReader(Request.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 1024, leaveOpen: true);
+				var rawBody = await reader.ReadToEndAsync(cancellationToken);
+				Request.Body.Position = 0;
 
-
-				// Validate signature
-				var signatureHeader = Request.Headers["X-Hub-Signature-256"].FirstOrDefault();
-				if (!string.IsNullOrEmpty(signatureHeader))
+				if (_configuration.GetValue("WhatsApp:ValidarFirma", true))
 				{
-					// Read raw body for signature validation
-					Request.Body.Position = 0;
-					using var reader = new StreamReader(Request.Body);
-					var rawRequestBody = reader.ReadToEnd();
-
+					var firma = Request.Headers["X-Hub-Signature-256"].FirstOrDefault() ?? string.Empty;
+					if (!_whatsappService.ValidateSignature(rawBody, firma))
+					{
+						_logger.LogWarning("Webhook de WhatsApp rechazado: firma inválida o ausente.");
+						return Unauthorized();
+					}
 				}
 
-				// Parse the webhook payload
 				var payload = JsonSerializer.Deserialize<WhatsAppInboundMessage>(rawBody);
 				if (payload == null || payload.Object != "whatsapp_business_account")
 				{
 					return Ok();
 				}
 
-				// Process each entry
-
-				foreach (var entry in payload.Entry)
+				foreach (var change in payload.Entry.SelectMany(entry => entry.Changes).Where(change => change.Field == "messages"))
 				{
-					foreach (var change in entry.Changes)
+					// Sin contactos es una actualización de estado o un mensaje de grupo.
+					if (change.Value.Contacts.Count == 0)
 					{
-						if (change.Field != "messages") continue;
-						// Ignore group messages (no contacts means status update or group message)
-						if (change.Value.Contacts == null || change.Value.Contacts.Count == 0)
-
-							continue;
-
-						// Process incoming messages
-						foreach (var message in change.Value.Messages)
-						{
-							ProcessIncomingMessage(message, change.Value.Contacts);
-						}
-
+						continue;
 					}
 
+					var nombre = change.Value.Contacts[0].Profile.Name;
+					foreach (var message in change.Value.Messages)
+					{
+						EncolarMensaje(message, string.IsNullOrWhiteSpace(nombre) ? "Usuario" : nombre);
+					}
 				}
-
-				// Always return 200 OK immediately
-				return Ok();
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error processing webhook");
-				// Still return 200 to prevent Meta retries
-				return Ok();
-
+				// Aun con error se responde 200 para evitar reintentos de Meta.
+				_logger.LogError(ex, "Error al procesar el webhook de WhatsApp.");
 			}
 
+			return Ok();
 		}
 
-
-
-		private async void ProcessIncomingMessage(WhatsAppMessageBody message, List<WhatsAppContact> contacts)
+		private void EncolarMensaje(WhatsAppMessageBody message, string nombreUsuario)
 		{
-
-			// Only process text messages
-
 			if (message.Type != "text" || message.Text == null)
 			{
-				_logger.LogInformation("Ignoring non-text message type: {Type}", message.Type);
+				_logger.LogInformation("Se ignora un mensaje de WhatsApp de tipo {Type}.", message.Type);
 				return;
-
 			}
 
-
-			var userMessage = message.Text.Body.Trim();
-			var phoneNumber = message.From;
-			// PARCHE PARA NÚMEROS DE MÉXICO: Si empieza con 521 y tiene 13 dígitos, quitamos el 1.
-			if (phoneNumber.StartsWith("521") && phoneNumber.Length == 13)
-			{
-
-				phoneNumber = "52" + phoneNumber.Substring(3);
-
-			}
-
-
-			var userName = contacts.FirstOrDefault()?.Profile.Name ?? "Usuario";
-			var whatsAppUserId = 0;
-
-			// Guardar el usuario en la base de datos y capturar el ID para la conversación
-			try
-			{
-				var saveUserResult = await _whatsAppDomain.SaveWhatsAppUser(new PostSaveWhatsAppUser
-				{
-					iIdWhatsAppUser = 0,
-					nvchPhoneNumber = phoneNumber,
-					nvchName = userName
-				});
-
-				if (saveUserResult.IsSuccess && saveUserResult.Data != null)
-				{
-					whatsAppUserId = saveUserResult.Data.iIdWhatsAppUser;
-				}
-				else
-				{
-					_logger.LogWarning("Error saving WhatsApp user: {Message}", saveUserResult.Message);
-				}
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error saving WhatsApp user for phone {Phone}", phoneNumber);
-			}
-
-			_logger.LogInformation("Text message from {Name} ({Phone}): {Message}",
-
-			userName, phoneNumber, userMessage);
-
-			// Enqueue for async processing
 			_queue.Enqueue(new WhatsAppQueuedMessage
 			{
-				iIdWhatsAppUser = whatsAppUserId,
-				PhoneNumber = phoneNumber,
-				UserMessage = userMessage,
-				UserName = userName,
+				PhoneNumber = NormalizarTelefonoMexico(message.From),
+				UserMessage = message.Text.Body.Trim(),
+				UserName = nombreUsuario,
 				ReceivedAt = DateTime.UtcNow,
-				WhatsAppMessageId = message.Id ?? string.Empty
+				WhatsAppMessageId = message.Id
 			});
-
 		}
 
 		/// <summary>
-		/// Endpoint de prueba para simular el flujo completo de WhatsApp.
-		/// Recibe un mensaje, guarda el usuario, crea conversación, consulta al agente y retorna la respuesta.
-		/// No envía mensaje por WhatsApp, solo procesa y retorna.
+		/// Los números de México llegan como 521XXXXXXXXXX (13 dígitos); la API de envío espera 52XXXXXXXXXX.
 		/// </summary>
-		/// <param name="request">Objeto con PhoneNumber, UserName y Message.</param>
-		/// <returns>Respuesta del agente con datos del proceso completo.</returns>
-		[HttpPost("test-message")]
-		[Authorize(Policy = AuthPolicies.Administracion)]
-		public async Task<IActionResult> TestMessage([FromBody] PostTestWhatsAppMessage request)
-		{
-			var processLog = new List<string>();
-			var startTime = DateTime.UtcNow;
-
-			try
-			{
-				_logger.LogInformation("Test message received from {Phone}: {Message}",
-					request.PhoneNumber, request.Message);
-
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Inicio del proceso");
-
-				// 1. Guardar el usuario en la base de datos
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Guardando usuario: {request.UserName} ({request.PhoneNumber})");
-				var saveUserResult = await _whatsAppDomain.SaveWhatsAppUser(new PostSaveWhatsAppUser
-				{
-					iIdWhatsAppUser = 0,
-					nvchPhoneNumber = request.PhoneNumber,
-					nvchName = request.UserName
-				});
-
-				if (saveUserResult.IsSuccess)
-				{
-					processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Usuario guardado exitosamente. ID: {saveUserResult.Data.iIdWhatsAppUser}");
-				}
-				else
-				{
-					processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Error guardando usuario: {saveUserResult.Message}");
-				}
-
-				// 2. Crear conversación
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Creando conversación");
-				var conversationResult = await _whatsAppDomain.SaveWhatsAppConversation(new PostSaveWhatsAppConversation
-				{
-					iIdConversation = 0,
-					iIdWhatsAppUser = saveUserResult.Data?.iIdWhatsAppUser ?? 0,
-					nvchStatus = "active"
-				});
-
-				int conversationId = conversationResult.Data?.iIdConversation ?? 0;
-				if (conversationResult.IsSuccess)
-				{
-					processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Conversación creada. ID: {conversationId}");
-				}
-				else
-				{
-					processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Error creando conversación: {conversationResult.Message}");
-				}
-
-				// 3. Guardar mensaje entrante
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Guardando mensaje entrante");
-				var inboundResult = await _whatsAppDomain.SaveWhatsAppMessage(new PostSaveWhatsAppMessage
-				{
-					iIdConversation = conversationId,
-					nvchWhatsAppMessageId = $"test_{Guid.NewGuid():N}",
-					nvchDirection = "inbound",
-					nvchMessageType = "text",
-					nvchContent = request.Message,
-					dtTimestamp = DateTime.UtcNow
-				});
-
-				if (inboundResult.IsSuccess)
-				{
-					processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Mensaje entrante guardado. ID: {inboundResult.Data.iIdWhatsAppMessage}");
-				}
-				else
-				{
-					processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Error guardando mensaje entrante: {inboundResult.Message}");
-				}
-
-				// 4. Consultar al agente
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Consultando al agente...");
-				var agentResponse = await _orchestrationService.ProcessUserQueryAsync(
-					request.Message,
-					request.PhoneNumber);
-
-				string agentAnswer = agentResponse?.nvchAgenteResponse ?? "Sin respuesta del agente";
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Respuesta del agente recibida ({agentAnswer.Length} caracteres)");
-
-				// 5. Guardar mensaje saliente
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Guardando mensaje saliente");
-				var outboundResult = await _whatsAppDomain.SaveWhatsAppMessage(new PostSaveWhatsAppMessage
-				{
-					iIdConversation = conversationId,
-					nvchWhatsAppMessageId = "",
-					nvchDirection = "outbound",
-					nvchMessageType = "text",
-					nvchContent = agentAnswer,
-					dtTimestamp = DateTime.UtcNow
-				});
-
-				if (outboundResult.IsSuccess)
-				{
-					processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Mensaje saliente guardado. ID: {outboundResult.Data.iIdWhatsAppMessage}");
-				}
-				else
-				{
-					processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Error guardando mensaje saliente: {outboundResult.Message}");
-				}
-
-				// 6. Cerrar conversación
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Cerrando conversación");
-				await _whatsAppDomain.SaveWhatsAppConversation(new PostSaveWhatsAppConversation
-				{
-					iIdConversation = conversationId,
-					iIdWhatsAppUser = saveUserResult.Data?.iIdWhatsAppUser ?? 0,
-					nvchStatus = "closed"
-				});
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Conversación cerrada");
-
-				var elapsed = DateTime.UtcNow - startTime;
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] Proceso completado en {elapsed.TotalMilliseconds:F0}ms");
-
-				_logger.LogInformation("Test message process completed for {Phone} in {Elapsed}ms",
-					request.PhoneNumber, elapsed.TotalMilliseconds);
-
-				return Ok(new
-				{
-					Success = true,
-					AgentResponse = agentAnswer,
-					ProcessLog = processLog,
-					DurationMs = elapsed.TotalMilliseconds,
-					Details = new
-					{
-						UserId = saveUserResult.Data?.iIdWhatsAppUser ?? 0,
-						ConversationId = conversationId,
-						InboundMessageId = inboundResult.Data?.iIdWhatsAppMessage ?? 0,
-						OutboundMessageId = outboundResult.Data?.iIdWhatsAppMessage ?? 0
-					}
-				});
-			}
-			catch (Exception ex)
-			{
-				var elapsed = DateTime.UtcNow - startTime;
-				processLog.Add($"[{DateTime.UtcNow:HH:mm:ss.fff}] ERROR: {ex.Message}");
-
-				_logger.LogError(ex, "Error in test message process for {Phone}", request.PhoneNumber);
-
-				return StatusCode(500, new
-				{
-					Success = false,
-					Error = ex.Message,
-					ProcessLog = processLog,
-					DurationMs = elapsed.TotalMilliseconds
-				});
-			}
-		}
-
+		private static string NormalizarTelefonoMexico(string telefono) =>
+			telefono.StartsWith("521") && telefono.Length == 13 ? "52" + telefono[3..] : telefono;
 	}
 }
-

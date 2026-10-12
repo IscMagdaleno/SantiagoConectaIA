@@ -2,60 +2,26 @@ using SantiagoConectaIA.API.Services;
 
 namespace SantiagoConectaIA.API.BackgroundServices
 {
-	public class DailyFacebookPublicacionBackgroundService : BackgroundService
+	/// <summary>Publica a diario la noticia más reciente en Facebook.</summary>
+	public class DailyFacebookPublicacionBackgroundService : PublicacionDiariaBackgroundService
 	{
-		private readonly IServiceProvider _serviceProvider;
-		private readonly IPublicacionAutomaticaService _automatica;
-		private readonly PublicacionesBitacora _bitacora;
-		private readonly ILogger<DailyFacebookPublicacionBackgroundService> _logger;
-
 		public DailyFacebookPublicacionBackgroundService(
 			IServiceProvider serviceProvider,
 			IPublicacionAutomaticaService automatica,
 			PublicacionesBitacora bitacora,
 			ILogger<DailyFacebookPublicacionBackgroundService> logger)
+			: base(serviceProvider, automatica, bitacora, logger)
 		{
-			_serviceProvider = serviceProvider;
-			_automatica = automatica;
-			_bitacora = bitacora;
-			_logger = logger;
 		}
 
-		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-		{
-			_logger.LogInformation("Publicación automática de Facebook iniciada.");
+		protected override string Nombre => "Facebook";
 
-			while (!stoppingToken.IsCancellationRequested)
-			{
-				try
-				{
-					var hora = await _automatica.HoraPublicacionAsync(stoppingToken);
-					var espera = HorarioPublicacion.TiempoHasta(hora);
-					_logger.LogInformation("Siguiente publicación automática de Facebook a las {Hora}:00, en {Espera}.", hora, espera);
-					_bitacora.Programar(PublicacionesBitacora.Noticias, DateTime.UtcNow.Add(espera));
-					await Task.Delay(espera, stoppingToken);
-				}
-				catch (OperationCanceledException)
-				{
-					break;
-				}
+		protected override string ClaveBitacora => PublicacionesBitacora.Noticias;
 
-				try
-				{
-					using var scope = _serviceProvider.CreateScope();
-					var servicio = scope.ServiceProvider.GetRequiredService<INoticiaAutomaticaService>();
-					await servicio.PublicarMasRecienteAsync(manual: false, stoppingToken);
-				}
-				catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-				{
-					break;
-				}
-				catch (Exception ex)
-				{
-					_logger.LogError(ex, "Error en la publicación automática de Facebook.");
-					_bitacora.Registrar(PublicacionesBitacora.Noticias, $"Error: {ex.Message}");
-				}
-			}
-		}
+		protected override Task<int> ObtenerHoraAsync(IPublicacionAutomaticaService automatica, CancellationToken cancellationToken) =>
+			automatica.HoraPublicacionAsync(cancellationToken);
+
+		protected override Task PublicarAsync(IServiceProvider servicios, CancellationToken cancellationToken) =>
+			servicios.GetRequiredService<INoticiaAutomaticaService>().PublicarMasRecienteAsync(manual: false, cancellationToken);
 	}
 }

@@ -1,10 +1,8 @@
-using EngramaCoreStandar.Results;
+﻿using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.Share.PostModels.PublicacionesModule;
 
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SantiagoConectaIA.API.Services
@@ -16,25 +14,21 @@ namespace SantiagoConectaIA.API.Services
 		private const int MaxCaracteresPrompt = 2000;
 		private const long MaxBytesImagen = 15 * 1024 * 1024;
 
-		private static readonly JsonSerializerOptions JsonOptions = new()
-		{
-			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-			DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-		};
+		private static readonly TimeSpan TiempoMaximo = TimeSpan.FromSeconds(120);
 
 		private readonly HttpClient _httpClient;
-		private readonly IParametrosService _parametros;
+		private readonly IGeminiClient _gemini;
 		private readonly IServiceScopeFactory _scopeFactory;
 		private readonly ILogger<GeminiImagenService> _logger;
 
 		public GeminiImagenService(
 			HttpClient httpClient,
-			IParametrosService parametros,
+			IGeminiClient gemini,
 			IServiceScopeFactory scopeFactory,
 			ILogger<GeminiImagenService> logger)
 		{
 			_httpClient = httpClient;
-			_parametros = parametros;
+			_gemini = gemini;
 			_scopeFactory = scopeFactory;
 			_logger = logger;
 		}
@@ -58,16 +52,10 @@ namespace SantiagoConectaIA.API.Services
 				return Response<string>.BadResult("La imagen a editar debe ser una URL http o https.", string.Empty);
 			}
 
-			var apiKey = await _parametros.GetValor2Async(ParametrosAlias.Gemini, cancellationToken);
-			if (string.IsNullOrWhiteSpace(apiKey))
+			var configuracion = await _gemini.ObtenerConfiguracionAsync(ParametrosAlias.GeminiImagen, ModeloDefault, cancellationToken);
+			if (!configuracion.Configurada)
 			{
 				return Response<string>.BadResult($"No está configurada la clave de Gemini (parámetro {ParametrosAlias.Gemini}).", string.Empty);
-			}
-
-			var modelo = await _parametros.GetValor1Async(ParametrosAlias.GeminiImagen, cancellationToken) ?? ModeloDefault;
-			if (modelo.StartsWith("models/", StringComparison.OrdinalIgnoreCase))
-			{
-				modelo = modelo["models/".Length..];
 			}
 
 			try
@@ -78,7 +66,7 @@ namespace SantiagoConectaIA.API.Services
 					return Response<string>.BadResult(original.Message, string.Empty);
 				}
 
-				var editada = await GenerarAsync(modelo, apiKey, prompt, original.Data, cancellationToken);
+				var editada = await GenerarAsync(configuracion, prompt, original.Data, cancellationToken);
 				if (!editada.IsSuccess)
 				{
 					return Response<string>.BadResult(editada.Message, string.Empty);
@@ -139,47 +127,25 @@ namespace SantiagoConectaIA.API.Services
 			};
 		}
 
-		private async Task<Response<Imagen>> GenerarAsync(string modelo, string apiKey, string prompt, Imagen original, CancellationToken cancellationToken)
+		private async Task<Response<Imagen>> GenerarAsync(GeminiConfiguracion configuracion, string prompt, Imagen original, CancellationToken cancellationToken)
 		{
-			var requestBody = new GeminiRequest
+			var solicitud = new GeminiSolicitud
 			{
-				Contents = new List<GeminiContent>
-				{
-					new()
-					{
-						Role = "user",
-						Parts = new List<GeminiPart>
-						{
-							new() { Text = prompt },
-							new() { InlineData = new GeminiInlineData { MimeType = original.MimeType, Data = Convert.ToBase64String(original.Bytes) } }
-						}
-					}
-				},
+				Contents = { GeminiContent.Usuario(new GeminiPart { Text = prompt }, GeminiPart.Imagen(original.MimeType, original.Bytes)) },
 				GenerationConfig = new GeminiGenerationConfig { ResponseModalities = new List<string> { "IMAGE" } }
 			};
 
-			var url = $"https://generativelanguage.googleapis.com/v1beta/models/{Uri.EscapeDataString(modelo)}:generateContent?key={Uri.EscapeDataString(apiKey)}";
-			var json = JsonSerializer.Serialize(requestBody, JsonOptions);
-			using var content = new StringContent(json, Encoding.UTF8, "application/json");
-			using var response = await _httpClient.PostAsync(url, content, cancellationToken);
-			var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-			if (!response.IsSuccessStatusCode)
+			var respuesta = await _gemini.GenerarContenidoAsync(configuracion, solicitud, TiempoMaximo, cancellationToken);
+			if (!respuesta.Exitosa)
 			{
-				_logger.LogWarning("Gemini rechazó la edición de imagen. Status={StatusCode}", (int)response.StatusCode);
-				return Response<Imagen>.BadResult($"Gemini no pudo editar la imagen ({(int)response.StatusCode}).", new Imagen());
+				return Response<Imagen>.BadResult($"Gemini no pudo editar la imagen ({respuesta.CodigoEstado}).", new Imagen());
 			}
 
-			var parsed = JsonSerializer.Deserialize<GeminiResponse>(body, JsonOptions);
-			var partes = parsed?.Candidates?
-				.SelectMany(c => c.Content?.Parts ?? new List<GeminiPart>())
-				.ToList() ?? new List<GeminiPart>();
-
-			var imagen = partes.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.InlineData?.Data))?.InlineData;
+			var imagen = respuesta.PrimeraImagen;
 			if (imagen == null)
 			{
-				var texto = partes.Select(p => p.Text).FirstOrDefault(t => !string.IsNullOrWhiteSpace(t));
-				var motivo = parsed?.Candidates?.Select(c => c.FinishReason).FirstOrDefault(r => !string.IsNullOrWhiteSpace(r));
+				var texto = respuesta.PrimerTexto;
+				var motivo = respuesta.MotivoFin;
 				var mensaje = !string.IsNullOrWhiteSpace(texto)
 					? $"Gemini no devolvió imagen: {texto.Trim()}"
 					: $"Gemini no devolvió imagen{(string.IsNullOrWhiteSpace(motivo) ? "." : $" (motivo: {motivo}).")}";
@@ -233,44 +199,5 @@ namespace SantiagoConectaIA.API.Services
 			public byte[] Bytes { get; set; } = Array.Empty<byte>();
 		}
 
-		private sealed class GeminiRequest
-		{
-			public List<GeminiContent> Contents { get; set; } = new();
-			public GeminiGenerationConfig? GenerationConfig { get; set; }
-		}
-
-		private sealed class GeminiContent
-		{
-			public string? Role { get; set; }
-			public List<GeminiPart> Parts { get; set; } = new();
-		}
-
-		private sealed class GeminiPart
-		{
-			public string? Text { get; set; }
-			public GeminiInlineData? InlineData { get; set; }
-		}
-
-		private sealed class GeminiInlineData
-		{
-			public string? MimeType { get; set; }
-			public string? Data { get; set; }
-		}
-
-		private sealed class GeminiGenerationConfig
-		{
-			public List<string> ResponseModalities { get; set; } = new();
-		}
-
-		private sealed class GeminiResponse
-		{
-			public List<GeminiCandidate>? Candidates { get; set; }
-		}
-
-		private sealed class GeminiCandidate
-		{
-			public GeminiContent? Content { get; set; }
-			public string? FinishReason { get; set; }
-		}
 	}
 }

@@ -13,7 +13,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class PublicacionesCiudadanoController : ControllerBase
+	public class PublicacionesCiudadanoController : ApiControllerBase
 	{
 		private readonly IPublicacionesCiudadanoDomain _publicacionesDomain;
 
@@ -30,11 +30,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetPublicacionesCiudadano([FromBody] PostGetPublicacionesCiudadano postModel)
 		{
 			var result = await _publicacionesDomain.GetPublicacionesCiudadano(postModel ?? new PostGetPublicacionesCiudadano());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -51,11 +47,7 @@ namespace SantiagoConectaIA.API.Controllers
 			}
 
 			var result = await _publicacionesDomain.SavePublicacionCiudadano(postModel ?? new PostSavePublicacionCiudadano(), ciudadanoId);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -72,11 +64,7 @@ namespace SantiagoConectaIA.API.Controllers
 			}
 
 			var result = await _publicacionesDomain.GetMisPublicacionesCiudadano(postModel ?? new PostGetMisPublicacionesCiudadano(), ciudadanoId);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -93,11 +81,7 @@ namespace SantiagoConectaIA.API.Controllers
 			}
 
 			var result = await _publicacionesDomain.DeletePublicacionCiudadano(postModel ?? new PostDeletePublicacionCiudadano(), ciudadanoId);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		private int GetCiudadanoIdFromToken()

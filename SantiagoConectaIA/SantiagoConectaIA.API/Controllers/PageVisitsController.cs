@@ -10,7 +10,7 @@ namespace SantiagoConectaIA.API.Controllers
 	[ApiController]
 	[Authorize(Policy = AuthPolicies.Administracion)]
 	[Route("api/[controller]")]
-	public class PageVisitsController : ControllerBase
+	public class PageVisitsController : ApiControllerBase
 	{
 		private readonly IPageVisitsDomain _pageVisitsDomain;
 
@@ -28,11 +28,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetPageVisitsStats([FromBody] PostGetPageVisitsStats postModel)
 		{
 			var result = await _pageVisitsDomain.GetPageVisitsStats(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

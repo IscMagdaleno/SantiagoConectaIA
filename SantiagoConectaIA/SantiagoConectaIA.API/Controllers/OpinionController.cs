@@ -13,7 +13,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class OpinionController : ControllerBase
+	public class OpinionController : ApiControllerBase
 	{
 		private readonly IOpinionDomain _opinionDomain;
 
@@ -30,11 +30,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetOpiniones([FromBody] PostGetOpiniones postModel)
 		{
 			var result = await _opinionDomain.GetOpiniones(postModel ?? new PostGetOpiniones());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -51,11 +47,7 @@ namespace SantiagoConectaIA.API.Controllers
 			}
 
 			var result = await _opinionDomain.SaveOpinion(postModel ?? new PostSaveOpinion(), ciudadanoId);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		private int GetCiudadanoIdFromToken()

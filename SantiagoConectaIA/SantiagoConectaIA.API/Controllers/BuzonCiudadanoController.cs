@@ -1,6 +1,8 @@
 using EngramaCoreStandar.Results;
 
 using Microsoft.AspNetCore.Mvc;
+using SantiagoConectaIA.API.Services;
+using Microsoft.AspNetCore.RateLimiting;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.Share.Objects.BuzonCiudadanoModule;
@@ -10,7 +12,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class BuzonCiudadanoController : ControllerBase
+	public class BuzonCiudadanoController : ApiControllerBase
 	{
 		private readonly IBuzonCiudadanoDomain _buzonCiudadanoDomain;
 		private readonly ILogger<BuzonCiudadanoController> _logger;
@@ -24,6 +26,7 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		[HttpPost("PostSaveReporte")]
+		[EnableRateLimiting(PoliticasLimiteSolicitudes.EscrituraPublica)]
 		[ProducesResponseType(typeof(Response<BuzonCiudadano>), 200)]
 		public async Task<IActionResult> PostSaveReporte([FromBody] PostSaveBuzonCiudadano model)
 		{
@@ -36,11 +39,7 @@ namespace SantiagoConectaIA.API.Controllers
 					return BadRequest(Response<BuzonCiudadano>.BadResult("Modelo inválido.", new BuzonCiudadano()));
 
 				var result = await _buzonCiudadanoDomain.RegistrarReporte(model);
-				if (result.IsSuccess)
-				{
-					return Ok(result);
-				}
-				return BadRequest(result);
+				return Resultado(result);
 			}
 			catch (Exception ex)
 			{

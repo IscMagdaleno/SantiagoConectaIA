@@ -14,7 +14,7 @@ namespace SantiagoConectaIA.API.Controllers
 	/// </summary>
 	[ApiController]
 	[Route("api/[controller]")]
-	public class EventosController : ControllerBase
+	public class EventosController : ApiControllerBase
 	{
 		private readonly IEventosDomain _eventosDomain;
 		private readonly IAzureBlobDomain _azureBlobDomain;
@@ -90,11 +90,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetEventos([FromBody] PostGetEventos postModel)
 		{
 			var result = await _eventosDomain.GetEventos(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -105,8 +101,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveEvento([FromBody] PostSaveEvento postModel)
 		{
 			var result = await _eventosDomain.SaveEvento(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -116,8 +111,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetCategoriaEventos([FromBody] PostGetCategoriaEventos postModel)
 		{
 			var result = await _eventosDomain.GetCategoriaEventos(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -128,8 +122,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveCategoriaEvento([FromBody] PostSaveCategoriaEvento postModel)
 		{
 			var result = await _eventosDomain.SaveCategoriaEvento(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -139,8 +132,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetImagenesRegistro([FromBody] PostGetImagenesRegistro postModel)
 		{
 			var result = await _eventosDomain.GetImagenesRegistro(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -151,8 +143,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveImagenRegistro([FromBody] PostSaveImagenRegistro postModel)
 		{
 			var result = await _eventosDomain.SaveImagenRegistro(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -163,8 +154,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostDeleteImagenRegistro([FromBody] PostDeleteImagenRegistro postModel)
 		{
 			var result = await _eventosDomain.DeleteImagenRegistro(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -174,8 +164,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetEventoDetalle([FromBody] PostGetEventoDetalle postModel)
 		{
 			var result = await _eventosDomain.GetEventoDetalle(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -185,8 +174,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetEventosSucursales([FromBody] PostGetEventosSucursales postModel)
 		{
 			var result = await _eventosDomain.GetEventosSucursales(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -197,8 +185,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveSucursalEvento([FromBody] PostSaveSucursalEvento postModel)
 		{
 			var result = await _eventosDomain.SaveSucursalEvento(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

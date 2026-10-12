@@ -1,7 +1,7 @@
 using EngramaCoreStandar.Extensions;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 
 using SantiagoConectaIA.API.BackgroundServices;
@@ -24,21 +24,18 @@ using SantiagoConectaIA.API.Middleware;
 using SantiagoConectaIA.API.SemanticKernel;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
 using SantiagoConectaIA.API.Services;
-using SantiagoConectaIA.DAL.Models;
-using SantiagoConectaIA.DAL.Provider;
 using SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository;
 
 using System.Reflection;
+
+// EngramaCoreStandar imprime cada EXEC en la consola; el de la bitácora sale en cada petición y tapa el resto.
+ConsolaFiltrada.Instalar("spSaveApiCallLog");
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-
-// Register DbContext for EF Core
-builder.Services.AddDbContext<EngramaContext>(options =>
-	options.UseSqlServer(builder.Configuration.GetConnectionString("EngramaCloudConnection")));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -75,8 +72,16 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
 	});
 
 builder.Services.AddAuthorization(AuthPolicies.Registrar);
-builder.Services.AddScoped<ReparadorImagenesPdfService>();
+builder.Services.AddCors(options => PoliticaCors.Registrar(options, builder.Configuration, builder.Environment));
+builder.Services.AddRateLimiter(PoliticasLimiteSolicitudes.Registrar);
 
+// Azure App Service pone un proxy delante: sin esto todos los clientes tendrían la misma IP.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+	options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+	options.KnownNetworks.Clear();
+	options.KnownProxies.Clear();
+});
 builder.Services.AddScoped<IAuthDomain, AuthDomain>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
@@ -98,7 +103,6 @@ builder.Services.AddScoped<IEmprendimientosFeedDomain, EmprendimientosFeedDomain
 builder.Services.AddScoped<ICiudadanoDomain, CiudadanoDomain>();
 builder.Services.AddScoped<IOpinionDomain, OpinionDomain>();
 builder.Services.AddScoped<IPublicacionesCiudadanoDomain, PublicacionesCiudadanoDomain>();
-builder.Services.AddScoped<IInformacionLocalDomain, InformacionLocalDomain>();
 
 // WhatsApp Analytics services
 builder.Services.AddScoped<IWhatsAppDomain, WhatsAppDomain>();
@@ -111,17 +115,16 @@ builder.Services.AddHttpClient<IFacebookPublishService, FacebookPublishService>(
 {
 	client.Timeout = TimeSpan.FromSeconds(30);
 });
-builder.Services.AddHttpClient<IGeminiPublicacionService, GeminiPublicacionService>(client =>
+// Cliente único de Gemini: cada servicio pasa su propio tiempo máximo en cada llamada.
+builder.Services.AddHttpClient<IGeminiClient, GeminiClient>(client =>
 {
-	client.Timeout = TimeSpan.FromSeconds(60);
+	client.Timeout = Timeout.InfiniteTimeSpan;
 });
+builder.Services.AddTransient<IGeminiPublicacionService, GeminiPublicacionService>();
+builder.Services.AddTransient<IGeminiEventoService, GeminiEventoService>();
 builder.Services.AddHttpClient<IGeminiImagenService, GeminiImagenService>(client =>
 {
 	client.Timeout = TimeSpan.FromSeconds(120);
-});
-builder.Services.AddHttpClient<IGeminiEventoService, GeminiEventoService>(client =>
-{
-	client.Timeout = TimeSpan.FromSeconds(90);
 });
 builder.Services.AddSingleton<PublicacionesBitacora>();
 builder.Services.AddSingleton<IPublicacionAutomaticaService, PublicacionAutomaticaService>();
@@ -138,7 +141,6 @@ builder.Services.AddScoped<INoticiasRepository, NoticiasRepository>();
 builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
 builder.Services.AddScoped<IBuzonCiudadanoRepository, BuzonCiudadanoRepository>();
 builder.Services.AddScoped<ICatalogosRepository, CatalogosRepository>();
-builder.Services.AddScoped<ICatalogosProvider, CatalogosProvider>();
 builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
 builder.Services.AddScoped<IEventosRepository, EventosRepository>();
 builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
@@ -148,12 +150,10 @@ builder.Services.AddScoped<IEmprendimientosFeedRepository, EmprendimientosFeedRe
 builder.Services.AddScoped<ICiudadanoRepository, CiudadanoRepository>();
 builder.Services.AddScoped<IOpinionRepository, OpinionRepository>();
 builder.Services.AddScoped<IPublicacionesCiudadanoRepository, PublicacionesCiudadanoRepository>();
-builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
 
 // WhatsApp Analytics repository
 builder.Services.AddScoped<IWhatsAppRepository, WhatsAppRepository>();
 
-builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
 builder.Services.AddScoped<INoticiasScraperService, NoticiasScraperService>();
 builder.Services.AddHostedService<DailyScraperBackgroundService>();
 builder.Services.AddHostedService<DailyFacebookPublicacionBackgroundService>();
@@ -197,14 +197,11 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI();
 }
 
-app.UseCors(x => x
-					.AllowAnyMethod()
-					.AllowAnyHeader()
-					.SetIsOriginAllowed(origin => true) // allow any origin
-					.AllowCredentials());
-
+app.UseForwardedHeaders();
+app.UseCors(PoliticaCors.Nombre);
 
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 
 app.UseMiddleware<ApiLoggingMiddleware>();
 

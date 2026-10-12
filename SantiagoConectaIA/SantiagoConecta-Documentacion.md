@@ -23,7 +23,6 @@ Este proyecto sigue la **Metodología Engrama** para el desarrollo de software c
 |----------|------|-----------|
 | `SantiagoConectaIA.API` | ASP.NET Core Web API | Backend, controladores REST, lógica de dominio, Semantic Kernel |
 | `SantiagoConectaIA.Share` | Class Library | Modelos compartidos (Objects), DTOs de petición (PostModels) |
-| `SantiagoConectaIA.DAL` | Class Library | Entity Framework Core, DbContext, modelos de base de datos |
 | `SantiagoConectaIA.PWA` | Blazor PWA | Panel administrativo con MudBlazor (CRUD de todos los módulos) |
 | `SantiagoConecta.SharedUI` | Razor Class Library | Componentes Blazor reutilizables (página pública, widgets) |
 | `SantiagoConectaFront` | Blazor WebAssembly | Portal público para ciudadanos (punto de entrada) |
@@ -1085,13 +1084,7 @@ CIUDADANO
 - `GeminiLoggingHandler` captura errores HTTP de la API de Gemini
 - Excepciones en `ChatAsync` se relanzan con detalles del error
 
-### Seed de Datos de Prueba
-El `ChatController.PostSeedMockData` genera 3 chats de ejemplo:
-1. **Juan Pérez** — Consulta sobre Acta de Nacimiento (costo, requisitos, pago)
-2. **María Rodríguez** — Consulta sobre descuentos de Predial
-3. **Anónimo WhatsApp** — Consulta sobre renovación de Licencia de Conducir
-
 ### Configuración de la Solución
 - Archivo `.sln` en la raíz del proyecto
-- Proyectos organizados por capa (API, DAL, Share) y frontend (PWA, SharedUI, Front, Mobile)
+- Proyectos organizados por capa (API, Share) y frontend (PWA, SharedUI, Front, Mobile)
 - Test project con pruebas unitarias para el módulo de Oficinas

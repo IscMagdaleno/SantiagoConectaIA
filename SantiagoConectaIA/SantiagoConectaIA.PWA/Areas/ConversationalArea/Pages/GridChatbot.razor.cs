@@ -70,28 +70,6 @@ namespace SantiagoConectaIA.PWA.Areas.ConversationalArea.Pages
 			}
 		}
 
-		public async Task SeedMockData()
-		{
-			try
-			{
-				Loading.Show();
-				var res = await httpService.Post<object, Response<object>>("api/Chat/PostSeedMockData", new { });
-				var validation = validaServicioService.ValidadionServicio(res, onSuccess: async data =>
-				{
-					await LoadChats();
-				});
-				ShowSnake(validation);
-			}
-			catch (Exception ex)
-			{
-				ShowSnake(new SeverityMessage(false, $"Excepción: {ex.Message}", SeverityTag.Error));
-			}
-			finally
-			{
-				Loading.Hide();
-			}
-		}
-
 		protected override List<MenuItemModel> GetMenuItems()
 		{
 			var items = new List<MenuItemModel>();
@@ -103,17 +81,6 @@ namespace SantiagoConectaIA.PWA.Areas.ConversationalArea.Pages
 				Color = MudBlazor.Color.Info,
 				Action = EventCallback.Factory.Create(this, async () => { await LoadChats(); })
 			});
-
-			if (Data?.LstChats != null && !Data.LstChats.Any())
-			{
-				items.Add(new MenuItemModel
-				{
-					Text = "Generar Datos de Prueba",
-					Icon = MudBlazor.Icons.Material.Filled.AutoAwesome,
-					Color = MudBlazor.Color.Primary,
-					Action = EventCallback.Factory.Create(this, async () => { await SeedMockData(); })
-				});
-			}
 
 			return items;
 		}

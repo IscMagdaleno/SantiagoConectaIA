@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using SantiagoConectaIA.API.Services;
+using Microsoft.AspNetCore.RateLimiting;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.Share.PostModels.CiudadanoModule;
@@ -7,7 +9,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class CiudadanoController : ControllerBase
+	public class CiudadanoController : ApiControllerBase
 	{
 		private readonly ICiudadanoDomain _ciudadanoDomain;
 
@@ -20,56 +22,44 @@ namespace SantiagoConectaIA.API.Controllers
 		/// Registra un ciudadano con alias, teléfono de 10 dígitos y PIN.
 		/// </summary>
 		[HttpPost("PostSaveCiudadano")]
+		[EnableRateLimiting(PoliticasLimiteSolicitudes.Acceso)]
 		public async Task<IActionResult> PostSaveCiudadano([FromBody] PostSaveCiudadano postModel)
 		{
 			var result = await _ciudadanoDomain.Registrar(postModel ?? new PostSaveCiudadano());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
 		/// Envía un código de verificación por WhatsApp para completar el registro.
 		/// </summary>
 		[HttpPost("PostEnviarCodigoWhatsApp")]
+		[EnableRateLimiting(PoliticasLimiteSolicitudes.Acceso)]
 		public async Task<IActionResult> PostEnviarCodigoWhatsApp([FromBody] PostSendCodigoCiudadano postModel)
 		{
 			var result = await _ciudadanoDomain.EnviarCodigoWhatsApp(postModel ?? new PostSendCodigoCiudadano());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
 		/// Inicia sesión de un ciudadano con teléfono y PIN.
 		/// </summary>
 		[HttpPost("PostLoginCiudadano")]
+		[EnableRateLimiting(PoliticasLimiteSolicitudes.Acceso)]
 		public async Task<IActionResult> PostLoginCiudadano([FromBody] PostLoginCiudadano postModel)
 		{
 			var result = await _ciudadanoDomain.Login(postModel ?? new PostLoginCiudadano());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
 		/// Inicia sesión o registra un ciudadano mediante Google o Facebook.
 		/// </summary>
 		[HttpPost("PostExternalLogin")]
+		[EnableRateLimiting(PoliticasLimiteSolicitudes.Acceso)]
 		public async Task<IActionResult> PostExternalLogin([FromBody] PostExternalLoginCiudadano postModel)
 		{
 			var result = await _ciudadanoDomain.ExternalLogin(postModel ?? new PostExternalLoginCiudadano());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -79,11 +69,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> GetSocialAuthId([FromQuery] string proveedor)
 		{
 			var result = await _ciudadanoDomain.GetSocialAuthId(proveedor ?? string.Empty);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

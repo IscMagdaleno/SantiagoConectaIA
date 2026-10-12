@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.AuthModule;
 using SantiagoConectaIA.API.Services;
@@ -19,6 +20,7 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		[HttpPost("PostLoginUsuario")]
+		[EnableRateLimiting(PoliticasLimiteSolicitudes.Acceso)]
 		public async Task<IActionResult> PostLoginUsuario([FromBody] PostLoginUsuario daoModel)
 		{
 			var result = await authDomain.Login(daoModel);

@@ -7,7 +7,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class FeedController : ControllerBase
+	public class FeedController : ApiControllerBase
 	{
 		private readonly IFeedDomain _feedDomain;
 
@@ -23,11 +23,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetFeed([FromBody] PostGetFeed postModel)
 		{
 			var result = await _feedDomain.GetFeed(postModel ?? new PostGetFeed());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -37,11 +33,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSearchFeed([FromBody] PostSearchFeed postModel)
 		{
 			var result = await _feedDomain.SearchFeed(postModel ?? new PostSearchFeed());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

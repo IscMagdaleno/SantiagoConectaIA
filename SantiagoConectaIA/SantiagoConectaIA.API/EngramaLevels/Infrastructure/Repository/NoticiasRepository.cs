@@ -34,16 +34,6 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 			return new spSaveNoticia.Result { bResult = false, vchMessage = respuesta.Msg };
 		}
 
-		public async Task<spSaveNoticiaImagen.Result> spSaveNoticiaImagen(spSaveNoticiaImagen.Request daoModel)
-		{
-			var respuesta = await _managerHelper.GetAsync<spSaveNoticiaImagen.Result, spSaveNoticiaImagen.Request>(daoModel, "", "SCIA");
-			if (respuesta.Ok)
-			{
-				return respuesta.Data;
-			}
-			return new spSaveNoticiaImagen.Result { bResult = false, vchMessage = respuesta.Msg };
-		}
-
 		public async Task<IEnumerable<spGetNoticiaMetadatos.Result>> spGetNoticiaMetadatos(spGetNoticiaMetadatos.Request daoModel)
 		{
 			var respuesta = await _managerHelper.GetAllAsync<spGetNoticiaMetadatos.Result, spGetNoticiaMetadatos.Request>(daoModel, "", "SCIA");

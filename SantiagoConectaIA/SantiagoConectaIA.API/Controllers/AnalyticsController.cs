@@ -12,7 +12,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class AnalyticsController : ControllerBase
+	public class AnalyticsController : ApiControllerBase
 	{
 		private readonly IAnalyticsDomain _analyticsDomain;
 		private readonly ILogger<AnalyticsController> _logger;
@@ -55,11 +55,7 @@ namespace SantiagoConectaIA.API.Controllers
 				}
 
 				var result = await _analyticsDomain.SavePageVisit(model);
-				if (result.IsSuccess)
-				{
-					return Ok(result);
-				}
-				return BadRequest(result);
+				return Resultado(result);
 			}
 			catch (Exception ex)
 			{

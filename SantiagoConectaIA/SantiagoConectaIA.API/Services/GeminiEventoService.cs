@@ -1,30 +1,27 @@
-using EngramaCoreStandar.Results;
+﻿using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.Share.Objects.EventosModulo;
 
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace SantiagoConectaIA.API.Services
 {
 	public class GeminiEventoService : IGeminiEventoService
 	{
 		private const string ModeloDefault = "gemini-2.5-flash";
-		private readonly HttpClient _httpClient;
-		private readonly IParametrosService _parametros;
+		private static readonly TimeSpan TiempoMaximo = TimeSpan.FromSeconds(90);
+
+		private readonly IGeminiClient _gemini;
 		private readonly ILogger<GeminiEventoService> _logger;
 
 		private static readonly JsonSerializerOptions JsonOptions = new()
 		{
-			PropertyNameCaseInsensitive = true,
-			DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+			PropertyNameCaseInsensitive = true
 		};
 
-		public GeminiEventoService(HttpClient httpClient, IParametrosService parametros, ILogger<GeminiEventoService> logger)
+		public GeminiEventoService(IGeminiClient gemini, ILogger<GeminiEventoService> logger)
 		{
-			_httpClient = httpClient;
-			_parametros = parametros;
+			_gemini = gemini;
 			_logger = logger;
 		}
 
@@ -32,80 +29,40 @@ namespace SantiagoConectaIA.API.Services
 		{
 			try
 			{
-				var apiKey = await _parametros.GetValor2Async(ParametrosAlias.Gemini, cancellationToken);
-				if (string.IsNullOrWhiteSpace(apiKey))
+				var configuracion = await _gemini.ObtenerConfiguracionAsync(ParametrosAlias.Gemini, ModeloDefault, cancellationToken);
+				if (!configuracion.Configurada)
 				{
 					return Response<EventoExtraidoDto>.BadResult("No se encontró configurada la API key de Gemini.", new EventoExtraidoDto());
 				}
 
-				var modelo = await _parametros.GetValor1Async(ParametrosAlias.Gemini, cancellationToken);
-				if (string.IsNullOrWhiteSpace(modelo))
-				{
-					modelo = ModeloDefault;
-				}
-
-				// Convertir imagen a base64
 				using var memoryStream = new MemoryStream();
 				if (imageStream.CanSeek) imageStream.Position = 0;
 				await imageStream.CopyToAsync(memoryStream, cancellationToken);
-				var imageBytes = memoryStream.ToArray();
 
-				if (string.IsNullOrWhiteSpace(mimeType))
+				var solicitud = new GeminiSolicitud
 				{
-					mimeType = "image/jpeg";
-				}
-
-				var prompt = BuildExtractionPrompt();
-
-				var requestBody = new
-				{
-					contents = new[]
+					Contents =
 					{
-						new
-						{
-							role = "user",
-							parts = new object[]
-							{
-								new { text = prompt },
-								new
-								{
-									inlineData = new
-									{
-										mimeType = mimeType,
-										data = Convert.ToBase64String(imageBytes)
-									}
-								}
-							}
-						}
+						GeminiContent.Usuario(
+							new GeminiPart { Text = BuildExtractionPrompt() },
+							GeminiPart.Imagen(string.IsNullOrWhiteSpace(mimeType) ? "image/jpeg" : mimeType, memoryStream.ToArray()))
 					},
-					generationConfig = new
-					{
-						temperature = 0.2,
-						responseMimeType = "application/json"
-					}
+					GenerationConfig = new GeminiGenerationConfig { Temperature = 0.2, ResponseMimeType = "application/json" }
 				};
 
-				var url = $"https://generativelanguage.googleapis.com/v1beta/models/{Uri.EscapeDataString(modelo)}:generateContent?key={Uri.EscapeDataString(apiKey)}";
-				var jsonRequest = JsonSerializer.Serialize(requestBody, JsonOptions);
-				using var httpContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-				using var response = await _httpClient.PostAsync(url, httpContent, cancellationToken);
-				var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-
-				if (!response.IsSuccessStatusCode)
+				var respuesta = await _gemini.GenerarContenidoAsync(configuracion, solicitud, TiempoMaximo, cancellationToken);
+				if (!respuesta.Exitosa)
 				{
-					_logger.LogWarning("Gemini rechazó el análisis de imagen del evento. Status={StatusCode}, Body={Body}", (int)response.StatusCode, responseBody);
-					return Response<EventoExtraidoDto>.BadResult($"Error al comunicarse con Gemini ({(int)response.StatusCode}).", new EventoExtraidoDto());
+					return Response<EventoExtraidoDto>.BadResult($"Error al comunicarse con Gemini ({respuesta.CodigoEstado}).", new EventoExtraidoDto());
 				}
 
-				var jsonText = ExtraerTextoRespuesta(responseBody);
+				var jsonText = respuesta.PrimerTexto;
 				if (string.IsNullOrWhiteSpace(jsonText))
 				{
 					return Response<EventoExtraidoDto>.BadResult("Gemini no devolvió una respuesta estructurada.", new EventoExtraidoDto());
 				}
 
-				// Limpiar posibles bloques ```json ... ``` si vienen en texto
-				jsonText = LimpiarBloquesJson(jsonText);
+				jsonText = GeminiTexto.QuitarBloquesDeCodigo(jsonText);
 
 				var eventoParsed = JsonSerializer.Deserialize<EventoGeminiJson>(jsonText, JsonOptions);
 				if (eventoParsed == null)
@@ -199,42 +156,6 @@ namespace SantiagoConectaIA.API.Services
                    📲 Boletos / Registro / Información por WhatsApp: [Teléfono o contacto]
                 4. Cierre motivacional o llamado a la acción.
                 """;
-		}
-
-		private static string? ExtraerTextoRespuesta(string body)
-		{
-			using var doc = JsonDocument.Parse(body);
-			var root = doc.RootElement;
-			if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
-			{
-				var candidate = candidates[0];
-				if (candidate.TryGetProperty("content", out var content) &&
-					content.TryGetProperty("parts", out var parts) && parts.GetArrayLength() > 0)
-				{
-					return parts[0].GetProperty("text").GetString();
-				}
-			}
-			return null;
-		}
-
-		private static string LimpiarBloquesJson(string text)
-		{
-			text = text.Trim();
-			if (text.StartsWith("```json", StringComparison.OrdinalIgnoreCase))
-			{
-				text = text.Substring(7);
-			}
-			else if (text.StartsWith("```"))
-			{
-				text = text.Substring(3);
-			}
-
-			if (text.EndsWith("```"))
-			{
-				text = text.Substring(0, text.Length - 3);
-			}
-
-			return text.Trim();
 		}
 
 		private class EventoGeminiJson

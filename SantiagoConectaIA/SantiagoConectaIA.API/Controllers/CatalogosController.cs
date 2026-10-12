@@ -12,7 +12,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class CatalogosController : ControllerBase
+	public class CatalogosController : ApiControllerBase
 	{
 		private readonly ICatalogosDomain _catalogosDomain;
 
@@ -58,11 +58,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetCatalogos([FromBody] PostGetCatalogos postModel)
 		{
 			var result = await _catalogosDomain.GetCatalogos(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -73,11 +69,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetParametro([FromBody] PostGetParametro postModel)
 		{
 			var result = await _catalogosDomain.GetParametroByAlias(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

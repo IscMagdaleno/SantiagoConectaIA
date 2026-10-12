@@ -1,10 +1,8 @@
-using EngramaCoreStandar.Results;
+﻿using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.Share.PostModels.PublicacionesModule;
 using SantiagoConectaIA.Share.Utilities;
 
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
@@ -23,22 +21,18 @@ namespace SantiagoConectaIA.API.Services
 			"Redactas publicaciones de Facebook en español de México, claras y cercanas. " +
 			"No inventas datos, nombres, precios, direcciones ni enlaces que no estén en la información recibida.";
 
-		private static readonly JsonSerializerOptions JsonOptions = new()
-		{
-			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-			DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-		};
+		private static readonly TimeSpan TiempoMaximo = TimeSpan.FromSeconds(60);
 
-		private readonly HttpClient _httpClient;
+		private readonly IGeminiClient _gemini;
 		private readonly IParametrosService _parametros;
 		private readonly ILogger<GeminiPublicacionService> _logger;
 
 		public GeminiPublicacionService(
-			HttpClient httpClient,
+			IGeminiClient gemini,
 			IParametrosService parametros,
 			ILogger<GeminiPublicacionService> logger)
 		{
-			_httpClient = httpClient;
+			_gemini = gemini;
 			_parametros = parametros;
 			_logger = logger;
 		}
@@ -61,7 +55,7 @@ namespace SantiagoConectaIA.API.Services
 				return generado;
 			}
 
-			var texto = LimpiarBloques(generado.Data);
+			var texto = GeminiTexto.QuitarBloquesDeCodigo(generado.Data);
 			texto = AsegurarLinea(texto, enlace, $"👉 Conoce más y lee la nota completa en Santiago Conecta:\n{enlace}");
 			texto = AsegurarLinea(texto, "#SantiagoConecta", HashtagsNoticias);
 			return Ok(texto);
@@ -85,7 +79,7 @@ namespace SantiagoConectaIA.API.Services
 				return generado;
 			}
 
-			var texto = LimpiarBloques(generado.Data);
+			var texto = GeminiTexto.QuitarBloquesDeCodigo(generado.Data);
 			texto = AsegurarLinea(texto, enlace, $"👉 Conoce a {nombre} en Santiago Conecta:\n{enlace}");
 			texto = AsegurarLinea(texto, "#SantiagoConecta", HashtagsEmprendimientos);
 			return Ok(texto);
@@ -110,7 +104,7 @@ namespace SantiagoConectaIA.API.Services
 				return generado;
 			}
 
-			var texto = LimpiarBloques(generado.Data);
+			var texto = GeminiTexto.QuitarBloquesDeCodigo(generado.Data);
 			texto = AsegurarLinea(texto, enlace, $"👉 Conoce más de {negocio} en Santiago Conecta:\n{enlace}");
 			texto = AsegurarLinea(texto, "#SantiagoConecta", HashtagsEmprendimientos);
 			return Ok(texto);
@@ -134,7 +128,7 @@ namespace SantiagoConectaIA.API.Services
 				return generado;
 			}
 
-			var texto = LimpiarBloques(generado.Data);
+			var texto = GeminiTexto.QuitarBloquesDeCodigo(generado.Data);
 			texto = AsegurarLinea(texto, enlace, $"👉 {enlace}");
 			return Ok(texto);
 		}
@@ -176,44 +170,23 @@ namespace SantiagoConectaIA.API.Services
 
 		private async Task<Response<string>> GenerarAsync(string prompt, CancellationToken cancellationToken)
 		{
-			var (modelo, apiKey) = await ObtenerConfiguracionGeminiAsync(cancellationToken);
-			if (string.IsNullOrWhiteSpace(apiKey))
+			var configuracion = await _gemini.ObtenerConfiguracionAsync(ParametrosAlias.Gemini, ModeloDefault, cancellationToken);
+			if (!configuracion.Configurada)
 			{
 				return Response<string>.BadResult($"No está configurada la clave de Gemini (parámetro {ParametrosAlias.Gemini}).", string.Empty);
 			}
 
-			var requestBody = new GeminiGenerateRequest
-			{
-				SystemInstruction = new GeminiContent
-				{
-					Parts = new List<GeminiPart> { new() { Text = InstruccionEditor } }
-				},
-				Contents = new List<GeminiContent>
-				{
-					new()
-					{
-						Role = "user",
-						Parts = new List<GeminiPart> { new() { Text = prompt } }
-					}
-				},
-				GenerationConfig = new GeminiGenerationConfig { Temperature = 0.7 }
-			};
+			var solicitud = GeminiSolicitud.DeTexto(prompt, InstruccionEditor, new GeminiGenerationConfig { Temperature = 0.7 });
 
 			try
 			{
-				var url = $"https://generativelanguage.googleapis.com/v1beta/models/{Uri.EscapeDataString(modelo)}:generateContent?key={Uri.EscapeDataString(apiKey)}";
-				var json = JsonSerializer.Serialize(requestBody, JsonOptions);
-				using var content = new StringContent(json, Encoding.UTF8, "application/json");
-				using var response = await _httpClient.PostAsync(url, content, cancellationToken);
-				var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-				if (!response.IsSuccessStatusCode)
+				var respuesta = await _gemini.GenerarContenidoAsync(configuracion, solicitud, TiempoMaximo, cancellationToken);
+				if (!respuesta.Exitosa)
 				{
-					_logger.LogWarning("Gemini rechazó la redacción del post. Status={StatusCode}", (int)response.StatusCode);
 					return Response<string>.BadResult("Gemini no pudo redactar la publicación.", string.Empty);
 				}
 
-				var generado = ExtraerTexto(body);
+				var generado = respuesta.PrimerTexto;
 				if (string.IsNullOrWhiteSpace(generado))
 				{
 					return Response<string>.BadResult("Gemini no devolvió texto para la publicación.", string.Empty);
@@ -226,19 +199,6 @@ namespace SantiagoConectaIA.API.Services
 				_logger.LogError(ex, "Error al consultar Gemini para la publicación.");
 				return Response<string>.BadResult("No se pudo consultar Gemini.", string.Empty);
 			}
-		}
-
-		private async Task<(string Modelo, string? ApiKey)> ObtenerConfiguracionGeminiAsync(CancellationToken cancellationToken)
-		{
-			var modelo = await _parametros.GetValor1Async(ParametrosAlias.Gemini, cancellationToken) ?? ModeloDefault;
-			var apiKey = await _parametros.GetValor2Async(ParametrosAlias.Gemini, cancellationToken);
-
-			if (modelo.StartsWith("models/", StringComparison.OrdinalIgnoreCase))
-			{
-				modelo = modelo["models/".Length..];
-			}
-
-			return (modelo, apiKey);
 		}
 
 		private async Task<(string Sitio, string Noticias)> ObtenerSitioAsync(CancellationToken cancellationToken)
@@ -324,12 +284,6 @@ namespace SantiagoConectaIA.API.Services
                 """;
 		}
 
-		private static string LimpiarBloques(string texto)
-		{
-			texto = Regex.Replace(texto, "^```[a-zA-Z]*\\s*", string.Empty);
-			return Regex.Replace(texto, "\\s*```$", string.Empty).Trim();
-		}
-
 		private static string AsegurarLinea(string texto, string marcador, string linea)
 		{
 			return texto.Contains(marcador, StringComparison.OrdinalIgnoreCase)
@@ -352,46 +306,5 @@ namespace SantiagoConectaIA.API.Services
 			};
 		}
 
-		private static string? ExtraerTexto(string body)
-		{
-			var parsed = JsonSerializer.Deserialize<GeminiGenerateResponse>(body, JsonOptions);
-			return parsed?.Candidates?
-				.SelectMany(c => c.Content?.Parts ?? new List<GeminiPart>())
-				.Select(p => p.Text)
-				.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t));
-		}
-
-		private sealed class GeminiGenerateRequest
-		{
-			public GeminiContent? SystemInstruction { get; set; }
-			public List<GeminiContent> Contents { get; set; } = new();
-			public GeminiGenerationConfig? GenerationConfig { get; set; }
-		}
-
-		private sealed class GeminiContent
-		{
-			public string? Role { get; set; }
-			public List<GeminiPart> Parts { get; set; } = new();
-		}
-
-		private sealed class GeminiPart
-		{
-			public string Text { get; set; } = string.Empty;
-		}
-
-		private sealed class GeminiGenerationConfig
-		{
-			public double Temperature { get; set; }
-		}
-
-		private sealed class GeminiGenerateResponse
-		{
-			public List<GeminiCandidate>? Candidates { get; set; }
-		}
-
-		private sealed class GeminiCandidate
-		{
-			public GeminiContent? Content { get; set; }
-		}
 	}
 }

@@ -45,16 +45,6 @@
                                         <text>No se encontraron chats que coincidan con la búsqueda.</text>
                                     }
                                 </MudText>
-                                @if (!Data.LstChats.Any())
-                                {
-                                    <MudButton Variant="Variant.Filled" 
-                                               Color="Color.Primary" 
-                                               Style="background-color: #A50A3A; color: white;" 
-                                               StartIcon="@Icons.Material.Filled.AutoAwesome" 
-                                               OnClick="SeedMockData">
-                                        Generar Datos de Prueba
-                                    </MudButton>
-                                }
                             </div>
                         }
                         else

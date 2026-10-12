@@ -13,7 +13,7 @@ namespace SantiagoConectaIA.API.Controllers
 	[ApiController]
 	[Authorize(Policy = AuthPolicies.Administracion)]
 	[Route("api/[controller]")]
-	public class WhatsAppAnalyticsController : ControllerBase
+	public class WhatsAppAnalyticsController : ApiControllerBase
 	{
 		private readonly IWhatsAppDomain _whatsAppDomain;
 		private readonly ILogger<WhatsAppAnalyticsController> _logger;
@@ -40,11 +40,7 @@ namespace SantiagoConectaIA.API.Controllers
 		{
 			_logger.LogInformation("Consultando estadísticas de WhatsApp");
 			var result = await _whatsAppDomain.GetWhatsAppStats();
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -58,11 +54,7 @@ namespace SantiagoConectaIA.API.Controllers
 			_logger.LogInformation("Consultando estadísticas diarias de WhatsApp para los últimos {Days} días", days);
 			var result = await _whatsAppDomain.GetWhatsAppDailyStats(
 				new PostGetWhatsAppDailyStats { iDays = days });
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -74,11 +66,7 @@ namespace SantiagoConectaIA.API.Controllers
 			_logger.LogInformation("Consultando usuarios de WhatsApp (top {Top})", top);
 			var result = await _whatsAppDomain.GetWhatsAppUsers(
 				new PostGetWhatsAppUsers { iTopRows = top });
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

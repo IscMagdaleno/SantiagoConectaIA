@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule;
 using SantiagoConectaIA.API.Services;
-using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
 using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 
@@ -14,7 +14,7 @@ namespace SantiagoConectaIA.API.Controllers
 	/// </summary>
 	[ApiController]
 	[Route("api/[controller]")]
-	public class EmpresasController : ControllerBase
+	public class EmpresasController : ApiControllerBase
 	{
 		private readonly IEmpresasDomain _empresasDomain;
 
@@ -33,11 +33,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetEmpresas([FromBody] PostGetEmpresas postModel)
 		{
 			var result = await _empresasDomain.GetEmpresas(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -48,24 +44,21 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveEmpresa([FromBody] PostSaveEmpresa postModel)
 		{
 			var result = await _empresasDomain.SaveEmpresa(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostGetCatalogoEmpresas")]
 		public async Task<IActionResult> PostGetCatalogoEmpresas([FromBody] PostGetCatalogoEmpresa postModel)
 		{
 			var result = await _empresasDomain.GetCatalogoEmpresas(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostGetEmpresaUbicaciones")]
 		public async Task<IActionResult> PostGetEmpresaUbicaciones([FromBody] PostGetEmpresaUbicaciones postModel)
 		{
 			var result = await _empresasDomain.GetEmpresaUbicaciones(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostSaveEmpresaUbicacion")]
@@ -73,16 +66,14 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveEmpresaUbicacion([FromBody] PostSaveEmpresaUbicacion postModel)
 		{
 			var result = await _empresasDomain.SaveEmpresaUbicacion(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostGetEmpresaRedesSociales")]
 		public async Task<IActionResult> PostGetEmpresaRedesSociales([FromBody] PostGetEmpresaRedesSociales postModel)
 		{
 			var result = await _empresasDomain.GetEmpresaRedesSociales(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostSaveEmpresaRedSocial")]
@@ -90,16 +81,14 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveEmpresaRedSocial([FromBody] PostSaveEmpresaRedSocial postModel)
 		{
 			var result = await _empresasDomain.SaveEmpresaRedSocial(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostGetCategoriasPorEmpresa")]
 		public async Task<IActionResult> PostGetCategoriasPorEmpresa([FromBody] PostGetCategoriasPorEmpresa postModel)
 		{
 			var result = await _empresasDomain.GetCategoriasPorEmpresa(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostSaveCategoriaCatalogo")]
@@ -107,16 +96,14 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveCategoriaCatalogo([FromBody] PostSaveCategoriaCatalogo postModel)
 		{
 			var result = await _empresasDomain.SaveCategoriaCatalogo(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostGetProductosPorCategoria")]
 		public async Task<IActionResult> PostGetProductosPorCategoria([FromBody] PostGetProductosPorCategoria postModel)
 		{
 			var result = await _empresasDomain.GetProductosPorCategoria(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostSaveProductoServicio")]
@@ -124,16 +111,14 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveProductoServicio([FromBody] PostSaveProductoServicio postModel)
 		{
 			var result = await _empresasDomain.SaveProductoServicio(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostGetConfiguracionVisual")]
 		public async Task<IActionResult> PostGetConfiguracionVisual([FromBody] PostGetConfiguracionVisual postModel)
 		{
 			var result = await _empresasDomain.GetConfiguracionVisual(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostSaveConfiguracionVisual")]
@@ -141,17 +126,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveConfiguracionVisual([FromBody] PostSaveConfiguracionVisual postModel)
 		{
 			var result = await _empresasDomain.SaveConfiguracionVisual(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
-		}
-
-		[HttpPost("PostSavePropietario")]
-		[Authorize(Policy = AuthPolicies.Administracion)]
-		public async Task<IActionResult> PostSavePropietario([FromBody] Propietario postModel)
-		{
-			var result = await _empresasDomain.SavePropietario(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostGetPropietario")]
@@ -159,32 +134,29 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetPropietario([FromBody] PostGetPropietario postModel)
 		{
 			var result = await _empresasDomain.GetPropietario(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostSaveEmprendimientoFull")]
+		[EnableRateLimiting(PoliticasLimiteSolicitudes.EscrituraPublica)]
 		public async Task<IActionResult> PostSaveEmprendimientoFull([FromBody] PostSaveEmprendimientoFull postModel)
 		{
 			var result = await _empresasDomain.SaveEmprendimientoFull(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostGetEmpresasPropietarioByCorreo")]
 		public async Task<IActionResult> PostGetEmpresasPropietarioByCorreo([FromBody] PostGetEmpresasPropietarioByCorreo postModel)
 		{
 			var result = await _empresasDomain.GetEmpresasPropietarioByCorreo(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostGetEmprendimientoFullById")]
 		public async Task<IActionResult> PostGetEmprendimientoFullById([FromBody] PostGetEmprendimientoFullById postModel)
 		{
 			var result = await _empresasDomain.GetEmprendimientoFullById(postModel);
-			if (result.IsSuccess) return Ok(result);
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

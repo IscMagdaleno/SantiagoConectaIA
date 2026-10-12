@@ -7,7 +7,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class EmprendimientosFeedController : ControllerBase
+	public class EmprendimientosFeedController : ApiControllerBase
 	{
 		private readonly IEmprendimientosFeedDomain _domain;
 
@@ -20,22 +20,14 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetEmprendimientosFeed([FromBody] PostGetEmprendimientosFeed postModel)
 		{
 			var result = await _domain.GetFeed(postModel ?? new PostGetEmprendimientosFeed());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		[HttpPost("PostSearchEmprendimientosFeed")]
 		public async Task<IActionResult> PostSearchEmprendimientosFeed([FromBody] PostSearchEmprendimientosFeed postModel)
 		{
 			var result = await _domain.SearchFeed(postModel ?? new PostSearchEmprendimientosFeed());
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

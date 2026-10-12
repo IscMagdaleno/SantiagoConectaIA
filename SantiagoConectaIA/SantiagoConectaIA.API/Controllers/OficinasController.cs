@@ -14,19 +14,16 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class OficinasController : ControllerBase
+	public class OficinasController : ApiControllerBase
 	{
 		private readonly IOficinasDomain _oficinasDomain;
-		private readonly IResponseHelper _responseHelper;
 		private readonly ILogger<OficinasController> _logger;
 
 		public OficinasController(
 			IOficinasDomain oficinasDomain,
-			IResponseHelper responseHelper,
 			ILogger<OficinasController> logger)
 		{
 			_oficinasDomain = oficinasDomain ?? throw new ArgumentNullException(nameof(oficinasDomain));
-			_responseHelper = responseHelper ?? throw new ArgumentNullException(nameof(responseHelper));
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		}
 
@@ -40,11 +37,7 @@ namespace SantiagoConectaIA.API.Controllers
 					return BadRequest(Response<IEnumerable<Oficina>>.BadResult("Payload vacío.", null));
 
 				var result = await _oficinasDomain.GetOficinas(model);
-				if (result.IsSuccess)
-				{
-					return Ok(result);
-				}
-				return BadRequest(result);
+				return Resultado(result);
 			}
 			catch (Exception ex)
 			{
@@ -63,11 +56,7 @@ namespace SantiagoConectaIA.API.Controllers
 					return BadRequest(Response<PagedList<Oficina>>.BadResult("Payload vacío.", null));
 
 				var result = await _oficinasDomain.SearchOficinas(model);
-				if (result.IsSuccess)
-				{
-					return Ok(result);
-				}
-				return BadRequest(result);
+				return Resultado(result);
 			}
 			catch (Exception ex)
 			{
@@ -85,11 +74,7 @@ namespace SantiagoConectaIA.API.Controllers
 			{
 
 				var result = await _oficinasDomain.SaveOficina(model);
-				if (result.IsSuccess)
-				{
-					return Ok(result);
-				}
-				return BadRequest(result);
+				return Resultado(result);
 			}
 			catch (Exception ex)
 			{
@@ -116,11 +101,7 @@ namespace SantiagoConectaIA.API.Controllers
 					return BadRequest(Response<int>.BadResult("Modelo inválido.", 0));
 
 				var result = await _oficinasDomain.LinkOficinaTramite(model);
-				if (result.IsSuccess)
-				{
-					return Ok(result);
-				}
-				return BadRequest(result);
+				return Resultado(result);
 			}
 			catch (Exception ex)
 			{
@@ -139,11 +120,7 @@ namespace SantiagoConectaIA.API.Controllers
 					return BadRequest(Response<IEnumerable<Oficina>>.BadResult("Payload vacío.", null));
 
 				var result = await _oficinasDomain.GetOficinasPorTramite(model);
-				if (result.IsSuccess)
-				{
-					return Ok(result);
-				}
-				return BadRequest(result);
+				return Resultado(result);
 			}
 			catch (Exception ex)
 			{

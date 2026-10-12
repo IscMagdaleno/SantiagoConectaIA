@@ -13,7 +13,7 @@ namespace SantiagoConectaIA.API.Controllers
 	[ApiController]
 	[Authorize(Policy = AuthPolicies.Administracion)]
 	[Route("api/[controller]")]
-	public class PublicacionesController : ControllerBase
+	public class PublicacionesController : ApiControllerBase
 	{
 		private readonly IFacebookPublishService _facebookPublishService;
 		private readonly IGeminiPublicacionService _geminiPublicacionService;
@@ -54,12 +54,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostMejorarPublicacion([FromBody] PostMejorarPublicacion postModel, CancellationToken cancellationToken)
 		{
 			var result = await _geminiPublicacionService.MejorarAsync(postModel, cancellationToken);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -69,12 +64,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostMejorarEmprendimiento([FromBody] PostMejorarEmprendimiento postModel, CancellationToken cancellationToken)
 		{
 			var result = await _geminiPublicacionService.MejorarEmprendimientoAsync(postModel, cancellationToken);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -84,12 +74,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostMejorarProducto([FromBody] PostMejorarProducto postModel, CancellationToken cancellationToken)
 		{
 			var result = await _geminiPublicacionService.MejorarProductoAsync(postModel, cancellationToken);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -99,12 +84,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostMejorarEvento([FromBody] PostMejorarEvento postModel, CancellationToken cancellationToken)
 		{
 			var result = await _geminiPublicacionService.MejorarEventoAsync(postModel, cancellationToken);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -114,12 +94,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostEditarImagenIa([FromBody] PostEditarImagen postModel, CancellationToken cancellationToken)
 		{
 			var result = await _geminiImagenService.EditarAsync(postModel, cancellationToken);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -255,12 +230,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostPublicarFacebook([FromBody] PostPublicarFacebook postModel, CancellationToken cancellationToken)
 		{
 			var result = await _facebookPublishService.PublicarAsync(postModel, cancellationToken);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>

@@ -6,11 +6,12 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 
 - **Verbo:** casi todas las acciones son `POST` con cuerpo JSON (`[FromBody]`). Los modelos de entrada (`Post*`) viven en `SantiagoConectaIA.Share`. Las excepciones se indican en cada tabla.
 - **Respuesta:** `Response<T>` (`EngramaCoreStandar.Results`) con `IsSuccess`, `Data` y `Message`. Cuando falla, la mayoría de las acciones responden `400 BadRequest` con el mismo cuerpo.
-- **Arquitectura:** controlador → dominio (`I*Domain`, metodología Engrama) → DAL (`EngramaContext`, base `Engrama`, esquema `SCIA`).
+- **Arquitectura:** controlador → dominio (`I*Domain`, metodología Engrama) → repositorio → procedimientos almacenados (`Infrastructure/Entity/sp*.cs`, base `Engrama`, esquema `SCIA`). Los controladores heredan de `ApiControllerBase`, que unifica la respuesta (`Resultado`: `200` si `IsSuccess`, si no `400`).
 - **Autenticación:** JWT Bearer. Las acciones de administración usan la política `Administracion` (`[Authorize(Policy = AuthPolicies.Administracion)]`: token válido y rol distinto de `Ciudadano`). `Opinion` y `PublicacionesCiudadano` usan `[Authorize(Roles = "Ciudadano")]` en sus acciones de escritura. Las acciones de lectura pública y los flujos de registro siguen siendo anónimos (ver [Seguridad](#seguridad)).
-- **CORS:** abierto a cualquier origen (`SetIsOriginAllowed(_ => true)` con credenciales).
+- **CORS:** política `SitiosSantiagoConecta` (`Services/PoliticaCors.cs`). Permite `https://santiagopapasquiaro.com.mx` y subdominios, los sitios de Azure Static Web Apps del proyecto y los orígenes de la configuración `Cors:OrigenesPermitidos` (en Azure: `Cors__OrigenesPermitidos__0`, `__1`...). El localhost solo se acepta en `Development`. Si el PWA usa un dominio propio, agrégalo ahí.
+- **Límite de peticiones** (`Services/PoliticasLimiteSolicitudes.cs`, por IP real detrás del proxy de Azure; responde `429` con `Retry-After`): global 600/min; `acceso` (login y registro) 10/min; `escritura-publica` (registro de emprendimientos, subida de logos, buzón) 30/min; `chat` 15/min. Los webhooks de WhatsApp están excluidos.
 - **Swagger:** disponible solo en `Development`. Los comentarios XML se generan con `GenerateDocumentationFile`.
-- **Bitácora:** `ApiLoggingMiddleware` registra las peticiones.
+- **Bitácora:** `ApiLoggingMiddleware` registra las peticiones en `SCIA.ApiCallLogs`. Los cuerpos de `Auth`, `Ciudadano`, `Catalogos/PostGetParametro`, `Publicaciones` y el webhook de WhatsApp se guardan como `[omitido por seguridad]`; el resto se recorta a 4000 caracteres y solo se lee si es JSON, texto o XML.
 
 ## Índice
 
@@ -20,7 +21,7 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 | Comunidad | [Ciudadano](#ciudadano), [PublicacionesCiudadano](#publicacionesciudadano), [Opinion](#opinion) |
 | Emprendimientos | [Empresas](#empresas) |
 | IA y mensajería | [Chat](#chat), [WhatsApp](#whatsapp) |
-| Administración | [Auth](#auth), [Catalogos](#catalogos), [AzureBlob](#azureblob), [Publicaciones](#publicaciones), [Mantenimiento](#mantenimiento) |
+| Administración | [Auth](#auth), [Catalogos](#catalogos), [AzureBlob](#azureblob), [Publicaciones](#publicaciones) |
 | Analítica | [Analytics](#analytics), [PageVisits](#pagevisits), [WhatsAppAnalytics](#whatsappanalytics) |
 
 ---
@@ -32,7 +33,7 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 
 | Acción | Descripción |
 |---|---|
-| `PostGetFeed` | Página del feed mixto (trámites, noticias, eventos, cápsulas). |
+| `PostGetFeed` | Página del feed mixto, con prioridades: primero publicaciones de ciudadanos y lo del día, después contenido aleatorio (noticias, eventos, cápsulas de Conoce Santiago). |
 | `PostSearchFeed` | Busca contenido en trámites, noticias, eventos y cápsulas. |
 
 ### EmprendimientosFeed
@@ -92,9 +93,7 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 
 | Acción | Descripción |
 |---|---|
-| `PostGetAllInformacionLocal` | Todos los registros. |
 | `PostGetInformacionLocalByID` | Un registro por ID. |
-| `PostGetformacionLocalByText` | Búsqueda por texto (el nombre de la acción conserva el typo original). |
 | `PostGetInformacionLocal` | Lista filtrada por parámetros. |
 | `PostSaveInformacionLocal` | Crea o actualiza un registro. |
 
@@ -154,7 +153,7 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 | `PostGetCategoriasPorEmpresa` / `PostSaveCategoriaCatalogo` | Categorías del catálogo de la empresa. |
 | `PostGetProductosPorCategoria` / `PostSaveProductoServicio` | Productos y servicios. |
 | `PostGetConfiguracionVisual` / `PostSaveConfiguracionVisual` | Configuración visual de la página. |
-| `PostGetPropietario` / `PostSavePropietario` | Propietario del emprendimiento. |
+| `PostGetPropietario` | Propietario del emprendimiento (se guarda dentro de `PostSaveEmprendimientoFull`). |
 | `PostGetEmpresasPropietarioByCorreo` | Empresas de un propietario por correo. |
 | `PostGetEmprendimientoFullById` | Emprendimiento completo (empresa, categorías, productos, ubicaciones, redes). |
 | `PostSaveEmprendimientoFull` | Guarda el emprendimiento completo en una sola operación. |
@@ -171,16 +170,13 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 | `PostSearchForChat` | Procesa una consulta del usuario con el orquestador de agentes (`IAgentOrchestrationService`). |
 | `PostGetChat` / `PostSaveChat` | Chats de un usuario. |
 | `PostGetMensaje` / `PostSaveMensaje` | Mensajes de un chat. |
-| `PostSeedMockData` | Inserta datos de prueba (asegura el proyecto 1). **Solo para desarrollo.** |
-
 ### WhatsApp
 `api/WhatsApp` — Integración con WhatsApp Business (Meta).
 
 | Acción | Descripción |
 |---|---|
 | `GET webhook` | Verificación del webhook por Meta. |
-| `POST webhook` | Recibe mensajes; responde `200` de inmediato para evitar reintentos de Meta y procesa en segundo plano (`WhatsAppWorker`). |
-| `POST test-message` | Simula el flujo completo (usuario, conversación, agente) sin enviar mensaje real. |
+| `POST webhook` | Valida la firma `X-Hub-Signature-256` con el AppSecret (`401` si no coincide), encola el mensaje y responde `200` de inmediato para evitar reintentos de Meta; el procesamiento lo hace `WhatsAppWorker`. Interruptor de emergencia: `WhatsApp:ValidarFirma=false`. |
 
 ---
 
@@ -248,13 +244,6 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 
 Los servicios en segundo plano publican a diario, hora de México: `DailyFacebookPublicacionBackgroundService` (noticias, hora por defecto 11) y `DailyEmprendimientoPublicacionBackgroundService` (emprendimientos, hora por defecto 13). Usan la imagen de portada o el logo, no el post capturado, porque la captura requiere navegador. Requieren **Always On** en Azure App Service. Los parámetros están en `SCIA.Parametros`: `key.gemini`, `make.facebook.webhook`, `publicaciones.sitio`, `publicaciones.auto.noticias`, `publicaciones.auto.emprendimientos`, `azure.blob.storage`.
 
-### Mantenimiento
-`api/Mantenimiento` — Tareas de mantenimiento de datos. Todo el controlador exige la política `Administracion`.
-
-| Acción | Descripción |
-|---|---|
-| `PostRepararImagenesPdf` | Corrige logos (`SCIA.Empresa.vchLogoUrl`) e imágenes de producto (`SCIA.ProductoServicio.vchImagenUrl`) cuyo archivo termina en `.pdf` pero en realidad es una imagen. Detecta el formato real por los primeros bytes, sube una copia con la extensión correcta a `empresas` y actualiza el registro (con guarda por URL anterior). **Por defecto simula**: envía `{"bSimular": false}` para aplicar los cambios. No borra los blobs anteriores. |
-
 ---
 
 ## Analítica
@@ -303,8 +292,8 @@ Los servicios en segundo plano publican a diario, hora de México: `DailyFaceboo
 
 **Protegido con `Administracion`**
 
-- Controladores completos: `Publicaciones`, `Mantenimiento`, `WhatsAppAnalytics`, `PageVisits`.
-- `Auth/PostSaveUsuario`, `Catalogos/PostGetParametro`, `Chat/*` (excepto `PostSearchForChat`) y `WhatsApp/test-message`.
+- Controladores completos: `Publicaciones`, `WhatsAppAnalytics`, `PageVisits`.
+- `Auth/PostSaveUsuario`, `Catalogos/PostGetParametro` y `Chat/*` (excepto `PostSearchForChat`).
 - `Analytics`: todo excepto `PostSavePageVisit`.
 - `AzureBlob`: `UploadDocument`, `UploadImage-Eventos` y `UploadImage-noticias`.
 - Las acciones de escritura de `Noticias`, `Eventos`, `Tramites`, `Oficinas`, `InformacionLocal` y `Empresas` (excepto el registro público de emprendimientos), además de `Empresas/PostGetPropietario`.
@@ -320,9 +309,8 @@ Los servicios en segundo plano publican a diario, hora de México: `DailyFaceboo
 
 **Riesgos que quedan**
 
-- Los endpoints anónimos de escritura (`PostSaveEmprendimientoFull`, `UploadImage-empresas`, `PostSaveReporte`, `PostSearchForChat`) permiten abusar del almacenamiento, la base y la cuota de Gemini. Conviene agregar límite de peticiones (rate limiting) y validar tamaño y formato.
-- CORS permite cualquier origen con credenciales; conviene limitarlo a los dominios del PWA y del sitio público.
-- `Chat/PostSeedMockData` y `WhatsApp/test-message` son endpoints de prueba; conviene deshabilitarlos fuera de `Development`.
+- Los endpoints anónimos de escritura siguen siendo públicos a propósito, ahora con límite de peticiones por IP. Las imágenes subidas se validan por formato (primeros bytes) y tamaño máximo de 15 MB.
+- Si el PWA se publica con un dominio propio que no esté en la política de CORS, agrégalo en `Cors:OrigenesPermitidos`.
 - Las credenciales de `appsettings*.json` no deben vivir en el repositorio: usar variables de entorno o Azure Key Vault y rotar las que ya estuvieron publicadas.
 
 --Prueba 1 de publicacion

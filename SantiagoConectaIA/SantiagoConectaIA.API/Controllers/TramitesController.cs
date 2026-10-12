@@ -9,7 +9,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class TramitesController : ControllerBase
+	public class TramitesController : ApiControllerBase
 	{
 		private readonly ITramiteDominio tramiteDominio;
 
@@ -28,11 +28,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetTramites([FromBody] PostGetTramites postModel)
 		{
 			var result = await tramiteDominio.GetTramites(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 
@@ -45,11 +41,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSearchTramites([FromBody] PostSearchTramites postModel)
 		{
 			var result = await tramiteDominio.SearchTramites(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 
@@ -63,11 +55,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveTramite([FromBody] PostSaveTramite postModel)
 		{
 			var result = await tramiteDominio.SaveTramite(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 
@@ -80,11 +68,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetRequisitosPorTramite([FromBody] PostGetRequisitosPorTramite postModel)
 		{
 			var result = await tramiteDominio.GetRequisitosPorTramite(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 
@@ -98,11 +82,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveRequisito([FromBody] PostSaveRequisito postModel)
 		{
 			var result = await tramiteDominio.SaveRequisito(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 
@@ -115,11 +95,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetTramitesCard([FromBody] PostGetTramites postModel)
 		{
 			var result = await tramiteDominio.GetTramitesCard(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -131,11 +107,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetTramiteDetalle([FromBody] PostGetTramiteDetalle postModel)
 		{
 			var result = await tramiteDominio.GetTramiteDetalle(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -148,11 +120,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveDocumento([FromBody] PostSaveDocumento postModel)
 		{
 			var result = await tramiteDominio.SaveDocumento(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 	}

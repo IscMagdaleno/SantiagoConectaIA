@@ -9,7 +9,7 @@ namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class NoticiasController : ControllerBase
+	public class NoticiasController : ApiControllerBase
 	{
 		private readonly INoticiasDomain _noticiasDomain;
 
@@ -25,11 +25,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostGetNoticias([FromBody] PostGetNoticias postModel)
 		{
 			var result = await _noticiasDomain.GetNoticias(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 
 		/// <summary>
@@ -40,11 +36,7 @@ namespace SantiagoConectaIA.API.Controllers
 		public async Task<IActionResult> PostSaveNoticia([FromBody] PostSaveNoticia postModel)
 		{
 			var result = await _noticiasDomain.SaveNoticia(postModel);
-			if (result.IsSuccess)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
+			return Resultado(result);
 		}
 	}
 }

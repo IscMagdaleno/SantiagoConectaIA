@@ -8,19 +8,16 @@ namespace SantiagoConectaIA.API.SemanticKernel
 {
 	public class KernelProvider
 	{
-		private readonly IConfiguration _configuration;
 		private readonly ILogger<KernelProvider> _logger;
 		private readonly IServiceScopeFactory _scopeFactory;
 		private readonly IServiceProvider _serviceProvider;
 		private Kernel _kernelInstance;
 
 		public KernelProvider(
-			IConfiguration configuration,
 			ILogger<KernelProvider> logger,
 			IServiceScopeFactory scopeFactory,
 			IServiceProvider serviceProvider)
 		{
-			_configuration = configuration;
 			_logger = logger;
 			_scopeFactory = scopeFactory;
 			_serviceProvider = serviceProvider;
