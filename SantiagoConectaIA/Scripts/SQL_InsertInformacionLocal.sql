@@ -1,7 +1,7 @@
-DELETE FROM [dbo].[InformacionLocal];
+DELETE FROM [SCIA].[InformacionLocal];
 GO
 
-INSERT INTO [dbo].[InformacionLocal] ([Categoria], [Titulo], [PalabrasClave], [DescripcionCorta], [ContenidoDetallado]) VALUES
+INSERT INTO [SCIA].[InformacionLocal] ([Categoria], [Titulo], [PalabrasClave], [DescripcionCorta], [ContenidoDetallado]) VALUES
 ('Personaje Histórico', 'Silvestre Revueltas', 'músico, compositor, revueltas, famoso', 
 'Destacado compositor y director de orquesta nacido en Santiago Papasquiaro.', 
 'Silvestre Revueltas Sánchez fue un destacado compositor, violinista y director de orquesta mexicano, nacido el 31 de diciembre de 1899 en Santiago Papasquiaro, Durango. Es considerado uno de los músicos más influyentes de México en el siglo XX, reconocido mundialmente por obras sinfónicas como "Sensemayá", "Janitzio" y la música para la película "La noche de los mayas". Su estilo único combina el folclore mexicano con técnicas vanguardistas. Forma parte de la célebre familia Revueltas, un pilar fundamental en la cultura y las artes de México durante la primera mitad del siglo XX.'),

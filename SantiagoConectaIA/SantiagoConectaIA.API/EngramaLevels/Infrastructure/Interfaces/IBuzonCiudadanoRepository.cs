@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.BuzonCiudadanoModule;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces

@@ -1,13 +1,9 @@
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.EntityFrameworkCore;
-using SantiagoConectaIA.DAL.Models;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
 using SantiagoConectaIA.Share.Objects.ConversationalModule;
 using SantiagoConectaIA.Share.PostModels.ConversationalModule;
-
-using System.Collections.Concurrent;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 {

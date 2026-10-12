@@ -55,8 +55,8 @@ BEGIN
             OT.vchObservacion,
             OT.bActivo,
             OT.dtFechaCreacion
-        FROM dbo.OficinaTramite OT WITH(NOLOCK)
-        INNER JOIN dbo.Oficina O WITH(NOLOCK) ON OT.iIdOficina = O.iIdOficina
+        FROM SCIA.OficinaTramite OT WITH(NOLOCK)
+        INNER JOIN SCIA.Oficina O WITH(NOLOCK) ON OT.iIdOficina = O.iIdOficina
         WHERE OT.iIdTramite = @iIdTramite
           AND (
                 @vchTexto IS NULL

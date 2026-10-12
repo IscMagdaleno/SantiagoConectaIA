@@ -73,7 +73,7 @@ BEGIN
         -- Validar duplicado: mismo nombre + dependencia
         IF EXISTS (
             SELECT 1
-            FROM dbo.Oficina
+            FROM SCIA.Oficina
             WHERE vchNombre = @vchNombre
               AND (@iIdOficina <= 0 OR iIdOficina <> @iIdOficina)
         )
@@ -88,7 +88,7 @@ BEGIN
 
         IF @iIdOficina IS NULL OR @iIdOficina <= 0
         BEGIN
-            INSERT INTO dbo.Oficina (
+            INSERT INTO SCIA.Oficina (
                  vchNombre, vchDireccion, vchTelefono, vchEmail,
                 vchHorario, flLatitud, flLongitud, vchNotas, bActivo, dtFechaCreacion, vchUrlDireccion
             )
@@ -101,7 +101,7 @@ BEGIN
         END
         ELSE
         BEGIN
-            UPDATE dbo.Oficina
+            UPDATE SCIA.Oficina
             SET
                 
                 vchNombre = @vchNombre,

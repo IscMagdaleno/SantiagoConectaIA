@@ -1,474 +1,477 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+
 using MudBlazor;
+
 using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles;
-using SantiagoConectaIA.Share.Objects.NoticiasModule;
 using SantiagoConectaIA.PWA.Shared.Workspace;
+using SantiagoConectaIA.Share.Objects.NoticiasModule;
 
 namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 {
-    public class TabMetadatosNoticiasBase : ComponentBase
-    {
-        [Inject] public ISnackbar Snackbar { get; set; } = default!;
+	public class TabMetadatosNoticiasBase : ComponentBase
+	{
+		[Inject] public ISnackbar Snackbar { get; set; } = default!;
 
-        [Parameter] public MainNoticias Data { get; set; } = default!;
-        [Parameter] public Noticia? NoticiaModel { get; set; }
-        [Parameter] public TipoEstadoControl EstadoControl { get; set; } = default!;
+		[Parameter] public MainNoticias Data { get; set; } = default!;
+		[Parameter] public Noticia? NoticiaModel { get; set; }
+		[Parameter] public TipoEstadoControl EstadoControl { get; set; } = default!;
 
-        private Noticia? _loadedNoticia;
+		private Noticia? _loadedNoticia;
 
-        // Filas del layout
-        protected List<NoticiaFila> _filas = new List<NoticiaFila>();
+		// Filas del layout
+		protected List<NoticiaFila> _filas = new List<NoticiaFila>();
 
-        // Contenedor general para el Drag & Drop de MudBlazor
-        protected MudDropContainer<DropItem> _dropContainer;
-        protected List<DropItem> _dropItems = new List<DropItem>();
+		// Contenedor general para el Drag & Drop de MudBlazor
+		protected MudDropContainer<DropItem> _dropContainer;
+		protected List<DropItem> _dropItems = new List<DropItem>();
 
-        protected DropItem? itemSeleccionado = null;
-        protected RedesSocialesConfig RedesConfig = new RedesSocialesConfig();
+		protected DropItem? itemSeleccionado = null;
+		protected RedesSocialesConfig RedesConfig = new RedesSocialesConfig();
 
-        // Form fields
-        protected int blockWidth { get; set; } = 12;
-        protected string blockFloat { get; set; } = "none";
-        protected string blockHeight { get; set; } = "auto";
-        protected string blockConfigExtra { get; set; } = string.Empty;
+		// Form fields
+		protected int blockWidth { get; set; } = 12;
+		protected string blockFloat { get; set; } = "none";
+		protected string blockHeight { get; set; } = "auto";
+		protected string blockConfigExtra { get; set; } = string.Empty;
 
-        // Galería
-        protected List<string> tempGalleryUrls = new List<string>();
-        protected bool _isUploadingGallery = false;
+		// Galería
+		protected List<string> tempGalleryUrls = new List<string>();
+		protected bool _isUploadingGallery = false;
 
-        protected override async Task OnInitializedAsync()
-        {
-            if (Data != null)
-            {
-                if (Data.LstTipoDatos == null || !Data.LstTipoDatos.Any())
-                {
-                    await Data.PostGetTipoDatos();
-                }
+		protected override async Task OnInitializedAsync()
+		{
+			if (Data != null)
+			{
+				if (Data.LstTipoDatos == null || !Data.LstTipoDatos.Any())
+				{
+					await Data.PostGetTipoDatos();
+				}
 
-                if (Data.LstTipoDatos != null)
-                {
-                    if (!Data.LstTipoDatos.Any(t => t.iIdTipoDato == (int)TipoDatoMetadato.Video))
-                        Data.LstTipoDatos.Add(new TipoDatoDto { iIdTipoDato = (int)TipoDatoMetadato.Video, nvchTipo = "Video" });
-                    
-                    if (!Data.LstTipoDatos.Any(t => t.iIdTipoDato == (int)TipoDatoMetadato.GaleriaImagenes))
-                        Data.LstTipoDatos.Add(new TipoDatoDto { iIdTipoDato = (int)TipoDatoMetadato.GaleriaImagenes, nvchTipo = "Galería de Imágenes" });
-                    
-                    if (!Data.LstTipoDatos.Any(t => t.iIdTipoDato == (int)TipoDatoMetadato.Contenido))
-                        Data.LstTipoDatos.Add(new TipoDatoDto { iIdTipoDato = (int)TipoDatoMetadato.Contenido, nvchTipo = "Contenido" });
-                }
+				if (Data.LstTipoDatos != null)
+				{
+					if (!Data.LstTipoDatos.Any(t => t.iIdTipoDato == (int)TipoDatoMetadato.Video))
+						Data.LstTipoDatos.Add(new TipoDatoDto { iIdTipoDato = (int)TipoDatoMetadato.Video, nvchTipo = "Video" });
 
-                var target = NoticiaModel ?? Data?.NoticiaSelected;
-                if (target != null)
-                {
-                    _loadedNoticia = target;
-                    LoadFromData();
-                }
-            }
-        }
+					if (!Data.LstTipoDatos.Any(t => t.iIdTipoDato == (int)TipoDatoMetadato.GaleriaImagenes))
+						Data.LstTipoDatos.Add(new TipoDatoDto { iIdTipoDato = (int)TipoDatoMetadato.GaleriaImagenes, nvchTipo = "Galería de Imágenes" });
 
-        protected override void OnParametersSet()
-        {
-            var target = NoticiaModel ?? Data?.NoticiaSelected;
-            if (target != null && target != _loadedNoticia)
-            {
-                _loadedNoticia = target;
-                LoadFromData();
-            }
-        }
+					if (!Data.LstTipoDatos.Any(t => t.iIdTipoDato == (int)TipoDatoMetadato.Contenido))
+						Data.LstTipoDatos.Add(new TipoDatoDto { iIdTipoDato = (int)TipoDatoMetadato.Contenido, nvchTipo = "Contenido" });
+				}
 
-        private void LoadFromData()
-        {
-            var target = NoticiaModel ?? Data?.NoticiaSelected;
-            if (target == null) return;
+				var target = NoticiaModel ?? Data?.NoticiaSelected;
+				if (target != null)
+				{
+					_loadedNoticia = target;
+					LoadFromData();
+				}
+			}
+		}
 
-            _filas = target.Filas?.OrderBy(f => f.iOrden).ToList() ?? new List<NoticiaFila>();
-            target.Filas = _filas;
-            
-            _dropItems.Clear();
-            
-            // 1. Cargar las plantillas en el Sidebar
-            _dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.Contenido, vchTitulo = "Bloque de Texto", iAncho = 12 } });
-            _dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.Video, vchTitulo = "Video YouTube/MP4", iAncho = 12 } });
-            _dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.GaleriaImagenes, vchTitulo = "Galería Fotos", iAncho = 12 } });
-            _dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.ImagenSola, vchTitulo = "Imagen Sola", iAncho = 12 } });
-            _dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.RedesSociales, vchTitulo = "Redes Sociales", iAncho = 12 } });
-            _dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.DatosCuriosos, vchTitulo = "Datos Curiosos", iAncho = 12 } });
+		protected override void OnParametersSet()
+		{
+			var target = NoticiaModel ?? Data?.NoticiaSelected;
+			if (target != null && target != _loadedNoticia)
+			{
+				_loadedNoticia = target;
+				LoadFromData();
+			}
+		}
 
-            // 2. Cargar los bloques existentes en las filas
-            foreach (var fila in _filas)
-            {
-                if (fila.Metadatos != null)
-                {
-                    foreach (var meta in fila.Metadatos.OrderBy(m => m.iOrden))
-                    {
-                        _dropItems.Add(new DropItem
-                        {
-                            Zone = $"row-{fila.UI_Id}",
-                            Metadato = meta,
-                            IsTemplate = false,
-                            Order = meta.iOrden
-                        });
-                    }
-                }
-            }
-            
-            _dropContainer?.Refresh();
-        }
+		private void LoadFromData()
+		{
+			var target = NoticiaModel ?? Data?.NoticiaSelected;
+			if (target == null) return;
 
-        protected void AddFilaVacia()
-        {
-            var target = NoticiaModel ?? Data?.NoticiaSelected;
-            var fila = new NoticiaFila
-            {
-                iIdNoticia = target?.iIdNoticia ?? 0,
-                iOrden = _filas.Count + 1,
-                UI_Id = Guid.NewGuid().ToString()
-            };
-            _filas.Add(fila);
-            SyncData();
-            _dropContainer?.Refresh();
-        }
+			_filas = target.Filas?.OrderBy(f => f.iOrden).ToList() ?? new List<NoticiaFila>();
+			target.Filas = _filas;
 
-        protected void MoveFilaUp(NoticiaFila fila)
-        {
-            int index = _filas.IndexOf(fila);
-            if (index > 0)
-            {
-                _filas.RemoveAt(index);
-                _filas.Insert(index - 1, fila);
-                SyncData();
-            }
-        }
+			_dropItems.Clear();
 
-        protected void MoveFilaDown(NoticiaFila fila)
-        {
-            int index = _filas.IndexOf(fila);
-            if (index < _filas.Count - 1 && index >= 0)
-            {
-                _filas.RemoveAt(index);
-                _filas.Insert(index + 1, fila);
-                SyncData();
-            }
-        }
+			// 1. Cargar las plantillas en el Sidebar
+			_dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.Contenido, vchTitulo = "Bloque de Texto", iAncho = 12 } });
+			_dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.Video, vchTitulo = "Video YouTube/MP4", iAncho = 12 } });
+			_dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.GaleriaImagenes, vchTitulo = "Galería Fotos", iAncho = 12 } });
+			_dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.ImagenSola, vchTitulo = "Imagen Sola", iAncho = 12 } });
+			_dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.RedesSociales, vchTitulo = "Redes Sociales", iAncho = 12 } });
+			_dropItems.Add(new DropItem { Zone = "sidebar", IsTemplate = true, Metadato = new NoticiaMetadato { iIdTipoDato = TipoDatoMetadato.DatosCuriosos, vchTitulo = "Datos Curiosos", iAncho = 12 } });
 
-        protected void DeleteFila(NoticiaFila fila)
-        {
-            _filas.Remove(fila);
-            // Eliminar bloques de esta fila
-            var toRemove = _dropItems.Where(d => d.Zone == $"row-{fila.UI_Id}").ToList();
-            foreach (var rm in toRemove)
-            {
-                if (itemSeleccionado == rm) CancelarSeleccion();
-                _dropItems.Remove(rm);
-            }
-            SyncData();
-            _dropContainer?.Refresh();
-        }
+			// 2. Cargar los bloques existentes en las filas
+			foreach (var fila in _filas)
+			{
+				if (fila.Metadatos != null)
+				{
+					foreach (var meta in fila.Metadatos.OrderBy(m => m.iOrden))
+					{
+						_dropItems.Add(new DropItem
+						{
+							Zone = $"row-{fila.UI_Id}",
+							Metadato = meta,
+							IsTemplate = false,
+							Order = meta.iOrden
+						});
+					}
+				}
+			}
 
-        protected void ItemDropped(MudItemDropInfo<DropItem> dropInfo)
-        {
-            if (dropInfo.Item == null) return;
+			_dropContainer?.Refresh();
+		}
 
-            var targetZone = dropInfo.DropzoneIdentifier;
+		protected void AddFilaVacia()
+		{
+			var target = NoticiaModel ?? Data?.NoticiaSelected;
+			var fila = new NoticiaFila
+			{
+				iIdNoticia = target?.iIdNoticia ?? 0,
+				iOrden = _filas.Count + 1,
+				UI_Id = Guid.NewGuid().ToString()
+			};
+			_filas.Add(fila);
+			SyncData();
+			_dropContainer?.Refresh();
+		}
 
-            // Si es un template arrastrado desde el sidebar a una fila
-            if (dropInfo.Item.IsTemplate && targetZone.StartsWith("row-"))
-            {
-                // Clonar el metadato
-                var nuevoMetadato = new NoticiaMetadato
-                {
-                    iIdTipoDato = dropInfo.Item.Metadato.iIdTipoDato,
-                    vchTitulo = dropInfo.Item.Metadato.vchTitulo,
-                    iAncho = 12,
-                    vchAlineacion = "none",
-                    vchAlto = "auto",
-                    nvchValor = dropInfo.Item.Metadato.iIdTipoDato == TipoDatoMetadato.Contenido ? "Contenido de ejemplo..." : "",
-                    nvchConfiguracion = "{}"
-                };
+		protected void MoveFilaUp(NoticiaFila fila)
+		{
+			int index = _filas.IndexOf(fila);
+			if (index > 0)
+			{
+				_filas.RemoveAt(index);
+				_filas.Insert(index - 1, fila);
+				SyncData();
+			}
+		}
 
-                // Insertar nuevo item en el dropzone destino
-                var newDropItem = new DropItem
-                {
-                    Zone = targetZone,
-                    IsTemplate = false,
-                    Metadato = nuevoMetadato
-                };
+		protected void MoveFilaDown(NoticiaFila fila)
+		{
+			int index = _filas.IndexOf(fila);
+			if (index < _filas.Count - 1 && index >= 0)
+			{
+				_filas.RemoveAt(index);
+				_filas.Insert(index + 1, fila);
+				SyncData();
+			}
+		}
 
-                // Calcular el orden correcto e insertarlo
-                var zoneItems = _dropItems.Where(i => i.Zone == targetZone && !i.IsTemplate).OrderBy(i => i.Order).ToList();
-                int dropIndex = dropInfo.IndexInZone;
-                
-                _dropItems.Add(newDropItem);
-                
-                // Reordenar los elementos de la zona objetivo
-                zoneItems.Insert(dropIndex, newDropItem);
-                for (int i = 0; i < zoneItems.Count; i++)
-                {
-                    zoneItems[i].Order = i + 1;
-                    zoneItems[i].Metadato.iOrden = i + 1;
-                }
+		protected void DeleteFila(NoticiaFila fila)
+		{
+			_filas.Remove(fila);
+			// Eliminar bloques de esta fila
+			var toRemove = _dropItems.Where(d => d.Zone == $"row-{fila.UI_Id}").ToList();
+			foreach (var rm in toRemove)
+			{
+				if (itemSeleccionado == rm) CancelarSeleccion();
+				_dropItems.Remove(rm);
+			}
+			SyncData();
+			_dropContainer?.Refresh();
+		}
 
-                // El item original (template) se mantiene intacto en la lista (no lo movemos)
-            }
-            else if (!dropInfo.Item.IsTemplate && targetZone.StartsWith("row-"))
-            {
-                // Moviendo un bloque existente a otra zona o reordenando en la misma
-                dropInfo.Item.Zone = targetZone;
+		protected void ItemDropped(MudItemDropInfo<DropItem> dropInfo)
+		{
+			if (dropInfo.Item == null) return;
 
-                // Reordenar la zona destino
-                var zoneItems = _dropItems.Where(i => i.Zone == targetZone && !i.IsTemplate && i != dropInfo.Item).OrderBy(i => i.Order).ToList();
-                int dropIndex = dropInfo.IndexInZone;
-                if (dropIndex > zoneItems.Count) dropIndex = zoneItems.Count;
-                
-                zoneItems.Insert(dropIndex, dropInfo.Item);
-                
-                for (int i = 0; i < zoneItems.Count; i++)
-                {
-                    zoneItems[i].Order = i + 1;
-                    zoneItems[i].Metadato.iOrden = i + 1;
-                }
-            }
+			var targetZone = dropInfo.DropzoneIdentifier;
 
-            SyncData();
-            _dropContainer?.Refresh();
-            StateHasChanged();
-        }
+			// Si es un template arrastrado desde el sidebar a una fila
+			if (dropInfo.Item.IsTemplate && targetZone.StartsWith("row-"))
+			{
+				// Clonar el metadato
+				var nuevoMetadato = new NoticiaMetadato
+				{
+					iIdTipoDato = dropInfo.Item.Metadato.iIdTipoDato,
+					vchTitulo = dropInfo.Item.Metadato.vchTitulo,
+					iAncho = 12,
+					vchAlineacion = "none",
+					vchAlto = "auto",
+					nvchValor = dropInfo.Item.Metadato.iIdTipoDato == TipoDatoMetadato.Contenido ? "Contenido de ejemplo..." : "",
+					nvchConfiguracion = "{}"
+				};
 
-        protected void SyncData()
-        {
-            var target = NoticiaModel ?? Data?.NoticiaSelected;
-            if (target == null) return;
+				// Insertar nuevo item en el dropzone destino
+				var newDropItem = new DropItem
+				{
+					Zone = targetZone,
+					IsTemplate = false,
+					Metadato = nuevoMetadato
+				};
 
-            // Reconstruir la lista Filas con sus Metadatos ordenados
-            for (int i = 0; i < _filas.Count; i++)
-            {
-                _filas[i].iOrden = i + 1;
-                var bloquesFila = _dropItems
-                    .Where(d => d.Zone == $"row-{_filas[i].UI_Id}" && !d.IsTemplate)
-                    .OrderBy(d => d.Order)
-                    .Select(d => d.Metadato)
-                    .ToList();
-                
-                foreach(var b in bloquesFila)
-                {
-                    b.iIdNoticia = target.iIdNoticia;
-                    if (_filas[i].iIdFila > 0)
-                        b.iIdFila = _filas[i].iIdFila;
-                }
-                
-                _filas[i].Metadatos = bloquesFila;
-            }
+				// Calcular el orden correcto e insertarlo
+				var zoneItems = _dropItems.Where(i => i.Zone == targetZone && !i.IsTemplate).OrderBy(i => i.Order).ToList();
+				int dropIndex = dropInfo.IndexInZone;
 
-            target.Filas = _filas;
-        }
+				_dropItems.Add(newDropItem);
 
-        protected void SeleccionarBloque(DropItem item)
-        {
-            if (item.IsTemplate) return;
-            
-            itemSeleccionado = item;
-            var meta = item.Metadato;
+				// Reordenar los elementos de la zona objetivo
+				zoneItems.Insert(dropIndex, newDropItem);
+				for (int i = 0; i < zoneItems.Count; i++)
+				{
+					zoneItems[i].Order = i + 1;
+					zoneItems[i].Metadato.iOrden = i + 1;
+				}
 
-            blockWidth = meta.iAncho ?? 12;
-            blockFloat = string.IsNullOrEmpty(meta.vchAlineacion) ? "none" : meta.vchAlineacion;
-            blockHeight = string.IsNullOrEmpty(meta.vchAlto) ? "auto" : meta.vchAlto;
-            blockConfigExtra = string.IsNullOrEmpty(meta.nvchConfiguracion) ? "{}" : meta.nvchConfiguracion;
+				// El item original (template) se mantiene intacto en la lista (no lo movemos)
+			}
+			else if (!dropInfo.Item.IsTemplate && targetZone.StartsWith("row-"))
+			{
+				// Moviendo un bloque existente a otra zona o reordenando en la misma
+				dropInfo.Item.Zone = targetZone;
 
-            tempGalleryUrls.Clear();
-            if (meta.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes && !string.IsNullOrEmpty(meta.nvchValor))
-            {
-                var urls = meta.nvchValor.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                tempGalleryUrls.AddRange(urls);
-            }
+				// Reordenar la zona destino
+				var zoneItems = _dropItems.Where(i => i.Zone == targetZone && !i.IsTemplate && i != dropInfo.Item).OrderBy(i => i.Order).ToList();
+				int dropIndex = dropInfo.IndexInZone;
+				if (dropIndex > zoneItems.Count) dropIndex = zoneItems.Count;
 
-            if (meta.iIdTipoDato == TipoDatoMetadato.RedesSociales)
-            {
-                if (!string.IsNullOrEmpty(meta.nvchConfiguracion))
-                {
-                    try { RedesConfig = System.Text.Json.JsonSerializer.Deserialize<RedesSocialesConfig>(meta.nvchConfiguracion) ?? new RedesSocialesConfig(); }
-                    catch { RedesConfig = new RedesSocialesConfig(); }
-                }
-                else { RedesConfig = new RedesSocialesConfig(); }
-            }
+				zoneItems.Insert(dropIndex, dropInfo.Item);
 
-            StateHasChanged();
-        }
+				for (int i = 0; i < zoneItems.Count; i++)
+				{
+					zoneItems[i].Order = i + 1;
+					zoneItems[i].Metadato.iOrden = i + 1;
+				}
+			}
 
-        protected void OnRedesSocialesChanged()
-        {
-            if (itemSeleccionado != null && itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.RedesSociales)
-            {
-                itemSeleccionado.Metadato.nvchConfiguracion = System.Text.Json.JsonSerializer.Serialize(RedesConfig);
-                SyncData();
-            }
-        }
+			SyncData();
+			_dropContainer?.Refresh();
+			StateHasChanged();
+		}
 
-        protected void CancelarSeleccion()
-        {
-            itemSeleccionado = null;
-            tempGalleryUrls.Clear();
-            StateHasChanged();
-        }
+		protected void SyncData()
+		{
+			var target = NoticiaModel ?? Data?.NoticiaSelected;
+			if (target == null) return;
 
-        protected void GuardarConfiguracionBloque()
-        {
-            if (itemSeleccionado == null) return;
+			// Reconstruir la lista Filas con sus Metadatos ordenados
+			for (int i = 0; i < _filas.Count; i++)
+			{
+				_filas[i].iOrden = i + 1;
+				var bloquesFila = _dropItems
+					.Where(d => d.Zone == $"row-{_filas[i].UI_Id}" && !d.IsTemplate)
+					.OrderBy(d => d.Order)
+					.Select(d => d.Metadato)
+					.ToList();
 
-            var meta = itemSeleccionado.Metadato;
+				foreach (var b in bloquesFila)
+				{
+					b.iIdNoticia = target.iIdNoticia;
+					if (_filas[i].iIdFila > 0)
+						b.iIdFila = _filas[i].iIdFila;
+				}
 
-            if (meta.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
-            {
-                meta.nvchValor = string.Join(";", tempGalleryUrls);
-            }
+				_filas[i].Metadatos = bloquesFila;
+			}
 
-            meta.iAncho = blockWidth;
-            meta.vchAlineacion = blockFloat;
-            meta.vchAlto = blockHeight;
-            
-            if (meta.iIdTipoDato == TipoDatoMetadato.RedesSociales)
-            {
-                meta.nvchConfiguracion = System.Text.Json.JsonSerializer.Serialize(RedesConfig);
-                blockConfigExtra = meta.nvchConfiguracion; // Sincroniza la caja de texto extra por si acaso
-            }
-            else
-            {
-                meta.nvchConfiguracion = blockConfigExtra;
-            }
+			target.Filas = _filas;
+		}
 
-            Snackbar.Add("Bloque actualizado correctamente", Severity.Success);
-            SyncData();
-            StateHasChanged();
-        }
+		protected void SeleccionarBloque(DropItem item)
+		{
+			if (item.IsTemplate) return;
 
-        protected void EliminarBloqueSeleccionado()
-        {
-            if (itemSeleccionado != null)
-            {
-                _dropItems.Remove(itemSeleccionado);
-                CancelarSeleccion();
-                SyncData();
-                Snackbar.Add("Bloque eliminado", Severity.Info);
-            }
-        }
+			itemSeleccionado = item;
+			var meta = item.Metadato;
 
-        protected void UpdateBlockWidth(int width)
-        {
-            blockWidth = width;
-            if (itemSeleccionado != null)
-            {
-                itemSeleccionado.Metadato.iAncho = width;
-                SyncData();
-            }
-        }
+			blockWidth = meta.iAncho ?? 12;
+			blockFloat = string.IsNullOrEmpty(meta.vchAlineacion) ? "none" : meta.vchAlineacion;
+			blockHeight = string.IsNullOrEmpty(meta.vchAlto) ? "auto" : meta.vchAlto;
+			blockConfigExtra = string.IsNullOrEmpty(meta.nvchConfiguracion) ? "{}" : meta.nvchConfiguracion;
 
-        protected async Task OnUploadGalleryImage(IBrowserFile file)
-        {
-            if (file == null) return;
+			tempGalleryUrls.Clear();
+			if (meta.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes && !string.IsNullOrEmpty(meta.nvchValor))
+			{
+				var urls = meta.nvchValor.Split(';', StringSplitOptions.RemoveEmptyEntries);
+				tempGalleryUrls.AddRange(urls);
+			}
 
-            _isUploadingGallery = true;
-            StateHasChanged();
+			if (meta.iIdTipoDato == TipoDatoMetadato.RedesSociales)
+			{
+				if (!string.IsNullOrEmpty(meta.nvchConfiguracion))
+				{
+					try { RedesConfig = System.Text.Json.JsonSerializer.Deserialize<RedesSocialesConfig>(meta.nvchConfiguracion) ?? new RedesSocialesConfig(); }
+					catch { RedesConfig = new RedesSocialesConfig(); }
+				}
+				else { RedesConfig = new RedesSocialesConfig(); }
+			}
 
-            try
-            {
-                var url = await Data.UploadGenericFile(file);
-                if (!string.IsNullOrEmpty(url))
-                {
-                    tempGalleryUrls.Add(url);
-                    if (itemSeleccionado != null && itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
-                    {
-                         itemSeleccionado.Metadato.nvchValor = string.Join(";", tempGalleryUrls);
-                         SyncData();
-                    }
-                    Snackbar.Add("Imagen agregada a la galería", Severity.Success);
-                }
-                else
-                {
-                    Snackbar.Add("Error al subir el archivo", Severity.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-            }
-            finally
-            {
-                _isUploadingGallery = false;
-                StateHasChanged();
-            }
-        }
+			StateHasChanged();
+		}
 
-        protected async Task OnUploadSingleImage(IBrowserFile file)
-        {
-            if (file == null) return;
-            _isUploadingGallery = true;
-            StateHasChanged();
-            try
-            {
-                var url = await Data.UploadGenericFile(file);
-                if (!string.IsNullOrEmpty(url))
-                {
-                    if (itemSeleccionado != null && itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.ImagenSola)
-                    {
-                         itemSeleccionado.Metadato.nvchValor = url;
-                         SyncData();
-                    }
-                    Snackbar.Add("Imagen subida correctamente", Severity.Success);
-                }
-            }
-            catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
-            finally { _isUploadingGallery = false; StateHasChanged(); }
-        }
+		protected void OnRedesSocialesChanged()
+		{
+			if (itemSeleccionado != null && itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.RedesSociales)
+			{
+				itemSeleccionado.Metadato.nvchConfiguracion = System.Text.Json.JsonSerializer.Serialize(RedesConfig);
+				SyncData();
+			}
+		}
 
-        protected void RemoveGalleryImage(string url)
-        {
-            tempGalleryUrls.Remove(url);
-            if (itemSeleccionado != null && itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
-            {
-                itemSeleccionado.Metadato.nvchValor = string.Join(";", tempGalleryUrls);
-                SyncData();
-            }
-            StateHasChanged();
-        }
+		protected void CancelarSeleccion()
+		{
+			itemSeleccionado = null;
+			tempGalleryUrls.Clear();
+			StateHasChanged();
+		}
 
-        protected string GetBlockIcon(TipoDatoMetadato tipoDato)
-        {
-            return tipoDato switch
-            {
-                TipoDatoMetadato.Video => Icons.Material.Filled.PlayCircle,
-                TipoDatoMetadato.GaleriaImagenes => Icons.Material.Filled.PhotoLibrary,
-                TipoDatoMetadato.Contenido => Icons.Material.Filled.Article,
-                TipoDatoMetadato.ImagenSola => Icons.Material.Filled.Image,
-                TipoDatoMetadato.RedesSociales => Icons.Material.Filled.Share,
-                TipoDatoMetadato.DatosCuriosos => Icons.Material.Filled.Lightbulb,
-                _ => Icons.Material.Filled.Category
-            };
-        }
+		protected void GuardarConfiguracionBloque()
+		{
+			if (itemSeleccionado == null) return;
 
-        protected Color GetBlockIconColor(TipoDatoMetadato tipoDato)
-        {
-            return tipoDato switch
-            {
-                TipoDatoMetadato.Video => Color.Error,
-                TipoDatoMetadato.GaleriaImagenes => Color.Success,
-                TipoDatoMetadato.Contenido => Color.Info,
-                TipoDatoMetadato.ImagenSola => Color.Info,
-                TipoDatoMetadato.RedesSociales => Color.Secondary,
-                TipoDatoMetadato.DatosCuriosos => Color.Warning,
-                _ => Color.Default
-            };
-        }
-        
-        protected string GetWidthPercent(int? cols) 
-        {
-            return cols switch {
-                3 => "25%",
-                6 => "50%",
-                9 => "75%",
-                _ => "100%"
-            };
-        }
-    }
+			var meta = itemSeleccionado.Metadato;
+
+			if (meta.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
+			{
+				meta.nvchValor = string.Join(";", tempGalleryUrls);
+			}
+
+			meta.iAncho = blockWidth;
+			meta.vchAlineacion = blockFloat;
+			meta.vchAlto = blockHeight;
+
+			if (meta.iIdTipoDato == TipoDatoMetadato.RedesSociales)
+			{
+				meta.nvchConfiguracion = System.Text.Json.JsonSerializer.Serialize(RedesConfig);
+				blockConfigExtra = meta.nvchConfiguracion; // Sincroniza la caja de texto extra por si acaso
+			}
+			else
+			{
+				meta.nvchConfiguracion = blockConfigExtra;
+			}
+
+			Snackbar.Add("Bloque actualizado correctamente", Severity.Success);
+			SyncData();
+			StateHasChanged();
+		}
+
+		protected void EliminarBloqueSeleccionado()
+		{
+			if (itemSeleccionado != null)
+			{
+				_dropItems.Remove(itemSeleccionado);
+				CancelarSeleccion();
+				SyncData();
+				Snackbar.Add("Bloque eliminado", Severity.Info);
+			}
+		}
+
+		protected void UpdateBlockWidth(int width)
+		{
+			blockWidth = width;
+			if (itemSeleccionado != null)
+			{
+				itemSeleccionado.Metadato.iAncho = width;
+				SyncData();
+			}
+		}
+
+		protected async Task OnUploadGalleryImage(IBrowserFile file)
+		{
+			if (file == null) return;
+
+			_isUploadingGallery = true;
+			StateHasChanged();
+
+			try
+			{
+				var url = await Data.UploadGenericFile(file);
+				if (!string.IsNullOrEmpty(url))
+				{
+					tempGalleryUrls.Add(url);
+					if (itemSeleccionado != null && itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
+					{
+						itemSeleccionado.Metadato.nvchValor = string.Join(";", tempGalleryUrls);
+						SyncData();
+					}
+					Snackbar.Add("Imagen agregada a la galería", Severity.Success);
+				}
+				else
+				{
+					Snackbar.Add("Error al subir el archivo", Severity.Error);
+				}
+			}
+			catch (Exception ex)
+			{
+				Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+			}
+			finally
+			{
+				_isUploadingGallery = false;
+				StateHasChanged();
+			}
+		}
+
+		protected async Task OnUploadSingleImage(IBrowserFile file)
+		{
+			if (file == null) return;
+			_isUploadingGallery = true;
+			StateHasChanged();
+			try
+			{
+				var url = await Data.UploadGenericFile(file);
+				if (!string.IsNullOrEmpty(url))
+				{
+					if (itemSeleccionado != null && itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.ImagenSola)
+					{
+						itemSeleccionado.Metadato.nvchValor = url;
+						SyncData();
+					}
+					Snackbar.Add("Imagen subida correctamente", Severity.Success);
+				}
+			}
+			catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+			finally { _isUploadingGallery = false; StateHasChanged(); }
+		}
+
+		protected void RemoveGalleryImage(string url)
+		{
+			tempGalleryUrls.Remove(url);
+			if (itemSeleccionado != null && itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.GaleriaImagenes)
+			{
+				itemSeleccionado.Metadato.nvchValor = string.Join(";", tempGalleryUrls);
+				SyncData();
+			}
+			StateHasChanged();
+		}
+
+		protected string GetBlockIcon(TipoDatoMetadato tipoDato)
+		{
+			return tipoDato switch
+			{
+				TipoDatoMetadato.Video => Icons.Material.Filled.PlayCircle,
+				TipoDatoMetadato.GaleriaImagenes => Icons.Material.Filled.PhotoLibrary,
+				TipoDatoMetadato.Contenido => Icons.Material.Filled.Article,
+				TipoDatoMetadato.ImagenSola => Icons.Material.Filled.Image,
+				TipoDatoMetadato.RedesSociales => Icons.Material.Filled.Share,
+				TipoDatoMetadato.DatosCuriosos => Icons.Material.Filled.Lightbulb,
+				_ => Icons.Material.Filled.Category
+			};
+		}
+
+		protected Color GetBlockIconColor(TipoDatoMetadato tipoDato)
+		{
+			return tipoDato switch
+			{
+				TipoDatoMetadato.Video => Color.Error,
+				TipoDatoMetadato.GaleriaImagenes => Color.Success,
+				TipoDatoMetadato.Contenido => Color.Info,
+				TipoDatoMetadato.ImagenSola => Color.Info,
+				TipoDatoMetadato.RedesSociales => Color.Secondary,
+				TipoDatoMetadato.DatosCuriosos => Color.Warning,
+				_ => Color.Default
+			};
+		}
+
+		protected string GetWidthPercent(int? cols)
+		{
+			return cols switch
+			{
+				3 => "25%",
+				6 => "50%",
+				9 => "75%",
+				_ => "100%"
+			};
+		}
+	}
 	public class DropItem
 	{
 		public string Id { get; set; } = Guid.NewGuid().ToString();

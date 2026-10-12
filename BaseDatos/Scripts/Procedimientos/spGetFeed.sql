@@ -1,20 +1,17 @@
-IF OBJECT_ID('SCIA.spGetFeed') IS NULL
-    EXEC('CREATE PROCEDURE SCIA.spGetFeed AS SET NOCOUNT ON;');
-GO
-
-ALTER PROCEDURE [SCIA].[spGetFeed]
+﻿-- Feed con prioridades (publicaciones de hoy > noticias y eventos del dia > aleatorio). Ver database_scripts/03_Feed_Prioridades_y_Opiniones.sql
+CREATE OR ALTER PROCEDURE [SCIA].[spGetFeed]
 (
     @iPage INT = 1,
     @iPageSize INT = 10,
     @vchSessionSeed VARCHAR(64) = NULL,
-    @vchTipoFiltro VARCHAR(20) = NULL
+    @vchTipoFiltro VARCHAR(20) = NULL,
+    @bSoloAleatorio BIT = 0
 )
 AS
 /*
-** Propósito: Feed paginado.
-**   - TODO / NULL: patrón 1 TRAMITE → 2 NOTICIA → 1 CAPSULA → 1 EVENTO
-**   - TRAMITE|NOTICIA|EVENTO|CAPSULA: solo ese tipo, orden por fecha
-** Última fecha: 21/08/2026
+** Propósito: Feed público con prioridades.
+**   TODO / NULL : 1) publicaciones de hoy  2) noticias y eventos del día  3) aleatorio infinito
+**   PUBLICACION | NOTICIA | EVENTO | CAPSULA : solo ese tipo (hoy primero, luego por fecha / aleatorio)
 */
 BEGIN
     SET NOCOUNT ON;
@@ -24,10 +21,22 @@ BEGIN
     IF @iPageSize > 50 SET @iPageSize = 50;
 
     SET @vchTipoFiltro = UPPER(LTRIM(RTRIM(ISNULL(@vchTipoFiltro, 'TODO'))));
-    IF @vchTipoFiltro = '' OR @vchTipoFiltro = 'ALL'
+    IF @vchTipoFiltro NOT IN ('PUBLICACION', 'NOTICIA', 'EVENTO', 'CAPSULA')
         SET @vchTipoFiltro = 'TODO';
 
+    SET @vchSessionSeed = ISNULL(@vchSessionSeed, '');
+    SET @bSoloAleatorio = ISNULL(@bSoloAleatorio, 0);
+    IF @vchTipoFiltro <> 'TODO' SET @bSoloAleatorio = 0;
+
     DECLARE @Offset INT = (@iPage - 1) * @iPageSize;
+
+    -- Ventana del día en curso (hora de México) expresada en UTC
+    DECLARE @AhoraMx DATETIME2(0) =
+        CAST(CAST(SYSUTCDATETIME() AS DATETIMEOFFSET) AT TIME ZONE 'Central Standard Time (Mexico)' AS DATETIME2(0));
+    DECLARE @InicioHoyMx DATETIME2(0) = CAST(CAST(@AhoraMx AS DATE) AS DATETIME2(0));
+    DECLARE @InicioHoyUtc DATETIME2(0) =
+        CAST((@InicioHoyMx AT TIME ZONE 'Central Standard Time (Mexico)') AT TIME ZONE 'UTC' AS DATETIME2(0));
+    DECLARE @FinHoyUtc DATETIME2(0) = DATEADD(DAY, 1, @InicioHoyUtc);
 
     CREATE TABLE #Result
     (
@@ -40,38 +49,44 @@ BEGIN
         nvchContenidoDetallado NVARCHAR(MAX) NULL,
         vchImagenUrl NVARCHAR(500) DEFAULT(''),
         dtFecha DATETIME NULL,
-        iTotalRegistros INT DEFAULT(0)
+        iTotalRegistros INT DEFAULT(0),
+        nvchImagenesJson NVARCHAR(MAX) NULL,
+        iTotalComentarios INT DEFAULT(0),
+        vchAutor NVARCHAR(100) DEFAULT(''),
+        vchAvatarUrl NVARCHAR(500) NULL,
+        bAutorVerificado BIT DEFAULT(0),
+        vchEtiqueta NVARCHAR(100) DEFAULT(''),
+        iPrioridad INT DEFAULT(3)
     );
 
     BEGIN TRY
         ;WITH FeedUnion AS
         (
+            -- NOTICIAS
             SELECT
-                CAST('TRAMITE' AS VARCHAR(20)) AS vchTipoEntidad,
-                T.iIdTramite AS iIdEntidad,
-                CAST(T.vchNombre AS NVARCHAR(300)) AS vchTitulo,
-                CAST(LEFT(ISNULL(T.nvchDescripcion, N''), 400) AS NVARCHAR(1000)) AS nvchDescripcion,
+                CAST('NOTICIA' AS VARCHAR(20)) AS vchTipoEntidad,
+                N.iIdNoticia AS iIdEntidad,
+                CAST(N.vchTitulo AS NVARCHAR(300)) AS vchTitulo,
+                CAST(LEFT(ISNULL(N.nvchContenido, N''), 400) AS NVARCHAR(1000)) AS nvchDescripcion,
                 CAST(NULL AS NVARCHAR(MAX)) AS nvchContenidoDetallado,
-                CAST(N'' AS NVARCHAR(500)) AS vchImagenUrl,
-                T.dtFechaCreacion AS dtFecha
-            FROM dbo.Tramite T WITH (NOLOCK)
-            WHERE ISNULL(T.bActivo, 1) = 1
-
-            UNION ALL
-
-            SELECT
-                CAST('NOTICIA' AS VARCHAR(20)),
-                N.iIdNoticia,
-                CAST(N.vchTitulo AS NVARCHAR(300)),
-                CAST(LEFT(ISNULL(N.nvchContenido, N''), 400) AS NVARCHAR(1000)),
-                CAST(NULL AS NVARCHAR(MAX)),
-                CAST(ISNULL(N.vchImagenPortada, N'') AS NVARCHAR(500)),
-                N.dtFechaPublicacion
-            FROM dbo.Noticias N WITH (NOLOCK)
+                CAST(ISNULL(N.vchImagenPortada, N'') AS NVARCHAR(500)) AS vchImagenUrl,
+                CAST(N.dtFechaPublicacion AS DATETIME2(0)) AS dtFecha,
+                CAST(NULL AS DATETIME2(0)) AS dtFin,
+                CAST(NULL AS NVARCHAR(MAX)) AS nvchImagenesJson,
+                (
+                    SELECT COUNT(1) FROM SCIA.Opinion O WITH (NOLOCK)
+                    WHERE O.vchTipoEntidad = 'NOTICIA' AND O.iIdEntidad = N.iIdNoticia AND O.bActivo = 1
+                ) AS iTotalComentarios,
+                CAST(N'' AS NVARCHAR(100)) AS vchAutor,
+                CAST(NULL AS NVARCHAR(500)) AS vchAvatarUrl,
+                CAST(0 AS BIT) AS bAutorVerificado,
+                CAST(N'' AS NVARCHAR(100)) AS vchEtiqueta
+            FROM SCIA.Noticias N WITH (NOLOCK)
             WHERE ISNULL(N.bActivo, 1) = 1
 
             UNION ALL
 
+            -- EVENTOS (los que ya terminaron antes de hoy no se muestran)
             SELECT
                 CAST('EVENTO' AS VARCHAR(20)),
                 E.iIdEvento,
@@ -79,7 +94,25 @@ BEGIN
                 CAST(LEFT(ISNULL(E.nvchDescripcion, N''), 400) AS NVARCHAR(1000)),
                 CAST(NULL AS NVARCHAR(MAX)),
                 CAST(ISNULL(Img.vchUrlImagen, N'') AS NVARCHAR(500)),
-                ISNULL(E.dtFechaInicio, E.dtFechaRegistro)
+                CAST(ISNULL(E.dtFechaInicio, E.dtFechaRegistro) AS DATETIME2(0)),
+                CAST(ISNULL(E.dtFechaFin, ISNULL(E.dtFechaInicio, E.dtFechaRegistro)) AS DATETIME2(0)),
+                (
+                    SELECT IR2.vchUrlImagen
+                    FROM SCIA.ImagenesRegistro IR2 WITH (NOLOCK)
+                    WHERE IR2.vchTablaOrigen = N'Eventos'
+                      AND IR2.iIdRegistro = E.iIdEvento
+                      AND IR2.bActivo = 1
+                    ORDER BY IR2.iOrden ASC, IR2.iIdImagen ASC
+                    FOR JSON PATH
+                ),
+                (
+                    SELECT COUNT(1) FROM SCIA.Opinion O WITH (NOLOCK)
+                    WHERE O.vchTipoEntidad = 'EVENTO' AND O.iIdEntidad = E.iIdEvento AND O.bActivo = 1
+                ),
+                CAST(N'' AS NVARCHAR(100)),
+                CAST(NULL AS NVARCHAR(500)),
+                CAST(0 AS BIT),
+                CAST(LEFT(ISNULL(E.vchLugar, N''), 100) AS NVARCHAR(100))
             FROM SCIA.Eventos E WITH (NOLOCK)
             OUTER APPLY
             (
@@ -87,12 +120,15 @@ BEGIN
                 FROM SCIA.ImagenesRegistro IR WITH (NOLOCK)
                 WHERE IR.vchTablaOrigen = N'Eventos'
                   AND IR.iIdRegistro = E.iIdEvento
+                  AND IR.bActivo = 1
                 ORDER BY IR.iOrden ASC, IR.iIdImagen ASC
             ) Img
             WHERE ISNULL(E.bEstatus, 1) = 1
+              AND ISNULL(E.dtFechaFin, ISNULL(E.dtFechaInicio, E.dtFechaRegistro)) >= @InicioHoyUtc
 
             UNION ALL
 
+            -- CÁPSULAS / "CONOCE SANTIAGO" (datos curiosos)
             SELECT
                 CAST('CAPSULA' AS VARCHAR(20)),
                 I.iIdInformacionLocal,
@@ -100,9 +136,63 @@ BEGIN
                 CAST(LEFT(ISNULL(I.nvchDescripcionCorta, N''), 400) AS NVARCHAR(1000)),
                 I.nvchContenidoDetallado,
                 CAST(N'' AS NVARCHAR(500)),
-                I.dtFechaCreacion
+                CAST(I.dtFechaCreacion AS DATETIME2(0)),
+                CAST(NULL AS DATETIME2(0)),
+                CAST(NULL AS NVARCHAR(MAX)),
+                (
+                    SELECT COUNT(1) FROM SCIA.Opinion O WITH (NOLOCK)
+                    WHERE O.vchTipoEntidad = 'CAPSULA' AND O.iIdEntidad = I.iIdInformacionLocal AND O.bActivo = 1
+                ),
+                CAST(N'' AS NVARCHAR(100)),
+                CAST(NULL AS NVARCHAR(500)),
+                CAST(0 AS BIT),
+                CAST(LEFT(ISNULL(I.nvchCategoria, N''), 100) AS NVARCHAR(100))
             FROM SCIA.InformacionLocal I WITH (NOLOCK)
             WHERE ISNULL(I.bActivo, 1) = 1
+
+            UNION ALL
+
+            -- PUBLICACIONES DE CIUDADANOS
+            SELECT
+                CAST('PUBLICACION' AS VARCHAR(20)),
+                P.iIdPublicacion,
+                CAST(ISNULL(P.nvchTitulo, N'') AS NVARCHAR(300)),
+                CAST(LEFT(ISNULL(P.nvchContenidoTexto, N''), 400) AS NVARCHAR(1000)),
+                CAST(P.nvchContenidoTexto AS NVARCHAR(MAX)),
+                CAST(ISNULL(ImgPub.vchUrlImagen, N'') AS NVARCHAR(500)),
+                CAST(P.dtFechaCreacion AS DATETIME2(0)),
+                CAST(NULL AS DATETIME2(0)),
+                (
+                    SELECT IR2.vchUrlImagen
+                    FROM SCIA.ImagenesRegistro IR2 WITH (NOLOCK)
+                    WHERE IR2.vchTablaOrigen = N'PublicacionCiudadano'
+                      AND IR2.iIdRegistro = P.iIdPublicacion
+                      AND IR2.bActivo = 1
+                    ORDER BY IR2.iOrden ASC, IR2.iIdImagen ASC
+                    FOR JSON PATH
+                ),
+                (
+                    SELECT COUNT(1) FROM SCIA.Opinion O WITH (NOLOCK)
+                    WHERE O.vchTipoEntidad = 'PUBLICACION' AND O.iIdEntidad = P.iIdPublicacion AND O.bActivo = 1
+                ),
+                CAST(LEFT(ISNULL(C.vchAlias, N'Ciudadano de Santiago'), 100) AS NVARCHAR(100)),
+                CAST(C.vchAvatarUrl AS NVARCHAR(500)),
+                CAST(ISNULL(C.bCuentaVerificada, 0) AS BIT),
+                CAST(LEFT(ISNULL(P.vchCategoriaPublicacion, N'Comunidad'), 100) AS NVARCHAR(100))
+            FROM SCIA.PublicacionCiudadano P WITH (NOLOCK)
+            INNER JOIN SCIA.Ciudadano C WITH (NOLOCK) ON P.iIdCiudadano = C.iIdCiudadano
+            OUTER APPLY
+            (
+                SELECT TOP (1) IR.vchUrlImagen
+                FROM SCIA.ImagenesRegistro IR WITH (NOLOCK)
+                WHERE IR.vchTablaOrigen = N'PublicacionCiudadano'
+                  AND IR.iIdRegistro = P.iIdPublicacion
+                  AND IR.bActivo = 1
+                ORDER BY IR.iOrden ASC, IR.iIdImagen ASC
+            ) ImgPub
+            WHERE ISNULL(P.bActiva, 1) = 1
+              AND ISNULL(P.bAprobada, 1) = 1
+              AND ISNULL(C.bActivo, 1) = 1
         ),
         Filtered AS
         (
@@ -111,50 +201,91 @@ BEGIN
             WHERE @vchTipoFiltro = 'TODO'
                OR F.vchTipoEntidad = @vchTipoFiltro
         ),
-        Ranked AS
+        Clasificado AS
         (
             SELECT
                 F.*,
-                ROW_NUMBER() OVER (
-                    PARTITION BY F.vchTipoEntidad
-                    ORDER BY F.dtFecha DESC, F.iIdEntidad DESC
-                ) AS iRnTipo,
-                ROW_NUMBER() OVER (
-                    ORDER BY F.dtFecha DESC, F.iIdEntidad DESC
-                ) AS iRnFecha
+                CASE
+                    WHEN @bSoloAleatorio = 1 THEN 3
+                    -- 1) Lo que la comunidad publicó hoy: siempre al principio
+                    WHEN F.vchTipoEntidad = 'PUBLICACION'
+                         AND F.dtFecha >= @InicioHoyUtc AND F.dtFecha < @FinHoyUtc THEN 1
+                    -- 2) Lo del día en curso: noticias de hoy y eventos de hoy o en curso
+                    WHEN F.vchTipoEntidad = 'NOTICIA'
+                         AND F.dtFecha >= @InicioHoyUtc AND F.dtFecha < @FinHoyUtc THEN 2
+                    WHEN F.vchTipoEntidad = 'EVENTO'
+                         AND F.dtFecha < @FinHoyUtc AND F.dtFin >= @InicioHoyUtc THEN 2
+                    -- 3) Todo lo demás
+                    ELSE 3
+                END AS iPrioridad
             FROM Filtered F
         ),
-        Patterned AS
+        Ranked AS
+        (
+            SELECT
+                C.*,
+                -- Orden por fecha dentro de cada tipo: lo nuevo primero; los eventos, el más próximo primero
+                ROW_NUMBER() OVER (
+                    PARTITION BY C.iPrioridad, C.vchTipoEntidad
+                    ORDER BY
+                        CASE WHEN C.vchTipoEntidad = 'EVENTO'
+                             THEN DATEDIFF_BIG(SECOND, '2000-01-01', C.dtFecha)
+                             ELSE -DATEDIFF_BIG(SECOND, '2000-01-01', C.dtFecha)
+                        END ASC,
+                        C.iIdEntidad DESC
+                ) AS iRnFecha,
+                -- Orden aleatorio estable por sesión dentro de cada tipo
+                ROW_NUMBER() OVER (
+                    PARTITION BY C.iPrioridad, C.vchTipoEntidad
+                    ORDER BY CHECKSUM(@vchSessionSeed, C.vchTipoEntidad, C.iIdEntidad), C.iIdEntidad
+                ) AS iRnAleatorio,
+                COUNT(1) OVER() AS iTotalRegistros
+            FROM Clasificado C
+        ),
+        Ordenado AS
         (
             SELECT
                 R.*,
                 CASE
-                    WHEN @vchTipoFiltro <> 'TODO' THEN R.iRnFecha
-                    WHEN R.vchTipoEntidad = 'TRAMITE' THEN ((R.iRnTipo - 1) * 5) + 1
-                    WHEN R.vchTipoEntidad = 'NOTICIA' THEN (((R.iRnTipo - 1) / 2) * 5) + 2 + ((R.iRnTipo - 1) % 2)
-                    WHEN R.vchTipoEntidad = 'CAPSULA' THEN ((R.iRnTipo - 1) * 5) + 4
-                    WHEN R.vchTipoEntidad = 'EVENTO'  THEN ((R.iRnTipo - 1) * 5) + 5
-                    ELSE 999999
-                END AS iFeedOrder,
-                COUNT(1) OVER() AS iTotalRegistros
+                    WHEN R.iPrioridad = 1 THEN CAST(R.iRnFecha AS FLOAT)
+                    -- Noticia, evento, noticia, evento...
+                    WHEN R.iPrioridad = 2 THEN CAST(R.iRnFecha AS FLOAT) + CASE WHEN R.vchTipoEntidad = 'EVENTO' THEN 0.5 ELSE 0 END
+                    -- Aleatorio mezclando tipos de forma proporcional (peso = tarjetas por ciclo)
+                    WHEN @vchTipoFiltro = 'TODO' THEN
+                        CAST(R.iRnAleatorio AS FLOAT)
+                        / CASE R.vchTipoEntidad WHEN 'NOTICIA' THEN 2.0 WHEN 'PUBLICACION' THEN 2.0 ELSE 1.0 END
+                        + (ABS(CAST(CHECKSUM(@vchSessionSeed, R.vchTipoEntidad, R.iIdEntidad) AS BIGINT)) % 1000) / 100000.0
+                    -- Con filtro por tipo: por fecha, salvo los datos curiosos que van al azar
+                    WHEN R.vchTipoEntidad = 'CAPSULA' THEN CAST(R.iRnAleatorio AS FLOAT)
+                    ELSE CAST(R.iRnFecha AS FLOAT)
+                END AS fOrden
             FROM Ranked R
         )
         INSERT INTO #Result
         (
             vchTipoEntidad, iIdEntidad, vchTitulo, nvchDescripcion,
-            nvchContenidoDetallado, vchImagenUrl, dtFecha, iTotalRegistros
+            nvchContenidoDetallado, vchImagenUrl, dtFecha, iTotalRegistros,
+            nvchImagenesJson, iTotalComentarios, vchAutor, vchAvatarUrl,
+            bAutorVerificado, vchEtiqueta, iPrioridad
         )
         SELECT
-            P.vchTipoEntidad,
-            P.iIdEntidad,
-            P.vchTitulo,
-            P.nvchDescripcion,
-            P.nvchContenidoDetallado,
-            P.vchImagenUrl,
-            P.dtFecha,
-            P.iTotalRegistros
-        FROM Patterned P
-        ORDER BY P.iFeedOrder ASC, P.dtFecha DESC
+            O.vchTipoEntidad,
+            O.iIdEntidad,
+            O.vchTitulo,
+            O.nvchDescripcion,
+            O.nvchContenidoDetallado,
+            O.vchImagenUrl,
+            O.dtFecha,
+            O.iTotalRegistros,
+            O.nvchImagenesJson,
+            O.iTotalComentarios,
+            O.vchAutor,
+            O.vchAvatarUrl,
+            O.bAutorVerificado,
+            O.vchEtiqueta,
+            O.iPrioridad
+        FROM Ordenado O
+        ORDER BY O.iPrioridad ASC, O.fOrden ASC, O.vchTipoEntidad ASC, O.iIdEntidad DESC
         OFFSET @Offset ROWS FETCH NEXT @iPageSize ROWS ONLY;
 
         IF NOT EXISTS (SELECT 1 FROM #Result WHERE iIdEntidad <> -1)

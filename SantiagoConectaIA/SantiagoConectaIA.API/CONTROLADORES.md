@@ -7,7 +7,7 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 - **Verbo:** casi todas las acciones son `POST` con cuerpo JSON (`[FromBody]`). Los modelos de entrada (`Post*`) viven en `SantiagoConectaIA.Share`. Las excepciones se indican en cada tabla.
 - **Respuesta:** `Response<T>` (`EngramaCoreStandar.Results`) con `IsSuccess`, `Data` y `Message`. Cuando falla, la mayoría de las acciones responden `400 BadRequest` con el mismo cuerpo.
 - **Arquitectura:** controlador → dominio (`I*Domain`, metodología Engrama) → DAL (`EngramaContext`, base `Engrama`, esquema `SCIA`).
-- **Autenticación:** JWT Bearer está configurado, pero **no hay política global**. Solo `Opinion` y `PublicacionesCiudadano` usan `[Authorize(Roles = "Ciudadano")]`. El resto de los controladores es accesible sin token (ver [Seguridad](#seguridad)).
+- **Autenticación:** JWT Bearer. Las acciones de administración usan la política `Administracion` (`[Authorize(Policy = AuthPolicies.Administracion)]`: token válido y rol distinto de `Ciudadano`). `Opinion` y `PublicacionesCiudadano` usan `[Authorize(Roles = "Ciudadano")]` en sus acciones de escritura. Las acciones de lectura pública y los flujos de registro siguen siendo anónimos (ver [Seguridad](#seguridad)).
 - **CORS:** abierto a cualquier origen (`SetIsOriginAllowed(_ => true)` con credenciales).
 - **Swagger:** disponible solo en `Development`. Los comentarios XML se generan con `GenerateDocumentationFile`.
 - **Bitácora:** `ApiLoggingMiddleware` registra las peticiones.
@@ -20,7 +20,7 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 | Comunidad | [Ciudadano](#ciudadano), [PublicacionesCiudadano](#publicacionesciudadano), [Opinion](#opinion) |
 | Emprendimientos | [Empresas](#empresas) |
 | IA y mensajería | [Chat](#chat), [WhatsApp](#whatsapp) |
-| Administración | [Auth](#auth), [Catalogos](#catalogos), [AzureBlob](#azureblob), [Publicaciones](#publicaciones) |
+| Administración | [Auth](#auth), [Catalogos](#catalogos), [AzureBlob](#azureblob), [Publicaciones](#publicaciones), [Mantenimiento](#mantenimiento) |
 | Analítica | [Analytics](#analytics), [PageVisits](#pagevisits), [WhatsAppAnalytics](#whatsappanalytics) |
 
 ---
@@ -248,6 +248,13 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 
 Los servicios en segundo plano publican a diario, hora de México: `DailyFacebookPublicacionBackgroundService` (noticias, hora por defecto 11) y `DailyEmprendimientoPublicacionBackgroundService` (emprendimientos, hora por defecto 13). Usan la imagen de portada o el logo, no el post capturado, porque la captura requiere navegador. Requieren **Always On** en Azure App Service. Los parámetros están en `SCIA.Parametros`: `key.gemini`, `make.facebook.webhook`, `publicaciones.sitio`, `publicaciones.auto.noticias`, `publicaciones.auto.emprendimientos`, `azure.blob.storage`.
 
+### Mantenimiento
+`api/Mantenimiento` — Tareas de mantenimiento de datos. Todo el controlador exige la política `Administracion`.
+
+| Acción | Descripción |
+|---|---|
+| `PostRepararImagenesPdf` | Corrige logos (`SCIA.Empresa.vchLogoUrl`) e imágenes de producto (`SCIA.ProductoServicio.vchImagenUrl`) cuyo archivo termina en `.pdf` pero en realidad es una imagen. Detecta el formato real por los primeros bytes, sube una copia con la extensión correcta a `empresas` y actualiza el registro (con guarda por URL anterior). **Por defecto simula**: envía `{"bSimular": false}` para aplicar los cambios. No borra los blobs anteriores. |
+
 ---
 
 ## Analítica
@@ -292,12 +299,30 @@ Los servicios en segundo plano publican a diario, hora de México: `DailyFaceboo
 
 ## Seguridad
 
-Puntos por revisar antes de endurecer la API:
+**Política `Administracion`** (`Services/AuthPolicies.cs`): requiere usuario autenticado y que **no** tenga el rol `Ciudadano`. Hace falta porque los tokens de administrador y de ciudadano comparten emisor y ambos son válidos; un `[Authorize]` simple dejaría entrar a un ciudadano a las acciones de administración. Los tokens duran 24 h. El PWA envía el JWT en cada llamada y, si expiró, cierra la sesión y manda al login.
 
-- Los endpoints de administración (`Auth`, `Publicaciones`, `AzureBlob`, `Empresas` y las acciones `Save*` de varios módulos) **no exigen JWT**. Cualquiera que conozca la URL puede llamarlos, incluidos los que publican en Facebook y consumen cuota de Gemini.
-- `Chat/PostSeedMockData` y `WhatsApp/test-message` son endpoints de prueba expuestos en producción.
-- CORS permite cualquier origen con credenciales.
+**Protegido con `Administracion`**
 
-Recomendación: agregar `[Authorize]` a los controladores de administración (el PWA tendría que enviar el JWT), restringir CORS a los dominios del PWA y del sitio público, y deshabilitar los endpoints de prueba fuera de `Development`.
+- Controladores completos: `Publicaciones`, `Mantenimiento`, `WhatsAppAnalytics`, `PageVisits`.
+- `Auth/PostSaveUsuario`, `Catalogos/PostGetParametro`, `Chat/*` (excepto `PostSearchForChat`) y `WhatsApp/test-message`.
+- `Analytics`: todo excepto `PostSavePageVisit`.
+- `AzureBlob`: `UploadDocument`, `UploadImage-Eventos` y `UploadImage-noticias`.
+- Las acciones de escritura de `Noticias`, `Eventos`, `Tramites`, `Oficinas`, `InformacionLocal` y `Empresas` (excepto el registro público de emprendimientos), además de `Empresas/PostGetPropietario`.
+
+**Protegido con rol `Ciudadano`:** `Opinion/PostSaveOpinion` y las acciones de escritura y "mis publicaciones" de `PublicacionesCiudadano`.
+
+**Anónimo a propósito** (lo usan el sitio público o terceros)
+
+- Lecturas del sitio: `Feed`, `EmprendimientosFeed`, `Noticias`, `Eventos`, `Tramites`, `Oficinas`, `InformacionLocal`, `Opinion/PostGetOpiniones`, `PublicacionesCiudadano/PostGetPublicacionesCiudadano`, `Catalogos/PostGetTipoDatos` y `PostGetCatalogos`, y las lecturas de `Empresas`.
+- `Auth/PostLoginUsuario` y todo `Ciudadano` (registro e inicio de sesión).
+- `BuzonCiudadano/PostSaveReporte`, `Analytics/PostSavePageVisit`, `Chat/PostSearchForChat` (chatbot público) y `WhatsApp/webhook` (Meta).
+- Registro de emprendimientos: `Empresas/PostSaveEmprendimientoFull`, `PostGetEmpresasPropietarioByCorreo`, `PostGetEmprendimientoFullById` y `AzureBlob/UploadImage-empresas`.
+
+**Riesgos que quedan**
+
+- Los endpoints anónimos de escritura (`PostSaveEmprendimientoFull`, `UploadImage-empresas`, `PostSaveReporte`, `PostSearchForChat`) permiten abusar del almacenamiento, la base y la cuota de Gemini. Conviene agregar límite de peticiones (rate limiting) y validar tamaño y formato.
+- CORS permite cualquier origen con credenciales; conviene limitarlo a los dominios del PWA y del sitio público.
+- `Chat/PostSeedMockData` y `WhatsApp/test-message` son endpoints de prueba; conviene deshabilitarlos fuera de `Development`.
+- Las credenciales de `appsettings*.json` no deben vivir en el repositorio: usar variables de entorno o Azure Key Vault y rotar las que ya estuvieron publicadas.
 
 --Prueba 1 de publicacion

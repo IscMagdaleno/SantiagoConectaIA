@@ -1,10 +1,10 @@
 using Microsoft.SemanticKernel;
+
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.Share.PostModels.BuzonCiudadanoModule;
+
 using System.ComponentModel;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 {

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
@@ -22,6 +23,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// </summary>
 		/// <param name="file">El archivo subido.</param>
 		[HttpPost("UploadDocument")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> UploadDocument(IFormFile? file)
 		{
 			var uploadedFile = file ?? (Request.HasFormContentType ? Request.Form.Files.FirstOrDefault() : null);
@@ -59,6 +61,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// </summary>
 		/// <param name="image">El archivo de imagen subido.</param>
 		[HttpPost("UploadImage-Eventos")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public Task<IActionResult> UploadImageEventos(IFormFile image) => SubirImagen(image, "eventos");
 
 		/// <summary>
@@ -66,6 +69,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// </summary>
 		/// <param name="image">El archivo de imagen subido.</param>
 		[HttpPost("UploadImage-noticias")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public Task<IActionResult> UploadImageNoticias(IFormFile image) => SubirImagen(image, "noticias");
 
 		private async Task<IActionResult> SubirImagen(IFormFile? image, string contenedor)

@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
 using SantiagoConectaIA.Share.Objects.AnalyticsModule;
 using SantiagoConectaIA.Share.PostModels.AnalyticsModule;
+
+using System.Net.Http.Json;
 
 namespace SantiagoConectaIA.PWA.Areas.PageVisitsArea.Utiles
 {

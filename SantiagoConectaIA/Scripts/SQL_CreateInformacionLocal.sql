@@ -1,4 +1,4 @@
-CREATE TABLE [dbo].[InformacionLocal] (
+CREATE TABLE [SCIA].[InformacionLocal] (
     [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     [Categoria] NVARCHAR(100) NOT NULL,
     [Titulo] NVARCHAR(255) NOT NULL,
@@ -12,5 +12,5 @@ CREATE TABLE [dbo].[InformacionLocal] (
 GO
 
 -- Opcional: Índice para mejorar búsquedas de texto si usas LIKE o CONTAINS más adelante
-CREATE NONCLUSTERED INDEX [IX_InformacionLocal_Categoria] ON [dbo].[InformacionLocal] ([Categoria]);
+CREATE NONCLUSTERED INDEX [IX_InformacionLocal_Categoria] ON [SCIA].[InformacionLocal] ([Categoria]);
 GO

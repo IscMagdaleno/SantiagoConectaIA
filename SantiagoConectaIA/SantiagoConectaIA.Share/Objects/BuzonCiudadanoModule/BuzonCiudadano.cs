@@ -1,5 +1,3 @@
-using System;
-
 namespace SantiagoConectaIA.Share.Objects.BuzonCiudadanoModule
 {
 	public class BuzonCiudadano

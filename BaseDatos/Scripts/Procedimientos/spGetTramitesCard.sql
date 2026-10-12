@@ -56,9 +56,9 @@ BEGIN
             T.mCosto,          -- Alias dCosto
             O.vchHorario
         FROM 
-            dbo.Tramite T WITH(NOLOCK)
+            SCIA.Tramite T WITH(NOLOCK)
         INNER JOIN 
-            dbo.Oficina O WITH(NOLOCK) ON T.iIdOficina = O.iIdOficina
+            SCIA.Oficina O WITH(NOLOCK) ON T.iIdOficina = O.iIdOficina
         WHERE 
             (T.iIdTramite = @iIdTramite OR @iIdTramite = 0) -- Si es 0 trae todos
             AND (T.bActivo = @bActivo);

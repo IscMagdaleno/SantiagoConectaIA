@@ -38,7 +38,7 @@ BEGIN
             SET @nvchRespuesta = N''; -- permitir respuestas vacías si aplica
         END
 
-        INSERT INTO dbo.HistorialConsulta (iIdUsuario, nvchPregunta, nvchRespuesta, dtFecha, vchOrigen)
+        INSERT INTO SCIA.HistorialConsulta (iIdUsuario, nvchPregunta, nvchRespuesta, dtFecha, vchOrigen)
         VALUES (@iIdUsuario, @nvchPregunta, @nvchRespuesta, GETDATE(), @vchOrigen);
 
         SET @iIdHistorial = SCOPE_IDENTITY();

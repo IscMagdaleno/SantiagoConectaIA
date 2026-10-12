@@ -1,103 +1,103 @@
 using Microsoft.AspNetCore.Components;
-using SantiagoConectaIA.PWA.Shared.Workspace;
-using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles;
-using SantiagoConectaIA.Share.Objects.EmpresasModulo;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Forms;
+
+using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles;
+using SantiagoConectaIA.PWA.Shared.Workspace;
+using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 
 namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
 {
-    public partial class FormEmpresa : EngramaWorkspaceComponent
-    {
-        [Inject] public MainEmpresas Data { get; set; }
-        [Parameter] public Empresa Model { get; set; } = new();
-        
-        // Evento para notificar al GridEmpresas que se guardó algo
-        [Parameter] public EventCallback OnSuccess { get; set; }
+	public partial class FormEmpresa : EngramaWorkspaceComponent
+	{
+		[Inject] public MainEmpresas Data { get; set; }
+		[Parameter] public Empresa Model { get; set; } = new();
 
-        protected override async Task OnInitializedAsync()
-        {
-            await base.OnInitializedAsync();
-            if (Data.LstCatalogos.Count == 0)
-            {
-                await Data.PostGetCatalogos();
-            }
-        }
+		// Evento para notificar al GridEmpresas que se guardó algo
+		[Parameter] public EventCallback OnSuccess { get; set; }
 
-        private async Task UploadLogo(IBrowserFile file)
-        {
-            if (file == null) return;
-            var result = await Data.PostUploadLogo(file, Model?.vchNombreComercial);
-            if (result.IsSuccess && result.Data != null)
-            {
-                Model.vchLogoUrl = result.Data.URL;
-                StateHasChanged();
-                ShowSnake(new EngramaCoreStandar.Dapper.Results.SeverityMessage(true, "Logo subido exitosamente"));
-            }
-            else
-            {
-                ShowSnake(new EngramaCoreStandar.Dapper.Results.SeverityMessage(false, result.Message ?? "Error al subir el logo"));
-            }
-        }
+		protected override async Task OnInitializedAsync()
+		{
+			await base.OnInitializedAsync();
+			if (Data.LstCatalogos.Count == 0)
+			{
+				await Data.PostGetCatalogos();
+			}
+		}
 
-        private async Task Submit()
-        {
-            var result = await Data.PostSaveRegistro(Model);
-            ShowSnake(result);
+		private async Task UploadLogo(IBrowserFile file)
+		{
+			if (file == null) return;
+			var result = await Data.PostUploadLogo(file, Model?.vchNombreComercial);
+			if (result.IsSuccess && result.Data != null)
+			{
+				Model.vchLogoUrl = result.Data.URL;
+				StateHasChanged();
+				ShowSnake(new EngramaCoreStandar.Dapper.Results.SeverityMessage(true, "Logo subido exitosamente"));
+			}
+			else
+			{
+				ShowSnake(new EngramaCoreStandar.Dapper.Results.SeverityMessage(false, result.Message ?? "Error al subir el logo"));
+			}
+		}
 
-            if (result.bResult)
-            {
-                // Cambiar el estado a solo lectura tras guardar exitosamente
-                EstadoControl = TipoEstadoControl.Lectura;
-                
-                SetNombreTab($"Empresa: {Model.vchNombreComercial}");
-                
-                // Actualizar los botones del menú superior
-                TriggerMenuUpdate();
-                
-                await OnSuccess.InvokeAsync();
-            }
-        }
+		private async Task Submit()
+		{
+			var result = await Data.PostSaveRegistro(Model);
+			ShowSnake(result);
 
-        // Sobrescribir este método para definir los botones superiores según el Estado de Control
-        protected override List<MenuItemModel> GetMenuItems()
-        {
-            var items = new List<MenuItemModel>();
+			if (result.bResult)
+			{
+				// Cambiar el estado a solo lectura tras guardar exitosamente
+				EstadoControl = TipoEstadoControl.Lectura;
 
-            if (EstadoControl == TipoEstadoControl.Lectura)
-            {
-                items.Add(new MenuItemModel
-                {
-                    Text = "Editar",
-                    Icon = MudBlazor.Icons.Material.Filled.Edit,
-                    Color = MudBlazor.Color.Primary,
-                    Action = EventCallback.Factory.Create(this, () => {
-                        EstadoControl = TipoEstadoControl.Edicion;
-                        TriggerMenuUpdate(); // Refrescar menú para mostrar botón Guardar
-                    })
-                });
-            }
-            else
-            {
-                items.Add(new MenuItemModel
-                {
-                    Text = "Guardar",
-                    Icon = MudBlazor.Icons.Material.Filled.Save,
-                    Color = MudBlazor.Color.Success,
-                    Action = EventCallback.Factory.Create(this, Submit)
-                });
-            }
+				SetNombreTab($"Empresa: {Model.vchNombreComercial}");
 
-            items.Add(new MenuItemModel
-            {
-                Text = "Cerrar",
-                Icon = MudBlazor.Icons.Material.Filled.Close,
-                Color = MudBlazor.Color.Error,
-                Action = EventCallback.Factory.Create(this, CerrarTab)
-            });
+				// Actualizar los botones del menú superior
+				TriggerMenuUpdate();
 
-            return items;
-        }
-    }
+				await OnSuccess.InvokeAsync();
+			}
+		}
+
+		// Sobrescribir este método para definir los botones superiores según el Estado de Control
+		protected override List<MenuItemModel> GetMenuItems()
+		{
+			var items = new List<MenuItemModel>();
+
+			if (EstadoControl == TipoEstadoControl.Lectura)
+			{
+				items.Add(new MenuItemModel
+				{
+					Text = "Editar",
+					Icon = MudBlazor.Icons.Material.Filled.Edit,
+					Color = MudBlazor.Color.Primary,
+					Action = EventCallback.Factory.Create(this, () =>
+					{
+						EstadoControl = TipoEstadoControl.Edicion;
+						TriggerMenuUpdate(); // Refrescar menú para mostrar botón Guardar
+					})
+				});
+			}
+			else
+			{
+				items.Add(new MenuItemModel
+				{
+					Text = "Guardar",
+					Icon = MudBlazor.Icons.Material.Filled.Save,
+					Color = MudBlazor.Color.Success,
+					Action = EventCallback.Factory.Create(this, Submit)
+				});
+			}
+
+			items.Add(new MenuItemModel
+			{
+				Text = "Cerrar",
+				Icon = MudBlazor.Icons.Material.Filled.Close,
+				Color = MudBlazor.Color.Error,
+				Action = EventCallback.Factory.Create(this, CerrarTab)
+			});
+
+			return items;
+		}
+	}
 }

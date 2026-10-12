@@ -1,13 +1,10 @@
 using Microsoft.SemanticKernel;
+
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.Share.PostModels.NoticiasModule;
+
 using System.ComponentModel;
 using System.Text.Json;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
-using EngramaCoreStandar.Extensions;
 
 namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 {
@@ -44,7 +41,7 @@ namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 			if (!string.IsNullOrWhiteSpace(query))
 			{
 				var cleanQuery = query.Trim().ToLower();
-				noticias = noticias.Where(n => 
+				noticias = noticias.Where(n =>
 					(n.vchTitulo != null && n.vchTitulo.ToLower().Contains(cleanQuery)) ||
 					(n.nvchContenido != null && n.nvchContenido.ToLower().Contains(cleanQuery))
 				).ToList();

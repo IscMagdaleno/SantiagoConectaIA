@@ -51,7 +51,7 @@ BEGIN
             O.vchNotas,
             O.bActivo,
             O.dtFechaCreacion
-        FROM dbo.Oficina O WITH(NOLOCK)
+        FROM SCIA.Oficina O WITH(NOLOCK)
         WHERE O.bActivo = 1
           AND (
                 @vchTexto IS NULL

@@ -18,6 +18,18 @@ export function observe(element, dotNetHelper) {
   return observer;
 }
 
+// IntersectionObserver solo avisa cuando cambia la visibilidad. Si despues de cargar
+// una pagina el centinela sigue a la vista (contenido corto, pantalla alta), no habria
+// otra notificacion. Volver a observar fuerza una nueva lectura del estado actual.
+export function refresh(observer, element) {
+  if (!observer || !element) {
+    return;
+  }
+
+  observer.unobserve(element);
+  observer.observe(element);
+}
+
 export function disconnect(observer) {
   if (observer) {
     observer.disconnect();

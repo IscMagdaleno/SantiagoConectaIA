@@ -59,7 +59,7 @@ BEGIN
                 CAST(NULL AS NVARCHAR(MAX)) AS nvchContenidoDetallado,
                 CAST(N'' AS NVARCHAR(500)) AS vchImagenUrl,
                 T.dtFechaCreacion AS dtFecha
-            FROM dbo.Tramite T WITH (NOLOCK)
+            FROM SCIA.Tramite T WITH (NOLOCK)
             WHERE ISNULL(T.bActivo, 1) = 1
 
             UNION ALL
@@ -72,7 +72,7 @@ BEGIN
                 CAST(NULL AS NVARCHAR(MAX)),
                 CAST(ISNULL(N.vchImagenPortada, N'') AS NVARCHAR(500)),
                 N.dtFechaPublicacion
-            FROM dbo.Noticias N WITH (NOLOCK)
+            FROM SCIA.Noticias N WITH (NOLOCK)
             WHERE ISNULL(N.bActivo, 1) = 1
 
             UNION ALL
@@ -221,7 +221,7 @@ BEGIN
                     CAST(NULL AS NVARCHAR(MAX)) AS nvchContenidoDetallado,
                     CAST(N'' AS NVARCHAR(500)) AS vchImagenUrl,
                     T.dtFechaCreacion AS dtFecha
-                FROM dbo.Tramite T WITH (NOLOCK)
+                FROM SCIA.Tramite T WITH (NOLOCK)
                 WHERE ISNULL(T.bActivo, 1) = 1
                   AND (
                         T.vchNombre LIKE N'%' + @Texto + N'%'
@@ -238,7 +238,7 @@ BEGIN
                     CAST(NULL AS NVARCHAR(MAX)),
                     CAST(ISNULL(N.vchImagenPortada, N'') AS NVARCHAR(500)),
                     N.dtFechaPublicacion
-                FROM dbo.Noticias N WITH (NOLOCK)
+                FROM SCIA.Noticias N WITH (NOLOCK)
                 WHERE ISNULL(N.bActivo, 1) = 1
                   AND (
                         N.vchTitulo LIKE N'%' + @Texto + N'%'

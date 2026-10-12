@@ -1,13 +1,10 @@
 using EngramaCoreStandar.Results;
 
-using Microsoft.AspNetCore.Components;
-
 using Newtonsoft.Json;
 
 using SantiagoConectaIA.Share.Objects.BuzonCiudadanoModule;
 using SantiagoConectaIA.Share.PostModels.BuzonCiudadanoModule;
 
-using System.Net;
 using System.Text;
 
 namespace SantiagoConecta.SharedUI.Data

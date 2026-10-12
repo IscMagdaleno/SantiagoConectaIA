@@ -1,9 +1,11 @@
 ﻿using EngramaCoreStandar.Results;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.Helpers;
+using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.Objects.OficinasModule;
 using SantiagoConectaIA.Share.PostModels.OficinasModule;
 
@@ -75,6 +77,7 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		[HttpPost("PostSaveOficina")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		[ProducesResponseType(typeof(Response<Oficina>), 200)]
 		public async Task<IActionResult> PostSaveOficina([FromBody] PostSaveOficina model)
 		{
@@ -100,6 +103,7 @@ namespace SantiagoConectaIA.API.Controllers
 
 
 		[HttpPost("PostLinkOficinaTramite")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		[ProducesResponseType(typeof(Response<int>), 200)]
 		public async Task<IActionResult> PostLinkOficinaTramite([FromBody] PostLinkOficinaTramite model)
 		{

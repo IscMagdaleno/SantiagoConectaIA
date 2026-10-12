@@ -30,7 +30,7 @@ BEGIN
         INSERT INTO #Result (iIdTramite, vchNombre, nvchDescripcion, iIdCategoria, bModalidadEnLinea, mCosto, iIdOficina, dtFechaCreacion, dtFechaActualizacion, bActivo)
         SELECT
             T.iIdTramite, T.vchNombre, T.nvchDescripcion, T.iIdCategoria, T.bModalidadEnLinea, T.mCosto, T.iIdOficina, T.dtFechaCreacion, T.dtFechaActualizacion, T.bActivo
-        FROM dbo.Tramite T WITH(NOLOCK)
+        FROM SCIA.Tramite T WITH(NOLOCK)
         WHERE (@iIdTramite = 0 OR T.iIdTramite = @iIdTramite)
           AND (@bActivo = 0 OR T.bActivo = @bActivo);
 

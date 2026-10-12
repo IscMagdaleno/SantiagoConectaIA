@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
+
 using MudBlazor.Services;
+
 using SantiagoConecta.SharedUI.Data;
 
 namespace SantiagoConecta.Mobile;
@@ -25,9 +27,9 @@ public static class MauiProgram
 
 #if DEBUG
 #if ANDROID
-        var apiBaseAddress = "https://10.0.2.2:7196"; // Local para emulador Android
+		var apiBaseAddress = "https://10.0.2.2:7196"; // Local para emulador Android
 #else
-        var apiBaseAddress = "https://localhost:7196"; // Local para iOS/Windows
+		var apiBaseAddress = "https://localhost:7196"; // Local para iOS/Windows
 #endif
 #else
         // Modo Release (producción/staging)
@@ -35,9 +37,9 @@ public static class MauiProgram
 #endif
 
 #if ANDROID && DEBUG
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
-        builder.Services.AddScoped(sp => new HttpClient(handler) { BaseAddress = new Uri(apiBaseAddress), Timeout = TimeSpan.FromMinutes(10) });
+		var handler = new HttpClientHandler();
+		handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+		builder.Services.AddScoped(sp => new HttpClient(handler) { BaseAddress = new Uri(apiBaseAddress), Timeout = TimeSpan.FromMinutes(10) });
 #else
 		builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseAddress), Timeout = TimeSpan.FromMinutes(10) });
 #endif

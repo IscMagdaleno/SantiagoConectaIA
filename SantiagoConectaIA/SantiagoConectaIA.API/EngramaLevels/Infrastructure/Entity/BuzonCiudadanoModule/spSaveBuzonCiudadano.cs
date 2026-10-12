@@ -1,4 +1,3 @@
-using System;
 using EngramaCoreStandar.Dapper.Interfaces;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.BuzonCiudadanoModule

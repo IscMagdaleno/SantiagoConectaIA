@@ -53,7 +53,7 @@ BEGIN
             CASE WHEN @bIncluirContacto = 1 THEN O.vchEmail ELSE NULL END,
             O.bActivo,
             O.dtFechaCreacion
-        FROM dbo.Oficina O WITH(NOLOCK)
+        FROM SCIA.Oficina O WITH(NOLOCK)
         WHERE (
                 @vchTexto IS NULL
                 OR O.vchNombre LIKE '%' + @vchTexto + '%'

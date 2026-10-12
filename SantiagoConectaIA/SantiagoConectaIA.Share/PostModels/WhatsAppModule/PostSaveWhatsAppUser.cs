@@ -1,5 +1,3 @@
-using System;
-
 namespace SantiagoConectaIA.Share.PostModels.WhatsAppModule
 {
 	public class PostSaveWhatsAppUser

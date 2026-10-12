@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
+
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.PageVisitsModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;

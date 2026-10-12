@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
+
 using SantiagoConectaIA.PWA.Shared.Common;
-using System.Collections.Generic;
 
 namespace SantiagoConectaIA.PWA.Shared.Workspace
 {

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace SantiagoConectaIA.PWA.Shared.Workspace
 {
 	public class WorkspaceService
@@ -42,36 +39,36 @@ namespace SantiagoConectaIA.PWA.Shared.Workspace
 			CloseCurrentTab?.Invoke(withWarning);
 		}
 
-        // Eventos de solicitud de módulos
-        public event Action OnTramitesRequest;
-        public void RequestTramites() => OnTramitesRequest?.Invoke();
+		// Eventos de solicitud de módulos
+		public event Action OnTramitesRequest;
+		public void RequestTramites() => OnTramitesRequest?.Invoke();
 
-        public event Action OnNoticiasRequest;
-        public void RequestNoticias() => OnNoticiasRequest?.Invoke();
+		public event Action OnNoticiasRequest;
+		public void RequestNoticias() => OnNoticiasRequest?.Invoke();
 
-        public event Action OnChatbotRequest;
-        public void RequestChatbot() => OnChatbotRequest?.Invoke();
+		public event Action OnChatbotRequest;
+		public void RequestChatbot() => OnChatbotRequest?.Invoke();
 
-        public event Action OnOficinasRequest;
-        public void RequestOficinas() => OnOficinasRequest?.Invoke();
+		public event Action OnOficinasRequest;
+		public void RequestOficinas() => OnOficinasRequest?.Invoke();
 
-        // Evento de ejemplo para el Mockup
-        public event Action OnMockupRequest;
-        public void RequestMockup() => OnMockupRequest?.Invoke();
+		// Evento de ejemplo para el Mockup
+		public event Action OnMockupRequest;
+		public void RequestMockup() => OnMockupRequest?.Invoke();
 
-        // Evento para Empresas
-        public event Action OnEmpresasRequest;
-        public void RequestEmpresas() => OnEmpresasRequest?.Invoke();
+		// Evento para Empresas
+		public event Action OnEmpresasRequest;
+		public void RequestEmpresas() => OnEmpresasRequest?.Invoke();
 
-        // Evento para Eventos
-        public event Action OnEventosRequest;
-        public void RequestEventos() => OnEventosRequest?.Invoke();
+		// Evento para Eventos
+		public event Action OnEventosRequest;
+		public void RequestEventos() => OnEventosRequest?.Invoke();
 
-        // Evento para Estadísticas de Visitas
-        public event Action OnPageVisitsRequest;
-        public void RequestPageVisits() => OnPageVisitsRequest?.Invoke();
+		// Evento para Estadísticas de Visitas
+		public event Action OnPageVisitsRequest;
+		public void RequestPageVisits() => OnPageVisitsRequest?.Invoke();
 
-        public event Action OnPublicacionesRequest;
-        public void RequestPublicaciones() => OnPublicacionesRequest?.Invoke();
+		public event Action OnPublicacionesRequest;
+		public void RequestPublicaciones() => OnPublicacionesRequest?.Invoke();
 	}
 }

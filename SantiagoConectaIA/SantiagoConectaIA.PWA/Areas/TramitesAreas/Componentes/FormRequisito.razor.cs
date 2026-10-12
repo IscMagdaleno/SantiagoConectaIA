@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Components;
-using SantiagoConectaIA.PWA.Shared.Common;
-using SantiagoConectaIA.Share.Objects.TramitesModule;
+
 using MudBlazor;
+
+using SantiagoConectaIA.PWA.Shared.Common;
 using SantiagoConectaIA.PWA.Shared.Workspace;
+using SantiagoConectaIA.Share.Objects.TramitesModule;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 {
@@ -20,7 +22,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 				Snackbar.Add("El nombre del requisito es obligatorio.", Severity.Warning);
 				return;
 			}
-			
+
 			if (TramiteModel.Requisitos == null)
 				TramiteModel.Requisitos = new List<Requisitos>();
 

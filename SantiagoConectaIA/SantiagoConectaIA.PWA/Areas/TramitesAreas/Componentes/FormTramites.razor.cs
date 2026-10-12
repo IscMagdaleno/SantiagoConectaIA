@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Components;
-using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
-using SantiagoConectaIA.PWA.Shared.Common;
-using SantiagoConectaIA.Share.Objects.TramitesModule;
-using MudBlazor;
 
+using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
 using SantiagoConectaIA.PWA.Shared.Workspace;
+using SantiagoConectaIA.Share.Objects.TramitesModule;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 {
@@ -55,10 +53,10 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			{
 				// Pasar a modo Lectura después de guardar
 				EstadoControl = TipoEstadoControl.Lectura;
-				
+
 				// Actualizar el nombre del tab con el nuevo nombre
 				SetNombreTab($"Trámite {TramiteModel.vchNombre}");
-				
+
 				TriggerMenuUpdate();
 				await OnTramiteSaved.InvokeAsync();
 			}
@@ -76,7 +74,8 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 					Text = "Editar",
 					Icon = MudBlazor.Icons.Material.Filled.Edit,
 					Color = MudBlazor.Color.Primary,
-					Action = EventCallback.Factory.Create(this, () => {
+					Action = EventCallback.Factory.Create(this, () =>
+					{
 						EstadoControl = TipoEstadoControl.Edicion;
 						TriggerMenuUpdate();
 					})

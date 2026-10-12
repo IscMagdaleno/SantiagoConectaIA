@@ -1,5 +1,3 @@
-using System;
-
 namespace SantiagoConectaIA.Share.PostModels.PageVisitsModule
 {
 	public class PostGetPageVisitsStats

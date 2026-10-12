@@ -42,8 +42,8 @@ BEGIN
             O.iIdOficina,  O.vchNombre, O.vchDireccion,
             O.vchTelefono, O.vchEmail, O.vchHorario, O.flLatitud, O.flLongitud,
             O.vchNotas, O.bActivo, O.dtFechaCreacion
-        FROM dbo.Oficina O WITH(NOLOCK)
-        INNER JOIN dbo.OficinaTramite OT WITH(NOLOCK)
+        FROM SCIA.Oficina O WITH(NOLOCK)
+        INNER JOIN SCIA.OficinaTramite OT WITH(NOLOCK)
             ON O.iIdOficina = OT.iIdOficina
         WHERE OT.iIdTramite = @iIdTramite
           AND O.bActivo = 1 

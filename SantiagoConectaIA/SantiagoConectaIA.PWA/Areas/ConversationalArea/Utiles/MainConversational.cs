@@ -1,10 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using EngramaCoreStandar.Dapper.Results;
 using EngramaCoreStandar.Mapper;
 using EngramaCoreStandar.Results;
 using EngramaCoreStandar.Servicios;
+
 using SantiagoConectaIA.Share.Objects.ConversationalModule;
 using SantiagoConectaIA.Share.PostModels.ConversationalModule;
 
@@ -36,7 +34,7 @@ namespace SantiagoConectaIA.PWA.Areas.ConversationalArea.Utiles
 			var model = new PostGetChat { iIdProyecto = iIdProyecto };
 
 			var response = await _httpService.Post<PostGetChat, Response<List<Chat>>>(apiUrl, model);
-			var validation = _validaServicioService.ValidadionServicio(response, 
+			var validation = _validaServicioService.ValidadionServicio(response,
 				onSuccess: data => LstChats = data.ToList());
 			return validation;
 		}
@@ -47,7 +45,7 @@ namespace SantiagoConectaIA.PWA.Areas.ConversationalArea.Utiles
 			var model = new PostGetMensaje { iIdChat = iIdChat };
 
 			var response = await _httpService.Post<PostGetMensaje, Response<List<Mensaje>>>(apiUrl, model);
-			var validation = _validaServicioService.ValidadionServicio(response, 
+			var validation = _validaServicioService.ValidadionServicio(response,
 				onSuccess: data => LstMensajes = data.ToList());
 			return validation;
 		}
@@ -58,7 +56,7 @@ namespace SantiagoConectaIA.PWA.Areas.ConversationalArea.Utiles
 			var model = _mapper.Get<Chat, PostSaveChat>(chat);
 
 			var response = await _httpService.Post<PostSaveChat, Response<Chat>>(apiUrl, model);
-			var validation = _validaServicioService.ValidadionServicio(response, 
+			var validation = _validaServicioService.ValidadionServicio(response,
 				onSuccess: data => ChatSelected = data);
 			return validation;
 		}
@@ -69,7 +67,7 @@ namespace SantiagoConectaIA.PWA.Areas.ConversationalArea.Utiles
 			var model = _mapper.Get<Mensaje, PostSaveMensaje>(mensaje);
 
 			var response = await _httpService.Post<PostSaveMensaje, Response<Mensaje>>(apiUrl, model);
-			var validation = _validaServicioService.ValidadionServicio(response, 
+			var validation = _validaServicioService.ValidadionServicio(response,
 				onSuccess: data => MensajeSelected = data);
 			return validation;
 		}

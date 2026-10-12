@@ -28,14 +28,14 @@ BEGIN
 
         IF @iIdRequisito IS NULL OR @iIdRequisito <= 0
         BEGIN
-            INSERT INTO dbo.Requisito (iIdTramite, vchNombre, nvchDetalle, bObligatorio, bActivo)
+            INSERT INTO SCIA.Requisito (iIdTramite, vchNombre, nvchDetalle, bObligatorio, bActivo)
             VALUES (@iIdTramite, @vchNombre, @nvchDetalle, @bObligatorio, @bActivo);
 
             SET @iIdRequisito = SCOPE_IDENTITY();
         END
         ELSE
         BEGIN
-            UPDATE dbo.Requisito
+            UPDATE SCIA.Requisito
             SET vchNombre = @vchNombre,
                 nvchDetalle = @nvchDetalle,
                 bObligatorio = @bObligatorio,

@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Components;
-using SantiagoConectaIA.PWA.Shared.Common;
-using SantiagoConectaIA.Share.Objects.TramitesModule;
+
 using MudBlazor;
+
+using SantiagoConectaIA.PWA.Shared.Common;
 using SantiagoConectaIA.PWA.Shared.Workspace;
+using SantiagoConectaIA.Share.Objects.TramitesModule;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 {
@@ -43,7 +45,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 		{
 			var idx = TramiteModel.Pasos.IndexOf(paso);
 			if (idx < 0) return;
-			
+
 			var newIdx = idx + direccion;
 			if (newIdx >= 0 && newIdx < TramiteModel.Pasos.Count)
 			{

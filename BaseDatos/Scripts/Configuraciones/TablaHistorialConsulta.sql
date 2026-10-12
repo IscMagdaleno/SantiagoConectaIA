@@ -2,9 +2,9 @@
 -- Sigue convenciones Engrama (prefijos i/vch/nvch/dt, PK iId..., NOT NULL donde aplica).
 -- Ejecutar en la base de datos de staging/desarrollo.
 
-IF NOT EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'dbo.HistorialConsulta') AND type = N'U')
+IF NOT EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'SCIA.HistorialConsulta') AND type = N'U')
 BEGIN
-    CREATE TABLE dbo.HistorialConsulta
+    CREATE TABLE SCIA.HistorialConsulta
     (
         iIdHistorial INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
         iIdUsuario INT NULL,                             -- puede ser NULL para consultas anónimas
@@ -18,10 +18,10 @@ BEGIN
     );
 
     -- Índices recomendados para consultas por usuario/fecha y para limpieza/retención
-    CREATE NONCLUSTERED INDEX IX_HistorialConsulta_iIdUsuario ON dbo.HistorialConsulta (iIdUsuario);
-    CREATE NONCLUSTERED INDEX IX_HistorialConsulta_dtFecha ON dbo.HistorialConsulta (dtFecha);
+    CREATE NONCLUSTERED INDEX IX_HistorialConsulta_iIdUsuario ON SCIA.HistorialConsulta (iIdUsuario);
+    CREATE NONCLUSTERED INDEX IX_HistorialConsulta_dtFecha ON SCIA.HistorialConsulta (dtFecha);
 END;
 GO
 
 -- Verificación básica (ejemplo)
--- SELECT TOP 10 * FROM dbo.HistorialConsulta ORDER BY dtFecha DESC;
+-- SELECT TOP 10 * FROM SCIA.HistorialConsulta ORDER BY dtFecha DESC;

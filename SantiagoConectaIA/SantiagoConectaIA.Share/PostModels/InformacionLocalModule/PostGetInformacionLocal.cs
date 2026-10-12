@@ -1,7 +1,7 @@
 namespace SantiagoConectaIA.Share.PostModels.InformacionLocalModule
 {
-    public class PostGetInformacionLocal
-    {
+	public class PostGetInformacionLocal
+	{
 
 		public string? nvchCategoria { get; set; }
 		public string? nvchTexto { get; set; }

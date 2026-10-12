@@ -1,4 +1,4 @@
-IF OBJECT_ID('SCIA.spGetOpiniones') IS NULL
+﻿IF OBJECT_ID('SCIA.spGetOpiniones') IS NULL
     EXEC('CREATE PROCEDURE SCIA.spGetOpiniones AS SET NOCOUNT ON;');
 GO
 
@@ -28,7 +28,7 @@ BEGIN
     BEGIN TRY
         SET @vchTipoEntidad = UPPER(LTRIM(RTRIM(ISNULL(@vchTipoEntidad, ''))));
 
-        IF @vchTipoEntidad NOT IN ('NOTICIA', 'TRAMITE', 'EVENTO', 'CAPSULA') OR @iIdEntidad <= 0
+        IF @vchTipoEntidad NOT IN ('NOTICIA', 'TRAMITE', 'EVENTO', 'CAPSULA', 'PUBLICACION') OR @iIdEntidad <= 0
         BEGIN
             INSERT INTO #Result (bResult, vchMessage)
             VALUES (0, 'Contenido inválido para opiniones.');

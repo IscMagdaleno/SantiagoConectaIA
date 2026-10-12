@@ -29,7 +29,7 @@ BEGIN
         SELECT TOP 1
             T.mCosto,
             T.bModalidadEnLinea
-        FROM dbo.Tramite T WITH(NOLOCK)
+        FROM SCIA.Tramite T WITH(NOLOCK)
         WHERE T.iIdTramite = @iIdTramite AND T.bActivo = 1;
 
         -- Validar si el trámite existe

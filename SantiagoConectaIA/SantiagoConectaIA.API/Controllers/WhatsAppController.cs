@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
@@ -199,6 +200,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <param name="request">Objeto con PhoneNumber, UserName y Message.</param>
 		/// <returns>Respuesta del agente con datos del proceso completo.</returns>
 		[HttpPost("test-message")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> TestMessage([FromBody] PostTestWhatsAppMessage request)
 		{
 			var processLog = new List<string>();

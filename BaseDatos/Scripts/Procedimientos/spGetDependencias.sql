@@ -32,7 +32,7 @@ BEGIN
     BEGIN TRY
         INSERT INTO #Result (iIdDependencia, vchNombre, nvchDescripcion, vchUrlOficial, bActivo, dtFechaCreacion)
         SELECT D.iIdDependencia, D.vchNombre, D.nvchDescripcion, D.vchUrlOficial, D.bActivo, D.dtFechaCreacion
-        FROM dbo.Dependencia D WITH(NOLOCK)
+        FROM SCIA.Dependencia D WITH(NOLOCK)
         WHERE (@iIdDependencia = 0 OR D.iIdDependencia = @iIdDependencia)
           AND (@bActivo = 0 OR D.bActivo = @bActivo);
 

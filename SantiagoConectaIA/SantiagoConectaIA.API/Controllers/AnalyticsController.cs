@@ -1,7 +1,10 @@
 using EngramaCoreStandar.Results;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.Objects.AnalyticsModule;
 using SantiagoConectaIA.Share.PostModels.AnalyticsModule;
 
@@ -71,6 +74,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <param name="model">Rango de fechas opcional.</param>
 		/// <returns>Estadísticas generales de visitas.</returns>
 		[HttpPost("PostGetPageVisitsSummary")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		[ProducesResponseType(typeof(IEnumerable<PageVisitSummary>), 200)]
 		public async Task<IActionResult> PostGetPageVisitsSummary([FromBody] PostAnalyticsDateRange model)
 		{
@@ -92,6 +96,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <param name="model">Rango de fechas opcional.</param>
 		/// <returns>Listado de visitas por página con conteo.</returns>
 		[HttpPost("PostGetPageVisitsByPage")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		[ProducesResponseType(typeof(IEnumerable<PageVisitByPage>), 200)]
 		public async Task<IActionResult> PostGetPageVisitsByPage([FromBody] PostAnalyticsDateRange model)
 		{
@@ -113,6 +118,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <param name="model">Rango de fechas opcional.</param>
 		/// <returns>Datos de tráfico diario para gráficas.</returns>
 		[HttpPost("PostGetDailyTraffic")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		[ProducesResponseType(typeof(IEnumerable<DailyTraffic>), 200)]
 		public async Task<IActionResult> PostGetDailyTraffic([FromBody] PostAnalyticsDateRange model)
 		{
@@ -134,6 +140,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <param name="model">Número de registros a obtener.</param>
 		/// <returns>Listado de visitas recientes.</returns>
 		[HttpPost("PostGetRecentVisits")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		[ProducesResponseType(typeof(IEnumerable<PageVisit>), 200)]
 		public async Task<IActionResult> PostGetRecentVisits([FromBody] PostAnalyticsTopRows model)
 		{

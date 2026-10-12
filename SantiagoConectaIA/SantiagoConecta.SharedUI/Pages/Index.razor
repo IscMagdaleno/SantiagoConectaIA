@@ -10,12 +10,15 @@
 @using SantiagoConectaIA.Share.PostClass.EventosModulo
 @using SantiagoConectaIA.Share.PostModels.InformacionLocalModule
 @using SantiagoConectaIA.Share.Utilities
+@using SantiagoConectaIA.Share.Objects.PublicacionCiudadanoModule
+@using SantiagoConectaIA.Share.PostModels.PublicacionCiudadanoModule
 @implements IAsyncDisposable
 @inject NavigationManager NavManager
 @inject Data_BuzonCiudadano _dataBuzon
 @inject Data_Noticias dataNoticias
 @inject Data_Eventos dataEventos
 @inject Data_InformacionLocal dataInformacionLocal
+@inject Data_PublicacionesCiudadano dataPublicaciones
 @inject AsistenteIaService Asistente
 @inject SitioInterop Sitio
 
@@ -104,9 +107,8 @@
 </section>
 
 <!-- Lo más reciente: noticias y eventos -->
-@if (_cargando || noticias.Any() || eventos.Any())
-{
-    <section class="home-seccion home-seccion-rosa" aria-labelledby="recientes-titulo">
+@* Siempre visible: incluye la invitación a publicar aunque aún no haya contenido *@
+<section class="home-seccion home-seccion-rosa" aria-labelledby="recientes-titulo">
         <div class="container">
             <h2 id="recientes-titulo" class="home-h2" data-revelar>Lo más reciente</h2>
 
@@ -125,6 +127,87 @@
                         </div>
                     }
                 </div>
+            }
+
+            @* Voces de la comunidad: publicaciones de ciudadanos (primero, igual que en el feed) *@
+            @if (!_cargando)
+            {
+                <div class="home-subencabezado" data-revelar>
+                    <h3 class="home-h3">Voces de la comunidad</h3>
+                    <a href="/feed" class="home-ver-todo">Ver el feed <MudIcon Icon="@Icons.Material.Rounded.ArrowForward" /></a>
+                </div>
+
+                @if (publicaciones.Any())
+                {
+                    <div class="home-tarjetas">
+                        @for (var i = 0; i < publicaciones.Count; i++)
+                        {
+                            var post = publicaciones[i];
+                            var imagenPost = !string.IsNullOrWhiteSpace(post.vchPrimeraImagenUrl)
+                                ? post.vchPrimeraImagenUrl
+                                : post.Imagenes?.FirstOrDefault()?.nvchUrlImagen;
+                            var alias = string.IsNullOrWhiteSpace(post.vchAliasCiudadano) ? "Ciudadano de Santiago" : post.vchAliasCiudadano.Trim();
+                            <article class="@(i == 0 ? "home-tarjeta home-tarjeta-destacada home-post" : "home-tarjeta home-post")" data-revelar>
+                                <a href="/feed" class="home-tarjeta-enlace">
+                                    <div class="home-tarjeta-cuerpo">
+                                        <div class="home-post-autor">
+                                            @if (!string.IsNullOrWhiteSpace(post.vchAvatarCiudadano))
+                                            {
+                                                <img class="home-post-avatar" src="@post.vchAvatarCiudadano" alt="" width="40" height="40" loading="lazy" referrerpolicy="no-referrer" />
+                                            }
+                                            else
+                                            {
+                                                <span class="home-post-avatar home-post-avatar-inicial" aria-hidden="true">@alias.Substring(0, 1).ToUpperInvariant()</span>
+                                            }
+                                            <span class="home-post-datos">
+                                                <span class="home-post-nombre">
+                                                    @alias
+                                                    @if (post.bCiudadanoVerificado)
+                                                    {
+                                                        <MudIcon Icon="@Icons.Material.Rounded.Verified" Class="home-post-verificado" Title="Ciudadano verificado" />
+                                                    }
+                                                </span>
+                                                <span class="home-meta">@post.dtFechaCreacion.ToTiempoRelativo()</span>
+                                            </span>
+                                            @if (EsReciente(post.dtFechaCreacion))
+                                            {
+                                                <span class="home-post-nuevo">Nuevo</span>
+                                            }
+                                        </div>
+
+                                        <span class="home-etiqueta">@post.vchCategoriaPublicacion</span>
+                                        @if (!string.IsNullOrWhiteSpace(post.nvchTitulo))
+                                        {
+                                            <h4 class="home-h4">@post.nvchTitulo</h4>
+                                        }
+                                        <p class="home-post-texto">@post.nvchContenidoTexto</p>
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(imagenPost))
+                                    {
+                                        <div class="home-tarjeta-imagen home-post-imagen">
+                                            <img src="@imagenPost" alt="" width="640" height="360" loading="lazy" decoding="async" />
+                                        </div>
+                                    }
+
+                                    <div class="home-post-pie">
+                                        <MudIcon Icon="@Icons.Material.Outlined.ChatBubbleOutline" />
+                                        <span>@(post.iTotalComentarios == 0 ? "Sé el primero en comentar" : post.iTotalComentarios == 1 ? "1 comentario" : $"{post.iTotalComentarios} comentarios")</span>
+                                    </div>
+                                </a>
+                            </article>
+                        }
+                    </div>
+                }
+
+                <a href="/unete" class="home-post-invitacion" data-revelar>
+                    <span class="home-post-invitacion-icono"><MudIcon Icon="@Icons.Material.Rounded.Forum" /></span>
+                    <span class="home-post-invitacion-texto">
+                        <strong>@(publicaciones.Any() ? "¿Tienes algo que contar?" : "Aún no hay publicaciones: sé el primero")</strong>
+                        <span>Únete gratis y comparte avisos, fotos y preguntas con tu comunidad.</span>
+                    </span>
+                    <span class="home-post-invitacion-flecha"><MudIcon Icon="@Icons.Material.Rounded.ArrowForward" /></span>
+                </a>
             }
 
             @if (noticias.Any())
@@ -217,8 +300,7 @@
                 </div>
             }
         </div>
-    </section>
-}
+</section>
 
 <!-- Invitación para negocios -->
 <section class="home-seccion home-seccion-blanca" aria-labelledby="negocio-titulo">
@@ -360,6 +442,7 @@
     private List<Noticia> noticias = new();
     private List<Evento> eventos = new();
     private List<InformacionLocal> datosCuriosos = new();
+    private List<PublicacionCiudadano> publicaciones = new();
 
     private ContactModel contactModel = new();
     private bool _isSubmitting;
@@ -368,8 +451,34 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(CargarNoticiasAsync(), CargarEventosAsync(), CargarDatosCuriososAsync());
+        await Task.WhenAll(CargarNoticiasAsync(), CargarEventosAsync(), CargarDatosCuriososAsync(), CargarPublicacionesAsync());
         _cargando = false;
+    }
+
+    private async Task CargarPublicacionesAsync()
+    {
+        try
+        {
+            var response = await dataPublicaciones.PostGetPublicaciones(new PostGetPublicacionesCiudadano { iPage = 1, iPageSize = 3 });
+            if (response?.IsSuccess == true && response.Data != null)
+            {
+                publicaciones = response.Data
+                    .OrderByDescending(p => p.dtFechaCreacion)
+                    .Take(3)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando publicaciones de la comunidad: {ex.Message}");
+        }
+    }
+
+    /// <summary>Publicada en las últimas 24 horas (las fechas sin zona se tratan como UTC).</summary>
+    private static bool EsReciente(DateTime fecha)
+    {
+        var utc = fecha.Kind == DateTimeKind.Local ? fecha.ToUniversalTime() : DateTime.SpecifyKind(fecha, DateTimeKind.Utc);
+        return DateTime.UtcNow - utc < TimeSpan.FromHours(24);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

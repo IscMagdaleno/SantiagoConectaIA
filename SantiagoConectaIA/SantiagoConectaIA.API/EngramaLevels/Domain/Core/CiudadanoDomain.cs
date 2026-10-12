@@ -1,471 +1,465 @@
 using EngramaCoreStandar.Results;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.CiudadanoModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
 using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.Objects.CiudadanoModule;
-using SantiagoConectaIA.Share.PostModels.CiudadanoModule;
 using SantiagoConectaIA.Share.PostModels.CatalogosModule;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Cryptography;
+using SantiagoConectaIA.Share.PostModels.CiudadanoModule;
+
 using System.Security.Claims;
-using System.Text;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 {
-    public class CiudadanoDomain : ICiudadanoDomain
-    {
-        private static readonly Regex DigitsOnly = new(@"\D", RegexOptions.Compiled);
+	public class CiudadanoDomain : ICiudadanoDomain
+	{
+		private static readonly Regex DigitsOnly = new(@"\D", RegexOptions.Compiled);
 
-        private readonly ICiudadanoRepository _repository;
-        private readonly IConfiguration _configuration;
-        private readonly IWhatsAppService _whatsAppService;
-        private readonly ICatalogosDomain _catalogosDomain;
-        private readonly IParametrosService _parametros;
+		private readonly ICiudadanoRepository _repository;
+		private readonly IConfiguration _configuration;
+		private readonly IWhatsAppService _whatsAppService;
+		private readonly ICatalogosDomain _catalogosDomain;
+		private readonly IParametrosService _parametros;
 
-        public CiudadanoDomain(
-            ICiudadanoRepository repository, 
-            IConfiguration configuration, 
-            IWhatsAppService whatsAppService,
-            ICatalogosDomain catalogosDomain,
-            IParametrosService parametros)
-        {
-            _repository = repository;
-            _configuration = configuration;
-            _whatsAppService = whatsAppService;
-            _catalogosDomain = catalogosDomain;
-            _parametros = parametros;
-        }
+		public CiudadanoDomain(
+			ICiudadanoRepository repository,
+			IConfiguration configuration,
+			IWhatsAppService whatsAppService,
+			ICatalogosDomain catalogosDomain,
+			IParametrosService parametros)
+		{
+			_repository = repository;
+			_configuration = configuration;
+			_whatsAppService = whatsAppService;
+			_catalogosDomain = catalogosDomain;
+			_parametros = parametros;
+		}
 
-        public async Task<Response<Ciudadano>> Registrar(PostSaveCiudadano postModel)
-        {
-            try
-            {
-                var alias = (postModel.vchAlias ?? string.Empty).Trim();
-                var telefono = NormalizePhone(postModel.vchTelefono);
-                var pin = postModel.vchPassword ?? string.Empty;
-                var codigo = NormalizeCode(postModel.vchCodigo);
+		public async Task<Response<Ciudadano>> Registrar(PostSaveCiudadano postModel)
+		{
+			try
+			{
+				var alias = (postModel.vchAlias ?? string.Empty).Trim();
+				var telefono = NormalizePhone(postModel.vchTelefono);
+				var pin = postModel.vchPassword ?? string.Empty;
+				var codigo = NormalizeCode(postModel.vchCodigo);
 
-                var validationError = Validate(alias, telefono, pin, requireAlias: true);
-                if (validationError != null)
-                {
-                    return Response<Ciudadano>.BadResult(validationError, new Ciudadano());
-                }
+				var validationError = Validate(alias, telefono, pin, requireAlias: true);
+				if (validationError != null)
+				{
+					return Response<Ciudadano>.BadResult(validationError, new Ciudadano());
+				}
 
-                if (codigo.Length != 6 || codigo.Any(c => c < '0' || c > '9'))
-                {
-                    return Response<Ciudadano>.BadResult("Debes capturar el código de 6 dígitos.", new Ciudadano());
-                }
+				if (codigo.Length != 6 || codigo.Any(c => c < '0' || c > '9'))
+				{
+					return Response<Ciudadano>.BadResult("Debes capturar el código de 6 dígitos.", new Ciudadano());
+				}
 
-                var otpValidation = await _repository.spValidarCiudadanoCodigo(new spValidarCiudadanoCodigo.Request
-                {
-                    vchTelefono = telefono,
-                    vchCodigo = codigo
-                });
-                if (otpValidation == null || !otpValidation.bResult)
-                {
-                    return Response<Ciudadano>.BadResult(otpValidation?.vchMessage ?? "Código inválido o vencido.", new Ciudadano());
-                }
+				var otpValidation = await _repository.spValidarCiudadanoCodigo(new spValidarCiudadanoCodigo.Request
+				{
+					vchTelefono = telefono,
+					vchCodigo = codigo
+				});
+				if (otpValidation == null || !otpValidation.bResult)
+				{
+					return Response<Ciudadano>.BadResult(otpValidation?.vchMessage ?? "Código inválido o vencido.", new Ciudadano());
+				}
 
-                var result = await _repository.spSaveCiudadano(new spSaveCiudadano.Request
-                {
-                    vchAlias = alias,
-                    vchTelefono = telefono,
-                    vchPassword = pin
-                });
+				var result = await _repository.spSaveCiudadano(new spSaveCiudadano.Request
+				{
+					vchAlias = alias,
+					vchTelefono = telefono,
+					vchPassword = pin
+				});
 
-                if (result == null || !result.bResult || result.iIdCiudadano <= 0)
-                {
-                    return Response<Ciudadano>.BadResult(result?.vchMessage ?? "No se pudo completar el registro.", new Ciudadano());
-                }
+				if (result == null || !result.bResult || result.iIdCiudadano <= 0)
+				{
+					return Response<Ciudadano>.BadResult(result?.vchMessage ?? "No se pudo completar el registro.", new Ciudadano());
+				}
 
-                var ciudadano = Map(result.iIdCiudadano, result.vchAlias, result.vchTelefono);
-                ciudadano.Token = await GenerateJwtToken(ciudadano);
-                return new Response<Ciudadano>
-                {
-                    Data = ciudadano,
-                    IsSuccess = true,
-                    Message = result.vchMessage
-                };
-            }
-            catch (Exception ex)
-            {
-                return Response<Ciudadano>.BadResult(ex.Message, new Ciudadano());
-            }
-        }
+				var ciudadano = Map(result.iIdCiudadano, result.vchAlias, result.vchTelefono);
+				ciudadano.Token = await GenerateJwtToken(ciudadano);
+				return new Response<Ciudadano>
+				{
+					Data = ciudadano,
+					IsSuccess = true,
+					Message = result.vchMessage
+				};
+			}
+			catch (Exception ex)
+			{
+				return Response<Ciudadano>.BadResult(ex.Message, new Ciudadano());
+			}
+		}
 
-        public async Task<Response<Ciudadano>> Login(PostLoginCiudadano postModel)
-        {
-            try
-            {
-                var telefono = NormalizePhone(postModel.vchTelefono);
-                var pin = postModel.vchPassword ?? string.Empty;
+		public async Task<Response<Ciudadano>> Login(PostLoginCiudadano postModel)
+		{
+			try
+			{
+				var telefono = NormalizePhone(postModel.vchTelefono);
+				var pin = postModel.vchPassword ?? string.Empty;
 
-                var validationError = Validate(string.Empty, telefono, pin, requireAlias: false);
-                if (validationError != null)
-                {
-                    return Response<Ciudadano>.BadResult(validationError, new Ciudadano());
-                }
+				var validationError = Validate(string.Empty, telefono, pin, requireAlias: false);
+				if (validationError != null)
+				{
+					return Response<Ciudadano>.BadResult(validationError, new Ciudadano());
+				}
 
-                var result = await _repository.spGetCiudadanoAuth(new spGetCiudadanoAuth.Request
-                {
-                    vchTelefono = telefono,
-                    vchPassword = pin
-                });
+				var result = await _repository.spGetCiudadanoAuth(new spGetCiudadanoAuth.Request
+				{
+					vchTelefono = telefono,
+					vchPassword = pin
+				});
 
-                if (result == null || !result.bResult || result.iIdCiudadano <= 0)
-                {
-                    return Response<Ciudadano>.BadResult(result?.vchMessage ?? "Teléfono o PIN incorrectos.", new Ciudadano());
-                }
+				if (result == null || !result.bResult || result.iIdCiudadano <= 0)
+				{
+					return Response<Ciudadano>.BadResult(result?.vchMessage ?? "Teléfono o PIN incorrectos.", new Ciudadano());
+				}
 
-                var ciudadano = Map(result.iIdCiudadano, result.vchAlias, result.vchTelefono);
-                ciudadano.Token = await GenerateJwtToken(ciudadano);
-                return new Response<Ciudadano>
-                {
-                    Data = ciudadano,
-                    IsSuccess = true,
-                    Message = "Ok"
-                };
-            }
-            catch (Exception ex)
-            {
-                return Response<Ciudadano>.BadResult(ex.Message, new Ciudadano());
-            }
-        }
+				var ciudadano = Map(result.iIdCiudadano, result.vchAlias, result.vchTelefono);
+				ciudadano.Token = await GenerateJwtToken(ciudadano);
+				return new Response<Ciudadano>
+				{
+					Data = ciudadano,
+					IsSuccess = true,
+					Message = "Ok"
+				};
+			}
+			catch (Exception ex)
+			{
+				return Response<Ciudadano>.BadResult(ex.Message, new Ciudadano());
+			}
+		}
 
-        public async Task<Response<string>> EnviarCodigoWhatsApp(PostSendCodigoCiudadano postModel)
-        {
-            try
-            {
-                var alias = (postModel.vchAlias ?? string.Empty).Trim();
-                var telefono = NormalizePhone(postModel.vchTelefono);
-                var pin = postModel.vchPassword ?? string.Empty;
+		public async Task<Response<string>> EnviarCodigoWhatsApp(PostSendCodigoCiudadano postModel)
+		{
+			try
+			{
+				var alias = (postModel.vchAlias ?? string.Empty).Trim();
+				var telefono = NormalizePhone(postModel.vchTelefono);
+				var pin = postModel.vchPassword ?? string.Empty;
 
-                var validationError = Validate(alias, telefono, pin, requireAlias: true);
-                if (validationError != null)
-                {
-                    return Response<string>.BadResult(validationError, string.Empty);
-                }
+				var validationError = Validate(alias, telefono, pin, requireAlias: true);
+				if (validationError != null)
+				{
+					return Response<string>.BadResult(validationError, string.Empty);
+				}
 
-                var code = GenerateVerificationCode();
-                var saveCodeResult = await _repository.spSaveCiudadanoCodigo(new spSaveCiudadanoCodigo.Request
-                {
-                    vchTelefono = telefono,
-                    vchCodigo = code
-                });
-                if (saveCodeResult == null || !saveCodeResult.bResult)
-                {
-                    return Response<string>.BadResult(saveCodeResult?.vchMessage ?? "No se pudo generar el código.", string.Empty);
-                }
+				var code = GenerateVerificationCode();
+				var saveCodeResult = await _repository.spSaveCiudadanoCodigo(new spSaveCiudadanoCodigo.Request
+				{
+					vchTelefono = telefono,
+					vchCodigo = code
+				});
+				if (saveCodeResult == null || !saveCodeResult.bResult)
+				{
+					return Response<string>.BadResult(saveCodeResult?.vchMessage ?? "No se pudo generar el código.", string.Empty);
+				}
 
-                var message = $"Hola, tu codigo de acceso expres para Santiago Conecta es: {code}";
-                var destinationPhone = $"52{telefono}";
-                var sendResult = await _whatsAppService.SendTextMessageDetailedAsync(destinationPhone, message);
+				var message = $"Hola, tu codigo de acceso expres para Santiago Conecta es: {code}";
+				var destinationPhone = $"52{telefono}";
+				var sendResult = await _whatsAppService.SendTextMessageDetailedAsync(destinationPhone, message);
 
-                if (!sendResult.IsSuccess)
-                {
-                    var sendError = string.IsNullOrWhiteSpace(sendResult.ErrorMessage)
-                        ? "No se pudo enviar el código por WhatsApp."
-                        : sendResult.ErrorMessage;
+				if (!sendResult.IsSuccess)
+				{
+					var sendError = string.IsNullOrWhiteSpace(sendResult.ErrorMessage)
+						? "No se pudo enviar el código por WhatsApp."
+						: sendResult.ErrorMessage;
 
-                    if (IsDevelopment())
-                    {
-                        return new Response<string>
-                        {
-                            IsSuccess = true,
-                            Data = destinationPhone,
-                            Message = $"{sendError} Codigo de prueba: {code}"
-                        };
-                    }
+					if (IsDevelopment())
+					{
+						return new Response<string>
+						{
+							IsSuccess = true,
+							Data = destinationPhone,
+							Message = $"{sendError} Codigo de prueba: {code}"
+						};
+					}
 
-                    return Response<string>.BadResult(sendError, string.Empty);
-                }
+					return Response<string>.BadResult(sendError, string.Empty);
+				}
 
-                var deliveryHint = string.IsNullOrWhiteSpace(sendResult.MessageId)
-                    ? "Meta aceptó la solicitud, pero no regresó message_id."
-                    : $"Meta message_id: {sendResult.MessageId}";
-                var statusHint = sendResult.StatusCode > 0 ? $" HTTP: {sendResult.StatusCode}." : string.Empty;
-                var waIdHint = string.IsNullOrWhiteSpace(sendResult.WaId) ? string.Empty : $" wa_id: {sendResult.WaId}.";
+				var deliveryHint = string.IsNullOrWhiteSpace(sendResult.MessageId)
+					? "Meta aceptó la solicitud, pero no regresó message_id."
+					: $"Meta message_id: {sendResult.MessageId}";
+				var statusHint = sendResult.StatusCode > 0 ? $" HTTP: {sendResult.StatusCode}." : string.Empty;
+				var waIdHint = string.IsNullOrWhiteSpace(sendResult.WaId) ? string.Empty : $" wa_id: {sendResult.WaId}.";
 
-                return new Response<string>
-                {
-                    IsSuccess = true,
-                    Data = destinationPhone,
-                    Message = IsDevelopment()
-                        ? $"Código enviado por WhatsApp. {deliveryHint}{statusHint}{waIdHint} Codigo debug: {code}"
-                        : $"Código enviado por WhatsApp. {deliveryHint}{statusHint}{waIdHint}"
-                };
-            }
-            catch (Exception ex)
-            {
-                return Response<string>.BadResult(ex.Message, string.Empty);
-            }
-        }
+				return new Response<string>
+				{
+					IsSuccess = true,
+					Data = destinationPhone,
+					Message = IsDevelopment()
+						? $"Código enviado por WhatsApp. {deliveryHint}{statusHint}{waIdHint} Codigo debug: {code}"
+						: $"Código enviado por WhatsApp. {deliveryHint}{statusHint}{waIdHint}"
+				};
+			}
+			catch (Exception ex)
+			{
+				return Response<string>.BadResult(ex.Message, string.Empty);
+			}
+		}
 
-        public async Task<Response<Ciudadano>> ExternalLogin(PostExternalLoginCiudadano postModel)
-        {
-            try
-            {
-                if (postModel == null || string.IsNullOrWhiteSpace(postModel.vchProveedor))
-                {
-                    return Response<Ciudadano>.BadResult("El proveedor de autenticación es requerido.", new Ciudadano());
-                }
+		public async Task<Response<Ciudadano>> ExternalLogin(PostExternalLoginCiudadano postModel)
+		{
+			try
+			{
+				if (postModel == null || string.IsNullOrWhiteSpace(postModel.vchProveedor))
+				{
+					return Response<Ciudadano>.BadResult("El proveedor de autenticación es requerido.", new Ciudadano());
+				}
 
-                var proveedor = postModel.vchProveedor.Trim();
-                string idProveedor = postModel.vchIdProveedor ?? string.Empty;
-                string email = postModel.vchEmail ?? string.Empty;
-                string alias = postModel.vchAlias ?? string.Empty;
-                string avatarUrl = postModel.vchAvatarUrl ?? string.Empty;
+				var proveedor = postModel.vchProveedor.Trim();
+				string idProveedor = postModel.vchIdProveedor ?? string.Empty;
+				string email = postModel.vchEmail ?? string.Empty;
+				string alias = postModel.vchAlias ?? string.Empty;
+				string avatarUrl = postModel.vchAvatarUrl ?? string.Empty;
 
-                using var httpClient = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+				using var httpClient = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(15) };
 
-                if (proveedor.Equals("Google", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!string.IsNullOrWhiteSpace(postModel.vchToken))
-                    {
-                        // Validar Token ID directamente con Google
-                        try
-                        {
-                            var googleResponse = await httpClient.GetAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={postModel.vchToken}");
-                            if (googleResponse.IsSuccessStatusCode)
-                            {
-                                var jsonString = await googleResponse.Content.ReadAsStringAsync();
-                                using var doc = System.Text.Json.JsonDocument.Parse(jsonString);
-                                var root = doc.RootElement;
+				if (proveedor.Equals("Google", StringComparison.OrdinalIgnoreCase))
+				{
+					if (!string.IsNullOrWhiteSpace(postModel.vchToken))
+					{
+						// Validar Token ID directamente con Google
+						try
+						{
+							var googleResponse = await httpClient.GetAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={postModel.vchToken}");
+							if (googleResponse.IsSuccessStatusCode)
+							{
+								var jsonString = await googleResponse.Content.ReadAsStringAsync();
+								using var doc = System.Text.Json.JsonDocument.Parse(jsonString);
+								var root = doc.RootElement;
 
-                                if (root.TryGetProperty("sub", out var subProp))
-                                    idProveedor = subProp.GetString() ?? idProveedor;
+								if (root.TryGetProperty("sub", out var subProp))
+									idProveedor = subProp.GetString() ?? idProveedor;
 
-                                if (root.TryGetProperty("email", out var emailProp))
-                                    email = emailProp.GetString() ?? email;
+								if (root.TryGetProperty("email", out var emailProp))
+									email = emailProp.GetString() ?? email;
 
-                                if (root.TryGetProperty("name", out var nameProp))
-                                    alias = nameProp.GetString() ?? alias;
+								if (root.TryGetProperty("name", out var nameProp))
+									alias = nameProp.GetString() ?? alias;
 
-                                if (root.TryGetProperty("picture", out var picProp))
-                                    avatarUrl = picProp.GetString() ?? avatarUrl;
-                            }
-                            else
-                            {
-                                // Si el endpoint falla pero el cliente envió ID de proveedor, usar los datos proporcionados
-                                if (string.IsNullOrWhiteSpace(idProveedor))
-                                {
-                                    return Response<Ciudadano>.BadResult("El token de Google no es válido o ha expirado.", new Ciudadano());
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            // En caso de fallo de red puntual, continuar con los datos del payload si existen
-                            if (string.IsNullOrWhiteSpace(idProveedor))
-                            {
-                                return Response<Ciudadano>.BadResult("No se pudo verificar el token con Google.", new Ciudadano());
-                            }
-                        }
-                    }
-                }
-                else if (proveedor.Equals("Facebook", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!string.IsNullOrWhiteSpace(postModel.vchToken))
-                    {
-                        // Validar Access Token con Facebook Graph API
-                        try
-                        {
-                            var fbResponse = await httpClient.GetAsync($"https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token={postModel.vchToken}");
-                            if (fbResponse.IsSuccessStatusCode)
-                            {
-                                var jsonString = await fbResponse.Content.ReadAsStringAsync();
-                                using var doc = System.Text.Json.JsonDocument.Parse(jsonString);
-                                var root = doc.RootElement;
+								if (root.TryGetProperty("picture", out var picProp))
+									avatarUrl = picProp.GetString() ?? avatarUrl;
+							}
+							else
+							{
+								// Si el endpoint falla pero el cliente envió ID de proveedor, usar los datos proporcionados
+								if (string.IsNullOrWhiteSpace(idProveedor))
+								{
+									return Response<Ciudadano>.BadResult("El token de Google no es válido o ha expirado.", new Ciudadano());
+								}
+							}
+						}
+						catch
+						{
+							// En caso de fallo de red puntual, continuar con los datos del payload si existen
+							if (string.IsNullOrWhiteSpace(idProveedor))
+							{
+								return Response<Ciudadano>.BadResult("No se pudo verificar el token con Google.", new Ciudadano());
+							}
+						}
+					}
+				}
+				else if (proveedor.Equals("Facebook", StringComparison.OrdinalIgnoreCase))
+				{
+					if (!string.IsNullOrWhiteSpace(postModel.vchToken))
+					{
+						// Validar Access Token con Facebook Graph API
+						try
+						{
+							var fbResponse = await httpClient.GetAsync($"https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token={postModel.vchToken}");
+							if (fbResponse.IsSuccessStatusCode)
+							{
+								var jsonString = await fbResponse.Content.ReadAsStringAsync();
+								using var doc = System.Text.Json.JsonDocument.Parse(jsonString);
+								var root = doc.RootElement;
 
-                                if (root.TryGetProperty("id", out var idProp))
-                                    idProveedor = idProp.GetString() ?? idProveedor;
+								if (root.TryGetProperty("id", out var idProp))
+									idProveedor = idProp.GetString() ?? idProveedor;
 
-                                if (root.TryGetProperty("name", out var nameProp))
-                                    alias = nameProp.GetString() ?? alias;
+								if (root.TryGetProperty("name", out var nameProp))
+									alias = nameProp.GetString() ?? alias;
 
-                                if (root.TryGetProperty("email", out var emailProp))
-                                    email = emailProp.GetString() ?? email;
+								if (root.TryGetProperty("email", out var emailProp))
+									email = emailProp.GetString() ?? email;
 
-                                if (root.TryGetProperty("picture", out var picObj) && picObj.TryGetProperty("data", out var dataObj) && dataObj.TryGetProperty("url", out var urlProp))
-                                {
-                                    avatarUrl = urlProp.GetString() ?? avatarUrl;
-                                }
-                            }
-                            else
-                            {
-                                if (string.IsNullOrWhiteSpace(idProveedor))
-                                {
-                                    return Response<Ciudadano>.BadResult("El token de Facebook no es válido o ha expirado.", new Ciudadano());
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            if (string.IsNullOrWhiteSpace(idProveedor))
-                            {
-                                return Response<Ciudadano>.BadResult("No se pudo verificar el token con Facebook.", new Ciudadano());
-                            }
-                        }
-                    }
-                }
+								if (root.TryGetProperty("picture", out var picObj) && picObj.TryGetProperty("data", out var dataObj) && dataObj.TryGetProperty("url", out var urlProp))
+								{
+									avatarUrl = urlProp.GetString() ?? avatarUrl;
+								}
+							}
+							else
+							{
+								if (string.IsNullOrWhiteSpace(idProveedor))
+								{
+									return Response<Ciudadano>.BadResult("El token de Facebook no es válido o ha expirado.", new Ciudadano());
+								}
+							}
+						}
+						catch
+						{
+							if (string.IsNullOrWhiteSpace(idProveedor))
+							{
+								return Response<Ciudadano>.BadResult("No se pudo verificar el token con Facebook.", new Ciudadano());
+							}
+						}
+					}
+				}
 
-                if (string.IsNullOrWhiteSpace(idProveedor))
-                {
-                    return Response<Ciudadano>.BadResult("No se pudo obtener el identificador único del usuario.", new Ciudadano());
-                }
+				if (string.IsNullOrWhiteSpace(idProveedor))
+				{
+					return Response<Ciudadano>.BadResult("No se pudo obtener el identificador único del usuario.", new Ciudadano());
+				}
 
-                // Guardar o sincronizar en la base de datos SQL
-                var result = await _repository.spSaveCiudadanoExternalLogin(new spSaveCiudadanoExternalLogin.Request
-                {
-                    vchProveedor = proveedor,
-                    vchIdProveedor = idProveedor,
-                    vchEmail = email,
-                    vchAlias = alias,
-                    vchAvatarUrl = avatarUrl
-                });
+				// Guardar o sincronizar en la base de datos SQL
+				var result = await _repository.spSaveCiudadanoExternalLogin(new spSaveCiudadanoExternalLogin.Request
+				{
+					vchProveedor = proveedor,
+					vchIdProveedor = idProveedor,
+					vchEmail = email,
+					vchAlias = alias,
+					vchAvatarUrl = avatarUrl
+				});
 
-                if (result == null || !result.bResult || result.iIdCiudadano <= 0)
-                {
-                    return Response<Ciudadano>.BadResult(result?.vchMessage ?? "Error al registrar el usuario en el sistema.", new Ciudadano());
-                }
+				if (result == null || !result.bResult || result.iIdCiudadano <= 0)
+				{
+					return Response<Ciudadano>.BadResult(result?.vchMessage ?? "Error al registrar el usuario en el sistema.", new Ciudadano());
+				}
 
-                var ciudadano = new Ciudadano
-                {
-                    iIdCiudadano = result.iIdCiudadano,
-                    vchAlias = result.vchAlias,
-                    vchTelefono = result.vchTelefono,
-                    vchEmail = result.vchEmail,
-                    vchAvatarUrl = result.vchAvatarUrl,
-                    vchProveedorAuth = proveedor,
-                    bCuentaVerificada = result.bCuentaVerificada,
-                    vchRol = "Ciudadano"
-                };
+				var ciudadano = new Ciudadano
+				{
+					iIdCiudadano = result.iIdCiudadano,
+					vchAlias = result.vchAlias,
+					vchTelefono = result.vchTelefono,
+					vchEmail = result.vchEmail,
+					vchAvatarUrl = result.vchAvatarUrl,
+					vchProveedorAuth = proveedor,
+					bCuentaVerificada = result.bCuentaVerificada,
+					vchRol = "Ciudadano"
+				};
 
-                ciudadano.Token = await GenerateJwtToken(ciudadano);
+				ciudadano.Token = await GenerateJwtToken(ciudadano);
 
-                return new Response<Ciudadano>
-                {
-                    Data = ciudadano,
-                    IsSuccess = true,
-                    Message = result.vchMessage
-                };
-            }
-            catch (Exception ex)
-            {
-                return Response<Ciudadano>.BadResult(ex.Message, new Ciudadano());
-            }
-        }
+				return new Response<Ciudadano>
+				{
+					Data = ciudadano,
+					IsSuccess = true,
+					Message = result.vchMessage
+				};
+			}
+			catch (Exception ex)
+			{
+				return Response<Ciudadano>.BadResult(ex.Message, new Ciudadano());
+			}
+		}
 
-        public async Task<Response<string>> GetSocialAuthId(string proveedor)
-        {
-            try
-            {
-                string alias = (proveedor ?? string.Empty).Trim().Equals("Google", StringComparison.OrdinalIgnoreCase)
-                    ? "Id.Google.Auth"
-                    : "Id.Facebook.Auth";
+		public async Task<Response<string>> GetSocialAuthId(string proveedor)
+		{
+			try
+			{
+				string alias = (proveedor ?? string.Empty).Trim().Equals("Google", StringComparison.OrdinalIgnoreCase)
+					? "Id.Google.Auth"
+					: "Id.Facebook.Auth";
 
-                var paramResult = await _catalogosDomain.GetParametroByAlias(new PostGetParametro { vchAlias = alias });
-                if (paramResult != null && paramResult.IsSuccess && !string.IsNullOrWhiteSpace(paramResult.Data?.NvchValor1))
-                {
-                    return new Response<string>
-                    {
-                        Data = paramResult.Data.NvchValor1.Trim(),
-                        IsSuccess = true,
-                        Message = "Identificador obtenido correctamente."
-                    };
-                }
+				var paramResult = await _catalogosDomain.GetParametroByAlias(new PostGetParametro { vchAlias = alias });
+				if (paramResult != null && paramResult.IsSuccess && !string.IsNullOrWhiteSpace(paramResult.Data?.NvchValor1))
+				{
+					return new Response<string>
+					{
+						Data = paramResult.Data.NvchValor1.Trim(),
+						IsSuccess = true,
+						Message = "Identificador obtenido correctamente."
+					};
+				}
 
-                return Response<string>.BadResult($"No se encontró la configuración del parámetro '{alias}' en la base de datos.", string.Empty);
-            }
-            catch (Exception ex)
-            {
-                return Response<string>.BadResult(ex.Message, string.Empty);
-            }
-        }
+				return Response<string>.BadResult($"No se encontró la configuración del parámetro '{alias}' en la base de datos.", string.Empty);
+			}
+			catch (Exception ex)
+			{
+				return Response<string>.BadResult(ex.Message, string.Empty);
+			}
+		}
 
-        private static string NormalizePhone(string? raw)
-        {
-            return DigitsOnly.Replace(raw ?? string.Empty, string.Empty);
-        }
+		private static string NormalizePhone(string? raw)
+		{
+			return DigitsOnly.Replace(raw ?? string.Empty, string.Empty);
+		}
 
-        private static string NormalizeCode(string? raw)
-        {
-            return DigitsOnly.Replace(raw ?? string.Empty, string.Empty);
-        }
+		private static string NormalizeCode(string? raw)
+		{
+			return DigitsOnly.Replace(raw ?? string.Empty, string.Empty);
+		}
 
-        private static string? Validate(string alias, string telefono, string pin, bool requireAlias)
-        {
-            if (requireAlias && string.IsNullOrWhiteSpace(alias))
-            {
-                return "El nombre o alias es obligatorio.";
-            }
+		private static string? Validate(string alias, string telefono, string pin, bool requireAlias)
+		{
+			if (requireAlias && string.IsNullOrWhiteSpace(alias))
+			{
+				return "El nombre o alias es obligatorio.";
+			}
 
-            if (telefono.Length != 10 || telefono.Any(c => c < '0' || c > '9'))
-            {
-                return "El teléfono debe tener exactamente 10 dígitos.";
-            }
+			if (telefono.Length != 10 || telefono.Any(c => c < '0' || c > '9'))
+			{
+				return "El teléfono debe tener exactamente 10 dígitos.";
+			}
 
-            if (telefono[0] < '2' || telefono[0] > '9')
-            {
-                return "El teléfono debe iniciar con un dígito entre 2 y 9.";
-            }
+			if (telefono[0] < '2' || telefono[0] > '9')
+			{
+				return "El teléfono debe iniciar con un dígito entre 2 y 9.";
+			}
 
-            if (telefono.All(c => c == telefono[0]))
-            {
-                return "El teléfono no puede tener todos los dígitos iguales.";
-            }
+			if (telefono.All(c => c == telefono[0]))
+			{
+				return "El teléfono no puede tener todos los dígitos iguales.";
+			}
 
-            if (string.IsNullOrWhiteSpace(pin) || pin.Length < 4)
-            {
-                return "El PIN debe tener al menos 4 caracteres.";
-            }
+			if (string.IsNullOrWhiteSpace(pin) || pin.Length < 4)
+			{
+				return "El PIN debe tener al menos 4 caracteres.";
+			}
 
-            return null;
-        }
+			return null;
+		}
 
-        private static string GenerateVerificationCode()
-        {
-            return RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
-        }
+		private static string GenerateVerificationCode()
+		{
+			return RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+		}
 
-        private bool IsDevelopment()
-        {
-            var env = _configuration["ASPNETCORE_ENVIRONMENT"]
-                ?? _configuration["DOTNET_ENVIRONMENT"]
-                ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-                ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
-                ?? string.Empty;
-            return env.Equals("Development", StringComparison.OrdinalIgnoreCase);
-        }
+		private bool IsDevelopment()
+		{
+			var env = _configuration["ASPNETCORE_ENVIRONMENT"]
+				?? _configuration["DOTNET_ENVIRONMENT"]
+				?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+				?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+				?? string.Empty;
+			return env.Equals("Development", StringComparison.OrdinalIgnoreCase);
+		}
 
-        private static Ciudadano Map(int id, string alias, string telefono) => new()
-        {
-            iIdCiudadano = id,
-            vchAlias = alias ?? string.Empty,
-            vchTelefono = telefono ?? string.Empty,
-            vchRol = "Ciudadano"
-        };
+		private static Ciudadano Map(int id, string alias, string telefono) => new()
+		{
+			iIdCiudadano = id,
+			vchAlias = alias ?? string.Empty,
+			vchTelefono = telefono ?? string.Empty,
+			vchRol = "Ciudadano"
+		};
 
-        private async Task<string> GenerateJwtToken(Ciudadano user)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.iIdCiudadano.ToString()),
-                new Claim(ClaimTypes.Name, user.vchAlias ?? string.Empty),
-                new Claim("telefono", user.vchTelefono ?? string.Empty),
-                new Claim(ClaimTypes.Email, user.vchEmail ?? string.Empty),
-                new Claim(ClaimTypes.Role, "Ciudadano")
-            };
+		private async Task<string> GenerateJwtToken(Ciudadano user)
+		{
+			var claims = new List<Claim>
+			{
+				new Claim(ClaimTypes.NameIdentifier, user.iIdCiudadano.ToString()),
+				new Claim(ClaimTypes.Name, user.vchAlias ?? string.Empty),
+				new Claim("telefono", user.vchTelefono ?? string.Empty),
+				new Claim(ClaimTypes.Email, user.vchEmail ?? string.Empty),
+				new Claim(ClaimTypes.Role, "Ciudadano")
+			};
 
-            return JwtTokenFactory.Crear(await _parametros.GetJwtAsync(), claims);
-        }
-    }
+			return JwtTokenFactory.Crear(await _parametros.GetJwtAsync(), claims);
+		}
+	}
 }

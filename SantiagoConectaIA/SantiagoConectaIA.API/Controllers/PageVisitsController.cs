@@ -1,11 +1,14 @@
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.PostModels.PageVisitsModule;
 
 namespace SantiagoConectaIA.API.Controllers
 {
 	[ApiController]
+	[Authorize(Policy = AuthPolicies.Administracion)]
 	[Route("api/[controller]")]
 	public class PageVisitsController : ControllerBase
 	{

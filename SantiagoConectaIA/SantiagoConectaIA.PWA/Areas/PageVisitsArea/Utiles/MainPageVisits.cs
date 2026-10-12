@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
 using EngramaCoreStandar.Results;
+
 using SantiagoConectaIA.Share.Objects.PageVisitsModule;
 using SantiagoConectaIA.Share.PostModels.PageVisitsModule;
+
+using System.Net.Http.Json;
 
 namespace SantiagoConectaIA.PWA.Areas.PageVisitsArea.Utiles
 {

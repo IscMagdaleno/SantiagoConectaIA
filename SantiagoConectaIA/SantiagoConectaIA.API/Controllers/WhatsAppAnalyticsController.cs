@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.PostModels.WhatsAppModule;
 
 namespace SantiagoConectaIA.API.Controllers
@@ -9,6 +11,7 @@ namespace SantiagoConectaIA.API.Controllers
 	/// Controlador para estadísticas y analíticas del módulo de WhatsApp.
 	/// </summary>
 	[ApiController]
+	[Authorize(Policy = AuthPolicies.Administracion)]
 	[Route("api/[controller]")]
 	public class WhatsAppAnalyticsController : ControllerBase
 	{

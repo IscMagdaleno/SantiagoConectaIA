@@ -35,14 +35,14 @@ BEGIN
 
         IF @iIdTramite IS NULL OR @iIdTramite <= 0
         BEGIN
-            INSERT INTO dbo.Tramite (vchNombre, nvchDescripcion, iIdCategoria, bModalidadEnLinea, mCosto, iIdOficina, dtFechaCreacion, bActivo)
+            INSERT INTO SCIA.Tramite (vchNombre, nvchDescripcion, iIdCategoria, bModalidadEnLinea, mCosto, iIdOficina, dtFechaCreacion, bActivo)
             VALUES (@vchNombre, @nvchDescripcion, @iIdCategoria, @bModalidadEnLinea, @mCosto, @iIdOficina, GETDATE(), @bActivo);
 
             SET @iIdTramite = SCOPE_IDENTITY();
         END
         ELSE
         BEGIN
-            UPDATE dbo.Tramite WITH(ROWLOCK)
+            UPDATE SCIA.Tramite WITH(ROWLOCK)
             SET vchNombre = @vchNombre,
                 nvchDescripcion = @nvchDescripcion,
                 iIdCategoria = @iIdCategoria,

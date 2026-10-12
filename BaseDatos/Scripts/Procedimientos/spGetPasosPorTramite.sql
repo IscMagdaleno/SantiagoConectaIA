@@ -30,7 +30,7 @@ BEGIN
         INSERT INTO #Result (iIdTramitePaso, iIdTramite, iOrden, nvchDescripcion, bActivo)
         SELECT 
             P.iIdTramitePaso, P.iIdTramite, P.iOrden, P.nvchDescripcion, P.bActivo
-        FROM dbo.TramitePaso P WITH(NOLOCK)
+        FROM SCIA.TramitePaso P WITH(NOLOCK)
         WHERE P.iIdTramite = @iIdTramite
         ORDER BY P.iOrden ASC;
 

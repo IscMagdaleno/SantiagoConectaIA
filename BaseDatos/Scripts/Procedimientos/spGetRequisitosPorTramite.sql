@@ -24,7 +24,7 @@ BEGIN
     BEGIN TRY
         INSERT INTO #Result (iIdRequisito, iIdTramite, vchNombre, nvchDetalle, bObligatorio, bActivo)
         SELECT r.iIdRequisito, r.iIdTramite, r.vchNombre, r.nvchDetalle, r.bObligatorio, r.bActivo
-        FROM dbo.Requisito r WITH(NOLOCK)
+        FROM SCIA.Requisito r WITH(NOLOCK)
         WHERE r.iIdTramite = @iIdTramite;
 
         IF NOT EXISTS (SELECT 1 FROM #Result)

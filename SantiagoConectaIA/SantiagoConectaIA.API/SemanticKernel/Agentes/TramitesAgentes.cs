@@ -1,7 +1,6 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
-using Microsoft.SemanticKernel.Http;
 
 namespace SantiagoConectaIA.API.SemanticKernel.Agentes
 {

@@ -31,7 +31,7 @@ BEGIN
             R.vchNombre,
             R.nvchDetalle,
             R.bObligatorio
-        FROM dbo.Requisito R WITH(NOLOCK)
+        FROM SCIA.Requisito R WITH(NOLOCK)
         WHERE R.iIdTramite = @iIdTramite AND R.bActivo = 1;
 
         -- 2. Insertar Documentos (considerados como un tipo de requisito/información)
@@ -41,7 +41,7 @@ BEGIN
             D.vchNombre,
             CONCAT('Enlace: ', ISNULL(D.vchUrl, 'No aplica o no disponible')) AS nvchDetalle,
             1 -- Asumimos que los documentos listados son obligatorios para el trámite
-        FROM dbo.Documento D WITH(NOLOCK)
+        FROM SCIA.Documento D WITH(NOLOCK)
         WHERE D.iIdTramite = @iIdTramite AND D.bActivo = 1;
 
         IF NOT EXISTS (SELECT 1 FROM #Result)

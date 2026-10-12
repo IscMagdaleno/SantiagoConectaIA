@@ -1,62 +1,153 @@
 @using SantiagoConectaIA.Share.Objects.FeedModule
 
-<div class="feed-card">
-    <div class="feed-card-media">
-        @if (DisplayImages.Count > 1)
-        {
-            <MudCarousel Class="feed-card-carousel"
-                         ShowArrows="true"
-                         ShowBullets="true"
-                         EnableSwipeGesture="true"
-                         AutoCycle="false"
-                         TData="object"
-                         Style="height: 100%; width: 100%;">
-                @for (int i = 0; i < DisplayImages.Count; i++)
+<article class="feed-card feed-card--@TypeClass @(IsHoy ? "is-hoy" : null)" aria-label="@AriaTitulo">
+    <div class="feed-card-accent" aria-hidden="true"></div>
+
+    @if (IsPost)
+    {
+        <header class="feed-post-header">
+            @if (!string.IsNullOrWhiteSpace(Card.vchAvatarUrl))
+            {
+                <img class="feed-avatar" src="@Card.vchAvatarUrl" alt="" loading="lazy" referrerpolicy="no-referrer" />
+            }
+            else
+            {
+                <span class="feed-avatar feed-avatar-inicial" aria-hidden="true">@AutorInicial</span>
+            }
+
+            <div class="feed-post-autor">
+                <span class="feed-post-nombre">
+                    @AutorNombre
+                    @if (Card.bAutorVerificado)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Verified" Class="feed-verificado" Title="Ciudadano verificado" />
+                    }
+                </span>
+                <span class="feed-post-tiempo">
+                    @TiempoRelativo
+                    @if (IsHoy)
+                    {
+                        <span class="feed-chip feed-chip--hoy feed-chip--mini">@HoyLabel</span>
+                    }
+                </span>
+            </div>
+
+            <span class="feed-chip feed-chip--tipo">
+                <MudIcon Icon="@CategoriaIcono" />
+                @CategoriaTexto
+            </span>
+        </header>
+    }
+    else if (IsCapsula && DisplayImages.Count == 0)
+    {
+        <div class="feed-capsula-banda">
+            <span class="feed-capsula-icono"><MudIcon Icon="@Icons.Material.Filled.Lightbulb" /></span>
+            <span class="feed-capsula-texto">
+                <strong>Conoce Santiago</strong>
+                @if (!string.IsNullOrWhiteSpace(Card.vchEtiqueta))
                 {
-                    var imgUrl = DisplayImages[i];
-                    var imgIdx = i;
-                    <MudCarouselItem Transition="Transition.Slide">
-                        <div class="feed-carousel-slide" @onclick="() => OpenLightbox(imgIdx)" title="Clic para ampliar">
-                            <img src="@imgUrl" class="feed-blur-bg" alt="" aria-hidden="true" />
-                            <img src="@imgUrl" class="feed-media-main-img" alt="@Card.vchTitulo" loading="lazy" />
-                            <div class="feed-media-zoom-overlay">
-                                <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Style="font-size: 22px; color: #fff;" />
-                            </div>
-                        </div>
-                    </MudCarouselItem>
+                    <small>@Card.vchEtiqueta</small>
                 }
-            </MudCarousel>
-            <div class="feed-multi-indicator">
-                <MudIcon Icon="@Icons.Material.Filled.Collections" Style="font-size: 13px;" />
-                <span>@DisplayImages.Count</span>
-            </div>
-        }
-        else if (DisplayImages.Count == 1)
-        {
-            <div class="feed-single-media" @onclick="() => OpenLightbox(0)" title="Clic para ampliar">
-                <img src="@DisplayImages[0]" class="feed-blur-bg" alt="" aria-hidden="true" />
-                <img src="@DisplayImages[0]" class="feed-media-main-img" alt="@Card.vchTitulo" loading="lazy" />
-                <div class="feed-media-zoom-overlay">
-                    <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Style="font-size: 22px; color: #fff;" />
+            </span>
+        </div>
+    }
+
+    @if (DisplayImages.Count > 0 || (!IsPost && !IsCapsula))
+    {
+        <div class="feed-card-media">
+            @if (DisplayImages.Count > 1)
+            {
+                <MudCarousel Class="feed-card-carousel"
+                             ShowArrows="true"
+                             ShowBullets="true"
+                             EnableSwipeGesture="true"
+                             AutoCycle="false"
+                             TData="object"
+                             Style="height: 100%; width: 100%;">
+                    @for (int i = 0; i < DisplayImages.Count; i++)
+                    {
+                        var imgUrl = DisplayImages[i];
+                        var imgIdx = i;
+                        <MudCarouselItem Transition="Transition.Slide">
+                            <div class="feed-carousel-slide" @onclick="() => OpenLightbox(imgIdx)" title="Clic para ampliar">
+                                <img src="@imgUrl" class="feed-blur-bg" alt="" aria-hidden="true" />
+                                <img src="@imgUrl" class="feed-media-main-img" alt="@Card.vchTitulo" loading="lazy" />
+                                <div class="feed-media-zoom-overlay">
+                                    <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Style="font-size: 22px; color: #fff;" />
+                                </div>
+                            </div>
+                        </MudCarouselItem>
+                    }
+                </MudCarousel>
+                <div class="feed-multi-indicator">
+                    <MudIcon Icon="@Icons.Material.Filled.Collections" Style="font-size: 13px;" />
+                    <span>@DisplayImages.Count</span>
                 </div>
-            </div>
-        }
-        else
-        {
-            <div class="feed-card-placeholder">
-                <MudIcon Icon="@GetTypeIcon()" Class="feed-card-placeholder-icon" />
-            </div>
-        }
-        <span class="feed-card-badge">@GetTypeLabel()</span>
-    </div>
+            }
+            else if (DisplayImages.Count == 1)
+            {
+                <div class="feed-single-media" @onclick="() => OpenLightbox(0)" title="Clic para ampliar">
+                    <img src="@DisplayImages[0]" class="feed-blur-bg" alt="" aria-hidden="true" />
+                    <img src="@DisplayImages[0]" class="feed-media-main-img" alt="@Card.vchTitulo" loading="lazy" />
+                    <div class="feed-media-zoom-overlay">
+                        <MudIcon Icon="@Icons.Material.Filled.ZoomIn" Style="font-size: 22px; color: #fff;" />
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="feed-card-placeholder">
+                    <MudIcon Icon="@GetTypeIcon()" Class="feed-card-placeholder-icon" />
+                </div>
+            }
+
+            @if (!IsPost)
+            {
+                <div class="feed-card-badges">
+                    <span class="feed-chip feed-chip--tipo">
+                        <MudIcon Icon="@GetTypeIcon()" />
+                        @GetTypeLabel()
+                    </span>
+                    @if (IsHoy)
+                    {
+                        <span class="feed-chip feed-chip--hoy">@HoyLabel</span>
+                    }
+                </div>
+            }
+
+            @if (IsEvento && FechaLocal.HasValue && FechaLocal.Value > DateTime.MinValue)
+            {
+                <span class="feed-event-date" aria-hidden="true">
+                    <span class="feed-event-dia">@FechaLocal.Value.Day</span>
+                    <span class="feed-event-mes">@FechaLocal.Value.ToString("MMM", EsMx)</span>
+                </span>
+            }
+        </div>
+    }
 
     <div class="feed-card-body">
-        <h3 class="feed-card-title">@Card.vchTitulo</h3>
+        @if (!IsPost && DisplayImages.Count == 0 && IsCapsula)
+        {
+            @* El dato curioso sin foto ya muestra su banda de color arriba *@
+        }
+
+        @if (!IsPost && !IsCapsula && !string.IsNullOrWhiteSpace(Card.vchEtiqueta))
+        {
+            <span class="feed-card-lugar">
+                <MudIcon Icon="@Icons.Material.Filled.Place" />
+                @Card.vchEtiqueta
+            </span>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Card.vchTitulo))
+        {
+            <h3 class="feed-card-title">@Card.vchTitulo</h3>
+        }
 
         @if (!string.IsNullOrWhiteSpace(CurrentDescriptionText))
         {
             <div class="feed-card-desc-wrapper">
-                <p class="feed-card-desc @(_isDescExpanded ? "is-expanded" : "")">@CurrentDescriptionText</p>
+                <p class="feed-card-desc @(IsPost ? "feed-card-desc--post" : null) @(_isDescExpanded ? "is-expanded" : "")">@CurrentDescriptionText</p>
                 @if (IsLongDescription())
                 {
                     <button type="button" class="feed-card-desc-toggle" @onclick="ToggleDescription">
@@ -66,50 +157,70 @@
             </div>
         }
 
-        @if (Card.dtFecha.HasValue && Card.dtFecha.Value > DateTime.MinValue)
+        @if (!string.IsNullOrWhiteSpace(FechaTexto))
         {
             <div class="feed-card-date">
-                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Style="font-size: 14px;" />
-                <span>@Card.dtFecha.Value.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-MX"))</span>
+                <MudIcon Icon="@(IsEvento ? Icons.Material.Filled.Schedule : Icons.Material.Filled.CalendarToday)" />
+                <span>@FechaTexto</span>
             </div>
         }
 
-        <div class="feed-card-actions">
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       FullWidth="true"
-                       Style="border-radius: 999px; text-transform: none; font-weight: 700;"
-                       OnClick="HandleCta">
-                @GetCtaLabel()
-            </MudButton>
+        <div class="feed-actions">
+            @if (CanComment)
+            {
+                <button type="button"
+                        class="feed-action @(_showOpinions ? "is-active" : null)"
+                        aria-expanded="@_showOpinions"
+                        @onclick="ToggleOpinions">
+                    <MudIcon Icon="@(_showOpinions ? Icons.Material.Filled.Forum : Icons.Material.Outlined.ChatBubbleOutline)" />
+                    <span>@ComentariosTexto</span>
+                </button>
+            }
 
-            <MudMenu Icon="@Icons.Material.Filled.Share"
-                     AriaLabel="Compartir"
-                     Color="Color.Primary"
-                     Variant="Variant.Outlined"
-                     AnchorOrigin="Origin.BottomRight"
-                     TransformOrigin="Origin.TopRight"
-                     Class="feed-card-share-menu">
-                @if (_canNativeShare)
-                {
-                    <MudMenuItem Icon="@Icons.Material.Filled.IosShare" OnClick="ShareNativeAsync">
-                        Compartir…
+            <MudMenu AriaLabel="Compartir"
+                     AnchorOrigin="Origin.TopLeft"
+                     TransformOrigin="Origin.BottomLeft"
+                     Class="feed-share-menu">
+                <ActivatorContent>
+                    <span class="feed-action" role="button">
+                        <MudIcon Icon="@Icons.Material.Filled.Share" />
+                        <span>Compartir</span>
+                    </span>
+                </ActivatorContent>
+                <ChildContent>
+                    @if (_canNativeShare)
+                    {
+                        <MudMenuItem Icon="@Icons.Material.Filled.IosShare" OnClick="ShareNativeAsync">
+                            Compartir…
+                        </MudMenuItem>
+                    }
+                    <MudMenuItem Icon="@Icons.Custom.Brands.WhatsApp" OnClick="ShareWhatsAppAsync">
+                        WhatsApp
                     </MudMenuItem>
-                }
-                <MudMenuItem Icon="@Icons.Custom.Brands.WhatsApp" OnClick="ShareWhatsAppAsync">
-                    WhatsApp
-                </MudMenuItem>
-                <MudMenuItem Icon="@Icons.Custom.Brands.Facebook" OnClick="ShareFacebookAsync">
-                    Facebook
-                </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Custom.Brands.Facebook" OnClick="ShareFacebookAsync">
+                        Facebook
+                    </MudMenuItem>
+                </ChildContent>
             </MudMenu>
+
+            @if (HasCta)
+            {
+                <button type="button" class="feed-cta" @onclick="HandleCta">
+                    <span>@GetCtaLabel()</span>
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowForward" />
+                </button>
+            }
         </div>
 
-        <OpinionThread TipoEntidad="@Card.vchTipoEntidad"
-                       IdEntidad="Card.iIdEntidad"
-                       CssClass="feed-card-opinions" />
+        @if (_showOpinions && CanComment)
+        {
+            <OpinionThread TipoEntidad="@Card.vchTipoEntidad"
+                           IdEntidad="Card.iIdEntidad"
+                           StartExpanded="true"
+                           CssClass="feed-card-opinions" />
+        }
     </div>
-</div>
+</article>
 
 @if (_lightboxOpen && DisplayImages.Any())
 {
@@ -124,7 +235,7 @@
                     }
                     else
                     {
-                        <span class="counter-pill">@Card.vchTitulo</span>
+                        <span class="counter-pill">@(string.IsNullOrWhiteSpace(Card.vchTitulo) ? AutorNombre : Card.vchTitulo)</span>
                     }
                 </div>
                 <button type="button" class="insta-lightbox-btn-close" @onclick="CloseLightbox" title="Cerrar">
@@ -142,8 +253,8 @@
                 }
 
                 <div class="insta-image-box">
-                    <img src="@DisplayImages[_activeImageIndex]" 
-                         alt="@Card.vchTitulo" 
+                    <img src="@DisplayImages[_activeImageIndex]"
+                         alt="@Card.vchTitulo"
                          class="insta-expanded-img" />
                 </div>
 
@@ -153,14 +264,15 @@
                         <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="font-size: 36px; color: #fff;" />
                     </button>
                 }
-            </div>            <!-- Dots inferiores en carrusel -->
+            </div>
+            <!-- Dots inferiores en carrusel -->
             @if (DisplayImages.Count > 1)
             {
                 <div class="insta-lightbox-dots">
                     @for (int d = 0; d < DisplayImages.Count; d++)
                     {
                         var dotIdx = d;
-                        <button type="button" 
+                        <button type="button"
                                 class="insta-dot @(dotIdx == _activeImageIndex ? "is-active" : "")"
                                 @onclick="() => SetActiveImage(dotIdx)"></button>
                     }

@@ -90,7 +90,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 		public async Task<SeverityMessage> PostSaveTramite(Tramite tramite)
 		{
 			var APIUrl = url + "/PostSaveTramite";
-			
+
 			// Mapeo manual para evitar excepciones de AutoMapper con listas anidadas de distinto tipo
 			var model = new PostSaveTramite
 			{
@@ -105,30 +105,30 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles
 				bPrecioCalculado = tramite.bPrecioCalculado,
 				iIdOficina = tramite.iIdOficina,
 				bActivo = tramite.bActivo,
-				
-				Requisitos = tramite.Requisitos?.Select(r => new PostSaveRequisito 
-				{ 
-					vchNombre = r.vchNombre, 
-					nvchDetalle = r.nvchDetalle, 
-					bObligatorio = r.bObligatorio 
+
+				Requisitos = tramite.Requisitos?.Select(r => new PostSaveRequisito
+				{
+					vchNombre = r.vchNombre,
+					nvchDetalle = r.nvchDetalle,
+					bObligatorio = r.bObligatorio
 				}).ToList() ?? new List<PostSaveRequisito>(),
-				
-				Pasos = tramite.Pasos?.Select(p => new PostSaveTramitePaso 
-				{ 
-					iOrden = p.iOrden, 
-					nvchDescripcion = p.nvchDescripcion 
+
+				Pasos = tramite.Pasos?.Select(p => new PostSaveTramitePaso
+				{
+					iOrden = p.iOrden,
+					nvchDescripcion = p.nvchDescripcion
 				}).ToList() ?? new List<PostSaveTramitePaso>(),
-				
-				Documentos = tramite.Documentos?.Select(d => new PostSaveDocumento 
-				{ 
-					vchNombre = d.vchNombre, 
-					vchUrlDocumento = d.vchUrlDocumento 
+
+				Documentos = tramite.Documentos?.Select(d => new PostSaveDocumento
+				{
+					vchNombre = d.vchNombre,
+					vchUrlDocumento = d.vchUrlDocumento
 				}).ToList() ?? new List<PostSaveDocumento>()
 			};
 
 			var response = await _httpService.Post<PostSaveTramite, Response<Tramite>>(APIUrl, model);
 			var validacion = _validaServicioService.ValidadionServicio(response,
-			onSuccess: data => 
+			onSuccess: data =>
 			{
 				if (data != null)
 				{

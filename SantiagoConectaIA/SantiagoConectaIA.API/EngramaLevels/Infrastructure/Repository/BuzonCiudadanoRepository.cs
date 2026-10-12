@@ -1,6 +1,5 @@
-using System;
-using System.Threading.Tasks;
 using EngramaCoreStandar.Dapper;
+
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.BuzonCiudadanoModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
 
@@ -17,7 +16,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository
 
 		public async Task<spSaveBuzonCiudadano.Result> spSaveBuzonCiudadano(spSaveBuzonCiudadano.Request daoModel)
 		{
-			var respuesta = await _managerHelper.GetAsync<spSaveBuzonCiudadano.Result, spSaveBuzonCiudadano.Request>(daoModel, "","SCIA");
+			var respuesta = await _managerHelper.GetAsync<spSaveBuzonCiudadano.Result, spSaveBuzonCiudadano.Request>(daoModel, "", "SCIA");
 			if (respuesta.Ok)
 			{
 				return respuesta.Data;

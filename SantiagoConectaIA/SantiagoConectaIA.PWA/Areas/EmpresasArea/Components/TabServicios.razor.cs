@@ -1,170 +1,171 @@
 using Microsoft.AspNetCore.Components;
-using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles;
-using System.Threading.Tasks;
+
 using MudBlazor;
+
+using SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles;
 using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 
 namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Components
 {
-    public partial class TabServicios : ComponentBase
-    {
-        [Inject] public MainEmpresas Data { get; set; }
-        [Inject] public ISnackbar Snackbar { get; set; }
-        [Parameter] public Empresa EmpresaModel { get; set; } = default!;
+	public partial class TabServicios : ComponentBase
+	{
+		[Inject] public MainEmpresas Data { get; set; }
+		[Inject] public ISnackbar Snackbar { get; set; }
+		[Parameter] public Empresa EmpresaModel { get; set; } = default!;
 
-        private CategoriaCatalogo categoriaSeleccionada;
-        
-        // Modal Categoría
-        private bool dialogCategoriaVisible = false;
-        private DialogOptions dialogOptionsSmall = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
-        private CategoriaCatalogo categoriaActual = new();
+		private CategoriaCatalogo categoriaSeleccionada;
 
-        // Modal Producto
-        private bool dialogProductoVisible = false;
-        private DialogOptions dialogOptionsMedium = new() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
-        private ProductoServicio productoActual = new();
+		// Modal Categoría
+		private bool dialogCategoriaVisible = false;
+		private DialogOptions dialogOptionsSmall = new() { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+		private CategoriaCatalogo categoriaActual = new();
 
-        protected override async Task OnInitializedAsync()
-        {
-            await base.OnInitializedAsync();
-            var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
-            if (targetId > 0)
-            {
-                await Data.PostGetCategorias(targetId);
-            }
-        }
+		// Modal Producto
+		private bool dialogProductoVisible = false;
+		private DialogOptions dialogOptionsMedium = new() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+		private ProductoServicio productoActual = new();
 
-        private async Task SeleccionarCategoria(CategoriaCatalogo cat)
-        {
-            categoriaSeleccionada = cat;
-            Data.LstProductos.Clear();
-            await Data.PostGetProductos(cat.iIdCategoriaCat);
-        }
+		protected override async Task OnInitializedAsync()
+		{
+			await base.OnInitializedAsync();
+			var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
+			if (targetId > 0)
+			{
+				await Data.PostGetCategorias(targetId);
+			}
+		}
 
-        // ---------- CATEGORÍA ----------
-        private void AbrirDialogoNuevaCategoria()
-        {
-            var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
-            categoriaActual = new CategoriaCatalogo
-            {
-                iIdEmpresa = targetId,
-                iOrdenAparicion = (Data.LstCategorias.Count + 1) * 10
-            };
-            dialogCategoriaVisible = true;
-        }
+		private async Task SeleccionarCategoria(CategoriaCatalogo cat)
+		{
+			categoriaSeleccionada = cat;
+			Data.LstProductos.Clear();
+			await Data.PostGetProductos(cat.iIdCategoriaCat);
+		}
 
-        private void EditarCategoria(CategoriaCatalogo cat)
-        {
-            var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
-            categoriaActual = new CategoriaCatalogo
-            {
-                iIdCategoriaCat = cat.iIdCategoriaCat,
-                iIdEmpresa = targetId,
-                vchNombre = cat.vchNombre,
-                iOrdenAparicion = cat.iOrdenAparicion
-            };
-            dialogCategoriaVisible = true;
-        }
+		// ---------- CATEGORÍA ----------
+		private void AbrirDialogoNuevaCategoria()
+		{
+			var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
+			categoriaActual = new CategoriaCatalogo
+			{
+				iIdEmpresa = targetId,
+				iOrdenAparicion = (Data.LstCategorias.Count + 1) * 10
+			};
+			dialogCategoriaVisible = true;
+		}
 
-        private async Task GuardarCategoria()
-        {
-            if (string.IsNullOrWhiteSpace(categoriaActual.vchNombre))
-            {
-                Snackbar.Add("El nombre de la categoría es requerido.", Severity.Warning);
-                return;
-            }
+		private void EditarCategoria(CategoriaCatalogo cat)
+		{
+			var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
+			categoriaActual = new CategoriaCatalogo
+			{
+				iIdCategoriaCat = cat.iIdCategoriaCat,
+				iIdEmpresa = targetId,
+				vchNombre = cat.vchNombre,
+				iOrdenAparicion = cat.iOrdenAparicion
+			};
+			dialogCategoriaVisible = true;
+		}
 
-            var result = await Data.PostSaveCategoria(categoriaActual);
-            if (result.bResult)
-            {
-                var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
-                await Data.PostGetCategorias(targetId);
-                Snackbar.Add("Categoría guardada exitosamente.", Severity.Success);
-                dialogCategoriaVisible = false;
-            }
-            else
-            {
-                Snackbar.Add(result.vchMessage, Severity.Error);
-            }
-        }
+		private async Task GuardarCategoria()
+		{
+			if (string.IsNullOrWhiteSpace(categoriaActual.vchNombre))
+			{
+				Snackbar.Add("El nombre de la categoría es requerido.", Severity.Warning);
+				return;
+			}
 
-        // ---------- PRODUCTO / SERVICIO ----------
-        private void AbrirDialogoNuevoProducto()
-        {
-            if (categoriaSeleccionada == null || categoriaSeleccionada.iIdCategoriaCat <= 0)
-            {
-                Snackbar.Add("Debes seleccionar una categoría primero.", Severity.Warning);
-                return;
-            }
+			var result = await Data.PostSaveCategoria(categoriaActual);
+			if (result.bResult)
+			{
+				var targetId = EmpresaModel?.iIdEmpresa ?? Data.RegistroSeleccionado.iIdEmpresa;
+				await Data.PostGetCategorias(targetId);
+				Snackbar.Add("Categoría guardada exitosamente.", Severity.Success);
+				dialogCategoriaVisible = false;
+			}
+			else
+			{
+				Snackbar.Add(result.vchMessage, Severity.Error);
+			}
+		}
 
-            productoActual = new ProductoServicio
-            {
-                iIdCategoriaCat = categoriaSeleccionada.iIdCategoriaCat,
-                bEstatus = true,
-                mPrecio = 0
-            };
-            dialogProductoVisible = true;
-        }
+		// ---------- PRODUCTO / SERVICIO ----------
+		private void AbrirDialogoNuevoProducto()
+		{
+			if (categoriaSeleccionada == null || categoriaSeleccionada.iIdCategoriaCat <= 0)
+			{
+				Snackbar.Add("Debes seleccionar una categoría primero.", Severity.Warning);
+				return;
+			}
 
-        private void EditarProducto(ProductoServicio prod)
-        {
-            productoActual = new ProductoServicio
-            {
-                iIdProducto = prod.iIdProducto,
-                iIdCategoriaCat = prod.iIdCategoriaCat,
-                vchNombre = prod.vchNombre,
-                nvchDescripcionCorta = prod.nvchDescripcionCorta,
-                mPrecio = prod.mPrecio,
-                vchImagenUrl = prod.vchImagenUrl,
-                bAplicaDescuento = prod.bAplicaDescuento,
-                mPrecioDescuento = prod.mPrecioDescuento,
-                bEstatus = prod.bEstatus
-            };
-            dialogProductoVisible = true;
-        }
+			productoActual = new ProductoServicio
+			{
+				iIdCategoriaCat = categoriaSeleccionada.iIdCategoriaCat,
+				bEstatus = true,
+				mPrecio = 0
+			};
+			dialogProductoVisible = true;
+		}
 
-        private async Task GuardarProducto()
-        {
-            if (string.IsNullOrWhiteSpace(productoActual.vchNombre))
-            {
-                Snackbar.Add("El nombre del servicio es requerido.", Severity.Warning);
-                return;
-            }
+		private void EditarProducto(ProductoServicio prod)
+		{
+			productoActual = new ProductoServicio
+			{
+				iIdProducto = prod.iIdProducto,
+				iIdCategoriaCat = prod.iIdCategoriaCat,
+				vchNombre = prod.vchNombre,
+				nvchDescripcionCorta = prod.nvchDescripcionCorta,
+				mPrecio = prod.mPrecio,
+				vchImagenUrl = prod.vchImagenUrl,
+				bAplicaDescuento = prod.bAplicaDescuento,
+				mPrecioDescuento = prod.mPrecioDescuento,
+				bEstatus = prod.bEstatus
+			};
+			dialogProductoVisible = true;
+		}
 
-            var result = await Data.PostSaveProducto(productoActual, categoriaSeleccionada.iIdCategoriaCat);
-            if (result.bResult)
-            {
-                await Data.PostGetProductos(categoriaSeleccionada.iIdCategoriaCat);
-                Snackbar.Add("Servicio guardado exitosamente.", Severity.Success);
-                dialogProductoVisible = false;
-            }
-            else
-            {
-                Snackbar.Add(result.vchMessage, Severity.Error);
-            }
-        }
+		private async Task GuardarProducto()
+		{
+			if (string.IsNullOrWhiteSpace(productoActual.vchNombre))
+			{
+				Snackbar.Add("El nombre del servicio es requerido.", Severity.Warning);
+				return;
+			}
 
-        private async Task UploadImagenProducto(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
-        {
-            if (file == null) return;
+			var result = await Data.PostSaveProducto(productoActual, categoriaSeleccionada.iIdCategoriaCat);
+			if (result.bResult)
+			{
+				await Data.PostGetProductos(categoriaSeleccionada.iIdCategoriaCat);
+				Snackbar.Add("Servicio guardado exitosamente.", Severity.Success);
+				dialogProductoVisible = false;
+			}
+			else
+			{
+				Snackbar.Add(result.vchMessage, Severity.Error);
+			}
+		}
 
-            try
-            {
-                var result = await Data.PostUploadLogo(file);
-                if (result != null && result.IsSuccess && result.Data != null && !string.IsNullOrEmpty(result.Data.URL))
-                {
-                    productoActual.vchImagenUrl = result.Data.URL;
-                    Snackbar.Add("Imagen del producto subida exitosamente.", Severity.Success);
-                }
-                else
-                {
-                    Snackbar.Add(result?.Message ?? "Error al subir la imagen.", Severity.Error);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Snackbar.Add($"Ocurrió un error al subir la imagen: {ex.Message}", Severity.Error);
-            }
-        }
-    }
+		private async Task UploadImagenProducto(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
+		{
+			if (file == null) return;
+
+			try
+			{
+				var result = await Data.PostUploadLogo(file);
+				if (result != null && result.IsSuccess && result.Data != null && !string.IsNullOrEmpty(result.Data.URL))
+				{
+					productoActual.vchImagenUrl = result.Data.URL;
+					Snackbar.Add("Imagen del producto subida exitosamente.", Severity.Success);
+				}
+				else
+				{
+					Snackbar.Add(result?.Message ?? "Error al subir la imagen.", Severity.Error);
+				}
+			}
+			catch (System.Exception ex)
+			{
+				Snackbar.Add($"Ocurrió un error al subir la imagen: {ex.Message}", Severity.Error);
+			}
+		}
+	}
 }

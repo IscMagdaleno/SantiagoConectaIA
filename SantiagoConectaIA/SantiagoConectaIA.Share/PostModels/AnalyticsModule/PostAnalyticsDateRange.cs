@@ -1,5 +1,3 @@
-using System;
-
 namespace SantiagoConectaIA.Share.PostModels.AnalyticsModule
 {
 	public class PostAnalyticsDateRange

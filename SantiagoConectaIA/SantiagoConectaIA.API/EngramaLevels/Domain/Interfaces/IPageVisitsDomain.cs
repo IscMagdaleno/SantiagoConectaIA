@@ -1,6 +1,5 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using EngramaCoreStandar.Results;
+
 using SantiagoConectaIA.Share.Objects.PageVisitsModule;
 using SantiagoConectaIA.Share.PostModels.PageVisitsModule;
 

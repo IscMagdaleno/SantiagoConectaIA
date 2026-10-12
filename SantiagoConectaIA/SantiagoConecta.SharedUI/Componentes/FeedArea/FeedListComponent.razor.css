@@ -1,0 +1,558 @@
+.feed-area {
+    position: relative;
+    z-index: 10;
+    padding: 24px 0 72px;
+}
+
+.feed-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.feed-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.feed-header h2 {
+    margin: 0;
+    color: #880e4f;
+    font-weight: 800;
+}
+
+.feed-header p {
+    max-width: 560px;
+    margin: 8px auto 0;
+    color: #666;
+}
+
+/* ---------- Compositor ---------- */
+.feed-composer,
+.feed-composer-abierto {
+    margin-bottom: 18px;
+    border: 2px solid transparent;
+    border-radius: 24px;
+    background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(135deg, #d81b60, #7b1fa2, #ff8a65) border-box;
+    box-shadow: 0 20px 40px -20px rgba(123, 31, 162, 0.55);
+}
+
+.feed-composer {
+    padding: 14px 16px 12px;
+}
+
+.feed-composer-prompt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.feed-composer-avatar {
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 2px #cd4472;
+}
+
+.feed-composer-avatar--inicial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #9b45c9, #cd4472);
+}
+
+.feed-composer-input {
+    flex: 1;
+    min-width: 0;
+    padding: 13px 18px;
+    border-radius: 999px;
+    background: #fbf3f8;
+    color: #8a6b7c;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.feed-composer-prompt:hover .feed-composer-input {
+    background: #fce4ef;
+    color: #880e4f;
+}
+
+.feed-composer-atajos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.feed-composer-atajos button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: #f5ecfa;
+    color: #6a1b9a;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.feed-composer-atajos button:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, #d81b60, #7b1fa2);
+    color: #fff;
+}
+
+.feed-composer-atajos ::deep .mud-icon-root,
+.feed-composer-barra ::deep .mud-icon-root,
+.feed-filter-pill ::deep .mud-icon-root {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+}
+
+.feed-composer-abierto {
+    overflow: hidden;
+    animation: feedAparecer 0.3s ease both;
+}
+
+.feed-composer-abierto ::deep .mud-paper {
+    box-shadow: none !important;
+    border: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.feed-composer-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    color: #fff;
+    font-weight: 800;
+    background: linear-gradient(135deg, #d81b60, #7b1fa2);
+}
+
+.feed-composer-barra span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.feed-composer-cerrar {
+    display: inline-flex;
+    padding: 6px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    cursor: pointer;
+}
+
+.feed-composer-cerrar:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* ---------- Invitacion para visitantes ---------- */
+.feed-invitacion {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 16px 18px;
+    border-radius: 24px;
+    color: #fff;
+    background:
+        radial-gradient(circle at 95% 10%, rgba(255, 255, 255, 0.25), transparent 45%),
+        linear-gradient(135deg, #d81b60, #7b1fa2);
+    box-shadow: 0 22px 40px -18px rgba(123, 31, 162, 0.7);
+}
+
+.feed-invitacion-icono {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.feed-invitacion-icono ::deep .mud-icon-root {
+    width: 28px;
+    height: 28px;
+    font-size: 28px;
+}
+
+.feed-invitacion-texto {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.35;
+}
+
+.feed-invitacion-texto span {
+    font-size: 0.88rem;
+    opacity: 0.92;
+}
+
+.feed-invitacion-boton {
+    flex: 0 0 auto;
+    padding: 11px 20px;
+    border-radius: 999px;
+    background: #fff;
+    color: #880e4f;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease;
+}
+
+.feed-invitacion-boton:hover {
+    transform: translateY(-2px) scale(1.03);
+    color: #880e4f;
+}
+
+/* ---------- Filtros ---------- */
+.feed-filters {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 2px 16px;
+    margin-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.feed-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.feed-filter-pill {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 17px;
+    border: 1.5px solid #f3c6d8;
+    border-radius: 999px;
+    background: #fff;
+    color: #880e4f;
+    font-size: 0.88rem;
+    font-weight: 800;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.feed-filter-pill:hover {
+    transform: translateY(-2px);
+    background: #fff0f6;
+}
+
+.feed-filter-pill.is-active {
+    border-color: transparent;
+    color: #fff;
+    background: linear-gradient(135deg, #d81b60, #7b1fa2);
+    box-shadow: 0 12px 22px -8px rgba(216, 27, 96, 0.65);
+}
+
+.feed-filter-pill:focus-visible,
+.feed-composer-prompt:focus-visible,
+.feed-composer-atajos button:focus-visible,
+.feed-error button:focus-visible {
+    outline: 3px solid rgba(216, 27, 96, 0.5);
+    outline-offset: 2px;
+}
+
+/* ---------- Lista ---------- */
+.feed-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+.feed-item {
+    display: flex;
+    animation: feedEntrar 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+.feed-item ::deep .feed-card {
+    width: 100%;
+}
+
+@keyframes feedEntrar {
+    from { opacity: 0; transform: translateY(28px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes feedAparecer {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Separadores de seccion ---------- */
+.feed-divider {
+    --fd-a: #d81b60;
+    --fd-b: #ff8a65;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 10px 0 -4px;
+    animation: feedEntrar 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+.feed-divider::after {
+    content: "";
+    flex: 1;
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--fd-a), transparent);
+    opacity: 0.55;
+}
+
+.feed-divider--p1 { --fd-a: #7b1fa2; --fd-b: #d16ba5; }
+.feed-divider--p2 { --fd-a: #d81b60; --fd-b: #ff8a65; }
+.feed-divider--p3 { --fd-a: #00796b; --fd-b: #4db6ac; }
+
+.feed-divider-icono {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--fd-a), var(--fd-b));
+    box-shadow: 0 12px 20px -8px var(--fd-a);
+}
+
+.feed-divider-icono ::deep .mud-icon-root {
+    width: 26px;
+    height: 26px;
+    font-size: 26px;
+}
+
+.feed-divider-texto {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.feed-divider-texto strong {
+    color: #2b0a3d;
+    font-size: 1.12rem;
+    font-weight: 800;
+}
+
+.feed-divider-texto small {
+    color: #7d6f86;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+/* ---------- Estados ---------- */
+.feed-error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: #fff4e5;
+    color: #8a4b00;
+    font-weight: 600;
+}
+
+.feed-error span {
+    flex: 1;
+}
+
+.feed-error button {
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: #d81b60;
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.feed-cargando,
+.feed-final {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 28px 0;
+    color: #8a7a92;
+    font-weight: 600;
+}
+
+.feed-final ::deep .mud-icon-root {
+    color: #4db6ac;
+}
+
+.feed-vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 48px 16px;
+    text-align: center;
+    color: #7d6f86;
+}
+
+.feed-vacio ::deep .mud-icon-root {
+    width: 56px;
+    height: 56px;
+    font-size: 56px;
+    color: #cd4472;
+    opacity: 0.6;
+}
+
+.feed-vacio strong {
+    color: #4a148c;
+    font-size: 1.15rem;
+}
+
+.feed-centinela {
+    height: 1px;
+    width: 100%;
+}
+
+/* ---------- Esqueleto de carga ---------- */
+.feed-skeleton {
+    margin-bottom: 26px;
+    padding: 18px;
+    border-radius: 26px;
+    background: #fff;
+    box-shadow: 0 18px 36px -20px rgba(136, 14, 79, 0.4);
+}
+
+.feed-skeleton-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.feed-skeleton-circulo,
+.feed-skeleton-bloque,
+.feed-skeleton-lineas i {
+    position: relative;
+    overflow: hidden;
+    background: #f3e7ee;
+}
+
+.feed-skeleton-circulo::after,
+.feed-skeleton-bloque::after,
+.feed-skeleton-lineas i::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+    animation: feedBrillo 1.4s infinite;
+}
+
+.feed-skeleton-circulo {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.feed-skeleton-lineas {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.feed-skeleton-lineas i {
+    display: block;
+    height: 12px;
+    border-radius: 8px;
+}
+
+.feed-skeleton-lineas i:first-child {
+    width: 55%;
+}
+
+.feed-skeleton-lineas i:last-child {
+    width: 85%;
+}
+
+.feed-skeleton-bloque {
+    height: 190px;
+    margin-bottom: 14px;
+    border-radius: 18px;
+}
+
+.feed-skeleton-texto {
+    flex: none;
+}
+
+@keyframes feedBrillo {
+    to { transform: translateX(100%); }
+}
+
+@media (max-width: 575.98px) {
+    .feed-container {
+        padding: 0 12px;
+    }
+
+    .feed-lista {
+        gap: 22px;
+    }
+
+    .feed-invitacion {
+        flex-wrap: wrap;
+    }
+
+    .feed-invitacion-boton {
+        flex: 1 1 100%;
+        text-align: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .feed-item,
+    .feed-divider,
+    .feed-composer-abierto,
+    .feed-skeleton-circulo::after,
+    .feed-skeleton-bloque::after,
+    .feed-skeleton-lineas i::after {
+        animation: none !important;
+    }
+
+    .feed-filter-pill:hover,
+    .feed-composer-atajos button:hover,
+    .feed-invitacion-boton:hover {
+        transform: none;
+    }
+}

@@ -1,5 +1,3 @@
-using System;
-
 namespace SantiagoConectaIA.Share.PostModels.ConversationalModule
 {
 	public class PostSaveChat

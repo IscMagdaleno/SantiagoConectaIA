@@ -1,12 +1,13 @@
 using EngramaCoreStandar.Extensions;
 using EngramaCoreStandar.Results;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 using Microsoft.EntityFrameworkCore;
-using SantiagoConectaIA.DAL.Models;
+
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
-using SantiagoConectaIA.Share.Objects.OficinasModule;
+using SantiagoConectaIA.API.Services;
+using SantiagoConectaIA.DAL.Models;
 using SantiagoConectaIA.Share.PostModels.ConversationalModule;
 
 namespace SantiagoConectaIA.API.Controllers
@@ -59,6 +60,7 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		[HttpPost("PostGetChat")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> PostGetChat([FromBody] PostGetChat model)
 		{
 			var result = await _conversationalDominio.GetChat(model);
@@ -75,6 +77,7 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		[HttpPost("PostSaveChat")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> PostSaveChat([FromBody] PostSaveChat model)
 		{
 			var result = await _conversationalDominio.SaveChat(model);
@@ -83,6 +86,7 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		[HttpPost("PostGetMensaje")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> PostGetMensaje([FromBody] PostGetMensaje model)
 		{
 			var result = await _conversationalDominio.GetMensaje(model);
@@ -99,6 +103,7 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		[HttpPost("PostSaveMensaje")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> PostSaveMensaje([FromBody] PostSaveMensaje model)
 		{
 			var result = await _conversationalDominio.SaveMensaje(model);
@@ -107,6 +112,7 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		[HttpPost("PostSeedMockData")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> PostSeedMockData()
 		{
 			try

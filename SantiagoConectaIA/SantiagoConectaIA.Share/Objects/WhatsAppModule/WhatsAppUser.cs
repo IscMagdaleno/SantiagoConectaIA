@@ -1,5 +1,3 @@
-using System;
-
 namespace SantiagoConectaIA.Share.Objects.WhatsAppModule
 {
 	public class WhatsAppUser

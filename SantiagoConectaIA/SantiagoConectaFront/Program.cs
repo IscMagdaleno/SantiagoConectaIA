@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using SantiagoConectaFront;
-using SantiagoConecta.SharedUI.Data;
-using Microsoft.Extensions.DependencyInjection;
-using System.Globalization;
 using Microsoft.JSInterop;
+
 using MudBlazor.Services;
+
+using SantiagoConecta.SharedUI.Data;
+
+using SantiagoConectaFront;
+
+using System.Globalization;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -30,7 +33,7 @@ builder.Services.AddScoped<Data_Eventos>();
 builder.Services.AddScoped<Data_InformacionLocal>();
 builder.Services.AddScoped<Data_BuzonCiudadano>();
 builder.Services.AddScoped<Data_Emprendimientos>();
-builder.Services.AddScoped<Data_Analytics>(); 
+builder.Services.AddScoped<Data_Analytics>();
 builder.Services.AddScoped<Data_Feed>();
 builder.Services.AddScoped<Data_EmprendimientosFeed>();
 builder.Services.AddScoped<Data_Ciudadano>();
@@ -49,9 +52,9 @@ var jsInterop = host.Services.GetRequiredService<IJSRuntime>();
 var result = await jsInterop.InvokeAsync<string>("blazorCulture.get");
 CultureInfo culture;
 if (result != null)
-    culture = new CultureInfo(result);
+	culture = new CultureInfo(result);
 else
-    culture = new CultureInfo("es-MX");
+	culture = new CultureInfo("es-MX");
 
 CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;

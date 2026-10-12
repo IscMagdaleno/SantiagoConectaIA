@@ -48,7 +48,7 @@ BEGIN
             T.dtFechaCreacion,
             T.dtFechaActualizacion,
             T.bActivo
-        FROM dbo.Tramite T WITH(NOLOCK)
+        FROM SCIA.Tramite T WITH(NOLOCK)
         WHERE T.bActivo = 1
           AND (
                 @vchTexto IS NULL

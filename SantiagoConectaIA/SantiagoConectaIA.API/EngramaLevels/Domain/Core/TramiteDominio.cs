@@ -81,12 +81,12 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 			try
 			{
 				var model = mapperHelper.Get<PostSaveTramite, spSaveTramite.Request>(PostModel);
-				
-				model.jsonRequisitos = PostModel.Requisitos != null && PostModel.Requisitos.Any() 
+
+				model.jsonRequisitos = PostModel.Requisitos != null && PostModel.Requisitos.Any()
 					? System.Text.Json.JsonSerializer.Serialize(PostModel.Requisitos) : null;
-				model.jsonPasos = PostModel.Pasos != null && PostModel.Pasos.Any() 
+				model.jsonPasos = PostModel.Pasos != null && PostModel.Pasos.Any()
 					? System.Text.Json.JsonSerializer.Serialize(PostModel.Pasos) : null;
-				model.jsonDocumentos = PostModel.Documentos != null && PostModel.Documentos.Any() 
+				model.jsonDocumentos = PostModel.Documentos != null && PostModel.Documentos.Any()
 					? System.Text.Json.JsonSerializer.Serialize(PostModel.Documentos) : null;
 
 				var result = await tramitesRepository.spSaveTramite(model);
@@ -94,7 +94,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 				if (validation.IsSuccess)
 				{
 					PostModel.iIdTramite = validation.Data.iIdTramite;
-					
+
 					// Mapeo manual básico para evitar excepciones de AutoMapper con listas complejas anidadas
 					validation.Data.vchNombre = PostModel.vchNombre;
 					validation.Data.nvchDescripcion = PostModel.nvchDescripcion;
@@ -182,7 +182,7 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Core
 					bPrecioCalculado = r.bPrecioCalculado,
 					iIdOficina = r.iIdOficina,
 					bActivo = true, // Asumimos true si viene del SP o agregar campo bActivo en Result
-					
+
 					// Mapeo del objeto anidado Oficina
 					Oficina = new Oficina
 					{

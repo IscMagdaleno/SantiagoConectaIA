@@ -1,25 +1,72 @@
 @using SantiagoConecta.SharedUI.Data
+@using SantiagoConecta.SharedUI.Componentes.PublicacionesCiudadanoArea
 @using SantiagoConectaIA.Share.Objects.FeedModule
 @using SantiagoConectaIA.Share.PostModels.FeedModule
 @inject Data_Feed DataFeed
+@inject CiudadanoSession Session
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
-<section class="feed-area" style="padding: 24px 0 48px; position: relative; z-index: 10;">
-    <div class="container">
+<section class="feed-area">
+    <div class="feed-container">
         @if (ShowHeader)
         {
-            <div class="row mb-4">
-                <div class="col-lg-12">
-                    <div class="center-heading mb-3">
-                        <h2 class="section-title" style="color: #880e4f; font-weight: 800;">Explora Santiago</h2>
-                        <p style="color: #666; max-width: 640px; margin: 8px auto 0;">Trámites, noticias, eventos, emprendimientos y datos curiosos del municipio en un solo feed.</p>
-                    </div>
-                </div>
+            <div class="feed-header">
+                <h2>Explora Santiago</h2>
+                <p>Lo que publica tu comunidad, las noticias y eventos del día y mucho más de Santiago.</p>
             </div>
         }
 
         <FeedSearchBar />
+
+        @* ---------- Compositor: invita a publicar ---------- *@
+        @if (Session.IsLoggedIn)
+        {
+            @if (_composerOpen)
+            {
+                <div class="feed-composer-abierto">
+                    <div class="feed-composer-barra">
+                        <span><MudIcon Icon="@Icons.Material.Filled.EditNote" /> Nueva publicación</span>
+                        <button type="button" class="feed-composer-cerrar" @onclick="CloseComposer" aria-label="Cerrar">
+                            <MudIcon Icon="@Icons.Material.Filled.Close" />
+                        </button>
+                    </div>
+                    <CrearPublicacionComponent OnPublicacionGuardada="OnPublicacionGuardadaAsync" />
+                </div>
+            }
+            else
+            {
+                <div class="feed-composer">
+                    <button type="button" class="feed-composer-prompt" @onclick="OpenComposer">
+                        @if (!string.IsNullOrWhiteSpace(Session.AvatarUrl))
+                        {
+                            <img class="feed-composer-avatar" src="@Session.AvatarUrl" alt="" referrerpolicy="no-referrer" />
+                        }
+                        else
+                        {
+                            <span class="feed-composer-avatar feed-composer-avatar--inicial">@AliasInicial</span>
+                        }
+                        <span class="feed-composer-input">¿Qué está pasando en Santiago@(string.IsNullOrWhiteSpace(Session.Alias) ? "" : $", {Session.Alias}")?</span>
+                    </button>
+                    <div class="feed-composer-atajos">
+                        <button type="button" @onclick="OpenComposer"><MudIcon Icon="@Icons.Material.Filled.Campaign" /> Compartir un aviso</button>
+                        <button type="button" @onclick="OpenComposer"><MudIcon Icon="@Icons.Material.Filled.HelpOutline" /> Hacer una pregunta</button>
+                        <button type="button" @onclick="OpenComposer"><MudIcon Icon="@Icons.Material.Filled.AddPhotoAlternate" /> Subir fotos</button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="feed-invitacion">
+                <span class="feed-invitacion-icono"><MudIcon Icon="@Icons.Material.Filled.Forum" /></span>
+                <div class="feed-invitacion-texto">
+                    <strong>Tu voz cuenta en Santiago</strong>
+                    <span>Regístrate gratis para publicar, comentar y que todos vean lo que compartes.</span>
+                </div>
+                <a class="feed-invitacion-boton" href="/unete">Únete y publica</a>
+            </div>
+        }
 
         <div class="feed-filters" role="tablist" aria-label="Filtrar por tipo">
             @foreach (var filter in _filters)
@@ -28,136 +75,112 @@
                         class="feed-filter-pill @(_tipoFiltro == filter.Value ? "is-active" : null)"
                         role="tab"
                         aria-selected="@(_tipoFiltro == filter.Value)"
-                        disabled="@_isLoading"
                         @onclick="() => SetFilterAsync(filter.Value)">
-                    @filter.Label
+                    <MudIcon Icon="@filter.Icon" />
+                    <span>@filter.Label</span>
                 </button>
             }
         </div>
 
         @if (!string.IsNullOrWhiteSpace(_errorMessage))
         {
-            <MudAlert Severity="Severity.Warning" Class="mb-3">@_errorMessage</MudAlert>
+            <div class="feed-error" role="alert">
+                <MudIcon Icon="@Icons.Material.Filled.WifiOff" />
+                <span>@_errorMessage</span>
+                <button type="button" @onclick="RetryAsync">Reintentar</button>
+            </div>
         }
 
-        <div class="row feed-grid g-3 g-lg-4">
-            @foreach (var card in _items)
+        <div class="feed-lista">
+            @for (var i = 0; i < _items.Count; i++)
             {
-                <div class="col-12 col-lg-6 feed-item">
-                    <FeedCardComponent Card="card" />
+                var entry = _items[i];
+                var divider = DividerBefore(i);
+                var delay = Math.Min(i % _pageSize, 8);
+
+                if (divider is not null)
+                {
+                    <div class="feed-divider feed-divider--p@(entry.Ronda > 0 ? 3 : entry.Card.iPrioridad)" @key="@($"d-{entry.Ronda}-{entry.Card.iPrioridad}-{i}")" style="--i:@delay">
+                        <span class="feed-divider-icono"><MudIcon Icon="@divider.Value.Icono" /></span>
+                        <span class="feed-divider-texto">
+                            <strong>@divider.Value.Titulo</strong>
+                            <small>@divider.Value.Subtitulo</small>
+                        </span>
+                    </div>
+                }
+
+                <div class="feed-item" @key="entry" style="--i:@delay">
+                    <FeedCardComponent Card="entry.Card" />
                 </div>
             }
         </div>
 
         @if (_isLoading)
         {
-            <div class="d-flex justify-content-center py-4">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            </div>
+            if (_items.Count == 0)
+            {
+                for (var s = 0; s < 3; s++)
+                {
+                    <div class="feed-skeleton" aria-hidden="true">
+                        <div class="feed-skeleton-cabecera">
+                            <span class="feed-skeleton-circulo"></span>
+                            <span class="feed-skeleton-lineas"><i></i><i></i></span>
+                        </div>
+                        <div class="feed-skeleton-bloque"></div>
+                        <div class="feed-skeleton-lineas feed-skeleton-texto"><i></i><i></i><i></i></div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="feed-cargando">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+                    <span>Buscando más de Santiago…</span>
+                </div>
+            }
         }
         else if (!_hasMore && _items.Count > 0)
         {
-            <div class="text-center py-3" style="color: #9e9e9e; font-size: 0.9rem;">
-                Has llegado al final del feed.
+            <div class="feed-final">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" />
+                <span>Has visto todo en esta sección.</span>
             </div>
         }
-        else if (!_isLoading && _items.Count == 0 && string.IsNullOrWhiteSpace(_errorMessage))
+        else if (_items.Count == 0 && string.IsNullOrWhiteSpace(_errorMessage))
         {
-            <div class="text-center py-5" style="color: #757575;">
-                Aún no hay contenido para mostrar.
+            <div class="feed-vacio">
+                <MudIcon Icon="@Icons.Material.Filled.Forum" />
+                <strong>Aún no hay nada por aquí</strong>
+                <span>@(Session.IsLoggedIn ? "Sé el primero en publicar algo para tu comunidad." : "Regístrate y sé el primero en compartir algo con tu comunidad.")</span>
             </div>
         }
 
-        <div @ref="_sentinel" style="height: 1px; width: 100%;"></div>
+        <div @ref="_sentinel" class="feed-centinela"></div>
     </div>
 </section>
-
-<style>
-    .feed-filters {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 8px;
-        overflow-x: auto;
-        padding: 4px 2px 16px;
-        margin-bottom: 4px;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-    }
-
-    .feed-filter-pill {
-        flex: 0 0 auto;
-        border: 1px solid #f8bbd0;
-        background: #fff;
-        color: #880e4f;
-        border-radius: 999px;
-        padding: 8px 16px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        line-height: 1.2;
-        cursor: pointer;
-        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    }
-
-    .feed-filter-pill:hover:not(:disabled) {
-        background: #fce4ec;
-    }
-
-    .feed-filter-pill.is-active {
-        background: #880e4f;
-        border-color: #880e4f;
-        color: #fff;
-    }
-
-    .feed-filter-pill:disabled {
-        opacity: 0.65;
-        cursor: wait;
-    }
-
-    .feed-item {
-        display: flex;
-    }
-
-    .feed-item ::deep .feed-card {
-        width: 100%;
-    }
-
-    @@media (max-width: 991.98px) {
-        .feed-area .container {
-            max-width: 100%;
-            padding-left: 12px;
-            padding-right: 12px;
-        }
-
-        .feed-item {
-            margin-bottom: 16px;
-        }
-    }
-
-    @@media (min-width: 992px) {
-        .feed-area .container {
-            max-width: 960px;
-        }
-    }
-</style>
 
 @code {
     [Parameter]
     public bool ShowHeader { get; set; } = false;
 
-    private sealed record FilterOption(string Value, string Label);
+    private sealed record FilterOption(string Value, string Label, string Icon);
+
+    private sealed class FeedEntry
+    {
+        public FeedCard Card { get; init; } = new();
+        public int Ronda { get; init; }
+    }
 
     private static readonly FilterOption[] _filters =
     {
-        new("TODO", "Todo"),
-        new("PUBLICACION", "Comunidad"),
-        new("EMPRENDIMIENTO", "Emprendimientos"),
-        new("TRAMITE", "Trámites"),
-        new("NOTICIA", "Noticias"),
-        new("EVENTO", "Eventos"),
-        new("CAPSULA", "Datos Curiosos")
+        new("TODO", "Todo", Icons.Material.Filled.DynamicFeed),
+        new("PUBLICACION", "Comunidad", Icons.Material.Filled.Forum),
+        new("NOTICIA", "Noticias", Icons.Material.Filled.Article),
+        new("EVENTO", "Eventos", Icons.Material.Filled.Event),
+        new("CAPSULA", "Conoce Santiago", Icons.Material.Filled.Lightbulb)
     };
 
-    private readonly List<FeedCard> _items = new();
+    private readonly List<FeedEntry> _items = new();
     private ElementReference _sentinel;
     private DotNetObjectReference<FeedListComponent>? _dotNetRef;
     private IJSObjectReference? _module;
@@ -167,38 +190,76 @@
     private string _errorMessage = string.Empty;
     private int _page = 0;
     private int _pageSize = 10;
+    // Ronda 0 = feed priorizado (hoy primero). Rondas siguientes = contenido aleatorio sin fin.
+    private int _ronda = 0;
+    private int _itemsEnRonda = 0;
+    // Se incrementa al cambiar de filtro o recargar, para descartar respuestas que llegan tarde.
+    private int _version = 0;
     private bool _isLoading;
     private bool _hasMore = true;
     private bool _observerReady;
+    private bool _refreshPending;
+    private bool _composerOpen;
+    private bool _disposed;
+
+    private string AliasInicial => string.IsNullOrWhiteSpace(Session.Alias) ? "C" : Session.Alias.Trim().Substring(0, 1).ToUpperInvariant();
 
     protected override async Task OnInitializedAsync()
     {
+        Session.Changed += OnSessionChanged;
         await LoadNextPageAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_observerReady)
+        if (firstRender)
         {
             try
             {
-                _module = await JS.InvokeAsync<IJSObjectReference>(
-                    "import", "./_content/SantiagoConecta.SharedUI/js/feedInfinite.js");
-                _dotNetRef = DotNetObjectReference.Create(this);
-                _observer = await _module.InvokeAsync<IJSObjectReference>("observe", _sentinel, _dotNetRef);
-                _observerReady = true;
+                await Session.LoadAsync();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Feed infinite scroll init error: {ex.Message}");
+                Console.WriteLine($"Feed session load error: {ex.Message}");
+            }
+
+            if (!_observerReady)
+            {
+                try
+                {
+                    _module = await JS.InvokeAsync<IJSObjectReference>(
+                        "import", "./_content/SantiagoConecta.SharedUI/js/feedInfinite.js");
+                    _dotNetRef = DotNetObjectReference.Create(this);
+                    _observer = await _module.InvokeAsync<IJSObjectReference>("observe", _sentinel, _dotNetRef);
+                    _observerReady = true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Feed infinite scroll init error: {ex.Message}");
+                }
+            }
+        }
+
+        if (_refreshPending && _module is not null && _observer is not null)
+        {
+            _refreshPending = false;
+            try
+            {
+                await _module.InvokeVoidAsync("refresh", _observer, _sentinel);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Feed refresh error: {ex.Message}");
             }
         }
     }
 
+    private void OnSessionChanged() => _ = InvokeAsync(StateHasChanged);
+
     [JSInvokable]
     public async Task OnFeedSentinelVisible()
     {
-        if (_isLoading || !_hasMore)
+        if (_disposed || _isLoading || !_hasMore)
         {
             return;
         }
@@ -207,16 +268,49 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private void OpenComposer() => _composerOpen = true;
+
+    private void CloseComposer() => _composerOpen = false;
+
+    /// <summary>Al publicar se recarga el feed: la publicación nueva sale hasta arriba (prioridad 1).</summary>
+    private async Task OnPublicacionGuardadaAsync()
+    {
+        _composerOpen = false;
+
+        if (_tipoFiltro != "TODO" && _tipoFiltro != "PUBLICACION")
+        {
+            _tipoFiltro = "TODO";
+        }
+
+        await ResetAsync();
+    }
+
     private async Task SetFilterAsync(string tipo)
     {
-        if (string.Equals(_tipoFiltro, tipo, StringComparison.OrdinalIgnoreCase) || _isLoading)
+        if (string.Equals(_tipoFiltro, tipo, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
 
         _tipoFiltro = tipo;
+        await ResetAsync();
+    }
+
+    private async Task RetryAsync()
+    {
+        _errorMessage = string.Empty;
+        _hasMore = true;
+        await LoadNextPageAsync();
+    }
+
+    private async Task ResetAsync()
+    {
+        _version++;
+        _isLoading = false;
         _items.Clear();
         _page = 0;
+        _ronda = 0;
+        _itemsEnRonda = 0;
         _hasMore = true;
         _errorMessage = string.Empty;
         _sessionSeed = Guid.NewGuid().ToString("N");
@@ -231,8 +325,10 @@
             return;
         }
 
+        var version = _version;
         _isLoading = true;
         _errorMessage = string.Empty;
+        await InvokeAsync(StateHasChanged);
 
         try
         {
@@ -242,22 +338,25 @@
                 iPage = nextPage,
                 iPageSize = _pageSize,
                 vchSessionSeed = _sessionSeed,
-                vchTipoFiltro = _tipoFiltro
+                vchTipoFiltro = _tipoFiltro,
+                bSoloAleatorio = _ronda > 0
             });
+
+            if (version != _version)
+            {
+                return;
+            }
 
             if (response == null)
             {
-                _errorMessage = "No se pudo cargar el feed. Intenta de nuevo.";
+                _errorMessage = "No se pudo cargar el feed. Revisa tu conexión e intenta de nuevo.";
                 _hasMore = false;
                 return;
             }
 
             if (!response.IsSuccess)
             {
-                if (_items.Count == 0)
-                {
-                    _errorMessage = response.Message ?? "No hay contenido disponible.";
-                }
+                _errorMessage = response.Message ?? "No hay contenido disponible.";
                 _hasMore = false;
                 return;
             }
@@ -269,29 +368,88 @@
                 return;
             }
 
-            _items.AddRange(pageItems);
-            _page = nextPage;
-
-            var total = pageItems.First().iTotalRegistros;
-            if (pageItems.Count < _pageSize || (total > 0 && _items.Count >= total))
+            foreach (var card in pageItems)
             {
-                _hasMore = false;
+                _items.Add(new FeedEntry { Card = card, Ronda = _ronda });
+            }
+
+            _page = nextPage;
+            _itemsEnRonda += pageItems.Count;
+
+            var total = pageItems[0].iTotalRegistros;
+            var rondaAgotada = pageItems.Count < _pageSize || (total > 0 && _itemsEnRonda >= total);
+            if (rondaAgotada)
+            {
+                if (_tipoFiltro == "TODO")
+                {
+                    // Ya se recorrió todo lo del día y el archivo: seguimos con contenido aleatorio sin fin.
+                    _ronda++;
+                    _page = 0;
+                    _itemsEnRonda = 0;
+                    _sessionSeed = Guid.NewGuid().ToString("N");
+                }
+                else
+                {
+                    _hasMore = false;
+                }
             }
         }
         catch (Exception ex)
         {
-            _errorMessage = "Error de conexión al cargar el feed.";
+            if (version == _version)
+            {
+                _errorMessage = "Error de conexión al cargar el feed.";
+                _hasMore = false;
+            }
             Console.WriteLine(ex.Message);
-            _hasMore = false;
         }
         finally
         {
-            _isLoading = false;
+            if (version == _version)
+            {
+                _isLoading = false;
+                // Si el centinela sigue a la vista tras cargar, hay que pedir la siguiente página.
+                _refreshPending = _hasMore;
+            }
         }
+    }
+
+    /// <summary>Encabezado de sección que se muestra cuando cambia la prioridad (solo en la vista "Todo").</summary>
+    private (string Titulo, string Subtitulo, string Icono)? DividerBefore(int index)
+    {
+        if (_tipoFiltro != "TODO")
+        {
+            return null;
+        }
+
+        var actual = _items[index];
+        if (index > 0)
+        {
+            var previo = _items[index - 1];
+            if (previo.Ronda == actual.Ronda && previo.Card.iPrioridad == actual.Card.iPrioridad)
+            {
+                return null;
+            }
+        }
+
+        if (actual.Ronda > 0)
+        {
+            return ("Seguimos descubriendo Santiago", "Más contenido al azar para ti", Icons.Material.Filled.Shuffle);
+        }
+
+        return actual.Card.iPrioridad switch
+        {
+            1 => ("Tu comunidad publicó hoy", "Lo más nuevo de los vecinos de Santiago", Icons.Material.Filled.Forum),
+            2 => ("Lo que pasa hoy en Santiago", "Noticias y eventos del día", Icons.Material.Filled.Today),
+            _ => ("Descubre más de Santiago", "Historias, eventos y datos curiosos", Icons.Material.Filled.Explore)
+        };
     }
 
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
+        Session.Changed -= OnSessionChanged;
+
         try
         {
             if (_module is not null && _observer is not null)

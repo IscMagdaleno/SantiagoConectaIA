@@ -1,7 +1,5 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using EngramaCoreStandar.Dapper;
-using EngramaCoreStandar.Dapper.Interfaces;
+
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Entity.PageVisitsModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
 

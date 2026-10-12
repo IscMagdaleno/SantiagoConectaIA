@@ -1,35 +1,34 @@
 using EngramaCoreStandar.Extensions;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.AuthModule;
-using SantiagoConectaIA.API.EngramaLevels.Domain.Core.AuthModule;
-using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.AuthModule;
-using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository.AuthModule;
 
+using SantiagoConectaIA.API.BackgroundServices;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Core;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Core.AuthModule;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Core.EventosModule;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.AuthModule;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule;
+using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EventosModule;
 using SantiagoConectaIA.API.EngramaLevels.Domain.Servicios;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.AuthModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.EmpresasModule;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.EventosModule;
 using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository;
+using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Repository.AuthModule;
+using SantiagoConectaIA.API.Middleware;
 using SantiagoConectaIA.API.SemanticKernel;
 using SantiagoConectaIA.API.SemanticKernel.Agentes;
-using SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository;
-using SantiagoConectaIA.API.Middleware;
-using Microsoft.EntityFrameworkCore;
+using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.DAL.Models;
 using SantiagoConectaIA.DAL.Provider;
-using SantiagoConectaIA.API.BackgroundServices;
-using SantiagoConectaIA.API.Services;
-using SantiagoConectaIA.Share.PostModels.WhatsAppModule;
+using SantiagoConectaIA.EngramaLevels.API.Infrastructure.Repository;
 
 using System.Reflection;
-using SantiagoConectaIA.API.EngramaLevels.Domain.Core.EmpresasModule;
-using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EventosModule;
-using SantiagoConectaIA.API.EngramaLevels.Domain.Core.EventosModule;
-using SantiagoConectaIA.API.EngramaLevels.Infrastructure.Interfaces.EventosModule;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +38,7 @@ builder.Services.AddControllers();
 
 // Register DbContext for EF Core
 builder.Services.AddDbContext<EngramaContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EngramaCloudConnection")));
+	options.UseSqlServer(builder.Configuration.GetConnectionString("EngramaCloudConnection")));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -53,27 +52,30 @@ builder.Services.AddSingleton<IParametrosService, ParametrosService>();
 
 // JWT Config: secreto, issuer y audience desde los parámetros jwt.secret / jwt.config
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer();
+	.AddJwtBearer();
 
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-    .Configure<IParametrosService>((options, parametros) =>
-    {
-        JwtParametros Jwt() => parametros.GetJwtAsync().GetAwaiter().GetResult();
+	.Configure<IParametrosService>((options, parametros) =>
+	{
+		JwtParametros Jwt() => parametros.GetJwtAsync().GetAwaiter().GetResult();
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKeyResolver = (_, _, _, _) => new[] { JwtTokenFactory.Llave(Jwt()) },
-            ValidateIssuer = true,
-            IssuerValidator = (issuer, _, _) => issuer == Jwt().Issuer
-                ? issuer
-                : throw new SecurityTokenInvalidIssuerException($"Issuer inválido: {issuer}"),
-            ValidateAudience = true,
-            AudienceValidator = (audiences, _, _) => audiences.Contains(Jwt().Audience),
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
-        };
-    });
+		options.TokenValidationParameters = new TokenValidationParameters
+		{
+			ValidateIssuerSigningKey = true,
+			IssuerSigningKeyResolver = (_, _, _, _) => new[] { JwtTokenFactory.Llave(Jwt()) },
+			ValidateIssuer = true,
+			IssuerValidator = (issuer, _, _) => issuer == Jwt().Issuer
+				? issuer
+				: throw new SecurityTokenInvalidIssuerException($"Issuer inválido: {issuer}"),
+			ValidateAudience = true,
+			AudienceValidator = (audiences, _, _) => audiences.Contains(Jwt().Audience),
+			ValidateLifetime = true,
+			ClockSkew = TimeSpan.Zero
+		};
+	});
+
+builder.Services.AddAuthorization(AuthPolicies.Registrar);
+builder.Services.AddScoped<ReparadorImagenesPdfService>();
 
 builder.Services.AddScoped<IAuthDomain, AuthDomain>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
@@ -96,30 +98,30 @@ builder.Services.AddScoped<IEmprendimientosFeedDomain, EmprendimientosFeedDomain
 builder.Services.AddScoped<ICiudadanoDomain, CiudadanoDomain>();
 builder.Services.AddScoped<IOpinionDomain, OpinionDomain>();
 builder.Services.AddScoped<IPublicacionesCiudadanoDomain, PublicacionesCiudadanoDomain>();
-	builder.Services.AddScoped<IInformacionLocalDomain, InformacionLocalDomain>();
+builder.Services.AddScoped<IInformacionLocalDomain, InformacionLocalDomain>();
 
-	// WhatsApp Analytics services
-	builder.Services.AddScoped<IWhatsAppDomain, WhatsAppDomain>();
+// WhatsApp Analytics services
+builder.Services.AddScoped<IWhatsAppDomain, WhatsAppDomain>();
 
-	// WhatsApp Cloud API services
+// WhatsApp Cloud API services
 
 builder.Services.AddSingleton<WhatsAppMessageQueue>();
 builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
 builder.Services.AddHttpClient<IFacebookPublishService, FacebookPublishService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(30);
+	client.Timeout = TimeSpan.FromSeconds(30);
 });
 builder.Services.AddHttpClient<IGeminiPublicacionService, GeminiPublicacionService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(60);
+	client.Timeout = TimeSpan.FromSeconds(60);
 });
 builder.Services.AddHttpClient<IGeminiImagenService, GeminiImagenService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(120);
+	client.Timeout = TimeSpan.FromSeconds(120);
 });
 builder.Services.AddHttpClient<IGeminiEventoService, GeminiEventoService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(90);
+	client.Timeout = TimeSpan.FromSeconds(90);
 });
 builder.Services.AddSingleton<PublicacionesBitacora>();
 builder.Services.AddSingleton<IPublicacionAutomaticaService, PublicacionAutomaticaService>();
@@ -146,12 +148,12 @@ builder.Services.AddScoped<IEmprendimientosFeedRepository, EmprendimientosFeedRe
 builder.Services.AddScoped<ICiudadanoRepository, CiudadanoRepository>();
 builder.Services.AddScoped<IOpinionRepository, OpinionRepository>();
 builder.Services.AddScoped<IPublicacionesCiudadanoRepository, PublicacionesCiudadanoRepository>();
-	builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
+builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
 
-	// WhatsApp Analytics repository
-	builder.Services.AddScoped<IWhatsAppRepository, WhatsAppRepository>();
+// WhatsApp Analytics repository
+builder.Services.AddScoped<IWhatsAppRepository, WhatsAppRepository>();
 
-	builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
+builder.Services.AddScoped<IEngramaContextProcedures, EngramaContextProcedures>();
 builder.Services.AddScoped<INoticiasScraperService, NoticiasScraperService>();
 builder.Services.AddHostedService<DailyScraperBackgroundService>();
 builder.Services.AddHostedService<DailyFacebookPublicacionBackgroundService>();

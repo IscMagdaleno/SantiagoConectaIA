@@ -32,29 +32,29 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Validaciones básicas
-        IF NOT EXISTS (SELECT 1 FROM dbo.Oficina WHERE iIdOficina = @iIdOficina)
+        IF NOT EXISTS (SELECT 1 FROM SCIA.Oficina WHERE iIdOficina = @iIdOficina)
         BEGIN
             SET @vchError = 'Oficina no encontrada.';
             THROW 51020, @vchError, 1;
         END
 
-        IF OBJECT_ID('dbo.Tramite', 'U') IS NULL OR NOT EXISTS (SELECT 1 FROM dbo.Tramite WHERE iIdTramite = @iIdTramite)
+        IF OBJECT_ID('SCIA.Tramite', 'U') IS NULL OR NOT EXISTS (SELECT 1 FROM SCIA.Tramite WHERE iIdTramite = @iIdTramite)
         BEGIN
             SET @vchError = 'Trámite no encontrado.';
             THROW 51021, @vchError, 1;
         END
 
-        IF EXISTS (SELECT 1 FROM dbo.OficinaTramite WHERE iIdOficina = @iIdOficina AND iIdTramite = @iIdTramite)
+        IF EXISTS (SELECT 1 FROM SCIA.OficinaTramite WHERE iIdOficina = @iIdOficina AND iIdTramite = @iIdTramite)
         BEGIN
-            UPDATE dbo.OficinaTramite
+            UPDATE SCIA.OficinaTramite
             SET vchObservacion = @vchObservacion, bActivo = @bActivo
             WHERE iIdOficina = @iIdOficina AND iIdTramite = @iIdTramite;
 
-            SELECT @iIdOficinaTramite = iIdOficinaTramite FROM dbo.OficinaTramite WHERE iIdOficina = @iIdOficina AND iIdTramite = @iIdTramite;
+            SELECT @iIdOficinaTramite = iIdOficinaTramite FROM SCIA.OficinaTramite WHERE iIdOficina = @iIdOficina AND iIdTramite = @iIdTramite;
         END
         ELSE
         BEGIN
-            INSERT INTO dbo.OficinaTramite (iIdOficina, iIdTramite, vchObservacion, bActivo, dtFechaCreacion)
+            INSERT INTO SCIA.OficinaTramite (iIdOficina, iIdTramite, vchObservacion, bActivo, dtFechaCreacion)
             VALUES (@iIdOficina, @iIdTramite, @vchObservacion, @bActivo, GETDATE());
 
             SET @iIdOficinaTramite = SCOPE_IDENTITY();
@@ -73,7 +73,7 @@ BEGIN
     IF LEN(@vchError) > 0
         INSERT INTO @Result (bResult, vchMessage) VALUES (0, @vchError);
     ELSE
-        INSERT INTO @Result (bResult, vchMessage, iIdOficinaTramite) VALUES (1, '', ISNULL(@iIdOficinaTramite, (SELECT iIdOficinaTramite FROM dbo.OficinaTramite WHERE iIdOficina = @iIdOficina AND iIdTramite = @iIdTramite)));
+        INSERT INTO @Result (bResult, vchMessage, iIdOficinaTramite) VALUES (1, '', ISNULL(@iIdOficinaTramite, (SELECT iIdOficinaTramite FROM SCIA.OficinaTramite WHERE iIdOficina = @iIdOficina AND iIdTramite = @iIdTramite)));
 
     SELECT * FROM @Result;
 END

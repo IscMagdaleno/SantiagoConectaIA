@@ -1,7 +1,7 @@
 namespace SantiagoConectaIA.Share.PostModels.EmpresasModulo
 {
-    public class PostGetEmpresaRedesSociales
-    {
-        public int iIdEmpresa { get; set; } = -1;
-    }
+	public class PostGetEmpresaRedesSociales
+	{
+		public int iIdEmpresa { get; set; } = -1;
+	}
 }

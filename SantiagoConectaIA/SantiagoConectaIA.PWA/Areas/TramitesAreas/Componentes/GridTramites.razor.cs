@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Components;
 
 using SantiagoConectaIA.PWA.Areas.TramitesAreas.Utiles;
-using SantiagoConectaIA.PWA.Shared.Common;
-using SantiagoConectaIA.Share.Objects.TramitesModule;
-
 using SantiagoConectaIA.PWA.Shared.Workspace;
+using SantiagoConectaIA.Share.Objects.TramitesModule;
 
 namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 {
@@ -47,7 +45,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			Loading.Show();
 			ShowSnake(await Data.PostGetTramiteDetalle(tramite.iIdTramite));
 			var tramiteModel = CloneTramite(Data.TramiteSelected);
-			
+
 			var type = typeof(FormTramites);
 			var tab = new WorkspaceTab
 			{
@@ -88,7 +86,7 @@ namespace SantiagoConectaIA.PWA.Areas.TramitesAreas.Componentes
 			Loading.Show();
 			ShowSnake(await Data.PostGetTramiteDetalle(tramite.iIdTramite));
 			var tramiteModel = CloneTramite(Data.TramiteSelected);
-			
+
 			var type = typeof(FormTramites);
 			var tab = new WorkspaceTab
 			{

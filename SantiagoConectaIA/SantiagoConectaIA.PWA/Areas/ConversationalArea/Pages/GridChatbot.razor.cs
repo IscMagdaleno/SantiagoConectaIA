@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using EngramaCoreStandar.Results;
 using EngramaCoreStandar.Dapper.Results;
+using EngramaCoreStandar.Results;
+
+using Microsoft.AspNetCore.Components;
+
 using SantiagoConectaIA.PWA.Areas.ConversationalArea.Utiles;
-using SantiagoConectaIA.PWA.Shared.Common;
-using SantiagoConectaIA.Share.Objects.ConversationalModule;
 using SantiagoConectaIA.PWA.Shared.Workspace;
+using SantiagoConectaIA.Share.Objects.ConversationalModule;
 
 namespace SantiagoConectaIA.PWA.Areas.ConversationalArea.Pages
 {

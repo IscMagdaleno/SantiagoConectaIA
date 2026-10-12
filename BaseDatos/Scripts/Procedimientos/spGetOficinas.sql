@@ -44,7 +44,7 @@ BEGIN
             O.bActivo,
             O.dtFechaCreacion,
             O.vchUrlDireccion
-        FROM dbo.Oficina O WITH(NOLOCK)
+        FROM SCIA.Oficina O WITH(NOLOCK)
         WHERE (@iIdOficina = 0 OR O.iIdOficina = @iIdOficina)
           AND (@bActivo = 0 OR O.bActivo = @bActivo)
 

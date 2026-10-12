@@ -1,152 +1,152 @@
-using EngramaCoreStandar.Results;
-using EngramaCoreStandar.Servicios;
-using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
-using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using EngramaCoreStandar.Dapper.Results;
 using EngramaCoreStandar.Mapper;
-using SantiagoConectaIA.Share.Objects.Common;
+using EngramaCoreStandar.Results;
+using EngramaCoreStandar.Servicios;
+
 using Microsoft.AspNetCore.Components.Forms;
+
+using SantiagoConectaIA.Share.Objects.Common;
 using SantiagoConectaIA.Share.Objects.EmpresasModulo;
+using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
+using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 
 namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
 {
-    /// <summary>
-    /// Esta clase actúa como el ViewModel para el Área de Empresas. 
-    /// </summary>
-    public class MainEmpresas
-    {
-        private string url = @"api/Empresas";
+	/// <summary>
+	/// Esta clase actúa como el ViewModel para el Área de Empresas. 
+	/// </summary>
+	public class MainEmpresas
+	{
+		private string url = @"api/Empresas";
 
-        private readonly IHttpService _httpService;
-        private readonly MapperHelper _mapper;
-        private readonly IValidaServicioService _validaServicioService;
+		private readonly IHttpService _httpService;
+		private readonly MapperHelper _mapper;
+		private readonly IValidaServicioService _validaServicioService;
 
-        // Propiedades de Estado Generales
-        public List<Empresa> LstRegistros { get; set; } = new List<Empresa>();
-        public Empresa RegistroSeleccionado { get; set; } = new Empresa();
-        public ConfiguracionVisual ConfiguracionSeleccionada { get; set; } = new ConfiguracionVisual();
-        public List<CatalogoEmpresa> LstCatalogos { get; set; } = new();
+		// Propiedades de Estado Generales
+		public List<Empresa> LstRegistros { get; set; } = new List<Empresa>();
+		public Empresa RegistroSeleccionado { get; set; } = new Empresa();
+		public ConfiguracionVisual ConfiguracionSeleccionada { get; set; } = new ConfiguracionVisual();
+		public List<CatalogoEmpresa> LstCatalogos { get; set; } = new();
 
-        // Propiedades de Estado para Pestañas
-        public List<EmpresaUbicacion> LstUbicaciones { get; set; } = new();
-        public List<EmpresaRedSocial> LstRedesSociales { get; set; } = new();
-        public List<CategoriaCatalogo> LstCategorias { get; set; } = new();
-        public List<ProductoServicio> LstProductos { get; set; } = new();
+		// Propiedades de Estado para Pestañas
+		public List<EmpresaUbicacion> LstUbicaciones { get; set; } = new();
+		public List<EmpresaRedSocial> LstRedesSociales { get; set; } = new();
+		public List<CategoriaCatalogo> LstCategorias { get; set; } = new();
+		public List<ProductoServicio> LstProductos { get; set; } = new();
 
-        public MainEmpresas(IHttpService httpService, MapperHelper mapper, IValidaServicioService validaServicioService)
-        {
-            _httpService = httpService;
-            _mapper = mapper;
-            _validaServicioService = validaServicioService;
-        }
+		public MainEmpresas(IHttpService httpService, MapperHelper mapper, IValidaServicioService validaServicioService)
+		{
+			_httpService = httpService;
+			_mapper = mapper;
+			_validaServicioService = validaServicioService;
+		}
 
-        public async Task<SeverityMessage> PostGetRegistros()
-        {
-            var APIUrl = url + "/PostGetEmpresas";
-            var request = new PostGetEmpresas { bEstatus = true };
-            var response = await _httpService.Post<PostGetEmpresas, Response<List<Empresa>>>(APIUrl, request);
-            var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => LstRegistros = data);
-            return validation;
-        }
+		public async Task<SeverityMessage> PostGetRegistros()
+		{
+			var APIUrl = url + "/PostGetEmpresas";
+			var request = new PostGetEmpresas { bEstatus = true };
+			var response = await _httpService.Post<PostGetEmpresas, Response<List<Empresa>>>(APIUrl, request);
+			var validation = _validaServicioService.ValidadionServicio(response, onSuccess: data => LstRegistros = data);
+			return validation;
+		}
 
-        public async Task<SeverityMessage> PostSaveRegistro(Empresa? empresa = null)
-        {
-            var target = empresa ?? RegistroSeleccionado;
-            var APIUrl = url + "/PostSaveEmpresa";
-            var request = _mapper.Get<Empresa, PostSaveEmpresa>(target);
-            var response = await _httpService.Post<PostSaveEmpresa, Response<Empresa>>(APIUrl, request);
-            var validation = _validaServicioService.ValidadionServicio(response, 
-                onSuccess: data => 
-                {
-                    if (data != null)
-                    {
-                        target.iIdEmpresa = data.iIdEmpresa;
-                        target.vchNombreComercial = data.vchNombreComercial;
-                        target.vchSlogan = data.vchSlogan;
-                        target.nvchDescripcion = data.nvchDescripcion;
-                        target.vchTelefono = data.vchTelefono;
-                        target.vchCorreo = data.vchCorreo;
-                        target.vchLogoUrl = data.vchLogoUrl;
-                        target.nvchMision = data.nvchMision;
-                        target.nvchVision = data.nvchVision;
-                        target.iIdCatalogoEmpresa = data.iIdCatalogoEmpresa;
-                    }
-                    RegistroSeleccionado = data ?? target;
-                });
-            return validation;
-        }
+		public async Task<SeverityMessage> PostSaveRegistro(Empresa? empresa = null)
+		{
+			var target = empresa ?? RegistroSeleccionado;
+			var APIUrl = url + "/PostSaveEmpresa";
+			var request = _mapper.Get<Empresa, PostSaveEmpresa>(target);
+			var response = await _httpService.Post<PostSaveEmpresa, Response<Empresa>>(APIUrl, request);
+			var validation = _validaServicioService.ValidadionServicio(response,
+				onSuccess: data =>
+				{
+					if (data != null)
+					{
+						target.iIdEmpresa = data.iIdEmpresa;
+						target.vchNombreComercial = data.vchNombreComercial;
+						target.vchSlogan = data.vchSlogan;
+						target.nvchDescripcion = data.nvchDescripcion;
+						target.vchTelefono = data.vchTelefono;
+						target.vchCorreo = data.vchCorreo;
+						target.vchLogoUrl = data.vchLogoUrl;
+						target.nvchMision = data.nvchMision;
+						target.nvchVision = data.nvchVision;
+						target.iIdCatalogoEmpresa = data.iIdCatalogoEmpresa;
+					}
+					RegistroSeleccionado = data ?? target;
+				});
+			return validation;
+		}
 
-        public async Task<SeverityMessage> PostGetCatalogos()
-        {
-            var APIUrl = url + "/PostGetCatalogoEmpresas";
-            var response = await _httpService.Post<PostGetCatalogoEmpresa, Response<List<CatalogoEmpresa>>>(APIUrl, new PostGetCatalogoEmpresa());
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstCatalogos = data);
-        }
+		public async Task<SeverityMessage> PostGetCatalogos()
+		{
+			var APIUrl = url + "/PostGetCatalogoEmpresas";
+			var response = await _httpService.Post<PostGetCatalogoEmpresa, Response<List<CatalogoEmpresa>>>(APIUrl, new PostGetCatalogoEmpresa());
+			return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstCatalogos = data);
+		}
 
-        public async Task<SeverityMessage> PostGetUbicaciones(int? iIdEmpresa = null)
-        {
-            int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
-            var APIUrl = url + "/PostGetEmpresaUbicaciones";
-            var response = await _httpService.Post<PostGetEmpresaUbicaciones, Response<List<EmpresaUbicacion>>>(APIUrl, new PostGetEmpresaUbicaciones { iIdEmpresa = targetId });
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstUbicaciones = data);
-        }
+		public async Task<SeverityMessage> PostGetUbicaciones(int? iIdEmpresa = null)
+		{
+			int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
+			var APIUrl = url + "/PostGetEmpresaUbicaciones";
+			var response = await _httpService.Post<PostGetEmpresaUbicaciones, Response<List<EmpresaUbicacion>>>(APIUrl, new PostGetEmpresaUbicaciones { iIdEmpresa = targetId });
+			return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstUbicaciones = data);
+		}
 
-        public async Task<SeverityMessage> PostSaveUbicacion(EmpresaUbicacion item)
-        {
-            var APIUrl = url + "/PostSaveEmpresaUbicacion";
-            var request = new PostSaveEmpresaUbicacion { EmpresaUbicacion = item };
-            var response = await _httpService.Post<PostSaveEmpresaUbicacion, Response<EmpresaUbicacion>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response);
-        }
+		public async Task<SeverityMessage> PostSaveUbicacion(EmpresaUbicacion item)
+		{
+			var APIUrl = url + "/PostSaveEmpresaUbicacion";
+			var request = new PostSaveEmpresaUbicacion { EmpresaUbicacion = item };
+			var response = await _httpService.Post<PostSaveEmpresaUbicacion, Response<EmpresaUbicacion>>(APIUrl, request);
+			return _validaServicioService.ValidadionServicio(response);
+		}
 
-        public async Task<SeverityMessage> PostGetRedesSociales(int? iIdEmpresa = null)
-        {
-            int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
-            var APIUrl = url + "/PostGetEmpresaRedesSociales";
-            var response = await _httpService.Post<PostGetEmpresaRedesSociales, Response<List<EmpresaRedSocial>>>(APIUrl, new PostGetEmpresaRedesSociales { iIdEmpresa = targetId });
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstRedesSociales = data);
-        }
+		public async Task<SeverityMessage> PostGetRedesSociales(int? iIdEmpresa = null)
+		{
+			int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
+			var APIUrl = url + "/PostGetEmpresaRedesSociales";
+			var response = await _httpService.Post<PostGetEmpresaRedesSociales, Response<List<EmpresaRedSocial>>>(APIUrl, new PostGetEmpresaRedesSociales { iIdEmpresa = targetId });
+			return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstRedesSociales = data);
+		}
 
-        public async Task<SeverityMessage> PostSaveRedSocial(EmpresaRedSocial item)
-        {
-            var APIUrl = url + "/PostSaveEmpresaRedSocial";
-            var request = new PostSaveEmpresaRedSocial { EmpresaRedSocial = item };
-            var response = await _httpService.Post<PostSaveEmpresaRedSocial, Response<EmpresaRedSocial>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response);
-        }
+		public async Task<SeverityMessage> PostSaveRedSocial(EmpresaRedSocial item)
+		{
+			var APIUrl = url + "/PostSaveEmpresaRedSocial";
+			var request = new PostSaveEmpresaRedSocial { EmpresaRedSocial = item };
+			var response = await _httpService.Post<PostSaveEmpresaRedSocial, Response<EmpresaRedSocial>>(APIUrl, request);
+			return _validaServicioService.ValidadionServicio(response);
+		}
 
-        public async Task<SeverityMessage> PostGetCategorias(int? iIdEmpresa = null)
-        {
-            int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
-            var APIUrl = url + "/PostGetCategoriasPorEmpresa";
-            var response = await _httpService.Post<PostGetCategoriasPorEmpresa, Response<List<CategoriaCatalogo>>>(APIUrl, new PostGetCategoriasPorEmpresa { iIdEmpresa = targetId });
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstCategorias = data);
-        }
+		public async Task<SeverityMessage> PostGetCategorias(int? iIdEmpresa = null)
+		{
+			int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
+			var APIUrl = url + "/PostGetCategoriasPorEmpresa";
+			var response = await _httpService.Post<PostGetCategoriasPorEmpresa, Response<List<CategoriaCatalogo>>>(APIUrl, new PostGetCategoriasPorEmpresa { iIdEmpresa = targetId });
+			return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstCategorias = data);
+		}
 
-        public async Task<SeverityMessage> PostSaveCategoria(CategoriaCatalogo item)
-        {
-            var APIUrl = url + "/PostSaveCategoriaCatalogo";
-            var request = new PostSaveCategoriaCatalogo { CategoriaCatalogo = item };
-            var response = await _httpService.Post<PostSaveCategoriaCatalogo, Response<CategoriaCatalogo>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response);
-        }
+		public async Task<SeverityMessage> PostSaveCategoria(CategoriaCatalogo item)
+		{
+			var APIUrl = url + "/PostSaveCategoriaCatalogo";
+			var request = new PostSaveCategoriaCatalogo { CategoriaCatalogo = item };
+			var response = await _httpService.Post<PostSaveCategoriaCatalogo, Response<CategoriaCatalogo>>(APIUrl, request);
+			return _validaServicioService.ValidadionServicio(response);
+		}
 
-        public async Task<SeverityMessage> PostGetProductos(int iIdCategoria)
-        {
-            var APIUrl = url + "/PostGetProductosPorCategoria";
-            var response = await _httpService.Post<PostGetProductosPorCategoria, Response<List<ProductoServicio>>>(APIUrl, new PostGetProductosPorCategoria { iIdCategoriaCat = iIdCategoria });
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstProductos = data);
-        }
+		public async Task<SeverityMessage> PostGetProductos(int iIdCategoria)
+		{
+			var APIUrl = url + "/PostGetProductosPorCategoria";
+			var response = await _httpService.Post<PostGetProductosPorCategoria, Response<List<ProductoServicio>>>(APIUrl, new PostGetProductosPorCategoria { iIdCategoriaCat = iIdCategoria });
+			return _validaServicioService.ValidadionServicio(response, onSuccess: data => LstProductos = data);
+		}
 
-        public async Task<SeverityMessage> PostSaveProducto(ProductoServicio item, int iIdCategoria)
-        {
-            var APIUrl = url + "/PostSaveProductoServicio";
-            var request = new PostSaveProductoServicio { ProductoServicio = item };
-            var response = await _httpService.Post<PostSaveProductoServicio, Response<ProductoServicio>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response);
-        }
+		public async Task<SeverityMessage> PostSaveProducto(ProductoServicio item, int iIdCategoria)
+		{
+			var APIUrl = url + "/PostSaveProductoServicio";
+			var request = new PostSaveProductoServicio { ProductoServicio = item };
+			var response = await _httpService.Post<PostSaveProductoServicio, Response<ProductoServicio>>(APIUrl, request);
+			return _validaServicioService.ValidadionServicio(response);
+		}
 
 		public async Task<Response<BlobSaved>> PostUploadLogo(IBrowserFile file, string? nombreComercial = null)
 		{
@@ -163,40 +163,40 @@ namespace SantiagoConectaIA.PWA.Areas.EmpresasArea.Utiles
 			return response.Response ?? Response<BlobSaved>.BadResult("Error al subir la imagen al servidor.", new BlobSaved());
 		}
 
-        public async Task<SeverityMessage> PostGetConfiguracionVisual(int? iIdEmpresa = null)
-        {
-            int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
-            var APIUrl = url + "/PostGetConfiguracionVisual";
-            var response = await _httpService.Post<PostGetConfiguracionVisual, Response<ConfiguracionVisual>>(APIUrl, new PostGetConfiguracionVisual { iIdEmpresa = targetId });
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => ConfiguracionSeleccionada = data ?? new ConfiguracionVisual { iIdEmpresa = targetId });
-        }
+		public async Task<SeverityMessage> PostGetConfiguracionVisual(int? iIdEmpresa = null)
+		{
+			int targetId = iIdEmpresa ?? RegistroSeleccionado.iIdEmpresa;
+			var APIUrl = url + "/PostGetConfiguracionVisual";
+			var response = await _httpService.Post<PostGetConfiguracionVisual, Response<ConfiguracionVisual>>(APIUrl, new PostGetConfiguracionVisual { iIdEmpresa = targetId });
+			return _validaServicioService.ValidadionServicio(response, onSuccess: data => ConfiguracionSeleccionada = data ?? new ConfiguracionVisual { iIdEmpresa = targetId });
+		}
 
-        public async Task<SeverityMessage> PostSaveConfiguracionVisual(ConfiguracionVisual? config = null, int? iIdEmpresa = null)
-        {
-            var targetConfig = config ?? ConfiguracionSeleccionada;
-            int targetId = iIdEmpresa ?? (targetConfig.iIdEmpresa > 0 ? targetConfig.iIdEmpresa : RegistroSeleccionado.iIdEmpresa);
-            var APIUrl = url + "/PostSaveConfiguracionVisual";
-            targetConfig.iIdEmpresa = targetId;
-            var request = new PostSaveConfiguracionVisual { ConfiguracionVisual = targetConfig };
-            var response = await _httpService.Post<PostSaveConfiguracionVisual, Response<ConfiguracionVisual>>(APIUrl, request);
-            return _validaServicioService.ValidadionServicio(response, onSuccess: data => 
-            {
-                if (data != null)
-                {
-                    targetConfig.iIdConfiguracion = data.iIdConfiguracion;
-                    targetConfig.iIdEmpresa = data.iIdEmpresa;
-                    targetConfig.iIdPlantillaBase = data.iIdPlantillaBase;
-                    targetConfig.vchColorFondoBody = data.vchColorFondoBody;
-                    targetConfig.vchColorTextoPrincipal = data.vchColorTextoPrincipal;
-                    targetConfig.vchColorTitulos = data.vchColorTitulos;
-                    targetConfig.vchColorBotones = data.vchColorBotones;
-                    targetConfig.vchColorMargenFotos = data.vchColorMargenFotos;
-                    targetConfig.vchTipografiaTitulos = data.vchTipografiaTitulos;
-                    targetConfig.vchTipografiaCuerpo = data.vchTipografiaCuerpo;
-                    targetConfig.vchEstiloBordes = data.vchEstiloBordes;
-                }
-                ConfiguracionSeleccionada = data ?? targetConfig;
-            });
-        }
-    }
+		public async Task<SeverityMessage> PostSaveConfiguracionVisual(ConfiguracionVisual? config = null, int? iIdEmpresa = null)
+		{
+			var targetConfig = config ?? ConfiguracionSeleccionada;
+			int targetId = iIdEmpresa ?? (targetConfig.iIdEmpresa > 0 ? targetConfig.iIdEmpresa : RegistroSeleccionado.iIdEmpresa);
+			var APIUrl = url + "/PostSaveConfiguracionVisual";
+			targetConfig.iIdEmpresa = targetId;
+			var request = new PostSaveConfiguracionVisual { ConfiguracionVisual = targetConfig };
+			var response = await _httpService.Post<PostSaveConfiguracionVisual, Response<ConfiguracionVisual>>(APIUrl, request);
+			return _validaServicioService.ValidadionServicio(response, onSuccess: data =>
+			{
+				if (data != null)
+				{
+					targetConfig.iIdConfiguracion = data.iIdConfiguracion;
+					targetConfig.iIdEmpresa = data.iIdEmpresa;
+					targetConfig.iIdPlantillaBase = data.iIdPlantillaBase;
+					targetConfig.vchColorFondoBody = data.vchColorFondoBody;
+					targetConfig.vchColorTextoPrincipal = data.vchColorTextoPrincipal;
+					targetConfig.vchColorTitulos = data.vchColorTitulos;
+					targetConfig.vchColorBotones = data.vchColorBotones;
+					targetConfig.vchColorMargenFotos = data.vchColorMargenFotos;
+					targetConfig.vchTipografiaTitulos = data.vchTipografiaTitulos;
+					targetConfig.vchTipografiaCuerpo = data.vchTipografiaCuerpo;
+					targetConfig.vchEstiloBordes = data.vchEstiloBordes;
+				}
+				ConfiguracionSeleccionada = data ?? targetConfig;
+			});
+		}
+	}
 }

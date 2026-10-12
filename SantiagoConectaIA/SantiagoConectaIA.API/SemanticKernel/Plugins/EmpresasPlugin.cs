@@ -1,15 +1,11 @@
 using Microsoft.SemanticKernel;
+
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces.EmpresasModule;
-using SantiagoConectaIA.Share.Objects.EmpresasModulo;
-using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
+using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
+
 using System.ComponentModel;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using EngramaCoreStandar.Extensions;
 
 namespace SantiagoConectaIA.API.SemanticKernel.Plugins
 {

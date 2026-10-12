@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.PostModels.TramitesModule;
 
 namespace SantiagoConectaIA.API.Controllers
@@ -57,6 +59,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <param name="postModel">Modelo con la información del trámite a guardar.</param>
 		/// <returns>Resultado de la operación de guardado.</returns>
 		[HttpPost("PostSaveTramite")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> PostSaveTramite([FromBody] PostSaveTramite postModel)
 		{
 			var result = await tramiteDominio.SaveTramite(postModel);
@@ -91,6 +94,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <param name="postModel">Modelo con la información del requisito a guardar.</param>
 		/// <returns>Resultado de la operación de guardado.</returns>
 		[HttpPost("PostSaveRequisito")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> PostSaveRequisito([FromBody] PostSaveRequisito postModel)
 		{
 			var result = await tramiteDominio.SaveRequisito(postModel);
@@ -140,6 +144,7 @@ namespace SantiagoConectaIA.API.Controllers
 		/// <param name="postModel">Modelo con la información del documento a guardar.</param>
 		/// <returns>Resultado de la operación de guardado del documento.</returns>
 		[HttpPost("PostSaveDocumento")]
+		[Authorize(Policy = AuthPolicies.Administracion)]
 		public async Task<IActionResult> PostSaveDocumento([FromBody] PostSaveDocumento postModel)
 		{
 			var result = await tramiteDominio.SaveDocumento(postModel);

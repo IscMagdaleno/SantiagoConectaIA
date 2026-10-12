@@ -28,7 +28,7 @@ BEGIN TRANSACTION
 
 IF  ( @iIdDocumento <= 0) 
 BEGIN 
-	INSERT INTO dbo.Documento
+	INSERT INTO SCIA.Documento
 	 ( 
 
 		iIdTramite, 			vchNombre, 			vchUrl, 	
@@ -43,7 +43,7 @@ BEGIN
 END
 ELSE
 BEGIN
-	UPDATE  dbo.Documento WITH(ROWLOCK) SET
+	UPDATE  SCIA.Documento WITH(ROWLOCK) SET
 		 iIdTramite = @iIdTramite, 
 		 vchNombre = @vchNombre, 
 		 vchUrl = @vchUrlDocumento, 

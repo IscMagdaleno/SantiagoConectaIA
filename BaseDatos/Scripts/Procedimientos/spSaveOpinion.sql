@@ -1,4 +1,4 @@
-IF OBJECT_ID('SCIA.spSaveOpinion') IS NULL
+﻿IF OBJECT_ID('SCIA.spSaveOpinion') IS NULL
     EXEC('CREATE PROCEDURE SCIA.spSaveOpinion AS SET NOCOUNT ON;');
 GO
 
@@ -35,7 +35,7 @@ BEGIN
         SET @vchTipoEntidad = UPPER(LTRIM(RTRIM(ISNULL(@vchTipoEntidad, ''))));
         SET @nvchTexto = LTRIM(RTRIM(ISNULL(@nvchTexto, N'')));
 
-        IF @vchTipoEntidad NOT IN ('NOTICIA', 'TRAMITE', 'EVENTO', 'CAPSULA') OR @iIdEntidad <= 0
+        IF @vchTipoEntidad NOT IN ('NOTICIA', 'TRAMITE', 'EVENTO', 'CAPSULA', 'PUBLICACION') OR @iIdEntidad <= 0
         BEGIN
             SET @vchError = 'Contenido inválido para opiniones.';
             GOTO _Fin;

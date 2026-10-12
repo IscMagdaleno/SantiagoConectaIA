@@ -28,7 +28,7 @@ BEGIN
         INSERT INTO #Result (iIdDocumento, iIdTramite, vchNombre, vchUrlDocumento, bActivo)
         SELECT 
             D.iIdDocumento, D.iIdTramite, D.vchNombre, D.vchUrl, D.bActivo
-        FROM dbo.Documento D WITH(NOLOCK)
+        FROM SCIA.Documento D WITH(NOLOCK)
         WHERE D.iIdTramite = @iIdTramite;
 
         IF NOT EXISTS (SELECT 1 FROM #Result WHERE iIdDocumento > 0)
