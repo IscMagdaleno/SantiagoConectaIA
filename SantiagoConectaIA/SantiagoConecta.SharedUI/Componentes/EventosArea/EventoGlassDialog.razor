@@ -1,0 +1,140 @@
+@using SantiagoConectaIA.Share.Objects.EventosModulo
+@using SantiagoConecta.SharedUI.Componentes.OpinionArea
+@using SantiagoConectaIA.Share.Utilities
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="glass-modal-overlay" @onclick="Cerrar">
+    <div class="glass-modal-container" @onclick:stopPropagation="true">
+        <!-- Barra superior estilo Instagram: Costo, Fecha + Cerrar -->
+        <div class="glass-modal-top-bar">
+            <div class="glass-modal-header">
+                <span class="glass-modal-tag">@(string.IsNullOrWhiteSpace(Evento.vchCostoTexto) ? "Entrada libre" : Evento.vchCostoTexto)</span>
+                <span style="font-size: 0.82rem; color: #716b7c; font-weight: 600;">
+                    @Evento.dtFechaInicio.ToUsuarioLocal().ToString("dddd d 'de' MMMM, HH:mm", EsMx)
+                </span>
+            </div>
+
+            <button type="button" class="glass-modal-close-btn" @onclick="Cerrar" title="Cerrar modal">
+                <MudIcon Icon="@Icons.Material.Rounded.Close" />
+            </button>
+        </div>
+
+        <div class="glass-modal-scroll">
+            <!-- 1. Imagen completa / Carrusel estilo Instagram ARRIBA -->
+            @{
+                var listaImg = Imagenes;
+            }
+            @if (listaImg.Any())
+            {
+                <div class="glass-insta-media"
+                     @ontouchstart="OnTouchStart"
+                     @ontouchend="OnTouchEnd">
+                    <div class="glass-insta-viewport">
+                        <div class="glass-insta-track" style="transform: translateX(-@(_currentIndex * 100)%);">
+                            @for (int i = 0; i < listaImg.Count; i++)
+                            {
+                                var img = listaImg[i];
+                                <div class="glass-insta-slide">
+                                    <img src="@img" class="glass-insta-blur-bg" alt="" aria-hidden="true" />
+                                    <img src="@img"
+                                         class="glass-insta-img"
+                                         alt="@Evento.vchNombre"
+                                         loading="lazy" />
+                                </div>
+                            }
+                        </div>
+
+                        @if (listaImg.Count > 1)
+                        {
+                            <div class="glass-insta-counter">
+                                @(_currentIndex + 1) / @listaImg.Count
+                            </div>
+
+                            @if (_currentIndex > 0)
+                            {
+                                <button type="button"
+                                        class="glass-insta-nav prev"
+                                        @onclick="PrevSlide"
+                                        @onclick:stopPropagation="true"
+                                        title="Imagen anterior"
+                                        aria-label="Imagen anterior">
+                                    <MudIcon Icon="@Icons.Material.Rounded.ChevronLeft" />
+                                </button>
+                            }
+
+                            @if (_currentIndex < listaImg.Count - 1)
+                            {
+                                <button type="button"
+                                        class="glass-insta-nav next"
+                                        @onclick="NextSlide"
+                                        @onclick:stopPropagation="true"
+                                        title="Imagen siguiente"
+                                        aria-label="Imagen siguiente">
+                                    <MudIcon Icon="@Icons.Material.Rounded.ChevronRight" />
+                                </button>
+                            }
+                        }
+                    </div>
+
+                    @if (listaImg.Count > 1)
+                    {
+                        <div class="glass-insta-dots">
+                            @for (int i = 0; i < listaImg.Count; i++)
+                            {
+                                var idx = i;
+                                <button type="button"
+                                        class="glass-insta-dot @(idx == _currentIndex ? "active" : "")"
+                                        @onclick="() => GoToSlide(idx)"
+                                        @onclick:stopPropagation="true"
+                                        aria-label="@($"Ir a imagen {idx + 1}")">
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- 2. Título, datos clave, descripción y comentarios ABAJO -->
+            <div class="glass-modal-body-content">
+                <h2 class="glass-modal-title">@Evento.vchNombre</h2>
+
+                @if (!string.IsNullOrWhiteSpace(Evento.vchLugar) || !string.IsNullOrWhiteSpace(Evento.vchOrganizador))
+                {
+                    <div class="glass-modal-badge-list">
+                        @if (!string.IsNullOrWhiteSpace(Evento.vchLugar))
+                        {
+                            <div class="glass-modal-chip">
+                                <MudIcon Icon="@Icons.Material.Rounded.Place" />
+                                <span>@Evento.vchLugar</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Evento.vchOrganizador))
+                        {
+                            <div class="glass-modal-chip">
+                                <MudIcon Icon="@Icons.Material.Rounded.Person" />
+                                <span>Organiza: @Evento.vchOrganizador</span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Evento.nvchDescripcion))
+                {
+                    <p class="glass-modal-text">@Evento.nvchDescripcion</p>
+                }
+
+                <div class="d-flex align-center justify-space-between pt-1">
+                    <a href="@($"/eventos/{Evento.iIdEvento}")" class="home-ver-todo" style="font-size: 0.95rem;">
+                        Ver evento completo <MudIcon Icon="@Icons.Material.Rounded.ArrowForward" />
+                    </a>
+                </div>
+
+                <div class="glass-modal-opinions-wrap">
+                    <OpinionThread TipoEntidad="EVENTO"
+                                   IdEntidad="Evento.iIdEvento"
+                                   CssClass="glass-modal-opinions" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

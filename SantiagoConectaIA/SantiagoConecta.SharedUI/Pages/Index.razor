@@ -9,9 +9,12 @@
 @using SantiagoConectaIA.Share.Objects.InformacionLocalModule
 @using SantiagoConectaIA.Share.PostClass.EventosModulo
 @using SantiagoConectaIA.Share.PostModels.InformacionLocalModule
-@using SantiagoConectaIA.Share.Utilities
 @using SantiagoConectaIA.Share.Objects.PublicacionCiudadanoModule
 @using SantiagoConectaIA.Share.PostModels.PublicacionCiudadanoModule
+@using SantiagoConecta.SharedUI.Componentes.PublicacionesCiudadanoArea
+@using SantiagoConecta.SharedUI.Componentes.NoticiasArea
+@using SantiagoConecta.SharedUI.Componentes.EventosArea
+@using SantiagoConectaIA.Share.Utilities
 @implements IAsyncDisposable
 @inject NavigationManager NavManager
 @inject Data_BuzonCiudadano _dataBuzon
@@ -36,7 +39,7 @@
                 <MudIcon Icon="@Icons.Material.Rounded.LocationOn" /> Santiago Papasquiaro, Durango
             </p>
             <h1 id="home-titulo" class="home-h1">
-                Trámites, noticias y negocios de <span class="home-h1-destacado">Santiago</span> en un solo lugar
+                Trámites, noticias, eventos y negocios de <span class="home-h1-destacado">Santiago</span> en un solo lugar
             </h1>
             <p class="home-subtitulo">Encuentra lo que necesitas en segundos o pregúntale a nuestro asistente con IA.</p>
 
@@ -106,9 +109,10 @@
     </div>
 </section>
 
-<!-- Lo más reciente: noticias y eventos -->
-@* Siempre visible: incluye la invitación a publicar aunque aún no haya contenido *@
-<section class="home-seccion home-seccion-rosa" aria-labelledby="recientes-titulo">
+<!-- Lo más reciente: noticias, eventos y voces de la comunidad -->
+@if (_cargando || noticias.Any() || eventos.Any() || publicaciones.Any())
+{
+    <section class="home-seccion home-seccion-rosa" aria-labelledby="recientes-titulo">
         <div class="container">
             <h2 id="recientes-titulo" class="home-h2" data-revelar>Lo más reciente</h2>
 
@@ -129,87 +133,6 @@
                 </div>
             }
 
-            @* Voces de la comunidad: publicaciones de ciudadanos (primero, igual que en el feed) *@
-            @if (!_cargando)
-            {
-                <div class="home-subencabezado" data-revelar>
-                    <h3 class="home-h3">Voces de la comunidad</h3>
-                    <a href="/feed" class="home-ver-todo">Ver el feed <MudIcon Icon="@Icons.Material.Rounded.ArrowForward" /></a>
-                </div>
-
-                @if (publicaciones.Any())
-                {
-                    <div class="home-tarjetas">
-                        @for (var i = 0; i < publicaciones.Count; i++)
-                        {
-                            var post = publicaciones[i];
-                            var imagenPost = !string.IsNullOrWhiteSpace(post.vchPrimeraImagenUrl)
-                                ? post.vchPrimeraImagenUrl
-                                : post.Imagenes?.FirstOrDefault()?.nvchUrlImagen;
-                            var alias = string.IsNullOrWhiteSpace(post.vchAliasCiudadano) ? "Ciudadano de Santiago" : post.vchAliasCiudadano.Trim();
-                            <article class="@(i == 0 ? "home-tarjeta home-tarjeta-destacada home-post" : "home-tarjeta home-post")" data-revelar>
-                                <a href="/feed" class="home-tarjeta-enlace">
-                                    <div class="home-tarjeta-cuerpo">
-                                        <div class="home-post-autor">
-                                            @if (!string.IsNullOrWhiteSpace(post.vchAvatarCiudadano))
-                                            {
-                                                <img class="home-post-avatar" src="@post.vchAvatarCiudadano" alt="" width="40" height="40" loading="lazy" referrerpolicy="no-referrer" />
-                                            }
-                                            else
-                                            {
-                                                <span class="home-post-avatar home-post-avatar-inicial" aria-hidden="true">@alias.Substring(0, 1).ToUpperInvariant()</span>
-                                            }
-                                            <span class="home-post-datos">
-                                                <span class="home-post-nombre">
-                                                    @alias
-                                                    @if (post.bCiudadanoVerificado)
-                                                    {
-                                                        <MudIcon Icon="@Icons.Material.Rounded.Verified" Class="home-post-verificado" Title="Ciudadano verificado" />
-                                                    }
-                                                </span>
-                                                <span class="home-meta">@post.dtFechaCreacion.ToTiempoRelativo()</span>
-                                            </span>
-                                            @if (EsReciente(post.dtFechaCreacion))
-                                            {
-                                                <span class="home-post-nuevo">Nuevo</span>
-                                            }
-                                        </div>
-
-                                        <span class="home-etiqueta">@post.vchCategoriaPublicacion</span>
-                                        @if (!string.IsNullOrWhiteSpace(post.nvchTitulo))
-                                        {
-                                            <h4 class="home-h4">@post.nvchTitulo</h4>
-                                        }
-                                        <p class="home-post-texto">@post.nvchContenidoTexto</p>
-                                    </div>
-
-                                    @if (!string.IsNullOrWhiteSpace(imagenPost))
-                                    {
-                                        <div class="home-tarjeta-imagen home-post-imagen">
-                                            <img src="@imagenPost" alt="" width="640" height="360" loading="lazy" decoding="async" />
-                                        </div>
-                                    }
-
-                                    <div class="home-post-pie">
-                                        <MudIcon Icon="@Icons.Material.Outlined.ChatBubbleOutline" />
-                                        <span>@(post.iTotalComentarios == 0 ? "Sé el primero en comentar" : post.iTotalComentarios == 1 ? "1 comentario" : $"{post.iTotalComentarios} comentarios")</span>
-                                    </div>
-                                </a>
-                            </article>
-                        }
-                    </div>
-                }
-
-                <a href="/unete" class="home-post-invitacion" data-revelar>
-                    <span class="home-post-invitacion-icono"><MudIcon Icon="@Icons.Material.Rounded.Forum" /></span>
-                    <span class="home-post-invitacion-texto">
-                        <strong>@(publicaciones.Any() ? "¿Tienes algo que contar?" : "Aún no hay publicaciones: sé el primero")</strong>
-                        <span>Únete gratis y comparte avisos, fotos y preguntas con tu comunidad.</span>
-                    </span>
-                    <span class="home-post-invitacion-flecha"><MudIcon Icon="@Icons.Material.Rounded.ArrowForward" /></span>
-                </a>
-            }
-
             @if (noticias.Any())
             {
                 <div class="home-subencabezado" data-revelar>
@@ -220,8 +143,8 @@
                     @for (var i = 0; i < noticias.Count; i++)
                     {
                         var noticia = noticias[i];
-                        <article class="@(i == 0 ? "home-tarjeta home-tarjeta-destacada" : "home-tarjeta")" data-revelar>
-                            <a href="@($"/noticias/{noticia.iIdNoticia}")" class="home-tarjeta-enlace">
+                        <article class="@(i == 0 ? "home-tarjeta home-tarjeta-destacada" : "home-tarjeta")" style="cursor: pointer;" data-revelar @onclick="() => AbrirModalNoticia(noticia)">
+                            <div class="home-tarjeta-enlace" role="button" tabindex="0">
                                 <div class="home-tarjeta-imagen">
                                     @if (!string.IsNullOrWhiteSpace(noticia.vchImagenPortada))
                                     {
@@ -243,7 +166,7 @@
                                         @noticia.dtFechaPublicacion.ToString("d 'de' MMMM yyyy", EsMx)
                                     </time>
                                 </div>
-                            </a>
+                            </div>
                         </article>
                     }
                 </div>
@@ -259,8 +182,8 @@
                     @for (var i = 0; i < eventos.Count; i++)
                     {
                         var evento = eventos[i];
-                        <article class="@(i == 0 ? "home-tarjeta home-tarjeta-destacada" : "home-tarjeta")" data-revelar>
-                            <a href="@($"/eventos/{evento.iIdEvento}")" class="home-tarjeta-enlace">
+                        <article class="@(i == 0 ? "home-tarjeta home-tarjeta-destacada" : "home-tarjeta")" style="cursor: pointer;" data-revelar @onclick="() => AbrirModalEvento(evento)">
+                            <div class="home-tarjeta-enlace" role="button" tabindex="0">
                                 <div class="home-tarjeta-imagen">
                                     @if (!string.IsNullOrWhiteSpace(evento.vchImagenPortada))
                                     {
@@ -294,13 +217,91 @@
                                         }
                                     </p>
                                 </div>
-                            </a>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+
+            @if (publicaciones.Any())
+            {
+                <div class="home-subencabezado" data-revelar>
+                    <div class="home-subencabezado-pulso">
+                        <span class="home-pulso-dot" aria-hidden="true"></span>
+                        <h3 class="home-h3">Voces de la comunidad</h3>
+                    </div>
+                    <a href="/feed" class="home-ver-todo">Ver el feed <MudIcon Icon="@Icons.Material.Rounded.ArrowForward" /></a>
+                </div>
+                <div class="home-tarjetas">
+                    @foreach (var pub in publicaciones)
+                    {
+                        var imagenPortada = pub.Imagenes?.FirstOrDefault()?.nvchUrlImagen ?? pub.vchPrimeraImagenUrl;
+                        <article class="home-tarjeta-comunidad" data-revelar @onclick="() => AbrirModalPublicacion(pub, imagenPortada)">
+                            <div class="home-comunidad-header">
+                                <div class="home-comunidad-avatar">
+                                    @if (!string.IsNullOrWhiteSpace(pub.vchAvatarCiudadano))
+                                    {
+                                        <img src="@pub.vchAvatarCiudadano" alt="@pub.vchAliasCiudadano" />
+                                    }
+                                    else
+                                    {
+                                        <span>@(string.IsNullOrWhiteSpace(pub.vchAliasCiudadano) ? "U" : pub.vchAliasCiudadano[0].ToString().ToUpper())</span>
+                                    }
+                                </div>
+                                <div class="home-comunidad-user-info">
+                                    <div class="home-comunidad-nombre-row">
+                                        <span class="home-comunidad-autor">@pub.vchAliasCiudadano</span>
+                                        @if (pub.bCiudadanoVerificado)
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.Verified" Class="home-comunidad-check" />
+                                        }
+                                    </div>
+                                    <span class="home-comunidad-tiempo">@FormatearTiempoRelativo(pub.dtFechaCreacion)</span>
+                                </div>
+                            </div>
+
+                            <div class="home-comunidad-cuerpo">
+                                <span class="home-comunidad-tag">@pub.vchCategoriaPublicacion</span>
+                                @if (!string.IsNullOrWhiteSpace(pub.nvchTitulo))
+                                {
+                                    <h4 class="home-comunidad-titulo">@pub.nvchTitulo</h4>
+                                }
+                                <p class="home-comunidad-texto">@pub.nvchContenidoTexto</p>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(imagenPortada))
+                            {
+                                <div class="home-comunidad-imagen-wrap">
+                                    <img src="@imagenPortada" alt="@(pub.nvchTitulo ?? "Publicación")" loading="lazy" />
+                                </div>
+                            }
+
+                            <div class="home-comunidad-footer">
+                                <MudIcon Icon="@Icons.Material.Rounded.ChatBubbleOutline" />
+                                <span>@(pub.iTotalComentarios > 0 ? $"{pub.iTotalComentarios} comentario{(pub.iTotalComentarios > 1 ? "s" : "")}" : "Sé el primero en comentar")</span>
+                            </div>
                         </article>
                     }
                 </div>
             }
         </div>
-</section>
+    </section>
+}
+
+@if (_publicacionSeleccionada != null)
+{
+    <PublicacionGlassDialog Publicacion="_publicacionSeleccionada" ImagenUrl="@_imagenPublicacionSeleccionada" OnClose="CerrarModalPublicacion" />
+}
+
+@if (_noticiaSeleccionada != null)
+{
+    <NoticiaGlassDialog Noticia="_noticiaSeleccionada" OnClose="CerrarModalNoticia" />
+}
+
+@if (_eventoSeleccionado != null)
+{
+    <EventoGlassDialog Evento="_eventoSeleccionado" OnClose="CerrarModalEvento" />
+}
 
 <!-- Invitación para negocios -->
 <section class="home-seccion home-seccion-blanca" aria-labelledby="negocio-titulo">
@@ -322,19 +323,46 @@
 {
     <section class="home-seccion home-seccion-oscura" aria-labelledby="descubre-titulo">
         <div class="container">
-            <h2 id="descubre-titulo" class="home-h2" data-revelar>Descubre Santiago Papasquiaro</h2>
-            <div class="home-tarjetas">
-                @foreach (var dato in datosCuriosos)
+            <div class="home-descubre-encabezado" data-revelar>
+                <span class="home-descubre-eyebrow">
+                    <MudIcon Icon="@Icons.Material.Rounded.AutoAwesome" /> Identidad y tradición pinolera
+                </span>
+                <h2 id="descubre-titulo" class="home-h2 home-descubre-h2">
+                    Descubre <span class="home-descubre-destacado">Santiago Papasquiaro</span>
+                </h2>
+                <p class="home-descubre-subtitulo">
+                    Gastronomía, leyendas, personajes e historia que hacen único a nuestro municipio.
+                </p>
+            </div>
+
+            <div class="home-tarjetas home-descubre-grid">
+                @for (var idx = 0; idx < datosCuriosos.Count; idx++)
                 {
+                    var dato = datosCuriosos[idx];
+                    var numTexto = (idx + 1).ToString("00");
                     <article class="home-dato" data-revelar>
                         <div class="home-dato-tarjeta">
-                        <span class="home-acceso-icono"><MudIcon Icon="@IconoCategoria(dato.nvchCategoria)" /></span>
-                        <span class="home-etiqueta">@dato.nvchCategoria</span>
-                        <h3 class="home-h4">@dato.nvchTitulo</h3>
-                        <p class="home-dato-texto">@dato.nvchDescripcionCorta</p>
-                        <button type="button" class="home-enlace-accion" @onclick="Asistente.AbrirAsync">
-                            Pregúntale a la IA <MudIcon Icon="@Icons.Material.Rounded.AutoAwesome" />
-                        </button>
+                            <span class="home-dato-watermark" aria-hidden="true">
+                                <MudIcon Icon="@IconoCategoria(dato.nvchCategoria)" />
+                            </span>
+
+                            <div class="home-dato-top">
+                                <div class="home-dato-identidad">
+                                    <span class="home-acceso-icono">
+                                        <MudIcon Icon="@IconoCategoria(dato.nvchCategoria)" />
+                                    </span>
+                                    <span class="home-etiqueta">@dato.nvchCategoria</span>
+                                </div>
+                                <span class="home-dato-numero" aria-hidden="true">@numTexto</span>
+                            </div>
+
+                            <h3 class="home-dato-titulo">@dato.nvchTitulo</h3>
+                            <p class="home-dato-texto">@dato.nvchDescripcionCorta</p>
+
+                            <button type="button" class="home-enlace-accion" @onclick="Asistente.AbrirAsync">
+                                <span>Pregúntale a la IA</span>
+                                <MudIcon Icon="@Icons.Material.Rounded.AutoAwesome" />
+                            </button>
                         </div>
                     </article>
                 }
@@ -443,6 +471,9 @@
     private List<Evento> eventos = new();
     private List<InformacionLocal> datosCuriosos = new();
     private List<PublicacionCiudadano> publicaciones = new();
+    private PublicacionCiudadano? _publicacionSeleccionada;
+    private Noticia? _noticiaSeleccionada;
+    private Evento? _eventoSeleccionado;
 
     private ContactModel contactModel = new();
     private bool _isSubmitting;
@@ -453,32 +484,6 @@
     {
         await Task.WhenAll(CargarNoticiasAsync(), CargarEventosAsync(), CargarDatosCuriososAsync(), CargarPublicacionesAsync());
         _cargando = false;
-    }
-
-    private async Task CargarPublicacionesAsync()
-    {
-        try
-        {
-            var response = await dataPublicaciones.PostGetPublicaciones(new PostGetPublicacionesCiudadano { iPage = 1, iPageSize = 3 });
-            if (response?.IsSuccess == true && response.Data != null)
-            {
-                publicaciones = response.Data
-                    .OrderByDescending(p => p.dtFechaCreacion)
-                    .Take(3)
-                    .ToList();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error cargando publicaciones de la comunidad: {ex.Message}");
-        }
-    }
-
-    /// <summary>Publicada en las últimas 24 horas (las fechas sin zona se tratan como UTC).</summary>
-    private static bool EsReciente(DateTime fecha)
-    {
-        var utc = fecha.Kind == DateTimeKind.Local ? fecha.ToUniversalTime() : DateTime.SpecifyKind(fecha, DateTimeKind.Utc);
-        return DateTime.UtcNow - utc < TimeSpan.FromHours(24);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -544,6 +549,71 @@
         {
             Console.WriteLine($"Error cargando datos curiosos: {ex.Message}");
         }
+    }
+
+    private async Task CargarPublicacionesAsync()
+    {
+        try
+        {
+            var req = new PostGetPublicacionesCiudadano
+            {
+                iPage = 1,
+                iPageSize = 3
+            };
+            var response = await dataPublicaciones.PostGetPublicaciones(req);
+            if (response?.IsSuccess == true && response.Data != null)
+            {
+                publicaciones = response.Data.Take(3).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando publicaciones ciudadanas: {ex.Message}");
+        }
+    }
+
+    private string? _imagenPublicacionSeleccionada;
+
+    private void AbrirModalPublicacion(PublicacionCiudadano pub, string? img = null)
+    {
+        _publicacionSeleccionada = pub;
+        _imagenPublicacionSeleccionada = img ?? pub.Imagenes?.FirstOrDefault()?.nvchUrlImagen ?? pub.vchPrimeraImagenUrl;
+    }
+
+    private void CerrarModalPublicacion()
+    {
+        _publicacionSeleccionada = null;
+        _imagenPublicacionSeleccionada = null;
+    }
+
+    private void AbrirModalNoticia(Noticia noti)
+    {
+        _noticiaSeleccionada = noti;
+    }
+
+    private void CerrarModalNoticia()
+    {
+        _noticiaSeleccionada = null;
+    }
+
+    private void AbrirModalEvento(Evento ev)
+    {
+        _eventoSeleccionado = ev;
+    }
+
+    private void CerrarModalEvento()
+    {
+        _eventoSeleccionado = null;
+    }
+
+    private static string FormatearTiempoRelativo(DateTime fecha)
+    {
+        var diff = DateTime.UtcNow - fecha;
+        if (diff.TotalMinutes < 1) return "Justo ahora";
+        if (diff.TotalMinutes < 60) return $"Hace {(int)diff.TotalMinutes} min";
+        if (diff.TotalHours < 24) return $"Hace {(int)diff.TotalHours} h";
+        if (diff.TotalDays < 7) return $"Hace {(int)Math.Max(1, diff.TotalDays)} d";
+        return fecha.ToString("d 'de' MMMM", EsMx);
     }
 
     private void Buscar()
