@@ -95,11 +95,14 @@
 
             <!-- 2. Título, contenido y comentarios ABAJO -->
             <div class="glass-modal-body-content">
-                <h2 class="glass-modal-title">@Noticia.vchTitulo</h2>
+                @if (string.IsNullOrWhiteSpace(ContenidoHtml) || !ContenidoHtml.Contains("<article", StringComparison.OrdinalIgnoreCase))
+                {
+                    <h2 class="glass-modal-title">@Noticia.vchTitulo</h2>
+                }
 
                 @if (!string.IsNullOrWhiteSpace(ContenidoHtml))
                 {
-                    <div class="glass-modal-text">
+                    <div class="glass-modal-text" style="white-space: normal;">
                         @((MarkupString)ContenidoHtml)
                     </div>
                 }

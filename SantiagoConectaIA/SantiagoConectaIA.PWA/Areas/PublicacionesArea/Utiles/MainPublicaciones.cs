@@ -1,4 +1,4 @@
-﻿using EngramaCoreStandar.Results;
+using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.Share.Objects.EmpresasModulo;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
@@ -29,6 +29,16 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles
 				nvchContenido = contenido
 			};
 			return Post($"{Url}/PostMejorarPublicacion", model, string.Empty);
+		}
+
+		public Task<Response<string>> MejorarNoticiaHtmlConIa(string titulo, string contenido)
+		{
+			var model = new PostMejorarNoticiaHtml
+			{
+				vchTitulo = titulo,
+				nvchContenido = contenido
+			};
+			return Post($"{Url}/PostMejorarNoticiaHtml", model, string.Empty);
 		}
 
 		public Task<Response<string>> MejorarEmprendimientoConIa(int idEmpresa, string nombre, string informacion)

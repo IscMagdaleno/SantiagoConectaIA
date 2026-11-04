@@ -80,11 +80,6 @@ namespace SantiagoConecta.SharedUI.Componentes.NoticiasArea
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(Noticia?.nvchContenido))
-                {
-                    return Noticia.nvchContenido;
-                }
-
                 if (Noticia?.Filas?.Any() == true)
                 {
                     var bloquesTexto = Noticia.Filas
@@ -92,9 +87,18 @@ namespace SantiagoConecta.SharedUI.Componentes.NoticiasArea
                         .Where(f => f.Metadatos != null)
                         .SelectMany(f => f.Metadatos.OrderBy(m => m.iOrden))
                         .Where(m => m.iIdTipoDato == TipoDatoMetadato.Contenido && !string.IsNullOrWhiteSpace(m.nvchValor))
-                        .Select(m => m.nvchValor);
+                        .Select(m => m.nvchValor)
+                        .ToList();
 
-                    return string.Join("<br/><br/>", bloquesTexto);
+                    if (bloquesTexto.Any())
+                    {
+                        return string.Join("<br/><br/>", bloquesTexto);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(Noticia?.nvchContenido))
+                {
+                    return Noticia.nvchContenido;
                 }
 
                 return string.Empty;

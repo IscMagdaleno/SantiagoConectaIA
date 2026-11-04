@@ -1,4 +1,4 @@
-@using SantiagoConectaIA.Share.Objects.NoticiasModule
+﻿@using SantiagoConectaIA.Share.Objects.NoticiasModule
 @using MudBlazor
 
 @if (this.Noticia == null)
@@ -54,7 +54,7 @@ else
 
                 <div style="grid-column: span @gridSpan; @alignStyle" class="news-block-item animate-fade-in">
                     @* Título del Bloque (vchTitulo) *@
-                    @if (!string.IsNullOrWhiteSpace(bloque.vchTitulo) && bloque.vchTitulo != "Bloque sin Título" && bloque.vchTitulo != "bloque" && bloque.vchTitulo != "contenido.principal" && bloque.vchTitulo != "Contenido")
+                    @if (!string.IsNullOrWhiteSpace(bloque.vchTitulo) && bloque.vchTitulo != "Bloque sin Título" && bloque.vchTitulo != "bloque" && bloque.vchTitulo != "contenido.principal" && bloque.vchTitulo != "Contenido Principal" && bloque.vchTitulo != "Bloque de Texto" && bloque.vchTitulo != "Contenido")
                     {
                         <h4 class="news-block-title">@bloque.vchTitulo</h4>
                     }

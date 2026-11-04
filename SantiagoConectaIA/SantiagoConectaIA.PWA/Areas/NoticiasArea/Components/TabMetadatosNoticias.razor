@@ -182,7 +182,24 @@
 
                         @if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.Contenido)
                         {
-                            <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="Contenido (Texto)" Variant="Variant.Outlined" Lines="6" Class="mb-4" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
+                            <MudTextField @bind-Value="itemSeleccionado.Metadato.nvchValor" Label="Contenido (Texto / HTML)" Variant="Variant.Outlined" Lines="6" Class="mb-2" Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura)" />
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       FullWidth="true"
+                                       StartIcon="@Icons.Material.Filled.AutoAwesome"
+                                       OnClick="MejorarContenidoConIa"
+                                       Disabled="@(EstadoControl == SantiagoConectaIA.PWA.Shared.Workspace.TipoEstadoControl.Lectura || _isMejorandoIa)"
+                                       Class="mb-4">
+                                @if (_isMejorandoIa)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Mejorando HTML con IA...</span>
+                                }
+                                else
+                                {
+                                    <span>Mejorar HTML con IA</span>
+                                }
+                            </MudButton>
                         }
                         else if (itemSeleccionado.Metadato.iIdTipoDato == TipoDatoMetadato.Video)
                         {

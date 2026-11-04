@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
 
 using SantiagoConectaIA.PWA.Areas.NoticiasArea.Utiles;
+using SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles;
 using SantiagoConectaIA.PWA.Shared.Workspace;
 using SantiagoConectaIA.Share.Objects.NoticiasModule;
 
@@ -12,6 +13,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 	public class TabMetadatosNoticiasBase : ComponentBase
 	{
 		[Inject] public ISnackbar Snackbar { get; set; } = default!;
+		[Inject] public MainPublicaciones Publicaciones { get; set; } = default!;
 
 		[Parameter] public MainNoticias Data { get; set; } = default!;
 		[Parameter] public Noticia? NoticiaModel { get; set; }
@@ -38,6 +40,7 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 		// Galería
 		protected List<string> tempGalleryUrls = new List<string>();
 		protected bool _isUploadingGallery = false;
+		protected bool _isMejorandoIa = false;
 
 		protected override async Task OnInitializedAsync()
 		{
@@ -361,6 +364,51 @@ namespace SantiagoConectaIA.PWA.Areas.NoticiasArea.Components
 			{
 				itemSeleccionado.Metadato.iAncho = width;
 				SyncData();
+			}
+		}
+
+		protected async Task MejorarContenidoConIa()
+		{
+			if (itemSeleccionado == null || itemSeleccionado.Metadato.iIdTipoDato != TipoDatoMetadato.Contenido)
+				return;
+
+			var target = NoticiaModel ?? Data?.NoticiaSelected;
+			var titulo = target?.vchTitulo ?? itemSeleccionado.Metadato.vchTitulo ?? string.Empty;
+			var contenidoActual = !string.IsNullOrWhiteSpace(itemSeleccionado.Metadato.nvchValor)
+				? itemSeleccionado.Metadato.nvchValor
+				: (target?.nvchContenido ?? string.Empty);
+
+			if (string.IsNullOrWhiteSpace(titulo) && string.IsNullOrWhiteSpace(contenidoActual))
+			{
+				Snackbar.Add("Escribe un título o contenido base antes de mejorar con IA.", Severity.Warning);
+				return;
+			}
+
+			_isMejorandoIa = true;
+			StateHasChanged();
+
+			try
+			{
+				var response = await Publicaciones.MejorarNoticiaHtmlConIa(titulo, contenidoActual);
+				if (response.IsSuccess && !string.IsNullOrWhiteSpace(response.Data))
+				{
+					itemSeleccionado.Metadato.nvchValor = response.Data;
+					SyncData();
+					Snackbar.Add("Contenido HTML mejorado con IA al estilo Santiago Conecta.", Severity.Success);
+				}
+				else
+				{
+					Snackbar.Add(string.IsNullOrWhiteSpace(response.Message) ? "No se pudo mejorar el contenido con IA." : response.Message, Severity.Error);
+				}
+			}
+			catch (Exception ex)
+			{
+				Snackbar.Add($"Error al mejorar con IA: {ex.Message}", Severity.Error);
+			}
+			finally
+			{
+				_isMejorandoIa = false;
+				StateHasChanged();
 			}
 		}
 
