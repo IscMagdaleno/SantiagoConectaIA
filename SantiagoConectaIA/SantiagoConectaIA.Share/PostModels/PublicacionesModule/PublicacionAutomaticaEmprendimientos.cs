@@ -4,6 +4,7 @@ namespace SantiagoConectaIA.Share.PostModels.PublicacionesModule
 	{
 		public bool bActivo { get; set; } = true;
 		public int iHora { get; set; }
+		public int iMinuto { get; set; }
 		public int iIdSiguienteEmpresa { get; set; }
 		public string? vchSiguienteEmpresa { get; set; }
 		public int? iIdUltimaEmpresa { get; set; }

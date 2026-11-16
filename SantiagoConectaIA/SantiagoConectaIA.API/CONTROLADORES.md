@@ -234,6 +234,7 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 
 | Acción | Descripción |
 |---|---|
+| `PostGetPublicacionesRegistro` | Registro de publicaciones (noticias y emprendimientos publicados o fallidos), de la más reciente a la más antigua. Filtros opcionales: `vchTipo` (`NOTICIA` o `EMPRENDIMIENTO`), `bExitoso`, `dtDesde`, `dtHasta` (día local) e `iTop` (200 por defecto, máximo 5000). |
 | `PostGetPublicacionAutomatica` / `PostSavePublicacionAutomatica` | Estado e interruptor de la publicación diaria de noticias. |
 | `PostGetPublicacionAutomaticaEmprendimientos` / `PostSavePublicacionAutomaticaEmprendimientos` | Estado e interruptor de la de emprendimientos (incluye cuál sigue). |
 | `PostGetSiguienteNoticia` | Noticia que toca publicar (la más reciente activa que no se haya publicado). |
@@ -242,7 +243,13 @@ API REST en .NET 9 de Santiago Conecta. Todas las rutas siguen el patrón `api/{
 | `PostPublicarEmprendimientoGenerado` | Publica ese emprendimiento con el texto y la imagen capturada, y avanza la rotación. |
 | `GET Diagnostico` | Revisa, sin publicar, si los parámetros están configurados y cuál fue el último intento. Nunca devuelve valores secretos. |
 
-Los servicios en segundo plano publican a diario, hora de México: `DailyFacebookPublicacionBackgroundService` (noticias, hora por defecto 11) y `DailyEmprendimientoPublicacionBackgroundService` (emprendimientos, hora por defecto 13). Usan la imagen de portada o el logo, no el post capturado, porque la captura requiere navegador. Requieren **Always On** en Azure App Service. Los parámetros están en `SCIA.Parametros`: `key.gemini`, `make.facebook.webhook`, `publicaciones.sitio`, `publicaciones.auto.noticias`, `publicaciones.auto.emprendimientos`, `azure.blob.storage`.
+Los servicios en segundo plano publican a diario, hora de México: `DailyFacebookPublicacionBackgroundService` (noticias, hora por defecto 12:30) y `DailyEmprendimientoPublicacionBackgroundService` (emprendimientos, hora por defecto 13:00). Usan la imagen de portada o el logo, no el post capturado, porque la captura requiere navegador. Los parámetros están en `SCIA.Parametros`: `key.gemini`, `make.facebook.webhook`, `publicaciones.sitio`, `publicaciones.auto.noticias`, `publicaciones.auto.emprendimientos`, `azure.blob.storage`. En `publicaciones.auto.noticias` y `publicaciones.auto.emprendimientos` el Valor1 es la hora en formato `HH:mm` (también se acepta una hora sola, por ejemplo `13`).
+
+**Cómo funciona la publicación diaria** (igual que el scraper de noticias, que corre solo en cuanto el servidor está encendido): no duerme hasta una hora exacta. Revisa 20 segundos después de arrancar y luego cada 10 minutos. Publica cuando ya pasó la hora configurada y todavía no hay una publicación exitosa de hoy en `SCIA.PublicacionesRegistro`. Si el servidor estaba dormido a la hora programada, publica en cuanto despierta ese mismo día, y nunca publica dos veces el mismo día aunque se reinicie. Si falla (Gemini o Make), reintenta cada 15 minutos hasta 3 veces por día. Si no hay nada que publicar (por ejemplo, ninguna noticia nueva), vuelve a revisar a los 15 minutos. Con la app apagada no corre nada: para que publique sin que nadie la visite hay que activar **Always On** en Azure App Service.
+
+**Qué noticia se publica:** la más reciente que no tenga una publicación exitosa en el registro, de los últimos 7 días y con imagen de portada. Una noticia nunca se publica dos veces (índice único en la base). Una noticia que ya falló 3 veces en automático se salta. Los emprendimientos siguen una rotación por ID y vuelven a empezar al llegar al último.
+
+**Registro de publicaciones:** la tabla `SCIA.PublicacionesRegistro` guarda cada publicación (tipo, noticia o emprendimiento, texto, imagen, origen `AUTOMATICA` o `MANUAL`, resultado y fecha). Los intentos automáticos fallidos también quedan, con el motivo. La vista `SCIA.vwPublicacionesResumenDiario` resume por día y tipo para analizar la frecuencia. Se crea con `database_scripts/05_Publicaciones_Registro.sql`.
 
 ---
 
@@ -283,8 +290,8 @@ Los servicios en segundo plano publican a diario, hora de México: `DailyFaceboo
 |---|---|
 | `WhatsAppWorker` | Procesa en cola los mensajes recibidos por el webhook de WhatsApp. |
 | `DailyScraperBackgroundService` | Tarea diaria que ejecuta el scraper de noticias (`INoticiasScraperService`). |
-| `DailyFacebookPublicacionBackgroundService` | Publica a diario la noticia más reciente en Facebook. |
-| `DailyEmprendimientoPublicacionBackgroundService` | Publica a diario el siguiente emprendimiento de la rotación. |
+| `DailyFacebookPublicacionBackgroundService` | Publica a diario la noticia más reciente que aún no se haya publicado (por defecto 12:30). |
+| `DailyEmprendimientoPublicacionBackgroundService` | Publica a diario el siguiente emprendimiento de la rotación (por defecto 13:00). |
 
 ## Seguridad
 

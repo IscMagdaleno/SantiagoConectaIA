@@ -183,7 +183,10 @@ namespace SantiagoConectaIA.API.Services
 				var respuesta = await _gemini.GenerarContenidoAsync(configuracion, solicitud, TiempoMaximo, cancellationToken);
 				if (!respuesta.Exitosa)
 				{
-					return Response<string>.BadResult("Gemini no pudo redactar la publicación.", string.Empty);
+					var motivo = respuesta.CodigoEstado is 401 or 403
+						? $"Gemini rechazó la clave ({respuesta.CodigoEstado}). Revisa el parámetro {ParametrosAlias.Gemini} (Valor2)."
+						: $"Gemini no pudo redactar la publicación ({respuesta.CodigoEstado}).";
+					return Response<string>.BadResult(motivo, string.Empty);
 				}
 
 				var generado = respuesta.PrimerTexto;

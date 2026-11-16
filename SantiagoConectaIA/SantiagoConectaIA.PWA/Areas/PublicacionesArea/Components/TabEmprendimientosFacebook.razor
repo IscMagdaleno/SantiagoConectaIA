@@ -15,7 +15,7 @@ else
             else
             {
                 <MudText Typo="Typo.body2" Style="color: #64748B;">
-                    Todos los días a las @($"{Automatica.iHora:00}:00") se publica con IA un emprendimiento activo con su logo, en orden de ID. Al llegar al último vuelve a empezar.
+                    Todos los días a las @($"{Automatica.iHora:00}:{Automatica.iMinuto:00}") se publica con IA un emprendimiento activo con su logo, en orden de ID. Al llegar al último vuelve a empezar.
                 </MudText>
                 @if (!string.IsNullOrWhiteSpace(Automatica.vchSiguienteEmpresa))
                 {

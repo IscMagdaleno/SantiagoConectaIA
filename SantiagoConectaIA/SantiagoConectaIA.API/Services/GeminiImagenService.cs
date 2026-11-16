@@ -78,6 +78,11 @@ namespace SantiagoConectaIA.API.Services
 			{
 				return Response<string>.BadResult("Gemini tardó demasiado en editar la imagen. Inténtalo de nuevo.", string.Empty);
 			}
+			catch (Exception ex) when (ex is HttpRequestException or IOException)
+			{
+				_logger.LogError(ex, "Error de red/TLS al editar la imagen con Gemini.");
+				return Response<string>.BadResult("Se cortó la descarga de la imagen de Gemini. Inténtalo de nuevo.", string.Empty);
+			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error al editar la imagen con Gemini.");
@@ -138,17 +143,24 @@ namespace SantiagoConectaIA.API.Services
 			var respuesta = await _gemini.GenerarContenidoAsync(configuracion, solicitud, TiempoMaximo, cancellationToken);
 			if (!respuesta.Exitosa)
 			{
-				return Response<Imagen>.BadResult($"Gemini no pudo editar la imagen ({respuesta.CodigoEstado}).", new Imagen());
+				var motivo = respuesta.CodigoEstado is 502 or 408
+					? "Se cortó la conexión con Gemini al bajar la imagen. Inténtalo de nuevo."
+					: $"Gemini no pudo editar la imagen ({respuesta.CodigoEstado}).";
+				return Response<Imagen>.BadResult(motivo, new Imagen());
 			}
 
 			var imagen = respuesta.PrimeraImagen;
 			if (imagen == null)
 			{
 				var texto = respuesta.PrimerTexto;
-				var motivo = respuesta.MotivoFin;
-				var mensaje = !string.IsNullOrWhiteSpace(texto)
-					? $"Gemini no devolvió imagen: {texto.Trim()}"
-					: $"Gemini no devolvió imagen{(string.IsNullOrWhiteSpace(motivo) ? "." : $" (motivo: {motivo}).")}";
+				var motivo = respuesta.MotivoFin ?? string.Empty;
+				var mensaje = motivo is "IMAGE_RECITATION" or "RECITATION"
+					? "Gemini bloqueó esta plantilla por parecerse demasiado a una imagen conocida (IMAGE_RECITATION). Prueba otra plantilla o otra idea."
+					: motivo is "IMAGE_SAFETY" or "SAFETY" or "PROHIBITED_CONTENT" or "IMAGE_PROHIBITED_CONTENT"
+						? "Gemini rechazó esta imagen por sus políticas de contenido. Prueba otra plantilla o otra idea."
+						: !string.IsNullOrWhiteSpace(texto)
+							? $"Gemini no devolvió imagen: {texto.Trim()}"
+							: $"Gemini no devolvió imagen{(string.IsNullOrWhiteSpace(motivo) ? "." : $" (motivo: {motivo}).")}";
 				return Response<Imagen>.BadResult(mensaje, new Imagen());
 			}
 

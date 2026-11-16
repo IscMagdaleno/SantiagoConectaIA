@@ -21,6 +21,7 @@ namespace SantiagoConectaIA.API.Services
 		private readonly IGeminiPublicacionService _gemini;
 		private readonly IFacebookPublishService _facebook;
 		private readonly IPublicacionAutomaticaService _automatica;
+		private readonly IRegistroPublicacionesService _registro;
 		private readonly PublicacionesBitacora _bitacora;
 		private readonly ILogger<EmprendimientoAutomaticoService> _logger;
 
@@ -29,6 +30,7 @@ namespace SantiagoConectaIA.API.Services
 			IGeminiPublicacionService gemini,
 			IFacebookPublishService facebook,
 			IPublicacionAutomaticaService automatica,
+			IRegistroPublicacionesService registro,
 			PublicacionesBitacora bitacora,
 			ILogger<EmprendimientoAutomaticoService> logger)
 		{
@@ -36,6 +38,7 @@ namespace SantiagoConectaIA.API.Services
 			_gemini = gemini;
 			_facebook = facebook;
 			_automatica = automatica;
+			_registro = registro;
 			_bitacora = bitacora;
 			_logger = logger;
 		}
@@ -102,7 +105,7 @@ namespace SantiagoConectaIA.API.Services
 					return Anotar(Falla($"Make no aceptó el emprendimiento {empresa.iIdEmpresa}: {publicado.Message}"));
 				}
 
-				await _automatica.RegistrarEmprendimientoAsync(empresa.iIdEmpresa, nombre, cancellationToken);
+				await RegistrarAsync(empresa.iIdEmpresa, nombre, PublicacionesTipos.Manual, true, mensaje, imagenUrl, null, cancellationToken);
 				_logger.LogInformation("Emprendimiento {Id} ({Nombre}) publicado en Facebook con el post diseñado.", empresa.iIdEmpresa, nombre);
 				return Anotar(Exito($"Emprendimiento #{empresa.iIdEmpresa} ({nombre}) publicado en Facebook."));
 			}
@@ -210,7 +213,9 @@ namespace SantiagoConectaIA.API.Services
 				if (!mejorado.IsSuccess || string.IsNullOrWhiteSpace(mejorado.Data))
 				{
 					_logger.LogWarning("Gemini no redactó el emprendimiento {Id}: {Mensaje}. Se reintentará en la siguiente ejecución.", empresa.iIdEmpresa, mejorado.Message);
-					return Falla($"Gemini no redactó el emprendimiento {empresa.iIdEmpresa}: {mejorado.Message}");
+					var motivo = $"Gemini no redactó el emprendimiento {empresa.iIdEmpresa}: {mejorado.Message}";
+					await RegistrarFalloAutomaticoAsync(empresa, nombre, motivo, manual, cancellationToken);
+					return Falla(motivo);
 				}
 
 				var publicado = await _facebook.PublicarAsync(new PostPublicarFacebook
@@ -222,10 +227,13 @@ namespace SantiagoConectaIA.API.Services
 				if (!publicado.IsSuccess)
 				{
 					_logger.LogWarning("Make no aceptó el emprendimiento {Id}: {Mensaje}. Se reintentará en la siguiente ejecución.", empresa.iIdEmpresa, publicado.Message);
-					return Falla($"Make no aceptó el emprendimiento {empresa.iIdEmpresa}: {publicado.Message}");
+					var motivo = $"Make no aceptó el emprendimiento {empresa.iIdEmpresa}: {publicado.Message}";
+					await RegistrarFalloAutomaticoAsync(empresa, nombre, motivo, manual, cancellationToken);
+					return Falla(motivo);
 				}
 
-				await _automatica.RegistrarEmprendimientoAsync(empresa.iIdEmpresa, nombre, cancellationToken);
+				await RegistrarAsync(empresa.iIdEmpresa, nombre, manual ? PublicacionesTipos.Manual : PublicacionesTipos.Automatica, true,
+					mejorado.Data, empresa.vchLogoUrl!.Trim(), null, cancellationToken);
 				_logger.LogInformation("Emprendimiento {Id} ({Nombre}) publicado en Facebook.", empresa.iIdEmpresa, nombre);
 				return Exito($"Emprendimiento #{empresa.iIdEmpresa} ({nombre}) publicado en Facebook.");
 			}
@@ -251,6 +259,29 @@ namespace SantiagoConectaIA.API.Services
 			return activos.Where(e => e.iIdEmpresa >= idSiguiente)
 				.Concat(activos.Where(e => e.iIdEmpresa < idSiguiente))
 				.ToList();
+		}
+
+		private Task RegistrarAsync(int idEmpresa, string nombre, string origen, bool exitoso, string? mensaje, string? imagenUrl, string? resultado, CancellationToken cancellationToken)
+		{
+			return _registro.RegistrarAsync(new PostSavePublicacionRegistro
+			{
+				vchTipo = PublicacionesTipos.Emprendimiento,
+				iIdReferencia = idEmpresa,
+				vchTitulo = nombre,
+				vchOrigen = origen,
+				bExitoso = exitoso,
+				nvchMensaje = mensaje,
+				vchImagenUrl = imagenUrl,
+				vchResultado = resultado
+			}, cancellationToken);
+		}
+
+		/// <summary>Solo los fallos de la publicación automática quedan en el registro (los manuales se le muestran al usuario).</summary>
+		private Task RegistrarFalloAutomaticoAsync(Empresa empresa, string nombre, string motivo, bool manual, CancellationToken cancellationToken)
+		{
+			return manual
+				? Task.CompletedTask
+				: RegistrarAsync(empresa.iIdEmpresa, nombre, PublicacionesTipos.Automatica, false, null, null, motivo.Length > 500 ? motivo[..500] : motivo, cancellationToken);
 		}
 
 		private Response<string> Anotar(Response<string> resultado)

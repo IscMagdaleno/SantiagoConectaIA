@@ -20,6 +20,12 @@ namespace SantiagoConectaIA.API.Services
 		/// <summary>Valor1 = hora diaria (0-23), Valor2 = ID del emprendimiento inicial de la rotación.</summary>
 		public const string PublicacionesAutoEmprendimientos = "publicaciones.auto.emprendimientos";
 
+		/// <summary>Valor1 = URL base de la API de plantillas de memes (createa.meme), Valor2 = API key.</summary>
+		public const string MemesPlantillas = "memes.plantillas";
+
+		/// <summary>Valor1 = máximo de memes con IA por día, entre todos los administradores.</summary>
+		public const string MemesLimiteDiario = "memes.limite.diario";
+
 		/// <summary>Valor1 = cadena de conexión de Azure Blob Storage.</summary>
 		public const string AzureBlobStorage = "azure.blob.storage";
 

@@ -21,7 +21,8 @@ namespace SantiagoConectaIA.API.Controllers
 		private readonly IPublicacionAutomaticaService _publicacionAutomaticaService;
 		private readonly IEmprendimientoAutomaticoService _emprendimientoAutomaticoService;
 		private readonly IParametrosService _parametros;
-		private readonly INoticiasDomain _noticiasDomain;
+		private readonly IPublicacionesRegistroDomain _registroDomain;
+		private readonly IRegistroPublicacionesService _registro;
 		private readonly PublicacionesBitacora _bitacora;
 		private readonly INoticiaAutomaticaService _noticiaAutomaticaService;
 
@@ -32,7 +33,8 @@ namespace SantiagoConectaIA.API.Controllers
 			IPublicacionAutomaticaService publicacionAutomaticaService,
 			IEmprendimientoAutomaticoService emprendimientoAutomaticoService,
 			IParametrosService parametros,
-			INoticiasDomain noticiasDomain,
+			IPublicacionesRegistroDomain registroDomain,
+			IRegistroPublicacionesService registro,
 			PublicacionesBitacora bitacora,
 			INoticiaAutomaticaService noticiaAutomaticaService)
 		{
@@ -42,7 +44,8 @@ namespace SantiagoConectaIA.API.Controllers
 			_publicacionAutomaticaService = publicacionAutomaticaService;
 			_emprendimientoAutomaticoService = emprendimientoAutomaticoService;
 			_parametros = parametros;
-			_noticiasDomain = noticiasDomain;
+			_registroDomain = registroDomain;
+			_registro = registro;
 			_bitacora = bitacora;
 			_noticiaAutomaticaService = noticiaAutomaticaService;
 		}
@@ -356,38 +359,46 @@ namespace SantiagoConectaIA.API.Controllers
 			var estadoEmprendimientos = await _publicacionAutomaticaService.GetEmprendimientosAsync(cancellationToken);
 			var siguienteEmpresa = await _emprendimientoAutomaticoService.GetSiguienteAsync(estadoEmprendimientos.iIdSiguienteEmpresa, cancellationToken);
 
+			// La noticia que tocaría publicar (la más reciente sin publicar y con imagen) o el motivo por el que no hay.
 			object? noticia = null;
-			var noticiaSinImagen = false;
-			var respuesta = await _noticiasDomain.GetNoticias(new PostGetNoticias { bActivo = true });
-			if (respuesta.IsSuccess && respuesta.Data != null)
+			var siguienteNoticia = await _noticiaAutomaticaService.GetSiguienteAsync(cancellationToken);
+			if (siguienteNoticia.IsSuccess && siguienteNoticia.Data != null)
 			{
-				var candidata = respuesta.Data.OrderByDescending(n => n.dtFechaPublicacion).ThenByDescending(n => n.iIdNoticia).FirstOrDefault();
-				if (candidata != null)
+				noticia = new
 				{
-					noticiaSinImagen = string.IsNullOrWhiteSpace(candidata.vchImagenPortada);
-					noticia = new
-					{
-						candidata.iIdNoticia,
-						titulo = candidata.vchTitulo,
-						fecha = candidata.dtFechaPublicacion,
-						tieneImagen = !string.IsNullOrWhiteSpace(candidata.vchImagenPortada),
-						yaPublicada = estadoNoticias.iIdUltimaNoticia == candidata.iIdNoticia
-					};
+					siguienteNoticia.Data.iIdNoticia,
+					titulo = siguienteNoticia.Data.vchTitulo,
+					fecha = siguienteNoticia.Data.dtFechaPublicacion
+				};
+			}
+
+			async Task<object> ResumenHoyAsync(string tipo)
+			{
+				try
+				{
+					var hoy = await _registro.ResumenHoyAsync(tipo, cancellationToken);
+					return new { exitosas = hoy.Exitosas, fallidasAutomaticas = hoy.FallidasAutomaticas, ultimoIntentoAutomaticoLocal = Local(hoy.UltimoIntentoAutomaticoUtc) };
+				}
+				catch (Exception ex)
+				{
+					return new { error = ex.Message };
 				}
 			}
 
-			object Proceso(string nombre, bool activo, int hora, object? siguiente)
+			object Proceso(string nombre, bool activo, TimeSpan hora, object hoy, object? siguiente, string? motivoSinSiguiente)
 			{
 				var intento = _bitacora.UltimoIntento(nombre);
 				var proxima = _bitacora.ProximaEjecucionUtc(nombre);
 				return new
 				{
 					activo,
-					horaConfigurada = hora,
+					horaConfigurada = HorarioPublicacion.Formato(hora),
 					programadaLocal = Local(proxima),
 					ultimoIntentoLocal = Local(intento?.Utc),
 					ultimoResultado = intento?.Resultado ?? "Sin intentos desde que arrancó el servidor.",
-					siguiente
+					hoy,
+					siguiente,
+					motivoSinSiguiente
 				};
 			}
 
@@ -401,8 +412,6 @@ namespace SantiagoConectaIA.API.Controllers
 				problemas.Add("Los servicios en segundo plano no han quedado programados: no están corriendo.");
 			if (ahoraUtc - servidorUtc < TimeSpan.FromHours(6))
 				problemas.Add($"El servidor lleva encendido solo {(ahoraUtc - servidorUtc).TotalMinutes:0} minutos. Si se apaga por inactividad (falta 'Always On'), no llega a la hora programada.");
-			if (noticiaSinImagen)
-				problemas.Add("La noticia más reciente no tiene imagen de portada: no se puede publicar.");
 
 			return Ok(new
 			{
@@ -421,11 +430,26 @@ namespace SantiagoConectaIA.API.Controllers
 					makeWebhook = !string.IsNullOrWhiteSpace(webhook),
 					sitioPublico = sitio
 				},
-				noticias = Proceso(PublicacionesBitacora.Noticias, estadoNoticias.bActivo, horaNoticias, noticia),
+				noticias = Proceso(PublicacionesBitacora.Noticias, estadoNoticias.bActivo, horaNoticias,
+					await ResumenHoyAsync(PublicacionesTipos.Noticia), noticia, noticia == null ? siguienteNoticia.Message : null),
 				emprendimientos = Proceso(PublicacionesBitacora.Emprendimientos, estadoEmprendimientos.bActivo, horaEmprendimientos,
-					siguienteEmpresa == null ? null : new { siguienteEmpresa.iIdEmpresa, nombre = siguienteEmpresa.vchNombreComercial })
+					await ResumenHoyAsync(PublicacionesTipos.Emprendimiento),
+					siguienteEmpresa == null ? null : new { siguienteEmpresa.iIdEmpresa, nombre = siguienteEmpresa.vchNombreComercial },
+					siguienteEmpresa == null ? "Ningún emprendimiento activo tiene logo." : null)
 			});
 		}
+
+		/// <summary>
+		/// Consulta el registro de publicaciones (noticias y emprendimientos publicados o que fallaron al publicarse),
+		/// las más recientes primero. Sirve para ver qué ya se publicó y analizar la frecuencia.
+		/// </summary>
+		[HttpPost("PostGetPublicacionesRegistro")]
+		public async Task<IActionResult> PostGetPublicacionesRegistro([FromBody] PostGetPublicacionesRegistro postModel)
+		{
+			var resultado = await _registroDomain.GetPublicacionesRegistro(postModel ?? new PostGetPublicacionesRegistro());
+			return Resultado(resultado);
+		}
+
 		private async Task<PublicacionAutomaticaEmprendimientos> EstadoEmprendimientosAsync(PublicacionAutomaticaEmprendimientos estado, CancellationToken cancellationToken)
 		{
 			var siguiente = await _emprendimientoAutomaticoService.GetSiguienteAsync(estado.iIdSiguienteEmpresa, cancellationToken);

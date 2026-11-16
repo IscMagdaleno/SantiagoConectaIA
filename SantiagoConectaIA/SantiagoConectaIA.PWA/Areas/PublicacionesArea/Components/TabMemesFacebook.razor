@@ -1,0 +1,339 @@
+@using SantiagoConectaIA.Share.Objects.MemesModule
+@using SantiagoConectaIA.Share.Utilities
+
+<style>
+    .meme-frame { position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 12px; background: #F8FAFC; border: 1px solid #E2E8F0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .meme-frame img { width: 100%; height: 100%; object-fit: contain; }
+    .meme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+    .meme-card { cursor: pointer; border-radius: 12px; border: 2px solid transparent; background: #FFFFFF; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12); overflow: hidden; transition: transform .12s ease, box-shadow .12s ease; }
+    .meme-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18); }
+    .meme-card.meme-card-sel { border-color: #A50A3A; box-shadow: 0 0 0 2px rgba(165, 10, 58, 0.18); }
+    .meme-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; background: #F1F5F9; }
+    .meme-card-nombre { display: block; padding: 6px 8px; font-size: 12px; font-weight: 600; color: #334155; line-height: 1.2; min-height: 32px; }
+</style>
+
+@if (Cargando)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudGrid Spacing="3">
+        <!-- VISTA PREVIA + PUBLICACIÓN -->
+        <MudItem xs="12" md="7">
+            <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 16px;">
+                <MudText Typo="Typo.h6" Class="mb-3" Style="font-weight: 700;">Vista previa</MudText>
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Class="mb-1" Style="font-weight: 700;">Plantilla</MudText>
+                        <div class="meme-frame">
+                            @if (Seleccion != null)
+                            {
+                                <img src="@Seleccion.vchImagenUrl" alt="@Seleccion.nvchNombre" />
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Align="Align.Center" Class="pa-4" Style="color: #64748B;">
+                                    Elige una plantilla de la lista de abajo.
+                                </MudText>
+                            }
+                        </div>
+                        @if (Seleccion != null)
+                        {
+                            <MudText Typo="Typo.caption" Style="color: #64748B;">@Seleccion.nvchNombre</MudText>
+                        }
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Class="mb-1" Style="font-weight: 700;">Tu meme</MudText>
+                        <div class="meme-frame">
+                            @if (Creando)
+                            {
+                                <div class="d-flex flex-column align-center justify-center pa-4" style="gap: 12px;">
+                                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                                    <MudText Typo="Typo.body2" Align="Align.Center" Style="color: #64748B;">
+                                        Gemini está creando el meme, puede tardar hasta un minuto...
+                                    </MudText>
+                                </div>
+                            }
+                            else if (Resultado != null)
+                            {
+                                <img src="@Resultado.vchResultadoUrl" alt="Meme creado con IA" />
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Align="Align.Center" Class="pa-4" Style="color: #64748B;">
+                                    Aquí aparecerá tu meme cuando lo crees.
+                                </MudText>
+                            }
+                        </div>
+                    </MudItem>
+                </MudGrid>
+
+                @if (Resultado != null && !Creando)
+                {
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mt-3">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Autorenew"
+                                   Disabled="@(!PuedeCrear)"
+                                   OnClick="Crear">
+                            Otra versión
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   StartIcon="@Icons.Material.Filled.Download"
+                                   Disabled="Descargando"
+                                   OnClick="@(() => Descargar(Resultado))">
+                            @(Descargando ? "Descargando..." : "Descargar")
+                        </MudButton>
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Error"
+                                   StartIcon="@Icons.Material.Filled.DeleteOutline"
+                                   Disabled="Ocupado"
+                                   OnClick="@(() => Descartar(Resultado))">
+                            Descartar
+                        </MudButton>
+                    </MudStack>
+                }
+            </MudPaper>
+
+            @if (Resultado != null && !Creando)
+            {
+                <MudPaper Class="pa-4 mt-3" Elevation="1" Style="border-radius: 16px;">
+                    <MudText Typo="Typo.subtitle1" Class="mb-1" Style="font-weight: 700;">Publicar en Facebook</MudText>
+                    <MudText Typo="Typo.caption" Class="d-block mb-3" Style="color: #64748B;">
+                        Escribe el texto que acompañará al meme.
+                    </MudText>
+                    <MudTextField @bind-Value="Mensaje"
+                                  Label="Texto de la publicación"
+                                  Variant="Variant.Outlined"
+                                  Lines="4"
+                                  MaxLength="2000"
+                                  Immediate="true"
+                                  Disabled="Publicando"
+                                  Class="mb-3" />
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Custom.Brands.Facebook"
+                               Disabled="@(!PuedePublicar)"
+                               OnClick="Publicar">
+                        @if (Publicando)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Publicando...</span>
+                        }
+                        else
+                        {
+                            <span>Publicar en Facebook</span>
+                        }
+                    </MudButton>
+                </MudPaper>
+            }
+        </MudItem>
+
+        <!-- IDEA -->
+        <MudItem xs="12" md="5">
+            <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 16px;">
+                <div class="d-flex align-center justify-space-between flex-wrap mb-2" style="gap: 8px;">
+                    <MudText Typo="Typo.h6" Style="font-weight: 700;">Tu idea</MudText>
+                    <MudChip T="string" Size="Size.Small" Color="@(LimiteAlcanzado ? Color.Error : Color.Default)" Variant="Variant.Outlined" Class="ma-0">
+                        Hoy: @Resumen.iUsoHoy / @Resumen.iLimiteDiario
+                    </MudChip>
+                </div>
+                <MudText Typo="Typo.body2" Class="mb-3" Style="color: #64748B;">
+                    Cuenta de qué trata el meme o qué situación quieres mostrar. La IA escribe los textos en español y conserva la imagen de la plantilla.
+                </MudText>
+                <MudTextField @bind-Value="Idea"
+                              Label="Idea del meme"
+                              Placeholder="Ej.: Cuando dicen que ya viene el camión de la basura y todos salen corriendo."
+                              Variant="Variant.Outlined"
+                              Lines="5"
+                              MaxLength="500"
+                              Counter="500"
+                              Immediate="true"
+                              Disabled="Creando"
+                              Class="mb-3" />
+
+                @if (LimiteAlcanzado)
+                {
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3">
+                        Se alcanzó el límite de @Resumen.iLimiteDiario memes por hoy. Vuelve mañana.
+                    </MudAlert>
+                }
+                else if (Seleccion == null)
+                {
+                    <MudText Typo="Typo.caption" Class="d-block mb-2" Style="color: #64748B;">Primero elige una plantilla.</MudText>
+                }
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.AutoAwesome"
+                           Disabled="@(!PuedeCrear)"
+                           OnClick="Crear">
+                    @if (Creando)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Creando meme...</span>
+                    }
+                    else
+                    {
+                        <span>@(Resultado == null ? "Crear meme" : "Crear otro meme")</span>
+                    }
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- PLANTILLAS -->
+        <MudItem xs="12">
+            <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 16px;">
+                <div class="d-flex align-center flex-wrap mb-3" style="gap: 12px;">
+                    <MudText Typo="Typo.h6" Style="font-weight: 700;">Plantillas</MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary"
+                             Variant="@(EsTendencias ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => CambiarModoAsync(ModosMeme.Tendencias))">
+                        Tendencias
+                    </MudChip>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary"
+                             Variant="@(!EsTendencias ? Variant.Filled : Variant.Outlined)"
+                             OnClick="@(() => CambiarModoAsync(ModosMeme.Biblioteca))">
+                        Biblioteca
+                    </MudChip>
+                </div>
+
+                @if (EsTendencias)
+                {
+                    <div class="d-flex align-center flex-wrap mb-3" style="gap: 8px;">
+                        <MudText Typo="Typo.caption" Style="color: #64748B;">Periodo:</MudText>
+                        @foreach (var (valor, etiqueta) in Periodos)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary"
+                                     Variant="@(Periodo == valor ? Variant.Filled : Variant.Outlined)"
+                                     OnClick="@(() => CambiarPeriodoAsync(valor))">
+                                @etiqueta
+                            </MudChip>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <MudTextField @bind-Value="Busqueda"
+                                  Label="Buscar plantilla"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Immediate="true"
+                                  DebounceInterval="500"
+                                  OnDebounceIntervalElapsed="BuscarAsync"
+                                  Class="mb-3" />
+                }
+
+                @if (Categorias.Count > 0)
+                {
+                    <div class="d-flex align-center flex-wrap mb-3" style="gap: 6px;">
+                        <MudChip T="string" Size="Size.Small"
+                                 Variant="@(string.IsNullOrEmpty(Categoria) ? Variant.Filled : Variant.Outlined)"
+                                 OnClick="@(() => CambiarCategoriaAsync(string.Empty))">
+                            Todas
+                        </MudChip>
+                        @foreach (var categoria in Categorias)
+                        {
+                            <MudChip T="string" Size="Size.Small"
+                                     Variant="@(Categoria == categoria ? Variant.Filled : Variant.Outlined)"
+                                     OnClick="@(() => CambiarCategoriaAsync(categoria))">
+                                @categoria
+                            </MudChip>
+                        }
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(ErrorPlantillas))
+                {
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3">
+                        @ErrorPlantillas
+                        <MudButton Variant="Variant.Text" Size="Size.Small" Class="ml-2" OnClick="@(() => CargarPlantillasAsync())">Reintentar</MudButton>
+                    </MudAlert>
+                }
+                else if (!CargandoPlantillas && Plantillas.Count == 0)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3">
+                        No se encontraron plantillas con esos filtros.
+                    </MudAlert>
+                }
+
+                @if (Plantillas.Count > 0)
+                {
+                    <div class="meme-grid">
+                        @foreach (var plantilla in Plantillas)
+                        {
+                            var elegida = Seleccion?.vchId == plantilla.vchId;
+                            <div class="@(elegida ? "meme-card meme-card-sel" : "meme-card")" title="@plantilla.nvchNombre" @onclick="@(() => Seleccionar(plantilla))">
+                                <img src="@plantilla.vchImagenUrl" alt="@plantilla.nvchNombre" loading="lazy" />
+                                <span class="meme-card-nombre">@plantilla.nvchNombre</span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (CargandoPlantillas)
+                {
+                    <div class="d-flex justify-center pa-3">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
+                    </div>
+                }
+                else if (HayMasPlantillas)
+                {
+                    <div class="d-flex justify-center mt-3">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => CargarPlantillasAsync(true))">
+                            Ver más plantillas
+                        </MudButton>
+                    </div>
+                }
+            </MudPaper>
+        </MudItem>
+
+        <!-- MEMES RECIENTES -->
+        <MudItem xs="12">
+            <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 16px;">
+                <MudText Typo="Typo.h6" Class="mb-3" Style="font-weight: 700;">Memes recientes</MudText>
+                @if (Recientes.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Style="color: #64748B;">Todavía no hay memes. Los que crees aparecerán aquí para reutilizarlos.</MudText>
+                }
+                else
+                {
+                    <MudStack Spacing="2">
+                        @foreach (var meme in Recientes)
+                        {
+                            <MudPaper Class="pa-2 d-flex align-center flex-wrap" Elevation="0" Style="border: 1px solid #E2E8F0; border-radius: 12px; gap: 12px;">
+                                <MudImage Src="@meme.vchResultadoUrl"
+                                          Alt="@meme.nvchPlantillaNombre"
+                                          Width="72"
+                                          Height="72"
+                                          ObjectFit="ObjectFit.Cover"
+                                          Class="rounded flex-shrink-0" />
+                                <div style="flex: 1; min-width: 180px;">
+                                    <MudText Typo="Typo.subtitle2" Style="font-weight: 700;">@meme.nvchPlantillaNombre</MudText>
+                                    <MudText Typo="Typo.caption" Class="d-block" Style="color: #64748B;">@Extracto(meme.nvchIdea)</MudText>
+                                    <MudText Typo="Typo.caption" Style="color: #94A3B8;">@meme.dtCreacion.ToUsuarioLocal().ToString("dd/MM/yyyy HH:mm")</MudText>
+                                </div>
+                                <MudStack Row="true" Spacing="1">
+                                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" Disabled="Ocupado" OnClick="@(() => EditarDeNuevo(meme))">
+                                        Editar de nuevo
+                                    </MudButton>
+                                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Disabled="Descargando" OnClick="@(() => Descargar(meme))">
+                                        Descargar
+                                    </MudButton>
+                                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" Disabled="Ocupado" OnClick="@(() => Descartar(meme))">
+                                        Quitar
+                                    </MudButton>
+                                </MudStack>
+                            </MudPaper>
+                        }
+                    </MudStack>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}

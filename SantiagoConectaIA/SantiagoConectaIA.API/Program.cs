@@ -1,4 +1,4 @@
-using EngramaCoreStandar.Extensions;
+﻿using EngramaCoreStandar.Extensions;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -90,6 +90,8 @@ builder.Services.AddScoped<IOficinasDomain, OficinasDomain>();
 builder.Services.AddScoped<IConversationalDominio, ConversationalDominio>();
 builder.Services.AddScoped<IAzureBlobDomain, AzureBlobDomain>();
 builder.Services.AddScoped<ILogsDomain, LogsDomain>();
+builder.Services.AddScoped<IPublicacionesRegistroDomain, PublicacionesRegistroDomain>();
+builder.Services.AddScoped<IMemesDomain, MemesDomain>();
 builder.Services.AddScoped<INoticiasDomain, NoticiasDomain>();
 builder.Services.AddScoped<IInformacionLocalDomain, InformacionLocalDomain>();
 builder.Services.AddScoped<IBuzonCiudadanoDomain, BuzonCiudadanoDomain>();
@@ -116,9 +118,20 @@ builder.Services.AddHttpClient<IFacebookPublishService, FacebookPublishService>(
 	client.Timeout = TimeSpan.FromSeconds(30);
 });
 // Cliente único de Gemini: cada servicio pasa su propio tiempo máximo en cada llamada.
+// La imagen editada llega en base64 (varios MB). En Windows, Schannel a veces falla al descifrar
+// cuerpos grandes con TLS 1.3 ("The decryption operation failed", 0x80090330); por eso este
+// cliente usa solo TLS 1.2 (igual que en ConectaNegocios).
 builder.Services.AddHttpClient<IGeminiClient, GeminiClient>(client =>
 {
 	client.Timeout = Timeout.InfiniteTimeSpan;
+}).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+{
+	SslOptions = new System.Net.Security.SslClientAuthenticationOptions
+	{
+		EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12
+	},
+	PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+	AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
 });
 builder.Services.AddTransient<IGeminiPublicacionService, GeminiPublicacionService>();
 builder.Services.AddTransient<IGeminiEventoService, GeminiEventoService>();
@@ -126,7 +139,15 @@ builder.Services.AddHttpClient<IGeminiImagenService, GeminiImagenService>(client
 {
 	client.Timeout = TimeSpan.FromSeconds(120);
 });
+// Memes con IA: plantillas de createa.meme (sin redirecciones y con tiempo máximo corto) y creación con Gemini.
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<IMemePlantillasClient, MemePlantillasClient>(client =>
+{
+	client.Timeout = TimeSpan.FromSeconds(20);
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+builder.Services.AddScoped<IMemeService, MemeService>();
 builder.Services.AddSingleton<PublicacionesBitacora>();
+builder.Services.AddSingleton<IRegistroPublicacionesService, RegistroPublicacionesService>();
 builder.Services.AddSingleton<IPublicacionAutomaticaService, PublicacionAutomaticaService>();
 builder.Services.AddScoped<IEmprendimientoAutomaticoService, EmprendimientoAutomaticoService>();
 builder.Services.AddScoped<INoticiaAutomaticaService, NoticiaAutomaticaService>();
@@ -137,6 +158,8 @@ builder.Services.AddScoped<IOficinasRepository, OficinasRepository>();
 builder.Services.AddScoped<IConversationalRepository, ConversationalRepository>();
 builder.Services.AddScoped<IAzureBlobRepository, AzureBlobRepository>();
 builder.Services.AddScoped<ILogsRepository, LogsRepository>();
+builder.Services.AddScoped<IPublicacionesRegistroRepository, PublicacionesRegistroRepository>();
+builder.Services.AddScoped<IMemesRepository, MemesRepository>();
 builder.Services.AddScoped<INoticiasRepository, NoticiasRepository>();
 builder.Services.AddScoped<IInformacionLocalRepository, InformacionLocalRepository>();
 builder.Services.AddScoped<IBuzonCiudadanoRepository, BuzonCiudadanoRepository>();
@@ -211,3 +234,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

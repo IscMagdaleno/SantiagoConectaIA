@@ -1,7 +1,9 @@
 ﻿using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.Share.Objects.EmpresasModulo;
+using SantiagoConectaIA.Share.Objects.MemesModule;
 using SantiagoConectaIA.Share.PostClass.EmpresasModulo;
+using SantiagoConectaIA.Share.PostModels.MemesModule;
 using SantiagoConectaIA.Share.PostModels.EmpresasModulo;
 using SantiagoConectaIA.Share.PostModels.PublicacionesModule;
 
@@ -182,6 +184,31 @@ namespace SantiagoConectaIA.PWA.Areas.PublicacionesArea.Utiles
 			return Post("api/Empresas/PostGetEmprendimientoFullById", model, new PostSaveEmprendimientoFull());
 		}
 
+		public Task<Response<ListaPlantillasMeme>> GetPlantillasMeme(PostGetPlantillasMeme model)
+		{
+			return Post("api/Memes/PostGetPlantillasMeme", model, new ListaPlantillasMeme());
+		}
+
+		public Task<Response<ResultadoMeme>> CrearMeme(string plantillaId, string idea)
+		{
+			var model = new PostCrearMeme { vchPlantillaId = plantillaId, vchIdea = idea };
+			return Post("api/Memes/PostCrearMeme", model, new ResultadoMeme());
+		}
+
+		public Task<Response<ResumenMemes>> GetResumenMemes()
+		{
+			return Post("api/Memes/PostGetResumen", new { }, new ResumenMemes());
+		}
+
+		public Task<Response<List<MemeCreado>>> GetMemesRecientes(int top = 12)
+		{
+			return Post("api/Memes/PostGetMemesRecientes", new PostGetMemesRecientes { iTop = top }, new List<MemeCreado>());
+		}
+
+		public Task<Response<bool>> DescartarMeme(int idMeme)
+		{
+			return Post("api/Memes/PostDescartarMeme", new PostDescartarMeme { iIdMeme = idMeme }, false);
+		}
 		private async Task<Response<T>> Post<TRequest, T>(string url, TRequest model, T fallback)
 		{
 			try

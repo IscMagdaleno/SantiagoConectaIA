@@ -15,7 +15,7 @@ else
             else
             {
                 <MudText Typo="Typo.body2" Style="color: #64748B;">
-                    Todos los días a las @($"{Automatica.iHora:00}:00") se publica con IA la noticia más reciente.
+                    Todos los días a las @($"{Automatica.iHora:00}:{Automatica.iMinuto:00}") se publica con IA la noticia más reciente que aún no se haya publicado. Si el servidor estaba dormido a esa hora, se publica en cuanto despierta.
                 </MudText>
                 @if (Automatica.dtUltimaPublicacion.HasValue)
                 {
