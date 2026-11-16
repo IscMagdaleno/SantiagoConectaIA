@@ -1,8 +1,10 @@
 using HtmlAgilityPack;
 
 using SantiagoConectaIA.API.EngramaLevels.Domain.Interfaces;
+using SantiagoConectaIA.API.Services;
 using SantiagoConectaIA.Share.Objects.NoticiasModule;
 using SantiagoConectaIA.Share.PostModels.NoticiasModule;
+using SantiagoConectaIA.Share.PostModels.PublicacionesModule;
 
 using System.Text.Json;
 
@@ -12,12 +14,17 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 	{
 		private readonly ILogger<NoticiasScraperService> _logger;
 		private readonly INoticiasDomain _noticiasDomain;
+		private readonly IGeminiPublicacionService _geminiPublicacionService;
 		private readonly HttpClient _httpClient;
 
-		public NoticiasScraperService(ILogger<NoticiasScraperService> logger, INoticiasDomain noticiasDomain)
+		public NoticiasScraperService(
+			ILogger<NoticiasScraperService> logger,
+			INoticiasDomain noticiasDomain,
+			IGeminiPublicacionService geminiPublicacionService)
 		{
 			_logger = logger;
 			_noticiasDomain = noticiasDomain;
+			_geminiPublicacionService = geminiPublicacionService;
 			_httpClient = new HttpClient();
 		}
 
@@ -87,6 +94,32 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 						var plainText = ExtractPlainText(contentHtml);
 						var summary = plainText.Length > 250 ? plainText.Substring(0, 247) + "..." : plainText;
 
+						// Mejorar el contenido HTML con IA (estilo personalizado de Santiago Conecta)
+						var finalHtml = contentHtml;
+						try
+						{
+							_logger.LogInformation($"Mejorando el contenido HTML con IA para la noticia: {title}");
+							var iaResponse = await _geminiPublicacionService.MejorarNoticiaHtmlAsync(new PostMejorarNoticiaHtml
+							{
+								vchTitulo = title,
+								nvchContenido = contentHtml
+							}, cancellationToken);
+
+							if (iaResponse.IsSuccess && !string.IsNullOrWhiteSpace(iaResponse.Data))
+							{
+								finalHtml = iaResponse.Data;
+								_logger.LogInformation($"Contenido HTML mejorado con IA exitosamente para: {title}");
+							}
+							else
+							{
+								_logger.LogWarning($"No se pudo mejorar el HTML con IA ({iaResponse.Message}). Se guardará el HTML original.");
+							}
+						}
+						catch (Exception exIa)
+						{
+							_logger.LogWarning(exIa, $"Excepción al mejorar HTML con IA para {title}. Se usará el HTML original.");
+						}
+
 						// Construir el modelo para Domain
 						var postModel = new PostSaveNoticia
 						{
@@ -112,8 +145,8 @@ namespace SantiagoConectaIA.API.EngramaLevels.Domain.Servicios
 											iIdMetadato = 0,
 											iIdTipoDato = TipoDatoMetadato.Contenido,
 											vchTitulo = "Contenido Principal",
-											nvchValor = contentHtml, // HTML completo
-                                            iOrden = 1,
+											nvchValor = finalHtml, // HTML enriquecido con IA (o fallback al original)
+											iOrden = 1,
 											iAncho = 12,
 											vchAlineacion = "none",
 											vchAlto = "auto",

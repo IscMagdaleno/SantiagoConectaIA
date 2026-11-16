@@ -1,4 +1,4 @@
-﻿using EngramaCoreStandar.Results;
+using EngramaCoreStandar.Results;
 
 using SantiagoConectaIA.Share.PostModels.PublicacionesModule;
 using SantiagoConectaIA.Share.Utilities;
@@ -20,6 +20,11 @@ namespace SantiagoConectaIA.API.Services
 			"Eres el editor de redes de Santiago Conecta, el portal del municipio de Santiago Papasquiaro, Durango. " +
 			"Redactas publicaciones de Facebook en español de México, claras y cercanas. " +
 			"No inventas datos, nombres, precios, direcciones ni enlaces que no estén en la información recibida.";
+
+		private const string InstruccionEditorHtml =
+			"Eres el editor digital y diseñador editorial de Santiago Conecta, el portal comunitario y municipal de Santiago Papasquiaro, Durango. " +
+			"Transformas noticias en artículos HTML enriquecidos con estilos en línea (inline CSS) elegantes, modernos y con la identidad visual de Santiago Conecta. " +
+			"No inventas datos, nombres, cifras, cargos ni hechos que no aparezcan en el texto original.";
 
 		private static readonly TimeSpan TiempoMaximo = TimeSpan.FromSeconds(60);
 
@@ -59,6 +64,34 @@ namespace SantiagoConectaIA.API.Services
 			texto = AsegurarLinea(texto, enlace, $"👉 Conoce más y lee la nota completa en Santiago Conecta:\n{enlace}");
 			texto = AsegurarLinea(texto, "#SantiagoConecta", HashtagsNoticias);
 			return Ok(texto);
+		}
+
+		public async Task<Response<string>> MejorarNoticiaHtmlAsync(PostMejorarNoticiaHtml post, CancellationToken cancellationToken = default)
+		{
+			if (post == null || (string.IsNullOrWhiteSpace(post.vchTitulo) && string.IsNullOrWhiteSpace(post.nvchContenido)))
+			{
+				return Response<string>.BadResult("Proporciona el título o contenido de la noticia para generar el HTML.", string.Empty);
+			}
+
+			var titulo = post.vchTitulo?.Trim() ?? string.Empty;
+			var contenido = Recortar(TextoPublicacion.ATextoPlano(post.nvchContenido));
+			var prompt = PromptNoticiaHtml(titulo, contenido);
+
+			var generado = await GenerarAsync(prompt, cancellationToken, InstruccionEditorHtml);
+			if (!generado.IsSuccess)
+			{
+				return generado;
+			}
+
+			var html = GeminiTexto.QuitarBloquesDeCodigo(generado.Data);
+			var inicioArticle = html.IndexOf("<article", StringComparison.OrdinalIgnoreCase);
+			var finArticle = html.LastIndexOf("</article>", StringComparison.OrdinalIgnoreCase);
+			if (inicioArticle >= 0 && finArticle > inicioArticle)
+			{
+				html = html.Substring(inicioArticle, (finArticle + "</article>".Length) - inicioArticle);
+			}
+
+			return Ok(html.Trim());
 		}
 
 		public async Task<Response<string>> MejorarEmprendimientoAsync(PostMejorarEmprendimiento post, CancellationToken cancellationToken = default)
@@ -168,7 +201,7 @@ namespace SantiagoConectaIA.API.Services
                 """;
 		}
 
-		private async Task<Response<string>> GenerarAsync(string prompt, CancellationToken cancellationToken)
+		private async Task<Response<string>> GenerarAsync(string prompt, CancellationToken cancellationToken, string? instruccion = null)
 		{
 			var configuracion = await _gemini.ObtenerConfiguracionAsync(ParametrosAlias.Gemini, ModeloDefault, cancellationToken);
 			if (!configuracion.Configurada)
@@ -176,7 +209,7 @@ namespace SantiagoConectaIA.API.Services
 				return Response<string>.BadResult($"No está configurada la clave de Gemini (parámetro {ParametrosAlias.Gemini}).", string.Empty);
 			}
 
-			var solicitud = GeminiSolicitud.DeTexto(prompt, InstruccionEditor, new GeminiGenerationConfig { Temperature = 0.7 });
+			var solicitud = GeminiSolicitud.DeTexto(prompt, instruccion ?? InstruccionEditor, new GeminiGenerationConfig { Temperature = 0.7 });
 
 			try
 			{
@@ -209,6 +242,89 @@ namespace SantiagoConectaIA.API.Services
 			var sitio = (await _parametros.GetValor1Async(ParametrosAlias.PublicacionesSitio, cancellationToken) ?? SitioDefault).TrimEnd('/');
 			var noticias = await _parametros.GetValor2Async(ParametrosAlias.PublicacionesSitio, cancellationToken);
 			return (sitio, noticias?.TrimEnd('/') ?? $"{sitio}/noticias");
+		}
+
+		private static string PromptNoticiaHtml(string titulo, string contenido)
+		{
+			var cuerpo = string.IsNullOrWhiteSpace(contenido)
+				? "(La noticia solo cuenta con el título. Desarrolla un artículo breve y fiel únicamente al título, sin inventar cifras ni nombres.)"
+				: contenido;
+
+			return
+				$$"""
+                Transforma y mejora la siguiente noticia en un artículo HTML enriquecido y visualmente atractivo con estilos inline (CSS en línea), diseñado con la identidad y paleta de colores de Santiago Conecta (#4a154b, #880e4f, #d53f8c, #d81b60, #dd6b20, #7b1fa2).
+
+                REGLAS ESTRICTAS:
+                1. Devuelve ÚNICAMENTE el código HTML que inicia con <article ...> y termina con </article>. No incluyas bloques ```html, ni explicaciones, ni texto fuera de <article>.
+                2. Conserva toda la información, nombres, cargos, cifras, fechas y lugares reales del texto original. NO inventes datos que no estén en la nota.
+                3. Mejora la redacción en español de México para que sea fluida, periodística, cálida y profesional, resaltando con <strong> y <em> las palabras, nombres, cifras o lugares clave.
+                4. Elige el degradado del encabezado según el tono de la noticia:
+                   - General, cultural, festivo o educativo: linear-gradient(135deg, #4a154b, #d53f8c, #dd6b20) o linear-gradient(135deg, #880e4f, #d81b60, #dd6b20)
+                   - Institucional, crónica, solemne o comunitario: linear-gradient(135deg, #2d3748, #4a154b, #7b1fa2)
+
+                ESTRUCTURA HTML OBLIGATORIA (sigue este diseño y estilos inline):
+                <article style="width: 100%; max-width: 100%; margin: 0 auto; font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.07); overflow: hidden; border: 1px solid #f0f0f0; color: #2d3748; line-height: 1.7;">
+
+                  <!-- 1. Encabezado con degradado Santiago Conecta -->
+                  <div style="background: linear-gradient(135deg, #4a154b, #d53f8c, #dd6b20); padding: 26px 28px; color: #ffffff !important;">
+                    <span style="display: inline-block; background: rgba(255, 255, 255, 0.22); color: #ffffff !important; padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                      [Emoji temático] [Categoría corta de la nota] • Santiago Conecta
+                    </span>
+                    <h1 style="margin: 14px 0 0; font-size: 26px; font-weight: 800; line-height: 1.3; color: #ffffff !important;">
+                      [Título atractivo y periodístico basado en el título original]
+                    </h1>
+                  </div>
+
+                  <div style="padding: 28px;">
+                    <!-- 2. Resumen principal / Bajada -->
+                    <p style="font-size: 17px; color: #4a5568; margin-top: 0; font-weight: 500;">
+                      [Párrafo inicial o entrada atractiva que enganche al lector resumiendo el hecho principal con <strong> en datos clave]
+                    </p>
+
+                    <!-- 3. Caja de Resumen / Puntos Destacados (adapta si son puntos clave con <ul><li> y emojis, o un destacado central si es crónica) -->
+                    <div style="background: #fffaf0; border: 1px solid #feebc8; border-left: 5px solid #dd6b20; border-radius: 10px; padding: 20px; margin: 22px 0;">
+                      <h3 style="margin-top: 0; margin-bottom: 12px; color: #c05621 !important; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                        ✨ Lo más destacado de la nota:
+                      </h3>
+                      <ul style="margin: 0; padding-left: 20px; color: #2d3748; font-size: 15px; line-height: 1.8;">
+                        <li>[Emoji] <strong>[Concepto clave 1]:</strong> [Explicación concisa basada en la nota].</li>
+                        <li>[Emoji] <strong>[Concepto clave 2]:</strong> [Explicación concisa basada en la nota].</li>
+                        <li>[Emoji] <strong>[Concepto clave 3]:</strong> [Explicación concisa basada en la nota].</li>
+                      </ul>
+                    </div>
+
+                    <!-- 4. Desarrollo de la nota (2 a 4 párrafos bien redactados con <p style="color: #4a5568; font-size: 15px;">, y opcionalmente una cita o recuadro intermedio si la nota es extensa) -->
+                    <p style="color: #4a5568; font-size: 15px;">
+                      [Desarrollo completo de los detalles de la noticia...]
+                    </p>
+
+                    <!-- 5. Caja comunitaria de Santiago Conecta -->
+                    <div style="background: #faf5ff; border: 1px solid #e9d8fd; padding: 16px 20px; border-radius: 8px; margin-top: 24px;">
+                      <p style="margin: 0; font-size: 14px; color: #553c9e; text-align: center;">
+                        🤝 <strong>Santiago Conecta está con nuestra gente.</strong><br>
+                        Somos una plataforma de Santiago y para Santiago. Si tienes una iniciativa, evento, noticia o reporte que quieras dar a conocer, contáctanos y con gusto le damos difusión.
+                      </p>
+                    </div>
+
+                    <!-- 6. Cierre / Hashtags -->
+                    <div style="border-top: 1px solid #edf2f7; margin-top: 24px; padding-top: 16px; color: #718096; font-size: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
+                      <span>#SantiagoPapasquiaro</span>
+                      <span>#[HashtagRelacionado1]</span>
+                      <span>#[HashtagRelacionado2]</span>
+                      <span>#[HashtagRelacionado3]</span>
+                      <span>#Durango</span>
+                      <span>#SantiagoConecta</span>
+                    </div>
+                  </div>
+
+                </article>
+
+                DATOS DE LA NOTICIA ORIGINAL A TRANSFORMAR:
+                Título: {{titulo}}
+
+                Contenido:
+                {{cuerpo}}
+                """;
 		}
 
 		private static string PromptNoticia(string titulo, string contenido, string enlace)

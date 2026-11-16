@@ -6,4 +6,10 @@ namespace SantiagoConectaIA.Share.PostModels.PublicacionesModule
 		public string vchTitulo { get; set; } = string.Empty;
 		public string nvchContenido { get; set; } = string.Empty;
 	}
+
+	public class PostMejorarNoticiaHtml
+	{
+		public string vchTitulo { get; set; } = string.Empty;
+		public string nvchContenido { get; set; } = string.Empty;
+	}
 }

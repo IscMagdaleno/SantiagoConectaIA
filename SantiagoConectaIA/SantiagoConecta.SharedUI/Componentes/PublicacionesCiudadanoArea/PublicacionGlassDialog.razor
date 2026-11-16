@@ -1,0 +1,134 @@
+@using SantiagoConectaIA.Share.Objects.PublicacionCiudadanoModule
+@using SantiagoConecta.SharedUI.Componentes.OpinionArea
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="glass-modal-overlay" @onclick="Cerrar">
+    <div class="glass-modal-container" @onclick:stopPropagation="true">
+        <!-- Barra superior estilo Instagram: Autor + Cerrar -->
+        <div class="glass-modal-top-bar">
+            <div class="glass-modal-header">
+                <div class="glass-modal-avatar">
+                    @if (!string.IsNullOrWhiteSpace(Publicacion.vchAvatarCiudadano))
+                    {
+                        <img src="@Publicacion.vchAvatarCiudadano" alt="@Publicacion.vchAliasCiudadano" />
+                    }
+                    else
+                    {
+                        <span>@(string.IsNullOrWhiteSpace(Publicacion.vchAliasCiudadano) ? "U" : Publicacion.vchAliasCiudadano[0].ToString().ToUpper())</span>
+                    }
+                </div>
+                <div class="glass-modal-user-info">
+                    <div class="glass-modal-name-row">
+                        <span class="glass-modal-name">@Publicacion.vchAliasCiudadano</span>
+                        @if (Publicacion.bCiudadanoVerificado)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Verified" Class="glass-modal-verified" Title="Verificado" />
+                        }
+                    </div>
+                    <div class="glass-modal-meta-row">
+                        <span class="glass-modal-tag">@Publicacion.vchCategoriaPublicacion</span>
+                        <span>•</span>
+                        <span>@FormatearTiempo(Publicacion.dtFechaCreacion)</span>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="glass-modal-close-btn" @onclick="Cerrar" title="Cerrar modal">
+                <MudIcon Icon="@Icons.Material.Rounded.Close" />
+            </button>
+        </div>
+
+        <div class="glass-modal-scroll">
+            <!-- 1. Imagen completa / Carrusel estilo Instagram ARRIBA -->
+            @{
+                var listaImg = Imagenes;
+            }
+            @if (listaImg.Any())
+            {
+                <div class="glass-insta-media"
+                     @ontouchstart="OnTouchStart"
+                     @ontouchend="OnTouchEnd">
+                    <div class="glass-insta-viewport">
+                        <div class="glass-insta-track" style="transform: translateX(-@(_currentIndex * 100)%);">
+                            @for (int i = 0; i < listaImg.Count; i++)
+                            {
+                                var img = listaImg[i];
+                                <div class="glass-insta-slide">
+                                    <img src="@img" class="glass-insta-blur-bg" alt="" aria-hidden="true" />
+                                    <img src="@img"
+                                         class="glass-insta-img"
+                                         alt="@(Publicacion.nvchTitulo ?? "Publicación")"
+                                         loading="lazy" />
+                                </div>
+                            }
+                        </div>
+
+                        @if (listaImg.Count > 1)
+                        {
+                            <div class="glass-insta-counter">
+                                @(_currentIndex + 1) / @listaImg.Count
+                            </div>
+
+                            @if (_currentIndex > 0)
+                            {
+                                <button type="button"
+                                        class="glass-insta-nav prev"
+                                        @onclick="PrevSlide"
+                                        @onclick:stopPropagation="true"
+                                        title="Imagen anterior"
+                                        aria-label="Imagen anterior">
+                                    <MudIcon Icon="@Icons.Material.Rounded.ChevronLeft" />
+                                </button>
+                            }
+
+                            @if (_currentIndex < listaImg.Count - 1)
+                            {
+                                <button type="button"
+                                        class="glass-insta-nav next"
+                                        @onclick="NextSlide"
+                                        @onclick:stopPropagation="true"
+                                        title="Imagen siguiente"
+                                        aria-label="Imagen siguiente">
+                                    <MudIcon Icon="@Icons.Material.Rounded.ChevronRight" />
+                                </button>
+                            }
+                        }
+                    </div>
+
+                    @if (listaImg.Count > 1)
+                    {
+                        <div class="glass-insta-dots">
+                            @for (int i = 0; i < listaImg.Count; i++)
+                            {
+                                var idx = i;
+                                <button type="button"
+                                        class="glass-insta-dot @(idx == _currentIndex ? "active" : "")"
+                                        @onclick="() => GoToSlide(idx)"
+                                        @onclick:stopPropagation="true"
+                                        aria-label="@($"Ir a imagen {idx + 1}")">
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- 2. Texto y contenido ABAJO -->
+            <div class="glass-modal-body-content">
+                @if (!string.IsNullOrWhiteSpace(Publicacion.nvchTitulo))
+                {
+                    <h3 class="glass-modal-title">@Publicacion.nvchTitulo</h3>
+                }
+
+                <p class="glass-modal-text">@Publicacion.nvchContenidoTexto</p>
+
+                <!-- Sección de comentarios / opiniones -->
+                <div class="glass-modal-opinions-wrap">
+                    <OpinionThread TipoEntidad="PUBLICACION"
+                                   IdEntidad="Publicacion.iIdPublicacion"
+                                   CssClass="glass-modal-opinions" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -61,6 +61,16 @@ namespace SantiagoConectaIA.API.Controllers
 		}
 
 		/// <summary>
+		/// Pide a Gemini que transforme el contenido de una noticia en un artículo HTML enriquecido con el estilo de Santiago Conecta.
+		/// </summary>
+		[HttpPost("PostMejorarNoticiaHtml")]
+		public async Task<IActionResult> PostMejorarNoticiaHtml([FromBody] PostMejorarNoticiaHtml postModel, CancellationToken cancellationToken)
+		{
+			var result = await _geminiPublicacionService.MejorarNoticiaHtmlAsync(postModel, cancellationToken);
+			return Resultado(result);
+		}
+
+		/// <summary>
 		/// Pide a Gemini un texto de Facebook que presente un emprendimiento, sus productos y dónde encontrarlo.
 		/// </summary>
 		[HttpPost("PostMejorarEmprendimiento")]
