@@ -4,7 +4,6 @@
 @using SantiagoConectaIA.Share.PostModels.EmpresasModulo
 @using SantiagoConectaIA.Share.PostClass.EmpresasModulo
 @inject Data_Emprendimientos dataEmprendimientos
-@inject NavigationManager NavManager
 
 <SeoHead Titulo="@(empresa?.vchNombreComercial ?? "Emprendimiento local")"
          Descripcion="@(empresa?.nvchDescripcion ?? empresa?.vchSlogan ?? "Conoce este negocio local de Santiago Papasquiaro: productos, contacto y ubicación.")"
@@ -23,7 +22,13 @@ else if (empresa == null)
         <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 80px; color: #cbd5e1;" />
         <MudText Typo="Typo.h4" Class="mt-6 mb-2">Emprendimiento no encontrado</MudText>
         <MudText Typo="Typo.body1" Color="Color.Surface" Class="mb-8">No pudimos cargar la información de esta empresa.</MudText>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavManager.NavigateTo("/emprendimientos"))">Volver al Catálogo</MudButton>
+        <MudButton Href="/emprendimientos/galeria"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   Style="border-radius: 999px; text-transform: none; font-weight: 700;">
+            Volver a la galería
+        </MudButton>
     </MudContainer>
 }
 else
@@ -32,6 +37,13 @@ else
     <div class="custom-hero-header">
         <div class="container relative z-10 mx-auto px-4 text-center">
             <div class="d-flex flex-column align-center justify-center">
+                <MudButton Href="/emprendimientos/galeria"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.ArrowBack"
+                           Class="mb-4"
+                           Style="border-radius: 999px; text-transform: none; font-weight: 700; background: rgba(255, 255, 255, 0.95); color: #880e4f; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                    Volver a la galería
+                </MudButton>
                 @if (!string.IsNullOrEmpty(empresa.vchLogoUrl))
                 {
                     <MudAvatar Style="width: 140px; height: 140px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 4px solid white; background-color: white;" Class="mb-4">
